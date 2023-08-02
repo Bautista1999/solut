@@ -173,7 +173,7 @@
                 >
                     <div
                         class=" py-16 w-80 text-center rounded-top image-container"
-                        style=" background-image: url('src/assets/appImageExample.jpeg');"
+                        style=" background-image: url('/assets/appImageExample.jpeg');"
                     />
 
                     <p class="h3" style="margin-left: 5%;margin-top: 5%;">
@@ -290,7 +290,7 @@
         margin-left: 2.5em;
         margin-right: 2.5em;
         height: 10cm;
-        background-image: url("src/assets/homeBackground.png");
+        background-image: url("/assets/homeBackground.png");
 
         background-size: 10cm; /* changes here */
         background-repeat: no-repeat; /* add this to prevent the image from repeating */
