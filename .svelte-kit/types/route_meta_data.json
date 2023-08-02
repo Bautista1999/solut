@@ -1,9 +1,0 @@
-{
-	"/": [],
-	"/about": [],
-	"/create": [],
-	"/homepage": [],
-	"/idea/[id]": [
-		"src/routes/idea/[id]/+page.js"
-	]
-}
