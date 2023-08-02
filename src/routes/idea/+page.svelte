@@ -25,7 +25,7 @@
         title = myDoc?.data.title;
         subtitle = myDoc?.data.subtitle;
         description = myDoc?.data.description;
-        image = "../src/assets/appImageExample.jpeg";
+        image = "/assets/appImageExample.jpeg";
         isLoading = false;
         // @ts-ignore
         updated = myDoc?.updated_at;

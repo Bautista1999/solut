@@ -99,7 +99,7 @@
 {:else if created}
     <div class="card p-4 centered-flexbox">
         <img
-            src="src/assets/correct.png"
+            src="/assets/correct.png"
             alt=""
             style="width:20%;"
             class="centered-image"

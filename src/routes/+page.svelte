@@ -38,7 +38,7 @@
 {:else if SignedIn}
     <div class="card p-4" style="width: 30%; align:center">
         <img
-            src="src/assets/LogoSol3.png"
+            src="/assets/LogoSol3.png"
             alt=""
             style="width:30%;"
             class="centered-image"
@@ -59,7 +59,7 @@
 {:else}
     <div class="card p-4" style="width: 30%; align:center">
         <img
-            src="src/assets/LogoSol3.png"
+            src="/assets/LogoSol3.png"
             alt=""
             style="width:30%;"
             class="centered-image"
