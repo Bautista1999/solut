@@ -1,0 +1,188 @@
+{
+  ".svelte-kit/generated/server/internal.js": {
+    "file": "internal.js",
+    "imports": [
+      "_internal.js"
+    ],
+    "isEntry": true,
+    "src": ".svelte-kit/generated/server/internal.js"
+  },
+  "ProgressBar.css": {
+    "file": "_app/immutable/assets/ProgressBar.4f1e9ba5.css",
+    "src": "ProgressBar.css"
+  },
+  "_LightSwitch.js": {
+    "file": "chunks/LightSwitch.js",
+    "imports": [
+      "_ssr.js",
+      "_ProgressBar.svelte_svelte_type_style_lang.js"
+    ]
+  },
+  "_ProgressBar.svelte_svelte_type_style_lang.js": {
+    "css": [
+      "_app/immutable/assets/ProgressBar.4f1e9ba5.css"
+    ],
+    "file": "chunks/ProgressBar.svelte_svelte_type_style_lang.js",
+    "imports": [
+      "_index2.js",
+      "_ssr.js"
+    ]
+  },
+  "_header.js": {
+    "file": "chunks/header.js",
+    "imports": [
+      "_ssr.js",
+      "_ProgressBar.svelte_svelte_type_style_lang.js",
+      "_LightSwitch.js",
+      "_stores.js"
+    ]
+  },
+  "_index.js": {
+    "file": "chunks/index.js"
+  },
+  "_index2.js": {
+    "file": "chunks/index2.js",
+    "imports": [
+      "_ssr.js"
+    ]
+  },
+  "_internal.js": {
+    "file": "chunks/internal.js",
+    "imports": [
+      "_ssr.js"
+    ]
+  },
+  "_ssr.js": {
+    "file": "chunks/ssr.js"
+  },
+  "_stores.js": {
+    "file": "chunks/stores.js",
+    "imports": [
+      "_ssr.js"
+    ]
+  },
+  "node_modules/@sveltejs/kit/src/runtime/components/error.svelte": {
+    "file": "entries/fallbacks/error.svelte.js",
+    "imports": [
+      "_ssr.js",
+      "_stores.js"
+    ],
+    "isEntry": true,
+    "src": "node_modules/@sveltejs/kit/src/runtime/components/error.svelte"
+  },
+  "node_modules/@sveltejs/kit/src/runtime/server/index.js": {
+    "file": "index.js",
+    "imports": [
+      "_internal.js",
+      "_index.js",
+      "_index2.js"
+    ],
+    "isEntry": true,
+    "src": "node_modules/@sveltejs/kit/src/runtime/server/index.js"
+  },
+  "src/routes/+layout.css": {
+    "file": "_app/immutable/assets/_layout.a9dd539e.css",
+    "src": "src/routes/+layout.css"
+  },
+  "src/routes/+layout.svelte": {
+    "css": [
+      "_app/immutable/assets/_layout.a9dd539e.css"
+    ],
+    "file": "entries/pages/_layout.svelte.js",
+    "imports": [
+      "_ssr.js",
+      "_ProgressBar.svelte_svelte_type_style_lang.js"
+    ],
+    "isEntry": true,
+    "src": "src/routes/+layout.svelte"
+  },
+  "src/routes/+layout.ts": {
+    "file": "entries/pages/_layout.ts.js",
+    "isEntry": true,
+    "src": "src/routes/+layout.ts"
+  },
+  "src/routes/+page.css": {
+    "file": "_app/immutable/assets/_page.e77b9074.css",
+    "src": "src/routes/+page.css"
+  },
+  "src/routes/+page.svelte": {
+    "css": [
+      "_app/immutable/assets/_page.e77b9074.css"
+    ],
+    "file": "entries/pages/_page.svelte.js",
+    "imports": [
+      "_ssr.js",
+      "_ProgressBar.svelte_svelte_type_style_lang.js",
+      "_LightSwitch.js"
+    ],
+    "isEntry": true,
+    "src": "src/routes/+page.svelte"
+  },
+  "src/routes/about/+page.svelte": {
+    "file": "entries/pages/about/_page.svelte.js",
+    "imports": [
+      "_ssr.js",
+      "_header.js"
+    ],
+    "isEntry": true,
+    "src": "src/routes/about/+page.svelte"
+  },
+  "src/routes/create/+page.css": {
+    "file": "_app/immutable/assets/_page.7eb64f73.css",
+    "src": "src/routes/create/+page.css"
+  },
+  "src/routes/create/+page.svelte": {
+    "css": [
+      "_app/immutable/assets/_page.7eb64f73.css"
+    ],
+    "file": "entries/pages/create/_page.svelte.js",
+    "imports": [
+      "_ssr.js",
+      "_header.js",
+      "_ProgressBar.svelte_svelte_type_style_lang.js"
+    ],
+    "isEntry": true,
+    "src": "src/routes/create/+page.svelte"
+  },
+  "src/routes/homepage/+page.css": {
+    "file": "_app/immutable/assets/_page.95bcef4a.css",
+    "src": "src/routes/homepage/+page.css"
+  },
+  "src/routes/homepage/+page.svelte": {
+    "css": [
+      "_app/immutable/assets/_page.95bcef4a.css"
+    ],
+    "file": "entries/pages/homepage/_page.svelte.js",
+    "imports": [
+      "_ssr.js",
+      "_header.js",
+      "_ProgressBar.svelte_svelte_type_style_lang.js"
+    ],
+    "isEntry": true,
+    "src": "src/routes/homepage/+page.svelte"
+  },
+  "src/routes/idea/[id]/+page.css": {
+    "file": "_app/immutable/assets/_page.f5c1878f.css",
+    "src": "src/routes/idea/[id]/+page.css"
+  },
+  "src/routes/idea/[id]/+page.js": {
+    "file": "entries/pages/idea/_id_/_page.js",
+    "imports": [
+      "_index.js"
+    ],
+    "isEntry": true,
+    "src": "src/routes/idea/[id]/+page.js"
+  },
+  "src/routes/idea/[id]/+page.svelte": {
+    "css": [
+      "_app/immutable/assets/_page.f5c1878f.css"
+    ],
+    "file": "entries/pages/idea/_id_/_page.svelte.js",
+    "imports": [
+      "_ssr.js",
+      "_header.js"
+    ],
+    "isEntry": true,
+    "src": "src/routes/idea/[id]/+page.svelte"
+  }
+}

@@ -1,9 +1,19 @@
 {
-	"/": [],
-	"/about": [],
-	"/create": [],
-	"/homepage": [],
+	"/": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.ts"
+	],
+	"/about": [
+		"src/routes/+layout.ts"
+	],
+	"/create": [
+		"src/routes/+layout.ts"
+	],
+	"/homepage": [
+		"src/routes/+layout.ts"
+	],
 	"/idea/[id]": [
-		"src/routes/idea/[id]/+page.js"
+		"src/routes/idea/[id]/+page.js",
+		"src/routes/+layout.ts"
 	]
 }
