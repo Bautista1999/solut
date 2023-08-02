@@ -1,10 +1,11 @@
 <script>
     import Header from "$lib/components/header.svelte";
     import Modal from "$lib/components/modal.svelte";
-    /** @type {import('./$types').PageData} */
-    export let data;
     import { initJuno, getDoc, setDoc } from "@junobuild/core";
     import { onMount } from "svelte";
+
+    /** @type {import('./$types').PageData} */
+    export let data;
 
     let showModal = false;
     let title = "";
