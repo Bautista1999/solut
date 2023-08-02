@@ -22,7 +22,7 @@
     let n = 10; // suppose the length of your array is 10
     let indices = Array.from({ length: n }, (_, i) => i);
     let showModal = false;
-    let imageSrc = "src/assets/appImageExample.jpeg";
+    let imageSrc = "/assets/appImageExample.jpeg";
     let id = "33";
     function showIdea(title, subtitle, description, image, key) {
         showModal = true;
@@ -46,7 +46,7 @@
         // Data
         title: "Example Alert",
         body: "This is an example modal.",
-        image: "src/assets/appImageExample.jpeg",
+        image: "/assets/appImageExample.jpeg",
     };
     let titulo = "";
     let topicsLoading = true;
