@@ -8,7 +8,6 @@
   // Finally, your application's global stylesheet (sometimes labeled 'app.css')
   import "../app.postcss";
   import "@skeletonlabs/skeleton/themes/theme-rocket.css";
-  import { Modal, modalStore } from "@skeletonlabs/skeleton";
 </script>
 
 <slot />
