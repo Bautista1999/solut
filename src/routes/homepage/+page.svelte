@@ -27,7 +27,7 @@
     function showIdea(title, subtitle, description, image, key) {
         showModal = true;
         console.log(key);
-        goto("idea/" + key);
+        goto("idea/" + "?id=" + key);
         // modal.title = title;
         // modal.body =
         //     "<h3>" +

@@ -20,6 +20,7 @@
         });
         const myDoc = await getDoc({
             collection: "ideas",
+            // @ts-ignore
             key: data.id,
         });
         console.log(myDoc?.data);
@@ -45,6 +46,7 @@
         await setDoc({
             collection: "ideas",
             doc: {
+                // @ts-ignore
                 key: data.id,
                 // @ts-ignore
                 updated_at: updated, // includes 'key' and 'updated_at'

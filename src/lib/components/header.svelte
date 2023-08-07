@@ -17,7 +17,7 @@
     <TabAnchor href="/about" selected={$page.url.pathname === "/about"}
         >Feed</TabAnchor
     >
-    <TabAnchor href="/about" selected={$page.url.pathname === "/about"}
+    <TabAnchor href="/wallet" selected={$page.url.pathname === "/wallet"}
         >Wallet</TabAnchor
     >
     <TabAnchor href="/about" selected={$page.url.pathname === "/about"}
@@ -35,12 +35,4 @@
 </TabGroup>
 
 <style>
-    .createBtn {
-        background-color: orangered;
-        width: 3.5cm;
-        margin: auto;
-        height: 1cm;
-        border-radius: 12px;
-        font-weight: 300;
-    }
 </style>
