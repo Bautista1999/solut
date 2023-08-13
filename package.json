@@ -10,6 +10,7 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch"
   },
   "devDependencies": {
+    "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
     "@skeletonlabs/skeleton": "^1.10.0",
     "@sveltejs/adapter-static": "^2.0.3",
     "@sveltejs/kit": "^1.20.4",
@@ -24,7 +25,16 @@
   },
   "type": "module",
   "dependencies": {
+    "@dfinity/agent": "^0.18.1",
+    "@dfinity/candid": "^0.18.1",
+    "@dfinity/identity": "^0.18.1",
+    "@dfinity/ledger": "^0.0.12",
+    "@dfinity/nns": "^0.16.4",
+    "@dfinity/nns-proto": "^0.0.5",
+    "@dfinity/principal": "^0.18.1",
+    "@dfinity/utils": "^0.0.19",
     "@junobuild/core": "^0.0.22",
+    "@junobuild/ledger": "^0.0.10",
     "isomorphic-fetch": "^3.0.0",
     "node-fetch": "^3.3.2",
     "openai": "^3.3.0"

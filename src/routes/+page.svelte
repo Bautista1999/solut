@@ -1,20 +1,62 @@
 <script>
     import { onMount } from "svelte";
     import { initJuno, signIn, signOut } from "@junobuild/core";
-    import { authSubscribe } from "@junobuild/core";
+    import { AccountIdentifier as junoAccIdentifier } from "@junobuild/ledger";
+
+    import { authSubscribe, unsafeIdentity } from "@junobuild/core";
     import { ProgressRadial } from "@skeletonlabs/skeleton";
     import { goto } from "$app/navigation";
     import { LightSwitch } from "@skeletonlabs/skeleton";
+    import { Principal } from "@dfinity/principal";
+    import { IcrcLedgerCanister } from "@dfinity/ledger";
+    import { LedgerCanister, AccountIdentifier, ICP } from "@dfinity/nns";
+    import { createAgent } from "@dfinity/utils";
+
     let SignedIn = false;
     let isLoading = false;
-    authSubscribe((user) => {
+    authSubscribe(async (user) => {
         console.log("User:", user);
+        // @ts-ignore
+        if (user) {
+            console.log("Principal:", Principal.fromText(user.key));
+            let userPrincipal = Principal.fromText(user.key);
+
+            const junoAccountIdentifier = junoAccIdentifier.fromPrincipal({
+                principal: userPrincipal,
+            });
+            const address = junoAccountIdentifier.toHex();
+
+            console.log("AccountIdentifier: ", junoAccountIdentifier);
+            console.log("New wallet Address: ", address);
+
+            //Getting balance
+            const identity = await unsafeIdentity();
+            const agent = await createAgent({
+                // @ts-ignore
+                identity,
+                host: "https://icp-api.io",
+            });
+            const ledgerID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
+
+            const { balance } = await IcrcLedgerCanister.create({
+                agent: agent,
+                canisterId: Principal.fromText(ledgerID),
+            });
+
+            const b = await balance({ owner: userPrincipal });
+            console.log("Balance: ", b, "ICP tokens");
+            const icpInstance = ICP.fromE8s(b);
+            console.log(
+                "Balance in icp: ",
+                icpInstance.toE8s(),
+                icpInstance.token.symbol
+            );
+        }
     });
     onMount(async () => {
         await initJuno({
             satelliteId: "xh6qb-uyaaa-aaaal-acuaq-cai",
         });
-        console.log("Mounted");
     });
     async function LogIn() {
         isLoading = true;

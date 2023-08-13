@@ -8,6 +8,7 @@
     import { get } from "svelte/store";
     import { Modal, modalStore } from "@skeletonlabs/skeleton";
     import { goto } from "$app/navigation";
+
     // @ts-nocheck
 
     // @ts-ignore
