@@ -1,0 +1,19 @@
+{
+	"/": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.ts"
+	],
+	"/about": [
+		"src/routes/+layout.ts"
+	],
+	"/create": [
+		"src/routes/+layout.ts"
+	],
+	"/homepage": [
+		"src/routes/+layout.ts"
+	],
+	"/idea": [
+		"src/routes/idea/+page.js",
+		"src/routes/+layout.ts"
+	]
+}
