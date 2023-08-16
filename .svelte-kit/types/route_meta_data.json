@@ -6,6 +6,9 @@
 	"/about": [
 		"src/routes/+layout.ts"
 	],
+	"/billetera": [
+		"src/routes/+layout.ts"
+	],
 	"/create": [
 		"src/routes/+layout.ts"
 	],
