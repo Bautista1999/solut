@@ -1,6 +1,7 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfill';
+import inject from '@rollup/plugin-inject';
 
 export default defineConfig({
 	plugins: [sveltekit()],
@@ -17,9 +18,13 @@ export default defineConfig({
 					setup(build) {
 						build.onResolve({ filter: /_virtual-process-polyfill_\.js/ }, ({ path }) => ({ path }));
 					}
-				}
+
+				},
+				// inject({
+				// 	modules: { Buffer: ['buffer', 'Buffer'] }
+				// }),
+
 			]
 		}
 	}
 });
-
