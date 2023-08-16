@@ -17,7 +17,7 @@
     <TabAnchor href="/about" selected={$page.url.pathname === "/about"}
         >Feed</TabAnchor
     >
-    <TabAnchor href="/wallet" selected={$page.url.pathname === "/wallet"}
+    <TabAnchor href="/billetera" selected={$page.url.pathname === "/billetera"}
         >Wallet</TabAnchor
     >
     <TabAnchor href="/about" selected={$page.url.pathname === "/about"}
