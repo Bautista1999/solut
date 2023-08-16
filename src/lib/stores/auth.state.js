@@ -2,7 +2,6 @@ import { writable } from "svelte/store";
 import { initJuno } from "@junobuild/core";
 import { authSubscribe, unsafeIdentity } from "@junobuild/core";
 import { Principal } from "@dfinity/principal";
-import { IcrcLedgerCanister, IcrcTransferError } from "@dfinity/ledger";
 import { createAgent } from "@dfinity/utils";
 import { AccountIdentifier, LedgerCanister } from "@dfinity/nns";
 
@@ -50,11 +49,15 @@ export async function basicInfo() {
                         host: "https://icp-api.io",
                     });
                     let ledgerID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
-                    const { balance } = await IcrcLedgerCanister.create({
+                    const { accountBalance } = await LedgerCanister.create({
                         agent: agent,
                         canisterId: Principal.fromText(ledgerID),
                     });
-                    let userBalance = await balance({ owner: userPrincipal });
+                    let userBalance = await accountBalance({
+                        accountIdentifier: AccountIdentifier.fromPrincipal({
+                            principal: userPrincipal
+                        })
+                    });
 
                     // Set the data into the store
                     info.set({

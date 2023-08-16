@@ -29,7 +29,6 @@
     "@dfinity/agent": "^0.18.1",
     "@dfinity/candid": "^0.18.1",
     "@dfinity/identity": "^0.18.1",
-    "@dfinity/ledger": "^0.0.12",
     "@dfinity/nns": "^0.16.4",
     "@dfinity/nns-proto": "^0.0.5",
     "@dfinity/principal": "^0.18.1",
