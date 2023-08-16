@@ -7,7 +7,7 @@
         basicInfo,
         info,
         transferFrom,
-    } from "/Users/juanbautistamartinezrezzio/Documents/Dev/ic_project/solutio/src/lib/stores/auth.state.js";
+    } from "$lib/stores/auth.state.js";
     import { clipboard } from "@skeletonlabs/skeleton";
     let amountTokens = 0;
     let address = "";
