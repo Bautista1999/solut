@@ -1,4 +1,4 @@
-import { writable } from "svelte/store";
+import {get, writable} from "svelte/store";
 import { initJuno } from "@junobuild/core";
 import { authSubscribe, unsafeIdentity } from "@junobuild/core";
 import { Principal } from "@dfinity/principal";
@@ -75,7 +75,7 @@ export async function basicInfo() {
                         loading: false
                     });
 
-                    resolve(info);  // resolving the promise here
+                    resolve();
                 }
             } catch (error) {
                 reject(error);
@@ -91,8 +91,9 @@ export async function basicInfo() {
  * @param {bigint} amount
  */
 export async function transferFrom(destination, amount) {
+    const {agent} = get(info);
     const canister = await LedgerCanister.create({
-        agent: info.agent,
+        agent,
         canisterId: Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai"),
     });
     let userPrincipal = Principal.fromHex(destination);
