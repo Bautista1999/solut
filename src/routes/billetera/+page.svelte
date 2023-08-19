@@ -3,11 +3,7 @@
 
     import Header from "$lib/components/header.svelte";
     import { onMount } from "svelte";
-    import {
-        basicInfo,
-        info,
-        transferFrom,
-    } from "$lib/stores/auth.state.js";
+    import { basicInfo, info, transferFrom } from "$lib/stores/auth.state.js";
     import { clipboard } from "@skeletonlabs/skeleton";
     let amountTokens = 0;
     let address = "";
@@ -40,7 +36,7 @@
         >
             <div class="">
                 <div class="h1" style="color: aliceblue;">
-                    You got {amountTokens} ICP tokens
+                    You got {amountTokens / 100000000} ICP tokens
                 </div>
                 <div class="h3" style="color: aliceblue;">
                     If you want to add some tokens, send some to your solutio
@@ -67,9 +63,9 @@
                     <div
                         class="btn variant-filled"
                         style="border-radius:20px;"
-                        on:click={transfer(destination, 1n)}
+                        on:click={transfer(destination, 2n)}
                     >
-                        Send
+                        Send 0.002 ICP tokens
                     </div>
                 </div>
             </div>

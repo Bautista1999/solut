@@ -4,11 +4,14 @@ import { authSubscribe, unsafeIdentity } from "@junobuild/core";
 import { Principal } from "@dfinity/principal";
 import { createAgent } from "@dfinity/utils";
 import { AccountIdentifier, LedgerCanister } from "@dfinity/nns";
-
+import { get } from "svelte/store";
 
 
 let userPrincipal = null;
 let walletAddress = null;
+/**
+ * @type {null}
+ */
 let identity = null;
 let agent = null;
 let ledgerID = "";
@@ -17,6 +20,7 @@ let loading = true;
 
 
 export const info = writable({
+    key: "",
     userPrincipal: null,
     walletAddress: null,
     identity: null,
@@ -26,19 +30,16 @@ export const info = writable({
     loading: true
 });
 export async function basicInfo() {
-    console.log('Initilizing juno...');
     await initJuno({
         satelliteId: "xh6qb-uyaaa-aaaal-acuaq-cai",
     });
-    console.log('Done!');
-
-    console.log('Getting user info...');
 
     await new Promise((resolve, reject) => {
         authSubscribe(async (user) => {
             try {
                 console.log("User:", user);
                 if (user) {
+
                     let userPrincipal = Principal.fromText(user.key);
                     const accountIdent = AccountIdentifier.fromPrincipal({ principal: userPrincipal })
                     let walletAddress = accountIdent.toHex();
@@ -61,6 +62,7 @@ export async function basicInfo() {
 
                     // Set the data into the store
                     info.set({
+                        key: user.key,
                         // @ts-ignore
                         userPrincipal,
                         // @ts-ignore
@@ -82,7 +84,6 @@ export async function basicInfo() {
             }
         });
     });
-    console.log('Done!');
 
 
 }
@@ -91,18 +92,24 @@ export async function basicInfo() {
  * @param {bigint} amount
  */
 export async function transferFrom(destination, amount) {
+<<<<<<< Updated upstream
     const {agent} = get(info);
     const canister = await LedgerCanister.create({
         agent,
+=======
+    const store = get(info);
+    const canister = await LedgerCanister.create({
+        // @ts-ignore
+        agent: store.agent,
+>>>>>>> Stashed changes
         canisterId: Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai"),
     });
-    let userPrincipal = Principal.fromHex(destination);
-    console.log(destination);
     let account = AccountIdentifier.fromHex(destination);
     const response = await canister.transfer({
         to: account,
         amount: amount,
     });
+    console.log(response);
 
     return response;
 

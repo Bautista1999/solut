@@ -7,21 +7,24 @@
     import { LightSwitch } from "@skeletonlabs/skeleton";
 
     import { basicInfo, info } from "../lib/stores/auth.state";
+    import { registerUser } from "$lib/data_functions/user.functions";
 
     let SignedIn = false;
     let isLoading = false;
 
     onMount(async () => {
         await basicInfo();
-        console.log("Agent: ", $info.agent);
-        console.log("Identity: ", $info.identity);
-        console.log("Wallet address: ", $info.walletAddress);
-        console.log("Balance: ", $info.userBalance);
+        // console.log("Agent: ", $info.agent);
+        // console.log("Identity: ", $info.identity);
+        // console.log("Wallet address: ", $info.walletAddress);
+        // console.log("Balance: ", $info.userBalance);
     });
 
     async function LogIn() {
         isLoading = true;
         await signIn();
+        // @ts-ignore
+        await registerUser($info.key, $info.userBalance);
         SignedIn = true;
         isLoading = false;
         goto("homepage");

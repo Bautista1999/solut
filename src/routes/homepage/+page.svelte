@@ -29,18 +29,6 @@
         showModal = true;
         console.log(key);
         goto("idea/" + "?id=" + key);
-        // modal.title = title;
-        // modal.body =
-        //     "<h3>" +
-        //     subtitle +
-        //     "</h3>" +
-        //     "<br/>" +
-        //     "<p style='overflow-y: auto; max-height: 200px;'>" +
-        //     description +
-        //     "</p>";
-        // modal.image = image;
-        // console.log("clicked");
-        // modalStore.trigger(modal);
     }
     const modal = {
         type: "alert",
