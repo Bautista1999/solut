@@ -1,17 +1,20 @@
+import { signedIn } from "$lib/stores/auth.state";
 import { getDoc, setDoc } from "@junobuild/core";
+import { info } from "autoprefixer";
 let user = {
     nickname: "",
     address: "",
     walletAddress: "",
     followedIdeas: [],
     followers: [],
-    picture: null,
-    backgroundPicture: null,
+    picture: "",
+    backgroundPicture: "",
     areasOfInterest: [],
     comments: [],
     balance: 0,
     pledged: 0,
     funded: 0,
+    transactionHistory: [],
 }
 
 //PRE:Receives the string key derived from authSubscribe
@@ -54,4 +57,157 @@ async function isRegistered(key) {
     console.log("Registered!")
     alreadyReg = true;
     return alreadyReg;
+}
+
+/**
+     * @param {String[]} list
+     * @param {string} item
+     */
+function substractItem(list, item) {
+    const index = list.indexOf(item);
+    if (index > -1) {
+        list.splice(index, 1);
+    }
+    list = list;
+    console.log(list);
+    return list;
+}
+
+/**
+ * @param {string} userKey
+ * @param {string} ideaKey
+ */
+export async function checkFollowIdea(userKey, ideaKey) {
+    //We need to check if the idea's key is indeed in the followedIdeas[] field of the user.
+    if (!signedIn()) {
+        return "Not signed in";
+    }
+    await registerUser(userKey);
+    const myDoc2 = await getDoc({
+        collection: "users",
+        // @ts-ignore
+        key: userKey,
+    });
+    let userData = myDoc2?.data;
+    const index = userData.followedIdeas.indexOf(ideaKey);
+    if (index > -1) {
+        return true;
+    }
+    return false;
+}
+
+/**
+* @param {String} userKey
+* @param {String} ideaKey
+* @param {any} collectionName
+*/
+export async function followIdea(userKey, ideaKey, collectionName) {
+    if (!signedIn()) {
+
+        return "Not signed in";
+    }
+    const myDoc = await getDoc({
+        collection: collectionName,
+        // @ts-ignore
+        key: ideaKey,
+    });
+    let topicData = myDoc?.data;
+    // @ts-ignore
+    topicData.amountFollowers += 1;
+
+    //2) We need to add the user that followed to the followers[] section
+    // @ts-ignore
+    topicData.followers.push(userKey);
+    // @ts-ignore
+    topicData.followers = topicData.followers;
+    await setDoc({
+        collection: collectionName,
+        doc: {
+            // @ts-ignore
+            key: ideaKey,
+            // @ts-ignore
+            updated_at: myDoc?.updated_at,
+            data: topicData,
+        },
+    });
+    //3) We need to add the idea to the followed[] ideas of the user
+    const myDoc2 = await getDoc({
+        collection: "users",
+        // @ts-ignore
+        key: userKey,
+    });
+    let userData = myDoc2?.data;
+    userData.followedIdeas.push(ideaKey);
+    userData.followedIdeas = userData.followedIdeas;
+
+    await setDoc({
+        collection: "users",
+        doc: {
+            // @ts-ignore
+            key: userKey,
+            // @ts-ignore
+            updated_at: myDoc2?.updated_at,
+            data: userData,
+        },
+    });
+    return "Success";
+
+}
+
+/**
+ * @param {string} userKey
+ * @param {string} ideaKey
+ * @param {string} collectionName
+ */
+export async function unfollowIdea(userKey, ideaKey, collectionName) {
+    if (!signedIn()) {
+
+        return "Not signed in";
+    }
+    //1) We need to decrease the amount of followers in topicsData
+    const myDoc = await getDoc({
+        collection: collectionName,
+        // @ts-ignore
+        key: ideaKey,
+    });
+    let topicData = myDoc?.data;
+    // @ts-ignore
+    topicData.amountFollowers -= 1;
+
+    //2) We need to substract the user that followed from the followers[] section
+
+    // @ts-ignore
+    topicData.followers = substractItem(topicData.followers, userKey);
+    // @ts-ignore
+    topicData.followers = topicData.followers;
+    await setDoc({
+        collection: collectionName,
+        doc: {
+            // @ts-ignore
+            key: ideaKey,
+            // @ts-ignore
+            updated_at: myDoc?.updated_at,
+            data: topicData,
+        },
+    });
+    //3) We need to substract the idea from the followed[] ideas of the user
+    const myDoc2 = await getDoc({
+        collection: "users",
+        // @ts-ignore
+        key: userKey,
+    });
+    let userData = myDoc2?.data;
+    // @ts-ignore
+    userData.followedIdeas = substractItem(userData.followedIdeas, ideaKey);
+    await setDoc({
+        collection: "users",
+        doc: {
+            // @ts-ignore
+            key: userKey,
+            // @ts-ignore
+            updated_at: myDoc2?.updated_at,
+            data: userData,
+        },
+    });
+    return "Success";
 }

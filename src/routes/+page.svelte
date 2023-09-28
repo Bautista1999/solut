@@ -14,17 +14,13 @@
 
     onMount(async () => {
         await basicInfo();
-        // console.log("Agent: ", $info.agent);
-        // console.log("Identity: ", $info.identity);
-        // console.log("Wallet address: ", $info.walletAddress);
-        // console.log("Balance: ", $info.userBalance);
     });
 
     async function LogIn() {
         isLoading = true;
         await signIn();
         // @ts-ignore
-        await registerUser($info.key, $info.userBalance);
+        await registerUser($info.key);
         SignedIn = true;
         isLoading = false;
         goto("homepage");

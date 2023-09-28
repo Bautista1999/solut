@@ -44,7 +44,7 @@
     // function limitDescription(string: desc) {}
     onMount(async () => {
         await initJuno({
-            satelliteId: "xh6qb-uyaaa-aaaal-acuaq-cai",
+            satelliteId: "vehbc-zaaaa-aaaal-acyba-cai",
         });
         console.log("Mounted");
         const MyList = await listDocs({
@@ -53,7 +53,7 @@
         console.log(MyList);
 
         let ideas = MyList.items;
-        for (let i = 0; i < ideas.length - 1; i++) {
+        for (let i = 0; i < ideas.length; i++) {
             const idea = {
                 title: "",
                 subtitle: "",

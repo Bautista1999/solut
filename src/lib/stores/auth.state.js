@@ -1,10 +1,9 @@
-import {get, writable} from "svelte/store";
-import { initJuno } from "@junobuild/core";
+import { get, writable } from "svelte/store";
+import { initJuno, listDocs } from "@junobuild/core";
 import { authSubscribe, unsafeIdentity } from "@junobuild/core";
 import { Principal } from "@dfinity/principal";
 import { createAgent } from "@dfinity/utils";
 import { AccountIdentifier, LedgerCanister } from "@dfinity/nns";
-import { get } from "svelte/store";
 
 
 let userPrincipal = null;
@@ -31,14 +30,15 @@ export const info = writable({
 });
 export async function basicInfo() {
     await initJuno({
-        satelliteId: "xh6qb-uyaaa-aaaal-acuaq-cai",
+        satelliteId: "vehbc-zaaaa-aaaal-acyba-cai",
     });
 
     await new Promise((resolve, reject) => {
         authSubscribe(async (user) => {
             try {
                 console.log("User:", user);
-                if (user) {
+
+                if (user != null) {
 
                     let userPrincipal = Principal.fromText(user.key);
                     const accountIdent = AccountIdentifier.fromPrincipal({ principal: userPrincipal })
@@ -77,9 +77,23 @@ export async function basicInfo() {
                         loading: false
                     });
 
-                    resolve();
+                    resolve(info);
+
+                } else {
+                    info.set({
+                        key: "",
+                        userPrincipal: null,
+                        walletAddress: null,
+                        identity: null,
+                        agent: null,
+                        ledgerID: "",
+                        userBalance: null,
+                        loading: true
+                    });
+                    resolve(info);
                 }
             } catch (error) {
+                console.log(error);
                 reject(error);
             }
         });
@@ -92,16 +106,10 @@ export async function basicInfo() {
  * @param {bigint} amount
  */
 export async function transferFrom(destination, amount) {
-<<<<<<< Updated upstream
-    const {agent} = get(info);
-    const canister = await LedgerCanister.create({
-        agent,
-=======
     const store = get(info);
     const canister = await LedgerCanister.create({
         // @ts-ignore
         agent: store.agent,
->>>>>>> Stashed changes
         canisterId: Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai"),
     });
     let account = AccountIdentifier.fromHex(destination);
@@ -115,6 +123,55 @@ export async function transferFrom(destination, amount) {
 
 
 }
+
+/**
+ * Convert a decimal number to BigInt representation.
+ *
+ * @param {number} decimalValue - The decimal number to convert.
+ * @param {number} multiplier - The factor to multiply by, e.g., 10**8 if you have 8 decimal places of precision.
+ * @return {bigint} - The BigInt representation.
+ */
+export function decimalToBigInt(decimalValue, multiplier) {
+    // Convert the decimal value to its precise integer representation
+    const integerRepresentation = decimalValue * multiplier;
+
+    // Convert this integer to BigInt
+    return BigInt(Math.round(integerRepresentation));
+}
+
+export function signedIn() {
+    console.log("Get info.key: ", get(info).key);
+    if (get(info).key == "") {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * @param {string} searchWord
+ * @param {string} collectionName
+ */
+export async function searchBar(searchWord, collectionName) {
+    /**
+     * @type {any[]}
+     */
+    let result = [];
+    console.log("This is the word to search: ", searchWord)
+    const MyList = await listDocs({
+        collection: collectionName,
+    });
+    let AllSubIdeas = MyList?.items;
+    for (let i = 0; i < AllSubIdeas.length; i++) {
+        // @ts-ignore
+        if (AllSubIdeas[i]?.data.title.toLowerCase().includes(searchWord.toLowerCase())) {
+            // @ts-ignore
+            result.push(AllSubIdeas[i]);
+            result = result;
+        }
+    }
+    return result;
+}
+
 
 
 

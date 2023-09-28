@@ -1,18 +1,22 @@
 <script>
     import Header from "$lib/components/header.svelte";
-    import { setDoc, initJuno } from "@junobuild/core";
+    import { setDoc, initJuno, getDoc } from "@junobuild/core";
     import { onMount } from "svelte";
-    import { FileDropzone } from "@skeletonlabs/skeleton";
+    import { FileDropzone, getModeOsPrefers } from "@skeletonlabs/skeleton";
     import { Configuration, OpenAIApi } from "openai";
     import { ProgressRadial } from "@skeletonlabs/skeleton";
     import { ListBox, ListBoxItem } from "@skeletonlabs/skeleton";
     const API_KEY = "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"; // for suggestions
 
     import { nanoid } from "nanoid";
-    import { encodePath } from "@dfinity/agent/lib/cjs/canisterStatus";
+    import { goto } from "$app/navigation";
+    import Solution from "./page.solution.svelte";
+    import Topic from "./page.topic.svelte";
     let myId = nanoid();
     console.log(myId);
+
     let isLoading = false;
+
     let created = false;
     /**
      * @type {String[]}
@@ -35,14 +39,28 @@
         "🏋️‍♂️ Sports and Fitness",
         "Other",
     ];
-
+    /** @type {import('./$types').PageData} */
+    export let data;
+    let under = data?.under || "-none-";
+    let underIdeas = [];
+    function goSee() {
+        goto("idea/" + "?id=" + myId);
+    }
     async function getSuggestion() {}
-
+    let title = "-none-";
     onMount(async () => {
         await initJuno({
-            satelliteId: "xh6qb-uyaaa-aaaal-acuaq-cai",
+            satelliteId: "vehbc-zaaaa-aaaal-acyba-cai",
         });
         console.log("Mounted");
+        if (under != "-none-") {
+            const myDoc = await getDoc({
+                collection: "ideas",
+                // @ts-ignore
+                key: data.under,
+            });
+            title = myDoc?.data.title;
+        }
     });
     let idea = {
         title: "",
@@ -56,12 +74,47 @@
         comments: [],
         opSystems: [],
         categories: [],
+        overIdeas: [],
+        underIdeas: [],
+        solutions: [],
     };
-    //hellokkk
+    function addOverIdea() {
+        // @ts-ignore
+        idea.overIdeas.push(under);
+    }
     async function createIdea() {
         isLoading = true;
         console.log(systems);
         console.log(categories);
+        // @ts-ignore
+        idea.categories = categories;
+        // @ts-ignore
+        idea.opSystems = systems;
+
+        if (under != "-none-") {
+            addOverIdea();
+            const myDoc = await getDoc({
+                collection: "ideas",
+                // @ts-ignore
+                key: data.under,
+            });
+            console.log(myDoc);
+            let thisData = myDoc?.data;
+            thisData.underIdeas.push(myId);
+            console.log(myDoc);
+            console.log("Setting ", under, "'s doc...'");
+            await setDoc({
+                collection: "ideas",
+                doc: {
+                    // @ts-ignore
+                    key: under,
+                    // @ts-ignore
+                    updated_at: myDoc?.updated_at, // includes 'key' and 'updated_at'
+                    data: thisData,
+                },
+            });
+            console.log("Done!");
+        }
         await setDoc({
             collection: "ideas",
             doc: {
@@ -77,111 +130,36 @@
         idea.subtitle = "";
         idea.description = "";
     }
+    let tabs = 0;
+    /**
+     * @param {number} num
+     */
+    function changeTab(num) {
+        tabs = num;
+    }
 </script>
 
 <Header />
 {#if !isLoading && !created}
-    <div>
-        <h1 class="h1">Let's create a new idea! 🚀</h1>
-        <br />
-        <div class="block">
-            <p>Title</p>
-            <div class="spacer" />
-            <input
-                class="input"
-                type="search"
-                name="demo"
-                placeholder="Title"
-                bind:value={idea.title}
-            />
-            <div class="spacer" />
-            <p>Subtitle</p>
-            <div class="spacer" />
-            <textarea
-                class="textarea"
-                rows="4"
-                placeholder="Subtitle"
-                bind:value={idea.subtitle}
-            />
-            <p>Description</p>
-            <div class="spacer" />
-            <label class="label">
-                <textarea
-                    class="textarea"
-                    rows="4"
-                    placeholder="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-                    bind:value={idea.description}
-                />
-            </label>
-            <p>Operating systems</p>
-            <div class="spacer" />
-
-            <ListBox multiple>
-                <div class="option">
-                    <ListBoxItem
-                        bind:group={systems}
-                        name="medium"
-                        value="Android"
-                        class="option">🤖 Android</ListBoxItem
-                    >
-                </div>
-                <div class="option">
-                    <ListBoxItem
-                        bind:group={systems}
-                        name="medium"
-                        value="IOS"
-                        class="option">💻 IOS</ListBoxItem
-                    >
-                </div>
-                <div class="option">
-                    <ListBoxItem
-                        bind:group={systems}
-                        name="medium"
-                        value="other"
-                        class="option">Other</ListBoxItem
-                    >
-                </div>
-            </ListBox>
-            <br />
-            <p>Related categories</p>
-            <div class="spacer" />
-            {#each options as opt}
-                <ListBox multiple>
-                    <div class="option">
-                        <ListBoxItem
-                            bind:group={categories}
-                            name="ohter"
-                            value={opt}
-                            class="option">{opt}</ListBoxItem
-                        >
-                    </div>
-                </ListBox>
-            {/each}
-
-            <p>Image</p>
-            <div class="spacer" />
-            <FileDropzone name="files">
-                <svelte:fragment slot="lead">📁</svelte:fragment>
-                <svelte:fragment slot="message">Upload an image</svelte:fragment
-                >
-                <svelte:fragment slot="meta"
-                    >PNG, JPEG, or GIFF allowed</svelte:fragment
-                >
-            </FileDropzone>
-
-            <br />
-        </div>
-        <div class="button-container">
-            <button
-                type="button"
-                class="btn variant-filled"
-                on:click={createIdea}
+    {#if tabs == 0}
+        <div class="fundButtonBack">
+            <button class="tabs">Topic</button>
+            <button class="tabClosed" on:click={() => changeTab(1)}
+                >Solution</button
             >
-                <span>🚀</span>
-                <span>Create!</span>
-            </button>
         </div>
-    </div>
+        <div class="horizontalLine" />
+        <Topic />
+    {:else}
+        <div class="fundButtonBack">
+            <button class="tabClosed" on:click={() => changeTab(0)}
+                >Topic</button
+            >
+            <button class="tabs">Solution</button>
+        </div>
+        <div class="horizontalLine" />
+        <Solution data={{ under: data?.under }} />
+    {/if}
 {:else if created}
     <div class="card p-4 centered-flexbox">
         <img
@@ -197,6 +175,8 @@
             type="button"
             class="btn variant-filled"
             style="border-radius: 1000px; background-color:orangered"
+            on:click={goSee}
+            on:keydown={goSee}
         >
             <span>➡️</span>
             <span>Go see the idea 🚀</span>
@@ -209,28 +189,82 @@
 {/if}
 
 <style>
+    .horizontalLine {
+        width: 87%;
+        height: 1px;
+        background-color: black;
+        display: flex;
+        align-items: center; /* Vertical alignment */
+        justify-content: center; /* Horizontal alignment */
+        margin: 20px auto 0 auto; /* top margin creates space from the top */
+    }
+    .fundButtonBack {
+        width: 90%;
+        height: 40px;
+        margin: 20px auto 0 auto; /* top margin creates space from the top */
+        display: flex;
+        align-items: center; /* Vertical alignment */
+        justify-content: center; /* Horizontal alignment */
+        gap: 30px;
+    }
+    .tabClosed {
+        width: 150px;
+        height: 50px;
+        /* background: linear-gradient(to right, rgb(255, 0, 0), orangered); */
+        border-style: groove;
+        border-color: black;
+        border-width: 0.2px;
+        display: flex;
+        align-items: center; /* Vertical alignment */
+        justify-content: center; /* Horizontal alignment */
+        font-size: large;
+        font-weight: 330;
+        /* box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); horizontal, vertical, blur, color */
+        color: black;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .tabClosed:hover {
+        transform: scale(
+            1.08
+        ); /* scales the button to 105% of its original size on hover */
+        box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
+        border-width: 0.5px;
+        /* background-color: rgba(255, 245, 191, 0.5); */
+    }
+    .tabs {
+        width: 150px;
+        height: 50px;
+
+        /* background: linear-gradient(to right, rgb(255, 0, 0), orangered); */
+        background-color: rgb(255, 245, 191);
+        border-style: groove;
+        border-color: black;
+        border-width: 1px;
+        display: flex;
+        align-items: center; /* Vertical alignment */
+        justify-content: center; /* Horizontal alignment */
+        font-size: large;
+        font-weight: 330;
+        box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
+        color: black;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .tabs:hover {
+        transform: scale(
+            1.08
+        ); /* scales the button to 105% of its original size on hover */
+    }
+    .tabs:active {
+        transform: scale(
+            0.95
+        ); /* scales the button to 95% of its original size on click */
+        box-shadow: none; /* removes the shadow */
+    }
     .btn {
         background-color: orangered;
         color: white;
     }
-    .button-container {
-        margin-top: auto;
-        width: 100%;
-        display: flex;
-    }
-    div {
-        margin: 3%;
-        border-radius: 20px;
-    }
-    .input {
-        width: 100%;
-        border-radius: 20px;
-        padding-left: 20px;
-    }
-    .textarea {
-        padding-left: 20px;
-        padding-top: 10px;
-    }
+
     .card {
         position: absolute;
         left: 47%;
@@ -250,25 +284,5 @@
         margin-left: auto;
         margin-right: auto;
         width: 100%;
-    }
-    .block {
-        margin-left: 3%;
-        margin-top: 0%;
-        background-color: aliceblue;
-        border-color: black;
-        border-width: 1px;
-        border-radius: 0px;
-        padding: 3%;
-        box-shadow: 10px 10px 4px rgba(0, 0, 0, 0.4); /* This adds the shadow */
-    }
-    .option {
-        border-color: darkgray;
-        border-width: 1px;
-        border-radius: 2px;
-        margin: 0%;
-    }
-    .spacer {
-        margin: 0%;
-        margin-bottom: 1%;
     }
 </style>
