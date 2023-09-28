@@ -357,19 +357,21 @@
                 <li>
                     <button
                         style="background-color: 
-                            grey; color: white; 
-                            width: 0.5cm; height: 0.5cm; border-radius:50%;
+                            red; color: white; 
+                            width: 0.5cm; height: 0.5cm; border-radius:0%;
                             text-align: center; line-height: 0.5cm; 
+                            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+                            margin-right:10px;
                              "
                         on:click={() => substractIdea(opt)}
                     >
-                        -
+                        x
                     </button>
                     {opt.title}
                 </li>
             {/each}
         </ul>
-        <br />
+        <div class="spacer" />
 
         <p>Deadlines</p>
         <div class="spacer" />
