@@ -7,6 +7,7 @@
     export let isOpen6 = false;
     export let isOpen7 = false;
     export let isOpen8 = false;
+    export let isOpen9 = false;
     export let close = () => {};
     export let close2 = () => {
         isOpen2 = false;
@@ -28,6 +29,9 @@
     };
     export let close8 = () => {
         isOpen8 = false;
+    };
+    export let close9 = () => {
+        isOpen9 = false;
     };
 </script>
 
@@ -111,6 +115,19 @@
     <div class="modal-background" on:click={close}>
         <div class="modal-content" style="width: 80%;" on:click|stopPropagation>
             <div class="ButtonClose" on:click={() => close8()}>
+                <button>X</button>
+            </div>
+            <slot />
+        </div>
+    </div>
+{:else if isOpen9}
+    <div class="modal-background" on:click={close}>
+        <div
+            class="modal-content"
+            style="width:95% ; height: fit-content; max-height: 90vh;"
+            on:click|stopPropagation
+        >
+            <div class="ButtonClose" on:click={() => close9()}>
                 <button>X</button>
             </div>
             <slot />
