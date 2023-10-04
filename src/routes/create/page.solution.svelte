@@ -8,14 +8,21 @@
     import { nanoid } from "nanoid";
     import { goto } from "$app/navigation";
     import { searchBar } from "$lib/stores/auth.state";
+    import { isLoading } from "$lib/stores/loading";
+
+    import {
+        checkValidatorSolution,
+        validateSolution,
+    } from "$lib/validators/create.validator";
     let myId = nanoid();
+    // +page.solution.svelte
     console.log(myId);
     let kickoffDeadline = {
-        newDate: { day: "", month: "", year: "" },
+        newDate: { day: null, month: null, year: null },
         title: "Project kick-off",
     };
     let launchDeadline = {
-        newDate: { day: "", month: "", year: "" },
+        newDate: { day: null, month: null, year: null },
         title: "Solution launch",
     };
 
@@ -28,8 +35,8 @@
     function showMod() {
         showModal = true;
     }
-    let isLoading = false;
-
+    // Now you can use isLoading as a writable store in your component
+    isLoading.set(false); // To set its initial value
     let created = false;
     /**
      * @type {String[]}
@@ -164,18 +171,37 @@
         console.log(list);
         return list;
     }
+    $: validator = {
+        topicKey: "ok",
+        title: "ok",
+        subtitle: "ok",
+        description: "ok",
+        deadlines: {
+            projectKO: "ok",
+            solutionLaunch: "ok",
+        },
+        relatedCategories: "ok",
+        image: "ok",
+    };
     async function createSol() {
-        isLoading = true;
         // @ts-ignore
         solution.categories = categories;
         // @ts-ignore
         solution.opSystems = systems;
         key = under;
-        console.log("Topic:", solution.topic);
-        if (solution.topic == "" || solution.topic == null) {
-            console.log("Error: A related topic must be included");
+        // @ts-ignore
+        solution.deadlines.push(kickoffDeadline);
+        solution.deadlines = solution.deadlines;
+        // @ts-ignore
+        solution.deadlines.push(launchDeadline);
+        solution.deadlines = solution.deadlines;
+        validator = await validateSolution(solution);
+        validator = validator;
+
+        if (!checkValidatorSolution(validator)) {
             return;
         }
+        isLoading.set(true);
         console.log("Adding solution's key to the topic's solutions list...");
         //1) We need to add this solution's key to the topic.solutions data
         const myDoc = await getDoc({
@@ -201,12 +227,6 @@
         //2) We need to create the solution in the database with the data provided by the user
         console.log("Done!");
         console.log("Creating solution in the database...");
-        // @ts-ignore
-        solution.deadlines.push(kickoffDeadline);
-        solution.deadlines = solution.deadlines;
-        // @ts-ignore
-        solution.deadlines.push(launchDeadline);
-        solution.deadlines = solution.deadlines;
 
         await setDoc({
             collection: "solutions",
@@ -219,7 +239,7 @@
         systems = [];
         categories = [];
         created = true;
-        isLoading = false;
+        isLoading.set(false);
         solution.title = "";
         solution.subtitle = "";
         solution.description = "";
@@ -267,21 +287,32 @@
             type="search"
             name="demo"
             placeholder={solution.topic}
-            style="height: 1cm; border-radius:0px;color: rgb(37, 88, 101); "
+            style="height: 1cm; border-radius:0px;color: rgb(37, 88, 101); background-color:white; border-color:black;border-width:1px; "
             on:change={() => {}}
             bind:value={solution.topic}
         />
+        {#if validator.topicKey == "empty"}
+            <p style="color: red; font-style:italic;">
+                A topic key is required
+            </p>
+        {:else if validator.topicKey == "doesnt exist"}
+            <p style="color: red; font-style:italic;">Topic doesnt exist.</p>
+        {/if}
         <div class="spacer" />
         <p>Title of your solution</p>
+
         <div class="spacer" />
         <input
             class="input"
             type="search"
             name="demo"
             placeholder="Title"
-            style="height: 1cm; border-radius:0px;color: rgb(37, 88, 101);"
+            style="height: 1cm; border-radius:0px;color: rgb(37, 88, 101); background-color:white; border-color:black;border-width:1px; "
             bind:value={solution.title}
         />
+        {#if validator.title == "empty"}
+            <p style="color: red; font-style:italic;">A title is required</p>
+        {/if}
         <div class="spacer" />
         <p>Subtitle</p>
         <div class="spacer" />
@@ -289,9 +320,12 @@
             class="textarea"
             rows="4"
             placeholder="Subtitle"
-            style="color: rgb(37, 88, 101);"
+            style="color: rgb(37, 88, 101); background-color:white; border-color:black;border-width:1px; "
             bind:value={solution.subtitle}
         />
+        {#if validator.subtitle == "empty"}
+            <p style="color: red; font-style:italic;">A subtitle is required</p>
+        {/if}
         <p>Description</p>
         <div class="spacer" />
         <label class="label">
@@ -299,10 +333,15 @@
                 class="textarea"
                 rows="4"
                 placeholder="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-                style="color: rgb(37, 88, 101);"
+                style="color: rgb(37, 88, 101);background-color:white; border-color:black;border-width:1px; "
                 bind:value={solution.description}
             />
         </label>
+        {#if validator.description == "empty"}
+            <p style="color: red; font-style:italic;">
+                A description is required
+            </p>
+        {/if}
 
         <div class="spacer" />
 
@@ -313,7 +352,8 @@
             type="search"
             name="demo"
             placeholder="Search idea..."
-            style="height: 1cm; border-radius:0px;color: rgb(37, 88, 101);"
+            style="height: 1cm; border-radius:0px;color: rgb(37, 88, 101);
+             background-color:white; border-color:black;border-width:1px;"
             bind:value={searchWord}
             on:input={() => {
                 console.log("hola");
@@ -371,8 +411,7 @@
                 </li>
             {/each}
         </ul>
-        <div class="spacer" />
-
+        <br />
         <p>Deadlines</p>
         <div class="spacer" />
         <ul>
@@ -417,6 +456,15 @@
                     bind:value={kickoffDeadline.newDate.year}
                 />
             </li>
+            {#if validator.deadlines.projectKO == "empty"}
+                <p style="color: red; font-style:italic;">
+                    A project kick off date is required
+                </p>
+            {:else if validator.deadlines.projectKO == "not in the future"}
+                <p style="color: red; font-style:italic;">
+                    Date needs to be in the future.
+                </p>
+            {/if}
             <div class="spacer" />
             <p>
                 - Solution launch <span style="color: red;">(required)</span>
@@ -458,6 +506,19 @@
                     bind:value={launchDeadline.newDate.year}
                 />
             </li>
+            {#if validator.deadlines.solutionLaunch == "empty"}
+                <p style="color: red; font-style:italic;">
+                    A solution launch date is required
+                </p>
+            {:else if validator.deadlines.solutionLaunch == "not in the future"}
+                <p style="color: red; font-style:italic;">
+                    Date needs to be in the future.
+                </p>
+            {:else if validator.deadlines.solutionLaunch == "not in order"}
+                <p style="color: red; font-style:italic;">
+                    The solution launch should be after the project kick-off.
+                </p>
+            {/if}
             <div class="spacer" />
             <div class="spacer" />
             {#each deadlines as date}
@@ -524,7 +585,10 @@
                     bind:group={systems}
                     name="medium"
                     value="Android"
-                    class="option">🤖 Android</ListBoxItem
+                    style="color:azure;"
+                    class="option"
+                    ><span style="color:darkslategray;">🤖 Android</span
+                    ></ListBoxItem
                 >
             </div>
             <div class="option">
@@ -532,7 +596,10 @@
                     bind:group={systems}
                     name="medium"
                     value="IOS"
-                    class="option">💻 IOS</ListBoxItem
+                    style="color:azure;"
+                    class="option"
+                    ><span style="color:darkslategray;">💻 IOS</span
+                    ></ListBoxItem
                 >
             </div>
             <div class="option">
@@ -540,7 +607,10 @@
                     bind:group={systems}
                     name="medium"
                     value="other"
-                    class="option">Other</ListBoxItem
+                    style="color:azure;"
+                    class="option"
+                    ><span style="color:darkslategray;">Other</span
+                    ></ListBoxItem
                 >
             </div>
         </ListBox>
@@ -554,7 +624,9 @@
                         bind:group={categories}
                         name="other"
                         value={opt}
-                        class="option">{opt}</ListBoxItem
+                        class="option"
+                        ><span style="color:darkslategray;">{opt}</span
+                        ></ListBoxItem
                     >
                 </div>
             </ListBox>
@@ -574,30 +646,57 @@
             Please, check the url of the image is working correctly before
             creating the idea.
         </p>
+        {#if validator.image == "empty"}
+            <p style="color: red; font-style:italic;">
+                An image url is required
+            </p>
+        {/if}
         <div class="spacer" />
         <ul>
             {#each solution.images as opt}
-                <li>
-                    <button
-                        style="background-color: 
+                {#if window.innerWidth < 500}
+                    <li>
+                        <button
+                            style="background-color: 
+                    grey; color: white; 
+                    width: 0.5cm; height: 0.5cm; border-radius:50%;
+                    text-align: center; line-height: 0.5cm; 
+                     "
+                            on:click={() => {
+                                solution.images = substractReq(
+                                    solution.images,
+                                    opt
+                                );
+                            }}
+                        >
+                            -
+                        </button>
+                        {opt.substring(0, 33)}...
+                    </li>
+                {:else}
+                    <li>
+                        <button
+                            style="background-color: 
                         grey; color: white; 
                         width: 0.5cm; height: 0.5cm; border-radius:50%;
                         text-align: center; line-height: 0.5cm; 
                          "
-                        on:click={() => {
-                            solution.images = substractReq(
-                                solution.images,
-                                opt
-                            );
-                        }}
-                    >
-                        -
-                    </button>
-                    {opt}
-                </li>
+                            on:click={() => {
+                                solution.images = substractReq(
+                                    solution.images,
+                                    opt
+                                );
+                            }}
+                        >
+                            -
+                        </button>
+                        {opt}
+                    </li>
+                {/if}
             {/each}
         </ul>
         <div class="spacer" />
+        <br />
         <button
             class="tabs"
             style="background-color:chartreuse; width: 5cm; height: 1cm;"
