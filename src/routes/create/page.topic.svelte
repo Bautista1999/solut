@@ -9,6 +9,12 @@
 
     import { nanoid } from "nanoid";
     import { goto } from "$app/navigation";
+    import Loading from "$lib/components/loading.svelte";
+    import {
+        checkValidatorTopic,
+        validateTopic,
+    } from "$lib/validators/create.validator";
+    import { isLoading } from "$lib/stores/loading";
     let myId = nanoid();
     console.log(myId);
 
@@ -25,7 +31,6 @@
         transactionHistory: [],
         comments: [],
     };
-    let isLoading = false;
 
     let created = false;
     /**
@@ -81,8 +86,15 @@
         // @ts-ignore
         idea.overIdeas.push(under);
     }
+
+    $: validator = {
+        title: "ok",
+        subtitle: "ok",
+        description: "ok",
+        relatedCategories: "ok",
+        image: "ok",
+    };
     async function createIdea() {
-        isLoading = true;
         console.log(systems);
         console.log(categories);
         // @ts-ignore
@@ -91,7 +103,13 @@
         idea.opSystems = systems;
         // @ts-ignore
         idea.ideas = ideas;
+        validator = await validateTopic(idea);
+        validator = validator;
 
+        if (!checkValidatorTopic(validator)) {
+            return;
+        }
+        isLoading.set(true);
         await setDoc({
             collection: "ideas",
             doc: {
@@ -102,7 +120,7 @@
         systems = [];
         categories = [];
         created = true;
-        isLoading = false;
+        isLoading.set(false);
         idea.title = "";
         idea.subtitle = "";
         idea.description = "";
@@ -143,14 +161,8 @@
     }
 </script>
 
-{#if isLoading}
-    <div class="loading">
-        <div class="loadingProgress">
-            <ProgressRadial />
-        </div>
-        <br />
-        <p>Loading...</p>
-    </div>
+{#if "" != ""}
+    <Loading />
 {:else if created}
     <div class="loading">
         <div class="success">
@@ -190,6 +202,11 @@
                 style="height: 1cm; border-radius:0px; color:aliceblue;"
                 bind:value={idea.title}
             />
+            {#if validator.title == "empty"}
+                <p style="color: red; font-style:italic;">
+                    A title is required
+                </p>
+            {/if}
             <div class="spacer" />
             <p>Subtitle</p>
             <div class="spacer" />
@@ -200,6 +217,11 @@
                 style="color:aliceblue;"
                 bind:value={idea.subtitle}
             />
+            {#if validator.subtitle == "empty"}
+                <p style="color: red; font-style:italic;">
+                    A subtitle is required
+                </p>
+            {/if}
             <p>Description</p>
             <div class="spacer" />
             <label class="label">
@@ -211,6 +233,11 @@
                     bind:value={idea.description}
                 />
             </label>
+            {#if validator.description == "empty"}
+                <p style="color: red; font-style:italic;">
+                    A description is required
+                </p>
+            {/if}
             <div class="spacer" />
             <p>Have an idea for this topic? Include it here!</p>
             <div class="spacer" />
@@ -286,6 +313,11 @@
                     </div>
                 </ListBox>
             {/each}
+            {#if validator.relatedCategories == "empty"}
+                <p style="color: red; font-style:italic;">
+                    Choose at least one category.
+                </p>
+            {/if}
 
             <br />
 
@@ -296,6 +328,11 @@
                 style="border-width:1px;border-color:black;width:100%; padding:5px;"
                 bind:value={idea.image}
             />
+            {#if validator.image == "empty"}
+                <p style="color: red; font-style:italic;">
+                    An image url is required.
+                </p>
+            {/if}
 
             <p>
                 Please, check the url of the image is working correctly before
