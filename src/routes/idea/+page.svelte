@@ -4,6 +4,7 @@
     import { goto } from "$app/navigation";
     import Header from "$lib/components/header.svelte";
     import Modal from "$lib/components/modal.svelte";
+    import Loading from "$lib/components/loading.svelte";
     import {
         basicInfo,
         info,
@@ -643,7 +644,7 @@
 </script>
 
 <Header />
-{#if !isLoading || isLoading}
+{#if !isLoading}
     <div class="body">
         <div class="content">
             <div class="content-wrapper">
@@ -1939,29 +1940,7 @@
         class="body"
         style="display:flex; justify-content:center;height:fit-content;"
     >
-        <div class="snap-start card" style="padding: 1%; width: 60%">
-            <div
-                class="snap-start placeholder animate-pulse"
-                style="margin-left: 5%; margin-top: 5%; width: 20%; height: 2em"
-            />
-            <div
-                class="snap-start placeholder animate-pulse"
-                style="margin-left: 5%;margin-right: 5%; margin-top: 5%"
-            />
-            <div
-                class="snap-start placeholder animate-pulse"
-                style="margin-left: 5%;margin-right: 5%; margin-top: 5%"
-            />
-            <div
-                class="snap-start placeholder animate-pulse"
-                style="margin-left: 5%;margin-right: 5%; margin-top: 5%; width:30%;"
-            />
-            <br />
-            <div
-                class="placeholder animate-pulse"
-                style="margin: 5%; width: 90%; height: 15em;"
-            />
-        </div>
+        <Loading />
     </div>
 {/if}
 
