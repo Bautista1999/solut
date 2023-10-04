@@ -15,7 +15,11 @@
     let myId = nanoid();
     console.log(myId);
 
-    let isLoading = false;
+    import { isLoading } from "$lib/stores/loading";
+    import Loading from "$lib/components/loading.svelte";
+
+    // Now you can use isLoading as a writable store in your component
+    isLoading.set(false); // To set its initial value
 
     let created = false;
     /**
@@ -61,6 +65,7 @@
             });
             title = myDoc?.data.title;
         }
+        isLoading.set(false); // To set its initial value
     });
     let idea = {
         title: "",
@@ -83,7 +88,7 @@
         idea.overIdeas.push(under);
     }
     async function createIdea() {
-        isLoading = true;
+        isLoading.set(true);
         console.log(systems);
         console.log(categories);
         // @ts-ignore
@@ -125,7 +130,7 @@
         systems = [];
         categories = [];
         created = true;
-        isLoading = false;
+        isLoading.set(false);
         idea.title = "";
         idea.subtitle = "";
         idea.description = "";
@@ -140,7 +145,7 @@
 </script>
 
 <Header />
-{#if !isLoading && !created}
+{#if !$isLoading && !created}
     {#if tabs == 0}
         <div class="fundButtonBack">
             <button class="tabs">Topic</button>
@@ -183,9 +188,7 @@
         </button>
     </div>
 {:else}
-    <div class="card p-4 centered-flexbox" style="width: 30%; height:44%;">
-        <ProgressRadial />
-    </div>
+    <Loading msg={"Uploading data"} />
 {/if}
 
 <style>
