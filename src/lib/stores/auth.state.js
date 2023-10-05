@@ -4,6 +4,8 @@ import { authSubscribe, unsafeIdentity } from "@junobuild/core";
 import { Principal } from "@dfinity/principal";
 import { createAgent } from "@dfinity/utils";
 import { AccountIdentifier, LedgerCanister } from "@dfinity/nns";
+import { loginedIn } from "./loading";
+
 
 
 let userPrincipal = null;
@@ -101,6 +103,16 @@ export async function basicInfo() {
 
 
 }
+let changeDollarICP = 0.31;
+/**
+     * @param {number} amount
+     */
+export function fromICPtoUSD(amount) {
+    let usdAmount = amount / changeDollarICP;
+    usdAmount = Math.round(usdAmount * 100) / 100;
+    return usdAmount;
+}
+
 /**
  * @param {string} destination
  * @param {bigint} amount
@@ -139,11 +151,17 @@ export function decimalToBigInt(decimalValue, multiplier) {
     return BigInt(Math.round(integerRepresentation));
 }
 
-export function signedIn() {
+export async function signedIn() {
+
     console.log("Get info.key: ", get(info).key);
     if (get(info).key == "") {
+        loginedIn.set(false);
+        loginedIn.subscribe((value) => {
+            console.log("Is logined", value);
+        })
         return false;
     }
+    loginedIn.set(true);
     return true;
 }
 

@@ -1,6 +1,8 @@
-import { signedIn } from "$lib/stores/auth.state";
-import { getDoc, setDoc } from "@junobuild/core";
-import { info } from "autoprefixer";
+import { basicInfo, signedIn } from "$lib/stores/auth.state";
+import { isLoading, loginedIn, signInSuccessful } from "$lib/stores/loading";
+import { getDoc, setDoc, signIn } from "@junobuild/core";
+import { info } from "../stores/auth.state";
+
 let user = {
     nickname: "",
     address: "",
@@ -15,6 +17,26 @@ let user = {
     pledged: 0,
     funded: 0,
     transactionHistory: [],
+}
+
+
+export async function login() {
+    isLoading.set(true);
+    await signIn();
+    // @ts-ignore
+    basicInfo();
+    info.subscribe(async (value) => {
+        await registerUser(value.key);
+    });
+
+    isLoading.set(false);
+    signInSuccessful.set(true);
+
+    setTimeout((() => {
+        signInSuccessful.set(false);
+        loginedIn.set(true);
+    }), 2000)
+
 }
 
 //PRE:Receives the string key derived from authSubscribe
@@ -94,6 +116,36 @@ export async function checkFollowIdea(userKey, ideaKey) {
         return true;
     }
     return false;
+}
+/**
+ * @param {string} userKey
+ * @param {string} ideaKey
+ */
+export async function checkFollow(userKey, ideaKey) {
+    let result = await checkFollowIdea(userKey, ideaKey);
+    // @ts-ignore
+    if (result == "Not signed in") {
+
+        return false;
+    }
+    return result;
+}
+
+/**
+ * @param {string | any[]} list1
+ * @param {number} amount
+ */
+export function subList(list1, amount) {
+    let returnList = [];
+    let limit = list1.length - 1;
+    if (amount <= list1.length - 1) {
+        limit = amount - 1;
+    }
+    for (let i = 0; i <= limit; i++) {
+        returnList.push(list1[i]);
+        returnList = returnList;
+    }
+    return returnList;
 }
 
 /**
