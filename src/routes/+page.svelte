@@ -5,9 +5,11 @@
     import { ProgressRadial } from "@skeletonlabs/skeleton";
     import { goto } from "$app/navigation";
     import { LightSwitch } from "@skeletonlabs/skeleton";
+    import Loading from "$lib/components/loading.svelte";
 
     import { basicInfo, info } from "../lib/stores/auth.state";
     import { registerUser } from "$lib/data_functions/user.functions";
+    import { loginedIn } from "$lib/stores/loading";
 
     let SignedIn = false;
     let isLoading = false;
@@ -22,6 +24,7 @@
         // @ts-ignore
         await registerUser($info.key);
         SignedIn = true;
+        loginedIn.set(true);
         isLoading = false;
         goto("homepage");
     }
@@ -29,14 +32,13 @@
         isLoading = true;
         await signOut();
         SignedIn = false;
+        loginedIn.set(false);
         isLoading = false;
     }
 </script>
 
 {#if isLoading}
-    <div class="card p-4 centered-flexbox" style="width: 30%; height:44%;">
-        <ProgressRadial />
-    </div>
+    <Loading msg="Awaiting signing in" />
 {:else if SignedIn}
     <div class="card p-4" style="width: 30%; align:center">
         <img

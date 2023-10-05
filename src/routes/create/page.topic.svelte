@@ -199,7 +199,7 @@
                 type="search"
                 name="demo"
                 placeholder="Title"
-                style="height: 1cm; border-radius:0px; color:aliceblue;"
+                style="height: 1cm; border-radius:0px; color: rgb(37, 88, 101); background-color:white; border-color:black;border-width:1px;"
                 bind:value={idea.title}
             />
             {#if validator.title == "empty"}
@@ -214,7 +214,7 @@
                 class="textarea"
                 rows="4"
                 placeholder="Subtitle"
-                style="color:aliceblue;"
+                style="color: rgb(37, 88, 101); background-color:white; border-color:black;border-width:1px;"
                 bind:value={idea.subtitle}
             />
             {#if validator.subtitle == "empty"}
@@ -228,7 +228,7 @@
                 <textarea
                     class="textarea"
                     rows="4"
-                    style="color:aliceblue;"
+                    style="color: rgb(37, 88, 101); background-color:white; border-color:black;border-width:1px;"
                     placeholder="Lorem ipsum dolor sit amet consectetur adipisicing elit."
                     bind:value={idea.description}
                 />

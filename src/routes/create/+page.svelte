@@ -1,12 +1,7 @@
 <script>
     import Header from "$lib/components/header.svelte";
-    import { setDoc, initJuno, getDoc } from "@junobuild/core";
-    import { onMount } from "svelte";
-    import { FileDropzone, getModeOsPrefers } from "@skeletonlabs/skeleton";
-    import { Configuration, OpenAIApi } from "openai";
-    import { ProgressRadial } from "@skeletonlabs/skeleton";
-    import { ListBox, ListBoxItem } from "@skeletonlabs/skeleton";
-    const API_KEY = "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"; // for suggestions
+    import { initJuno, getDoc } from "@junobuild/core";
+    import { afterUpdate, onMount } from "svelte";
 
     import { nanoid } from "nanoid";
     import { goto } from "$app/navigation";
@@ -15,47 +10,32 @@
     let myId = nanoid();
     console.log(myId);
 
-    import { isLoading } from "$lib/stores/loading";
+    import { isLoading, loginedIn } from "$lib/stores/loading";
     import Loading from "$lib/components/loading.svelte";
+    import { basicInfo, signedIn } from "$lib/stores/auth.state";
+    import Signin from "$lib/components/signin.svelte";
 
     // Now you can use isLoading as a writable store in your component
     isLoading.set(false); // To set its initial value
 
     let created = false;
-    /**
-     * @type {String[]}
-     */
-    let systems = [];
-    /**
-     * @type {String[]}
-     */
-    let categories = [];
-    let options = [
-        "🦾 Technology",
-        "💰 Business",
-        "👨‍⚕️ Health care",
-        "💵 E-commerce",
-        "🪙 Crypto",
-        "🏦 Finance",
-        "🎸 Music",
-        "👥 Social",
-        "⚡ ICP",
-        "🏋️‍♂️ Sports and Fitness",
-        "Other",
-    ];
     /** @type {import('./$types').PageData} */
     export let data;
     let under = data?.under || "-none-";
     let underIdeas = [];
+    let msg = "Uploading data";
     function goSee() {
         goto("idea/" + "?id=" + myId);
     }
     async function getSuggestion() {}
     let title = "-none-";
     onMount(async () => {
+        isLoading.set(true); // To set its initial value
+        msg = "Checking sign in";
         await initJuno({
             satelliteId: "vehbc-zaaaa-aaaal-acyba-cai",
         });
+        await basicInfo();
         console.log("Mounted");
         if (under != "-none-") {
             const myDoc = await getDoc({
@@ -65,76 +45,10 @@
             });
             title = myDoc?.data.title;
         }
+        msg = "Uploading data";
         isLoading.set(false); // To set its initial value
+        signedIn();
     });
-    let idea = {
-        title: "",
-        subtitle: "",
-        description: "",
-        image: "This is an image",
-        followers: [],
-        amountFollowers: 0,
-        moneyPledged: 0,
-        moneyFunded: 0,
-        comments: [],
-        opSystems: [],
-        categories: [],
-        overIdeas: [],
-        underIdeas: [],
-        solutions: [],
-    };
-    function addOverIdea() {
-        // @ts-ignore
-        idea.overIdeas.push(under);
-    }
-    async function createIdea() {
-        isLoading.set(true);
-        console.log(systems);
-        console.log(categories);
-        // @ts-ignore
-        idea.categories = categories;
-        // @ts-ignore
-        idea.opSystems = systems;
-
-        if (under != "-none-") {
-            addOverIdea();
-            const myDoc = await getDoc({
-                collection: "ideas",
-                // @ts-ignore
-                key: data.under,
-            });
-            console.log(myDoc);
-            let thisData = myDoc?.data;
-            thisData.underIdeas.push(myId);
-            console.log(myDoc);
-            console.log("Setting ", under, "'s doc...'");
-            await setDoc({
-                collection: "ideas",
-                doc: {
-                    // @ts-ignore
-                    key: under,
-                    // @ts-ignore
-                    updated_at: myDoc?.updated_at, // includes 'key' and 'updated_at'
-                    data: thisData,
-                },
-            });
-            console.log("Done!");
-        }
-        await setDoc({
-            collection: "ideas",
-            doc: {
-                key: myId,
-                data: idea,
-            },
-        });
-        systems = [];
-        categories = [];
-        created = true;
-        isLoading.set(false);
-        idea.title = "";
-        idea.subtitle = "";
-        idea.description = "";
-    }
     let tabs = 0;
     /**
      * @param {number} num
@@ -142,10 +56,13 @@
     function changeTab(num) {
         tabs = num;
     }
+    afterUpdate(() => {});
 </script>
 
 <Header />
-{#if !$isLoading && !created}
+{#if !$loginedIn}
+    <Signin />
+{:else if !$isLoading && !created}
     {#if tabs == 0}
         <div class="fundButtonBack">
             <button class="tabs">Topic</button>
@@ -188,7 +105,7 @@
         </button>
     </div>
 {:else}
-    <Loading msg={"Uploading data"} />
+    <Loading {msg} />
 {/if}
 
 <style>
@@ -215,7 +132,7 @@
         height: 50px;
         /* background: linear-gradient(to right, rgb(255, 0, 0), orangered); */
         border-style: groove;
-        border-color: black;
+        border-color: currentColor;
         border-width: 0.2px;
         display: flex;
         align-items: center; /* Vertical alignment */
@@ -223,7 +140,6 @@
         font-size: large;
         font-weight: 330;
         /* box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); horizontal, vertical, blur, color */
-        color: black;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     .tabClosed:hover {
