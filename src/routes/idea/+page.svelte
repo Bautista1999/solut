@@ -22,7 +22,6 @@
     } from "@junobuild/core";
     import { onMount } from "svelte";
     import { nanoid } from "nanoid";
-    import { ProgressRadial } from "@skeletonlabs/skeleton";
     import {
         registerUser,
         followIdea,
@@ -699,9 +698,8 @@
                 margin-right: 3em; width:3cm;;
                 "
                     >
-                        <div style="transform: scale(0.3);">
-                            <!-- You can adjust the scale value as needed -->
-                            <ProgressRadial />
+                        <div style="transform: scale(0.7); margin-bottom:20px;">
+                            <MagicalDots />
                         </div></button
                     >
                 {:else if userFollows}
@@ -1746,14 +1744,14 @@
                                     align-items: center; 
                                     justify-content: center; "
                             >
-                                <div style="transform: scale(0.3);">
-                                    <!-- You can adjust the scale value as needed -->
-                                    <ProgressRadial />
+                                <div
+                                    style="transform: scale(0.7); margin-bottom:20px;"
+                                >
+                                    <MagicalDots />
                                 </div></button
                             >
                         {:else if followSub}
                             <button
-                                on:click={closeModal}
                                 class="fundButton"
                                 style="background-color: #ff6000; color:white; display: block; margin-left: auto; margin-right: auto;"
                                 on:click={async () => {
@@ -1772,7 +1770,6 @@
                             >
                         {:else}
                             <button
-                                on:click={closeModal}
                                 class="fundButton"
                                 style="background-color: white; color:black; display: block; margin-left: auto; margin-right: auto;"
                                 on:click={async () => {
@@ -1849,9 +1846,10 @@
                                     align-items: center; 
                                     justify-content: center; "
                                     >
-                                        <div style="transform: scale(0.3);">
-                                            <!-- You can adjust the scale value as needed -->
-                                            <ProgressRadial />
+                                        <div
+                                            style="transform: scale(0.7); margin-bottom:20px;"
+                                        >
+                                            <MagicalDots />
                                         </div></button
                                     >
                                 {:else if followSub}
@@ -2428,18 +2426,6 @@
         align-items: center;
         margin-right: 1cm;
         margin-right: 20px;
-    }
-
-    .progress-bar {
-        background-color: #e0e0e0;
-        height: 20px;
-        border-radius: 10px;
-    }
-
-    .progress-fill {
-        background-color: #007bff; /* Choose your desired color */
-        height: 100%;
-        border-radius: 10px;
     }
 
     @media (max-width: 768px) {

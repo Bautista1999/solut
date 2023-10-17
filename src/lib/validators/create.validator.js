@@ -154,7 +154,8 @@ async function checkTopicKey(TopicKey, collectionName) {
  * @param {number} month
  * @param {number} year
  */
-function DateInTheFutureValidator(day, month, year) {
+export function DateInTheFutureValidator(day, month, year) {
+    // return false if its in the past. true otherwise
     let presentDate = new Date();
     console.log("Present date: ", presentDate);
     let currentDay = presentDate.getDate();

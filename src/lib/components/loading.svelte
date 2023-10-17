@@ -1,11 +1,14 @@
 <script>
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
 
     // Variables to keep track of dot animation
     let activeDot = 0;
     let dotStates = [false, false, false];
     let count = 0;
     export let msg = "Data loading";
+    export let modal = false;
+    export let marginTop = 4;
+    export let width = 30;
     // Function to animate the dots
     async function animateDots() {
         if (activeDot == 0 && count == 3) {
@@ -44,24 +47,49 @@
     onMount(() => {
         startNextCycle();
     });
+    onDestroy(() => {
+        modal = false;
+    });
 </script>
 
-<div class="loadingBlock">
-    <div class="loadingContent">
-        <div class="dots">
-            {#each dotStates as dotState, index}
-                <button
-                    class="dot"
-                    class:move-up={dotState}
-                    style="width: 20px; height: 20px;"
-                />
-            {/each}
-        </div>
+{#if modal}
+    <div
+        class="loadingBlock"
+        style="margin-top: 0px; height:fit-content;min-height: 40vh; display:flex; justify-content:center; align-items:center;  "
+    >
+        <div class="loadingContent" style="height: 5cm; width:70%;">
+            <div class="dots">
+                {#each dotStates as dotState, index}
+                    <button
+                        class="dot"
+                        class:move-up={dotState}
+                        style="width: 20px; height: 20px;"
+                    />
+                {/each}
+            </div>
 
-        <br />
-        <p style="font-style: italic;">{msg}</p>
+            <br />
+            <p style="font-style: italic;">{msg}</p>
+        </div>
     </div>
-</div>
+{:else}
+    <div class="loadingBlock" style="margin-top: {marginTop}cm;">
+        <div class="loadingContent" style="width: {width}%;">
+            <div class="dots">
+                {#each dotStates as dotState, index}
+                    <button
+                        class="dot"
+                        class:move-up={dotState}
+                        style="width: 20px; height: 20px;"
+                    />
+                {/each}
+            </div>
+
+            <br />
+            <p style="font-style: italic;">{msg}</p>
+        </div>
+    </div>
+{/if}
 
 <style>
     .loadingBlock {

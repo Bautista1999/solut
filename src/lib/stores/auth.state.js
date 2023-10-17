@@ -154,8 +154,9 @@ export function decimalToBigInt(decimalValue, multiplier) {
 export async function signedIn() {
 
     console.log("Get info.key: ", get(info).key);
-    if (get(info).key == "") {
+    if (get(info).key == "" || get(info).key == null) {
         loginedIn.set(false);
+        console.log("entro");
         loginedIn.subscribe((value) => {
             console.log("Is logined", value);
         })

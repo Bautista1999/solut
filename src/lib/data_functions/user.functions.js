@@ -101,7 +101,8 @@ function substractItem(list, item) {
  */
 export async function checkFollowIdea(userKey, ideaKey) {
     //We need to check if the idea's key is indeed in the followedIdeas[] field of the user.
-    if (!signedIn()) {
+    if (!(await signedIn())) {
+        console.log("Not signed in! x2");
         return "Not signed in";
     }
     await registerUser(userKey);
@@ -125,7 +126,7 @@ export async function checkFollow(userKey, ideaKey) {
     let result = await checkFollowIdea(userKey, ideaKey);
     // @ts-ignore
     if (result == "Not signed in") {
-
+        console.log("Not signed in!");
         return false;
     }
     return result;
@@ -154,7 +155,7 @@ export function subList(list1, amount) {
 * @param {any} collectionName
 */
 export async function followIdea(userKey, ideaKey, collectionName) {
-    if (!signedIn()) {
+    if (!(await signedIn())) {
 
         return "Not signed in";
     }
@@ -212,7 +213,7 @@ export async function followIdea(userKey, ideaKey, collectionName) {
  * @param {string} collectionName
  */
 export async function unfollowIdea(userKey, ideaKey, collectionName) {
-    if (!signedIn()) {
+    if (!(await signedIn())) {
 
         return "Not signed in";
     }

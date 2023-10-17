@@ -8,6 +8,8 @@
     export let isOpen7 = false;
     export let isOpen8 = false;
     export let isOpen9 = false;
+    export let isOpen10 = false;
+
     export let close = () => {};
     export let close2 = () => {
         isOpen2 = false;
@@ -32,6 +34,9 @@
     };
     export let close9 = () => {
         isOpen9 = false;
+    };
+    export let close10 = () => {
+        isOpen10 = false;
     };
 </script>
 
@@ -128,6 +133,19 @@
             on:click|stopPropagation
         >
             <div class="ButtonClose" on:click={() => close9()}>
+                <button>X</button>
+            </div>
+            <slot />
+        </div>
+    </div>
+{:else if isOpen10}
+    <div class="modal-background" on:click={close}>
+        <div
+            class="modal-content"
+            style="width: 600px; height: fit-content; max-height: 95vh;"
+            on:click|stopPropagation
+        >
+            <div class="ButtonClose" on:click={() => close10()}>
                 <button>X</button>
             </div>
             <slot />

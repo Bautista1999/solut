@@ -14,6 +14,7 @@
         checkValidatorSolution,
         validateSolution,
     } from "$lib/validators/create.validator";
+    import { createSolution } from "$lib/data_objects/data_objects";
     let myId = nanoid();
     // +page.solution.svelte
     console.log(myId);
@@ -86,26 +87,7 @@
         }
     });
     let image = "";
-    let solution = {
-        topic: "",
-        title: "",
-        subtitle: "",
-        description: "",
-        /**
-         * @type {String[]}
-         */
-        images: [],
-        followers: [],
-        amountFollowers: 0,
-        moneyPledged: 0,
-        moneyFunded: 0,
-        comments: [],
-        opSystems: [],
-        categories: [],
-        topics: [],
-        ideasRelated: [],
-        deadlines: [],
-    };
+    let solution = createSolution();
 
     function closeModal() {
         showModal = false;
