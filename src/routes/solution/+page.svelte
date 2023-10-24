@@ -5,6 +5,8 @@
     import {
         createUpdate,
         createSubidea,
+        createDeadline,
+        createSolution,
     } from "/Users/juanbautistamartinezrezzio/Documents/Dev/ic_project/solutio/src/lib/data_objects/data_objects.js";
 
     import Loading from "$lib/components/loading.svelte";
@@ -17,6 +19,8 @@
         updateModal,
         subideaLoading,
         PostUpdateModal,
+        updateImages,
+        displayedUpdImages,
     } from "$lib/stores/loading";
 
     import {
@@ -26,6 +30,7 @@
         signedIn,
         decimalToBigInt,
         fromICPtoUSD,
+        searchBar,
     } from "$lib/stores/auth.state.js";
     import {
         initJuno,
@@ -52,32 +57,43 @@
         copied,
         pledgeFunds,
         getClosestDate,
+        substractItem,
+        substractItem_General,
+        itemExists_General,
     } from "$lib/other_functions/other.functions";
     import ModalPledgeFunds from "$lib/components/ModalPledgeFunds.svelte";
     import ModalUpdate from "$lib/components/ModalUpdate.svelte";
     import ModalSubidea from "$lib/components/ModalSubidea.svelte";
     import MagicalDots from "$lib/components/magicalDots.svelte";
-    import { getSolutionSubIdeas } from "$lib/data_functions/docu.functions";
+    import {
+        addDeadline,
+        deleteDeadline,
+        editSolution,
+        getSolutionSubIdeas,
+    } from "$lib/data_functions/docu.functions";
     import ModalPostUpdate from "$lib/components/ModalPostUpdate.svelte";
+    import { optForm } from "@dfinity/candid";
+    import Success from "$lib/components/success.svelte";
 
     // @ts-ignore
     export let data;
     let tabs = 0;
+    let success = false;
+    let editInfo = false;
+    let newDeadline = createDeadline();
+    let update = createUpdate();
 
-    let update = {
-        creator: "",
-        status: "",
-        subject: "",
-        picture: "",
-        body: "",
-        nxtTitle: "",
-        nxtDate: "",
-        date: "",
-    };
-    let updates = ["", "", "", ""];
+    let latestUpdate = createUpdate();
+    /**
+     * @type {latestUpdate[]}
+     */
+    let updates = [];
     let lastUpdate =
         "Team FitnessGo is thrilled to share our latest update! Over the past few months, we've been hard at work crafting a fitness app that's truly exceptional. We're excited to announce that our core features are now live and ready for you to experience. Whether you're a seasoned fitness enthusiast or just starting on your wellness journey, FitnessGo has something special in store for you.What can you expect from FitnessGo? Let's dive in: Personalized Workouts: Our app now offers tailored workout plans designed to meet your fitness goals. Whether you're looking to shed a few pounds, build muscle, or increase flexibility, we've got you covered.";
     let showModal4 = false;
+    let showModal2 = false;
+    let showModal3 = false;
+    let showModal7 = false;
     let followLoading = false;
     let title = "";
     let subtitle = "";
@@ -93,13 +109,14 @@
      */
     let displayedIdeas = [];
     let topic = "";
-    let topicData = {};
+    let topicData = createSolution();
     let topicImage = "";
     let userFollows = false;
     let isLoading = false;
     let amountFollowers = 0;
     let creator = "";
     let updated = "";
+    let showDescription = false;
     let moneyPledged = 10;
     let kickoffDeadline = {
         newDate: { day: 17, month: 8, year: 23 },
@@ -119,6 +136,8 @@
     };
     let deadlines = [kickoffDeadline, launchDeadline, devDeadline, desDeadline];
     let displayedDeadlines = deadlines;
+    let editSol = topicData;
+    let imageURL = "";
     let closestDeadline = "";
     onMount(async () => {
         isLoading = true;
@@ -140,6 +159,7 @@
         // @ts-ignore
         updated = myDoc?.updated_at;
         topicData = myDoc?.data;
+        editSol = topicData;
         // @ts-ignore
         topic = topicData.topic;
         // @ts-ignore
@@ -159,7 +179,13 @@
         moneyPledged = fromICPtoUSD(topicData.moneyPledged);
         // @ts-ignore
         userFollows = await checkFollow($info.key, data.id);
-        closestDeadline = getClosestDate(deadlines);
+        // @ts-ignore
+        updates = topicData.updates;
+        // @ts-ignore
+        latestUpdate = updates[0];
+        // @ts-ignore
+        deadlines = topicData.deadlines;
+        closestDeadline = getClosestDate(deadlines).title;
         displayedDeadlines = subList(deadlines, 3);
         console.log("User follows: ", userFollows);
 
@@ -177,22 +203,104 @@
      */
     function openUpdate(updt) {
         update = {
+            key: updt.key,
             creator: updt.creator,
             status: updt.status,
             subject: updt.subject,
-            picture: updt.picture,
+            images: updt.images,
             body: updt.body,
             nxtTitle: updt.nxtTitle,
             nxtDate: updt.nxtDate,
             date: updt.date,
         };
+        if (window.innerWidth < 500) {
+            $displayedUpdImages = subList($updateImages, 2);
+        } else {
+            $displayedUpdImages = subList($updateImages, 3);
+        }
         updateModal.set(true);
+    }
+    let deadlineLoading = false;
+    async function addDline() {
+        deadlineLoading = true;
+        await addDeadline(newDeadline, data.id || "");
+        success = true;
+        deadlineLoading = false;
+        newDeadline = createDeadline();
+        setTimeout(() => {
+            success = false;
+            showModal2 = false;
+            window.location.reload();
+        }, 3000);
+    }
+    let delDeadline = createDeadline();
+    let delDeadlineLoading = false;
+    let delSuccess = false;
+    let msg = "";
+    async function deleteDline() {
+        delDeadlineLoading = true;
+        await deleteDeadline(delDeadline, data.id || "");
+        delDeadlineLoading = false;
+        delSuccess = true;
+        delDeadline = createDeadline();
+        setTimeout(() => {
+            delSuccess = false;
+            showModal3 = false;
+            window.location.reload();
+        }, 3000);
+    }
+    let solutionSuccess = false;
+    $: searchIdea = createSubidea();
+    let wordSearch = "";
+    /**
+     * @type {searchIdea[]}
+     */
+    let searchedIdeas = [];
+    async function searchWord() {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        if (wordSearch == "") {
+            searchedIdeas = [];
+            return;
+        }
+
+        searchedIdeas = await searchBar(wordSearch, "subideas");
+    }
+    /**
+     * @param {subidea} idea
+     */
+    function addIdea(idea) {
+        wordSearch = "";
+        // @ts-ignore
+        let addedIdea = {
+            key: idea?.key,
+            title: idea?.data.title,
+        };
+        if (!itemExists_General(idea, editSol.ideasRelated)) {
+            editSol.ideasRelated.push(addedIdea);
+            editSol.ideasRelated = editSol.ideasRelated;
+        }
+
+        searchedIdeas = [];
+    }
+    async function editSolu() {
+        showModal7 = false;
+        isLoading = true;
+        await editSolution(editSol, data.id || "");
+        isLoading = false;
+        msg = "Solution updated successfully!";
+        solutionSuccess = true;
+        setTimeout(() => {
+            solutionSuccess = false;
+            window.location.reload();
+        }, 3000);
     }
 </script>
 
 <Header />
 {#if isLoading}
     <Loading />
+{:else if solutionSuccess}
+    <Success msg="{msg};" />
 {:else}
     <div class="body">
         <div class="content">
@@ -206,7 +314,7 @@
                 <p
                     style="display: flex; align-items:center; justify-content:center; font-size:20px;"
                 >
-                    >
+                    {">"}
                 </p>
                 <button class="breadcrumb">{title}</button>
             </div>
@@ -214,11 +322,15 @@
             <br />
             <div class="content-wrapper">
                 <div class="text-content">
-                    <h2 style="font-weight: 700; font-size:xx-large;">
+                    <h2
+                        style="font-weight: 700; font-size:xx-large; line-height: 1.1em;"
+                    >
                         {title}
                     </h2>
                     <br />
-                    <h3 style="font-weight: 400; font-size:x-large;">
+                    <h3
+                        style="font-weight: 400; font-size:x-large; line-height: 1.1em;"
+                    >
                         {subtitle}
                     </h3>
                 </div>
@@ -372,14 +484,34 @@
 
             <br />
             <div class="description">
-                <h1
-                    style="font-size: xx-large; line-height: 1.1;"
+                <div
+                    style="font-size: xx-large; line-height: 1.1; font-family: Barlow; font-weight:600;"
                     class="NormalColor"
                 >
                     Description of the project:
-                </h1>
+                </div>
+
                 <br />
-                {#if description.length > 500}
+                {#if editInfo}
+                    <textarea
+                        class="textarea"
+                        style="text-align: justify;height:7cm; padding:8px; font-size:medium;"
+                        value={description}
+                    />
+                {:else if showDescription}
+                    <p
+                        class="text-body NormalColor"
+                        style="text-align: justify;"
+                    >
+                        {description}
+                        <button
+                            style="font-style: italic; text-decoration:underline;"
+                            on:click={() => {
+                                showDescription = false;
+                            }}>(see less)</button
+                        >
+                    </p>
+                {:else if description.length > 500}
                     <p
                         class="text-body NormalColor"
                         style="text-align: justify;"
@@ -387,7 +519,9 @@
                         {description.substring(0, 1000)}...
                         <button
                             style="font-style: italic; text-decoration:underline;"
-                            >(see more)</button
+                            on:click={() => {
+                                showDescription = true;
+                            }}>(see more)</button
                         >
                     </p>
                 {:else}
@@ -399,15 +533,14 @@
                     </p>
                 {/if}
             </div>
-
             {#if creator == $info.key}
                 <br />
                 <button
                     class="fundButton"
                     style="width:3cm;"
                     on:click={() => {
-                        // showModal7 = true;
-                    }}>Edit idea</button
+                        showModal7 = true;
+                    }}>Edit info</button
                 >
             {/if}
             <br />
@@ -419,32 +552,125 @@
             <div class="deadlinesBlock">
                 {#each displayedDeadlines as date}
                     {#if date.title == closestDeadline}
-                        {#if date.title != "Project kick-off"}
+                        {#if date.title != deadlines[0].title}
                             <div
                                 class="horizontalLine"
                                 style="width:25%;z-index:1000;border-color:rgb(224, 0, 224);"
                             />
                         {/if}
-                        <div
-                            class="deadline"
-                            style="box-shadow: 0px 0px 30px skyblue; width:20%;height:6cm;"
-                        >
-                            <img
-                                style="width: 100px;"
-                                src="https://www.freepnglogos.com/uploads/rocket-png/animated-rocket-ship-taking-off-10.png"
-                                alt=""
-                            />
-                            <div style="height: 0.5cm;" />
-                            <p>{date.title.substring(0, 20)}</p>
+                        {#if window.innerWidth < 500}
                             <div
-                                style="border-color: white; border-width:1px;color:white;"
+                                class="deadline"
+                                style="box-shadow: 0px 0px 30px skyblue;"
                             >
-                                <p>
-                                    {date.newDate.day}/{date.newDate
-                                        .month}/{date.newDate.year}
-                                </p>
+                                <img
+                                    style="width: 100px;"
+                                    src="https://www.freepnglogos.com/uploads/rocket-png/animated-rocket-ship-taking-off-10.png"
+                                    alt=""
+                                />
+                                <div style="height: 0.5cm;" />
+                                <p>{date.title.substring(0, 20)}</p>
+                                {#if creator == $info.key}
+                                    <div
+                                        style="display:flex; justify-content:center;align-items:center;
+                                    gap:8px; margin-left:25%;
+                                    "
+                                    >
+                                        <div
+                                            style="border-color: white; border-width:1px;color:white;
+                                
+                                "
+                                        >
+                                            <p>
+                                                {date.newDate.day}/{date.newDate
+                                                    .month}/{date.newDate.year}
+                                            </p>
+                                        </div>
+
+                                        <button
+                                            style="background-color: 
+                            red; color: white; 
+                            width: 0.5cm; height: 0.5cm; border-radius:0%;
+                            text-align: center; line-height: 0.5cm; 
+                            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+                            margin-right:10px;
+                             "
+                                            on:click={() => {
+                                                showModal3 = true;
+                                                delDeadline = date;
+                                            }}
+                                        >
+                                            x
+                                        </button>
+                                    </div>
+                                {:else}
+                                    <div
+                                        style="border-color: white; border-width:1px;color:white;"
+                                    >
+                                        <p>
+                                            {date.newDate.day}/{date.newDate
+                                                .month}/{date.newDate.year}
+                                        </p>
+                                    </div>
+                                {/if}
                             </div>
-                        </div>
+                        {:else}
+                            <div
+                                class="deadline"
+                                style="box-shadow: 0px 0px 30px skyblue; width:20%;height:6cm;"
+                            >
+                                <img
+                                    style="width: 100px;"
+                                    src="https://www.freepnglogos.com/uploads/rocket-png/animated-rocket-ship-taking-off-10.png"
+                                    alt=""
+                                />
+                                <div style="height: 0.5cm;" />
+                                <p>{date.title.substring(0, 20)}</p>
+                                {#if creator == $info.key}
+                                    <div
+                                        style="display:flex; justify-content:center;align-items:center;
+                                    gap:8px; margin-left:25%;
+                                    "
+                                    >
+                                        <div
+                                            style="border-color: white; border-width:1px;color:white;
+                                
+                                "
+                                        >
+                                            <p>
+                                                {date.newDate.day}/{date.newDate
+                                                    .month}/{date.newDate.year}
+                                            </p>
+                                        </div>
+
+                                        <button
+                                            style="background-color: 
+                            red; color: white; 
+                            width: 0.5cm; height: 0.5cm; border-radius:0%;
+                            text-align: center; line-height: 0.5cm; 
+                            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+                            margin-right:10px;
+                             "
+                                            on:click={() => {
+                                                showModal3 = true;
+                                                delDeadline = date;
+                                            }}
+                                        >
+                                            x
+                                        </button>
+                                    </div>
+                                {:else}
+                                    <div
+                                        style="border-color: white; border-width:1px;color:white;"
+                                    >
+                                        <p>
+                                            {date.newDate.day}/{date.newDate
+                                                .month}/{date.newDate.year}
+                                        </p>
+                                    </div>
+                                {/if}
+                            </div>
+                        {/if}
                     {:else}
                         {#if date.title != "Project kick-off"}
                             <div
@@ -459,103 +685,165 @@
                                 alt=""
                             />
                             <p>{date.title.substring(0, 20)}</p>
-                            <div
-                                style="border-color: white; border-width:1px;color:white;"
-                            >
-                                <p>
-                                    {date.newDate.day}/{date.newDate
-                                        .month}/{date.newDate.year}
-                                </p>
-                            </div>
+                            {#if creator == $info.key}
+                                <div
+                                    style="display:flex; justify-content:center;align-items:center;
+                                    gap:8px; margin-left:25%;
+                                    "
+                                >
+                                    <div
+                                        style="border-color: white; border-width:1px;color:white;
+                                
+                                "
+                                    >
+                                        <p>
+                                            {date.newDate.day}/{date.newDate
+                                                .month}/{date.newDate.year}
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        style="background-color: 
+                            red; color: white; 
+                            width: 0.5cm; height: 0.5cm; border-radius:0%;
+                            text-align: center; line-height: 0.5cm; 
+                            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+                            margin-right:10px;
+                             "
+                                        on:click={() => {
+                                            showModal3 = true;
+                                            delDeadline = date;
+                                        }}
+                                    >
+                                        x
+                                    </button>
+                                </div>
+                            {:else}
+                                <div
+                                    style="border-color: white; border-width:1px;color:white;"
+                                >
+                                    <p>
+                                        {date.newDate.day}/{date.newDate
+                                            .month}/{date.newDate.year}
+                                    </p>
+                                </div>
+                            {/if}
                         </div>
                     {/if}
                 {/each}
             </div>
-
+            <br />
+            {#if creator == $info.key}
+                <button
+                    class="fundButton"
+                    on:click={() => {
+                        showModal2 = true;
+                    }}
+                    style="width: fit-content; padding:10px; background-color:green; color:white;"
+                    >+ Add deadline</button
+                >
+            {/if}
             <br />
             <h4 style="font-size: xx-large; line-height: 1.1;">
                 Latest update:
             </h4>
             <div class="spacer" />
-            <button
-                class="updateBlock"
-                on:click={() => {
-                    let update = {
-                        creator: creator,
-                        status: "Development",
-                        subject: "New button feature",
-                        picture:
-                            "https://i.pinimg.com/736x/76/70/6e/76706e0a8c275e562d6d48fd5fbc7f4f.jpg",
-                        body: lastUpdate,
-                        nxtTitle: "Design start",
-                        nxtDate: "12/10/23",
-                        date: "17/08/23",
-                    };
-                    openUpdate(update);
-                }}
-            >
-                <div class="updateHeader">
-                    <div class="updateUser">
-                        {#if window.innerWidth < 500}
-                            <div
-                                class="profilePicture"
-                                style=" width: 1.7cm; height: 1.7cm;box-shadow:none;"
-                            >
-                                <!-- svelte-ignore a11y-img-redundant-alt -->
-                                <img
-                                    src="https://beebom.com/wp-content/uploads/2022/02/Featured.jpg?w=750&quality=75"
-                                    alt="Profile Picture"
+            {#if updates.length == 0}
+                <p
+                    style="color: grey;display: flex;
+        align-items: center; /* Vertical alignment */
+        justify-content: center; /* Horizontal alignment */"
+                >
+                    -- No updates yet --
+                </p>
+            {:else}
+                <button
+                    class="updateBlock"
+                    on:click={() => {
+                        // //let update = {
+                        //     creator: latestUpdate.creator,
+                        //     status: latestUpdate.status,
+                        //     subject: latestUpdate.subject,
+                        //     images: latestUpdate.images,
+                        //     body: latestUpdate.body,
+                        //     nxtTitle: latestUpdate.nxtTitle,
+                        //     nxtDate: latestUpdate.nxtDate,
+                        //     date: latestUpdate.date,
+                        // };
+                        let update = latestUpdate;
+                        updateImages.set(latestUpdate.images);
+                        openUpdate(update);
+                    }}
+                >
+                    <div class="updateHeader">
+                        <div class="updateUser">
+                            {#if window.innerWidth < 500}
+                                <div
+                                    class="profilePicture"
+                                    style=" width: 1.7cm; height: 1.7cm;box-shadow:none;"
+                                >
+                                    <!-- svelte-ignore a11y-img-redundant-alt -->
+                                    <img
+                                        src="https://beebom.com/wp-content/uploads/2022/02/Featured.jpg?w=750&quality=75"
+                                        alt="Profile Picture"
+                                    />
+                                </div>
+                                <p style="width: 5cm;">
+                                    {latestUpdate.creator.substring(0, 37)}...
+                                </p>
+                            {:else}
+                                <div
+                                    class="profilePicture"
+                                    style="width: 1.7cm; height: 1.7cm; box-shadow:none;"
+                                >
+                                    <!-- svelte-ignore a11y-img-redundant-alt -->
+                                    <img
+                                        src="https://beebom.com/wp-content/uploads/2022/02/Featured.jpg?w=750&quality=75"
+                                        alt="Profile Picture"
+                                    />
+                                </div>
+                                <p style="width: 8cm;">
+                                    {latestUpdate.creator}
+                                </p>
+                                <div
+                                    style="height: 1cm; border-color:black; border-width:0.5px;"
                                 />
-                            </div>
-                            <p style="width: 5cm;">
-                                {"2dgol-6t7gr-wbceo-axkyn-3qinp-vxv32-zrqbv-oj6tr-ztuvk-el3ln-3ae".substring(
-                                    0,
-                                    37
-                                )}...
-                            </p>
-                        {:else}
-                            <div
-                                class="profilePicture"
-                                style="width: 1.7cm; height: 1.7cm; box-shadow:none;"
-                            >
-                                <!-- svelte-ignore a11y-img-redundant-alt -->
-                                <img
-                                    src="https://beebom.com/wp-content/uploads/2022/02/Featured.jpg?w=750&quality=75"
-                                    alt="Profile Picture"
-                                />
-                            </div>
-                            <p style="width: 8cm;">
-                                {"2dgol-6t7gr-wbceo-axkyn-3qinp-vxv32-zrqbv-oj6tr-ztuvk-el3ln-3ae"}
-                            </p>
-                            <div
-                                style="height: 1cm; border-color:black; border-width:0.5px;"
-                            />
-                            <p>
-                                <span
-                                    style="font-weight: 700;display:flex;justify-content:center;text-align:center;"
-                                    >STATUS:
-                                </span>Development
-                            </p>
-                        {/if}
-                    </div>
+                                <p>
+                                    <span
+                                        style="font-weight: 700;display:flex;justify-content:center;text-align:center;"
+                                        >STATUS:
+                                    </span>{latestUpdate.status}
+                                </p>
+                            {/if}
+                        </div>
 
-                    <p
-                        style=" width:fit-content;color:darkslategray; padding:5px;
+                        <p
+                            style=" width:fit-content;color:darkslategray; padding:5px;
                                         border-style:solid;border-color:black;border-width:1px;
                                     "
-                    >
-                        17/08/23
+                        >
+                            {latestUpdate.date.month}/{latestUpdate.date
+                                .day}/{latestUpdate.date.year}
+                        </p>
+                    </div>
+                    <p class="updateText" style="margin-bottom:0px ;">
+                        <span style="font-weight: 700; font-style:normal;"
+                            >SUBJECT:
+                        </span>{latestUpdate.subject}
                     </p>
-                </div>
-                <p class="updateText" style="margin-bottom:0px ;">
-                    <span style="font-weight: 700; font-style:normal;"
-                        >SUBJECT:
-                    </span>New button feature
-                </p>
-                <p class="updateText">"{lastUpdate.substring(0, 400)}..."</p>
-                <div class="horizontalLine" />
-                <div class="updateDecoration" />
-            </button>
+                    {#if latestUpdate.body.length > 400}
+                        <p class="updateText">
+                            "{latestUpdate.body.substring(0, 400)}..."
+                        </p>
+                    {:else}
+                        <p class="updateText">
+                            "{latestUpdate.body}"
+                        </p>
+                    {/if}
+                    <div class="horizontalLine" />
+                    <div class="updateDecoration" />
+                </button>
+            {/if}
             <br />
             {#if creator == $info.key}
                 <button
@@ -592,88 +880,101 @@
                 </h4>
                 <br />
                 <div class="totalUpdates">
-                    {#each updates as up}
-                        <button
-                            class="localUpdate"
-                            on:click={() => {
-                                let update = {
-                                    creator: creator,
-                                    status: "Development",
-                                    subject: "Another button feature",
-                                    picture:
-                                        "https://i.pinimg.com/736x/76/70/6e/76706e0a8c275e562d6d48fd5fbc7f4f.jpg",
-                                    body: lastUpdate,
-                                    nxtTitle: "Design start",
-                                    nxtDate: "12/10/23",
-                                    date: "17/08/23",
-                                };
-                                openUpdate(update);
-                            }}
+                    {#if updates.length == 0}
+                        <p
+                            style="color: grey;display: flex;
+                align-items: center; /* Vertical alignment */
+                justify-content: center; /* Horizontal alignment */"
                         >
-                            <div class="updatesStart">
-                                <div class="fit-content">
-                                    {#if window.innerWidth < 500}
-                                        <div
-                                            class="profilePicture"
-                                            style=" width: 1.7cm; height: 1.7cm;box-shadow:none;"
-                                        >
-                                            <!-- svelte-ignore a11y-img-redundant-alt -->
-                                            <img
-                                                src="https://beebom.com/wp-content/uploads/2022/02/Featured.jpg?w=750&quality=75"
-                                                alt="Profile Picture"
-                                            />
-                                        </div>
-                                    {:else}
-                                        <div
-                                            class="profilePicture"
-                                            style="width: 1.7cm; height: 1.7cm; box-shadow:none;"
-                                        >
-                                            <!-- svelte-ignore a11y-img-redundant-alt -->
-                                            <img
-                                                src="https://beebom.com/wp-content/uploads/2022/02/Featured.jpg?w=750&quality=75"
-                                                alt="Profile Picture"
-                                            />
-                                        </div>
-                                    {/if}
-                                </div>
-                                <div class="updatesColumn">
-                                    <p>
-                                        <span
-                                            style="font-weight: 700; font-style:normal;"
-                                            >SUBJECT:
-                                        </span><span style=" font-style:italic;"
-                                            >New button feature
-                                        </span>
-                                    </p>
-
-                                    {#if window.innerWidth >= 500}
+                            -- No updates yet --
+                        </p>
+                    {:else}
+                        {#each updates as up}
+                            <button
+                                class="localUpdate"
+                                on:click={() => {
+                                    let update = up;
+                                    updateImages.set(up.images);
+                                    openUpdate(update);
+                                }}
+                            >
+                                <div class="updatesStart">
+                                    <div class="fit-content">
+                                        {#if window.innerWidth < 500}
+                                            <div
+                                                class="profilePicture"
+                                                style=" width: 1.7cm; height: 1.7cm;box-shadow:none;"
+                                            >
+                                                <!-- svelte-ignore a11y-img-redundant-alt -->
+                                                <img
+                                                    src="https://beebom.com/wp-content/uploads/2022/02/Featured.jpg?w=750&quality=75"
+                                                    alt="Profile Picture"
+                                                />
+                                            </div>
+                                        {:else}
+                                            <div
+                                                class="profilePicture"
+                                                style="width: 1.7cm; height: 1.7cm; box-shadow:none;"
+                                            >
+                                                <!-- svelte-ignore a11y-img-redundant-alt -->
+                                                <img
+                                                    src="https://beebom.com/wp-content/uploads/2022/02/Featured.jpg?w=750&quality=75"
+                                                    alt="Profile Picture"
+                                                />
+                                            </div>
+                                        {/if}
+                                    </div>
+                                    <div class="updatesColumn">
                                         <p>
-                                            {description.substring(0, 150)}...
+                                            <span
+                                                style="font-weight: 700; font-style:normal;"
+                                                >SUBJECT:
+                                            </span><span
+                                                style=" font-style:italic;"
+                                                >{up.subject}
+                                            </span>
                                         </p>
-                                    {/if}
-                                </div>
-                                <p
-                                    style=" width:fit-content;color:darkslategray; padding:5px;
+
+                                        {#if window.innerWidth >= 500}
+                                            {#if up.body.length > 150}
+                                                <p>
+                                                    "{up.body.substring(
+                                                        0,
+                                                        150
+                                                    )}..."
+                                                </p>
+                                            {:else}
+                                                <p>
+                                                    "{up.body}"
+                                                </p>
+                                            {/if}
+                                        {/if}
+                                    </div>
+                                    <p
+                                        style=" width:fit-content;color:darkslategray; padding:5px;
                                 height:fit-content;
                                         border-style:solid;border-color:black;border-width:1px;
                                     "
-                                >
-                                    17/08/23
-                                </p>
-                            </div>
-                            {#if window.innerWidth < 500}
-                                <div style="text-align: left; width:100%;">
-                                    <p>
-                                        <span
-                                            style="font-weight: 700; font-style:normal;"
-                                            >STATUS:
-                                        </span> Development
+                                    >
+                                        {up.date.month}/{up.date.day}/{up.date
+                                            .year}
                                     </p>
-                                    <p>{description.substring(0, 70)}...</p>
                                 </div>
-                            {/if}
-                        </button>
-                    {/each}
+                                {#if window.innerWidth < 500}
+                                    <div style="text-align: left; width:100%;">
+                                        <p>
+                                            <span
+                                                style="font-weight: 700; font-style:normal;"
+                                                >STATUS:
+                                            </span>
+                                            {up.status}
+                                        </p>
+                                        <p>{up.body.substring(0, 70)}...</p>
+                                    </div>
+                                {/if}
+                            </button>
+                        {/each}
+                    {/if}
                 </div>
             {:else if tabs == 1}
                 <div class="fundButtonBack">
@@ -1020,10 +1321,308 @@
         status={update.status}
         nxtDate={update.nxtDate}
         nxtStatus={update.nxtTitle}
-        profile={update.picture}
+        solutionKey={data.id || ""}
+        {update}
     />
     <ModalSubidea />
-    <ModalPostUpdate />
+    <ModalPostUpdate {deadlines} solutionKey={data.id || ""} />
+
+    <Modal
+        bind:isOpen2={showModal2}
+        close={() => {
+            showModal2 = false;
+        }}
+    >
+        {#if deadlineLoading}
+            <Loading msg={"Uploading deadline"} modal={true} />
+        {:else if success}
+            <Success msg="Deadline added successfully!" />
+        {:else}
+            <h1>New deadline</h1>
+            <div style="height:0.3cm" />
+
+            <p>Deadline Title</p>
+            <div style="height:0.3cm" />
+            <input
+                type="text"
+                class="input"
+                style="border-radius: 0px; padding:5px; border-color:black; border-width:1px;color:aliceblue; background-color:rgb(37, 88, 101);"
+                bind:value={newDeadline.title}
+            />
+            <div style="height:0.3cm" />
+
+            <p>Date</p>
+
+            <input
+                type="number"
+                name=""
+                id=""
+                placeholder="MM"
+                min="1"
+                max="12"
+                style="height: 1cm; width: 1.8cm; padding: 
+                    10px; margin-top:5px; border-width:1px; border-color:black;
+                    "
+                bind:value={newDeadline.newDate.month}
+            />
+            /
+            <input
+                type="number"
+                name=""
+                id=""
+                placeholder="DD"
+                min="1"
+                max="31"
+                style="height: 1cm; width: 1.8cm; padding: 
+                    10px; margin-left:10px;margin-top:5px; border-width:1px; border-color:black;
+                    "
+                bind:value={newDeadline.newDate.day}
+            />
+            /
+            <input
+                type="number"
+                name=""
+                id=""
+                placeholder="YY"
+                min="23"
+                style="height: 1cm; width: 1.8cm; padding: 
+                    10px; margin-left:10px;margin-top:5px; border-width:1px; border-color:black;
+                    "
+                bind:value={newDeadline.newDate.year}
+            />
+
+            <div style="height:0.5cm" />
+            <div
+                style="display: flex;
+        align-items: center; 
+        justify-content: center; "
+            >
+                <button
+                    class="tabs"
+                    style="background-color:orangered; width: 5cm; height: 1cm; color:white;"
+                    on:click={() => {
+                        addDline();
+                    }}>Confirm deadline</button
+                >
+            </div>
+        {/if}
+    </Modal>
+    <Modal
+        bind:isOpen3={showModal3}
+        close={() => {
+            showModal3 = false;
+        }}
+    >
+        {#if delDeadlineLoading}
+            <Loading msg={"Deleting deadline"} modal={true} />
+        {:else if delSuccess}
+            <Success msg={"Deadline deleted successfully"} />
+        {:else}
+            <div class="delete">
+                <p>Are you sure you want to delete this deadline?</p>
+                <br />
+                <br />
+            </div>
+            <div class="delete">
+                <button
+                    class="fundButton"
+                    style="width: 1.5cm; height:0.8cm; color:white; background-color:red"
+                    on:click={() => {
+                        deleteDline();
+                    }}>Yes</button
+                >
+
+                <button
+                    class="fundButton"
+                    style="width: 1.5cm; height:0.8cm; color:white; background-color:red"
+                    on:click={() => {
+                        showModal3 = false;
+                    }}>No</button
+                >
+                <div class="spacer" />
+            </div>
+        {/if}
+    </Modal>
+    <!--Edit idea (creator only)**********-->
+    <Modal
+        bind:isOpen7={showModal7}
+        close={() => {
+            showModal7 = false;
+        }}
+    >
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <h2
+            class="title"
+            style=" background-color: skyblue; color:black; display: block; margin-left: auto; margin-right: auto;"
+        >
+            Edit info
+        </h2>
+
+        <h3>Title</h3>
+        <input
+            type="text"
+            style="border-width:1px;border-color:black;width:100%; padding:5px;"
+            bind:value={editSol.title}
+        />
+        <div class="spacer" />
+        <h3>Subtitle</h3>
+        <textarea
+            class="textarea"
+            style="border-width:1px;border-color:black;width:100%; padding:5px; background-color:white;"
+            bind:value={editSol.subtitle}
+        />
+        <h3>Description</h3>
+        <textarea
+            class="textarea"
+            style="border-width:1px;border-color:black;width:100%; padding:5px; background-color:white; height:7cm;"
+            bind:value={editSol.description}
+        />
+        <h3>Images</h3>
+        <input
+            type="text"
+            style="border-width:1px;border-color:black;width:100%; padding:5px;"
+            bind:value={imageURL}
+        />
+        <div style="height: 0.4cm;" />
+        <div
+            style="display: flex;justify-content:flex-start; align-items:center;"
+        >
+            <button
+                class="tabs"
+                style="background-color:chartreuse; width: 5cm; height: 1cm; margin: 0px;"
+                on:click={() => {
+                    editSol.images.push(imageURL);
+                    editSol.images = editSol.images;
+                    imageURL = "";
+                }}>Add image to the list +</button
+            >
+        </div>
+
+        <div style="height: 0.4cm;" />
+        <p>
+            Please, check the url of the image is working correctly before
+            editing the idea.
+        </p>
+        {#each editSol.images as opt}
+            {#if window.innerWidth < 500}
+                <li>
+                    <button
+                        style="background-color: 
+                    red; color: white; 
+                    width: 0.5cm; height: 0.5cm; border-radius:0%;
+                    text-align: center; line-height: 0.5cm; 
+                    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+                    margin-right:10px;
+                     "
+                        on:click={() => {
+                            editSol.images = substractItem(editSol.images, opt);
+                        }}
+                    >
+                        x
+                    </button>
+                    {opt.substring(0, 33)}...
+                </li>
+            {:else}
+                <li>
+                    <button
+                        style="background-color: 
+                        red; color: white; 
+                        width: 0.5cm; height: 0.5cm; border-radius:0%;
+                        text-align: center; line-height: 0.5cm; 
+                        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+                        margin-right:10px;
+                         "
+                        on:click={() => {
+                            editSol.images = substractItem(editSol.images, opt);
+                        }}
+                    >
+                        x
+                    </button>
+                    {opt}
+                </li>
+            {/if}
+        {/each}
+        <div class="spacer" />
+
+        <p>Ideas related</p>
+        <div class="spacer" />
+        <input
+            class="input"
+            type="search"
+            name="demo"
+            placeholder="Search idea..."
+            style="height: 1cm; border-radius:0px;color: rgb(37, 88, 101);
+             background-color:white; border-color:black;border-width:1px;padding:10px;"
+            bind:value={wordSearch}
+            on:input={() => {
+                searchWord();
+            }}
+        />
+
+        {#if searchedIdeas.length > 0}
+            <div class="searchedIdeas">
+                <ul>
+                    {#each searchedIdeas as idea}
+                        <li>
+                            <!-- svelte-ignore a11y-click-events-have-key-events -->
+                            <!-- svelte-ignore a11y-no-static-element-interactions -->
+                            <div
+                                class="clickableIdea"
+                                on:click={() => {
+                                    addIdea(idea);
+                                }}
+                            >
+                                <div class="image3">
+                                    <img
+                                        src={idea?.data.imageURL}
+                                        alt={idea?.data.title}
+                                    />
+                                </div>
+
+                                <div class="info3">
+                                    <h2>{idea?.data.title}</h2>
+                                </div>
+                            </div>
+                        </li>
+                    {/each}
+                </ul>
+            </div>
+        {/if}
+        <div class="spacer" />
+        <ul>
+            {#each editSol.ideasRelated as opt}
+                <li>
+                    <button
+                        style="background-color: 
+                            red; color: white; 
+                            width: 0.5cm; height: 0.5cm; border-radius:0%;
+                            text-align: center; line-height: 0.5cm; 
+                            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+                            margin-right:10px;
+                             "
+                        on:click={() =>
+                            (editSol.ideasRelated = substractItem_General(
+                                opt,
+                                editSol.ideasRelated
+                            ))}
+                    >
+                        x
+                    </button>
+                    {opt.title}
+                </li>
+            {/each}
+        </ul>
+        <div class="spacer" />
+        <div style="height: 0.3cm;" />
+        <button
+            class="fundButton"
+            style="background-color: #ff6000; color:white; display: block; margin-left: auto; margin-right: auto;"
+            on:click={async () => {
+                await editSolu();
+            }}>Save</button
+        >
+    </Modal>
 {/if}
 
 <style>
@@ -1086,6 +1685,25 @@
         border-width: 1px;
         border-color: black;
     }
+    .title {
+        width: 4cm;
+        height: 50px;
+        /* background: linear-gradient(to right, rgb(255, 0, 0), orangered); */
+        background-color: rgb(221, 243, 255);
+        padding-top: 11px;
+        border-style: groove;
+        border-color: black;
+        border-width: 1px;
+        display: flex;
+        align-items: center; /* Vertical alignment */
+        justify-content: center; /* Horizontal alignment */
+        font-size: large;
+        font-weight: 330;
+        box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
+        color: black;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        text-align: center;
+    }
     .progreso {
         height: 100%;
         background: linear-gradient(
@@ -1136,7 +1754,39 @@
         ); /* scales the button to 95% of its original size on click */
         box-shadow: none; /* removes the shadow */
     }
+    .clickableIdea {
+        display: flex;
+        align-items: start;
+        width: 100%;
+        border: 0.5px solid black;
+        border-radius: 0px;
+        margin-bottom: 0px; /* Adjust this margin to control the space between ideas */
+        margin-top: 0px;
+        margin-left: 0px;
+        height: fit-content;
+    }
+    .clickableIdea:hover {
+        background-color: antiquewhite;
+    }
 
+    .clickableIdea img {
+        width: 50px; /* Increase image size */
+        height: auto; /* Increase image size */
+    }
+
+    .clickableIdea h2 {
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .image3 {
+        margin: 10px;
+    }
+    .info3 {
+        margin-left: 0px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
     .fundButton {
         width: 25%;
         height: 50px;
@@ -1306,6 +1956,18 @@
         justify-content: center; /* Distributes space evenly between items */
         gap: 10px;
         align-items: center;
+    }
+    .searchedIdeas {
+        background-color: white;
+        padding: 0px;
+        margin: 0; /* Remove margin to fix the space at the top */
+        border-radius: 0px;
+    }
+
+    .searchedIdeas ul {
+        list-style-type: none;
+        padding: 0px;
+        margin: 0; /* Remove margin to fix the space between the list and the border */
     }
     .updateBlock {
         width: 100%;
