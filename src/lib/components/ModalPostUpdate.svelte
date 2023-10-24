@@ -1,13 +1,57 @@
 <script>
-    import { createUpdate } from "/Users/juanbautistamartinezrezzio/Documents/Dev/ic_project/solutio/src/lib/data_objects/data_objects.js";
-    import { PostUpdateModal } from "$lib/stores/loading";
+    import {
+        createDeadline,
+        createUpdate,
+    } from "/Users/juanbautistamartinezrezzio/Documents/Dev/ic_project/solutio/src/lib/data_objects/data_objects.js";
+    import { PostUpdateModal } from "../stores/loading";
     import Modal from "./modal.svelte";
-    import { substractItem } from "$lib/other_functions/other.functions";
+    import {
+        getClosestDate,
+        substractItem,
+    } from "/Users/juanbautistamartinezrezzio/Documents/Dev/ic_project/solutio/src/lib/other_functions/other.functions.js";
+    import { info } from "$lib/stores/auth.state";
+    import { postUpdate } from "$lib/data_functions/docu.functions";
+    import Loading from "./loading.svelte";
+    import { nanoid } from "nanoid";
+    import Success from "./success.svelte";
 
     let update = createUpdate();
     let image = "";
-    async function postUpdate() {
+    let deadline = createDeadline();
+    let isLoading = false;
+    let success = false;
+    export let solutionKey = "";
+    /**
+     * @type {deadline []} deadlines
+     */
+    export let deadlines;
+    async function UpdatePost() {
+        isLoading = true;
+        let presentDate = new Date();
+        console.log(presentDate);
+        let currentDay = presentDate.getDate();
+        let currentMonth = presentDate.getMonth() + 1;
+
+        let currentYear = presentDate.getFullYear();
+        update.date = {
+            month: currentMonth,
+            day: currentDay,
+            year: currentYear,
+        };
+        let nextDate = getClosestDate(deadlines);
+        update.nxtDate = nextDate.newDate;
+        update.nxtTitle = nextDate.title;
+        update.creator = $info.key;
+        update.key = nanoid();
         console.log("Update: ", update);
+        await postUpdate(update, solutionKey);
+        isLoading = false;
+        success = true;
+        setTimeout(() => {
+            success = false;
+            PostUpdateModal.set(false);
+            window.location.reload();
+        }, 2000);
     }
 </script>
 
@@ -17,98 +61,116 @@
         PostUpdateModal.set(false);
     }}
 >
-    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <h2
-        class="title"
-        style=" background-color: skyblue; color:black; display: block; margin-left: auto; margin-right: auto;"
-    >
-        Post update
-    </h2>
-    <h3>Subject</h3>
-    <textarea
-        class="textarea"
-        style="border-width:1px;border-color:black;width:100%; padding:5px; background-color:white;"
-        bind:value={update.subject}
-    />
-    <h3>Body</h3>
-    <textarea
-        class="textarea"
-        style="border-width:1px;border-color:black;width:100%; padding:5px; background-color:white;"
-        bind:value={update.body}
-    />
-    <h3>Image</h3>
-    <input
-        type="text"
-        style="border-width:1px;border-color:black;width:100%; padding:5px;"
-        bind:value={image}
-    />
-    <div style="height: 0.2cm;" />
-    <p>
-        Please, check the url of the image is working correctly before editing
-        the idea.
-    </p>
-    <div class="spacer" />
-    <div class="creatorButton">
-        <button
-            class="tabs"
-            style="background-color:chartreuse; width: 5cm; height: 1cm;"
-            on:click={() => {
-                update.images.push(image);
-                update.images = update.images;
-                console.log(update.images);
-                image = "";
-            }}>Add an image +</button
+    {#if isLoading}
+        <Loading msg="Uploading update" modal={true} />
+    {:else if success}
+        <Success msg="Update created successfully!" />
+    {:else}
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <h2
+            class="title"
+            style=" background-color: skyblue; color:black; display: block; margin-left: auto; margin-right: auto;"
         >
-    </div>
-    <div class="spacer" />
-    <ul>
-        {#each update.images as opt}
-            {#if window.innerWidth < 500}
-                <li>
-                    <button
-                        style="background-color: 
+            Post update
+        </h2>
+        <h3>Subject</h3>
+        <textarea
+            class="textarea"
+            style="border-width:1px;border-color:black;width:100%; padding:5px; background-color:white;"
+            bind:value={update.subject}
+        />
+        <h3>Status</h3>
+        <input
+            class="text"
+            style="border-width:1px;border-color:black;width:100%; padding:5px; background-color:white;"
+            bind:value={update.status}
+            placeholder="Define the actual status of your project..."
+        />
+        <h3>Body</h3>
+        <textarea
+            class="textarea"
+            style="border-width:1px;border-color:black;width:100%; padding:5px; background-color:white;"
+            bind:value={update.body}
+        />
+        <h3>Images</h3>
+        <input
+            type="text"
+            style="border-width:1px;border-color:black;width:100%; padding:5px;"
+            bind:value={image}
+        />
+        <div style="height: 0.2cm;" />
+        <p>
+            Please, check the url of the image is working correctly before
+            editing the idea.
+        </p>
+        <div class="spacer" />
+        <div class="creatorButton">
+            <button
+                class="tabs"
+                style="background-color:chartreuse; width: 5cm; height: 1cm;"
+                on:click={() => {
+                    update.images.push(image);
+                    update.images = update.images;
+                    console.log(update.images);
+                    image = "";
+                }}>Add image +</button
+            >
+        </div>
+        <div class="spacer" />
+        <ul>
+            {#each update.images as opt}
+                {#if window.innerWidth < 500}
+                    <li>
+                        <button
+                            style="background-color: 
                     grey; color: white; 
                     width: 0.5cm; height: 0.5cm; border-radius:50%;
                     text-align: center; line-height: 0.5cm; 
                      "
-                        on:click={() => {
-                            update.images = substractItem(update.images, opt);
-                        }}
-                    >
-                        -
-                    </button>
-                    {opt.substring(0, 33)}...
-                </li>
-            {:else}
-                <li>
-                    <button
-                        style="background-color: 
+                            on:click={() => {
+                                update.images = substractItem(
+                                    update.images,
+                                    opt
+                                );
+                            }}
+                        >
+                            -
+                        </button>
+                        {opt.substring(0, 33)}...
+                    </li>
+                {:else}
+                    <li>
+                        <button
+                            style="background-color: 
                         grey; color: white; 
                         width: 0.5cm; height: 0.5cm; border-radius:50%;
                         text-align: center; line-height: 0.5cm; 
                          "
-                        on:click={() => {
-                            update.images = substractItem(update.images, opt);
-                        }}
-                    >
-                        -
-                    </button>
-                    {opt}
-                </li>
-            {/if}
-        {/each}
-    </ul>
+                            on:click={() => {
+                                update.images = substractItem(
+                                    update.images,
+                                    opt
+                                );
+                            }}
+                        >
+                            -
+                        </button>
+                        {opt}
+                    </li>
+                {/if}
+            {/each}
+        </ul>
 
-    <div style="height: 0.3cm;" />
-    <button
-        class="fundButton"
-        style="background-color: #ff6000; color:white; display: block; margin-left: auto; margin-right: auto;"
-        on:click={async () => {
-            await postUpdate();
-            PostUpdateModal.set(false);
-        }}>Post!</button
-    >
+        <div style="height: 0.3cm;" />
+        <button
+            class="fundButton"
+            style="background-color: #ff6000; color:white; display: block; margin-left: auto; margin-right: auto;"
+            on:click={async () => {
+                await UpdatePost();
+            }}>Post!</button
+        >
+    {/if}
 </Modal>
 
 <style>
