@@ -28,6 +28,7 @@
         unfollowIdea,
         checkFollowIdea,
     } from "$lib/data_functions/user.functions";
+    import MagicalDots from "$lib/components/magicalDots.svelte";
 
     /** @type {import('./$types').PageData} */
     // @ts-ignore
