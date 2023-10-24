@@ -80,7 +80,7 @@
 
 <Header />
 <div class="div">
-    <h1 class="h1">
+    <h1 class="h1" style="font-family: Barlow;">
         <span
             class="bg-gradient-to-br from-blue-500 to-cyan-300 bg-clip-text text-transparent box-decoration-clone"
             >Dream.</span
@@ -96,7 +96,7 @@
     </h1>
 
     <br />
-    <h1 class="title">Welcome to Solutio.</h1>
+    <h1 class="title" style="font-family: Barlow;">Welcome to Solutio.</h1>
 </div>
 {#if showSearch}
     <input class="input" type="search" name="demo" placeholder="Search..." />
@@ -104,7 +104,7 @@
 <TabGroup class="text-2xl px-10 py-5" />
 
 <div class="snap-x">
-    <h2 class="h3 trending">Trending Ideas</h2>
+    <h2 class="h3 trending" style="font-family: Barlow;">Trending</h2>
 </div>
 <div
     class="snap-x scroll-px-4 snap-mandatory scroll-smooth flex gap-4 overflow-x-auto px-4 py-10"
