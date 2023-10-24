@@ -1,5 +1,14 @@
+let newDeadline = { newDate: { day: 0, month: 0, year: 0 }, title: "" };
+let newDate = { day: 0, month: 0, year: 0 };
+export function createDeadline() {
+    return newDeadline;
+}
+export function createDate() {
+    return newDate;
+}
 let update = {
     creator: "",
+    key: "",
     status: "",
     subject: "",
     /**
@@ -8,13 +17,25 @@ let update = {
     images: [],
     body: "",
     nxtTitle: "",
-    nxtDate: "",
-    date: "",
+    /**
+     * @type {newDate} nxtDate
+     */
+    nxtDate: {
+        day: 0,
+        month: 0,
+        year: 0
+    },
+    /**
+     * @type {newDate} date
+     */
+    date: {
+        day: 0,
+        month: 0,
+        year: 0
+    },
 };
 export function createUpdate() {
-
     return update;
-
 }
 
 let subidea = {
@@ -42,6 +63,10 @@ let subidea = {
 export function createSubidea() {
     return subidea;
 }
+let ideaRel = {
+    key: "",
+    title: ""
+}
 let solution = {
     topic: "",
     title: "",
@@ -59,7 +84,13 @@ let solution = {
     opSystems: [],
     categories: [],
     topics: [],
+    /**
+     * @type {ideaRel[]} ideasRelated
+     */
     ideasRelated: [],
+    /**
+     * @type {newDeadline []} 
+     */
     deadlines: [],
     updates: [],
     tokensAddress: "",
@@ -68,4 +99,28 @@ let solution = {
 };
 export function createSolution() {
     return solution;
+}
+let advancedDate = {
+    day: 0,
+    month: 0,
+    year: 2023,
+    hour: 0,
+    minutes: 0,
+    seconds: 0,
+}
+let notification = {
+    link: "",
+    seen: false,
+    picture: "",
+    createBy: "",
+    subject: "",
+    body: "",
+    /**
+     * @type {advancedDate} date
+     */
+    date: advancedDate,
+    elementName: "",
+}
+export function createNotification() {
+    return notification;
 }
