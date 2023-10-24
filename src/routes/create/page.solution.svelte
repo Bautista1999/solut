@@ -9,6 +9,10 @@
     import { goto } from "$app/navigation";
     import { searchBar } from "$lib/stores/auth.state";
     import { isLoading } from "$lib/stores/loading";
+    import {
+        itemExists_General,
+        orderByDate,
+    } from "$lib/other_functions/other.functions";
 
     import {
         checkValidatorSolution,
@@ -93,24 +97,22 @@
         showModal = false;
     }
     function addDeadline() {
-        let deadlinePush = JSON.parse(JSON.stringify(newDeadline));
-
-        deadlines = [...deadlines, deadlinePush];
-        // deadlines = deadlines;
-        console.log(deadlines);
-        console.log(deadlinePush);
+        solution.deadlines.push(newDeadline);
+        newDeadline = { newDate: { day: "", month: "", year: "" }, title: "" };
+        solution.deadlines = solution.deadlines;
+        console.log("Deadlines from add deadlines: ", solution.deadlines);
     }
     /**
      * @param {String} opt
      */
     function substractDeadline(opt) {
-        const index = deadlines.indexOf(opt);
+        const index = solution.deadlines.indexOf(opt);
 
         if (index !== -1) {
-            deadlines.splice(index, 1);
+            solution.deadlines.splice(index, 1);
         }
-        console.log(deadlines);
-        deadlines = deadlines;
+        console.log(solution.deadlines);
+        solution.deadlines = solution.deadlines;
     }
     /**
      * @type {String[]}
@@ -173,10 +175,11 @@
         key = under;
         // @ts-ignore
         solution.deadlines.push(kickoffDeadline);
-        solution.deadlines = solution.deadlines;
+        console.log("Deadlines not ordered: ", solution.deadlines);
         // @ts-ignore
         solution.deadlines.push(launchDeadline);
         solution.deadlines = solution.deadlines;
+        solution.deadlines = orderByDate(solution.deadlines);
         validator = await validateSolution(solution);
         validator = validator;
 
@@ -252,9 +255,11 @@
             key: idea?.key,
             title: idea?.data.title,
         };
-        // @ts-ignore
-        solution.ideasRelated.push(addedIdea);
-        solution.ideasRelated = solution.ideasRelated;
+        if (!itemExists_General(idea, editSol.ideasRelated)) {
+            // @ts-ignore
+            solution.ideasRelated.push(addedIdea);
+            solution.ideasRelated = solution.ideasRelated;
+        }
         ideasRelated = [];
     }
 </script>
@@ -338,7 +343,6 @@
              background-color:white; border-color:black;border-width:1px;"
             bind:value={searchWord}
             on:input={() => {
-                console.log("hola");
                 searchIdea();
             }}
         />
@@ -503,7 +507,7 @@
             {/if}
             <div class="spacer" />
             <div class="spacer" />
-            {#each deadlines as date}
+            {#each solution.deadlines as date}
                 <p>
                     - {date.title}
                 </p>
@@ -766,7 +770,9 @@
             <button
                 class="tabs"
                 style="background-color:orangered; width: 5cm; height: 1cm; color:white;"
-                on:click={() => addDeadline()}>Confirm deadline</button
+                on:click={() => {
+                    addDeadline();
+                }}>Confirm deadline</button
             >
         </div>
     </Modal>
