@@ -46,6 +46,9 @@
     // Call startNextCycle initially to start the first cycle
     onMount(() => {
         startNextCycle();
+        if (window.innerWidth < 700) {
+            width = 90;
+        }
     });
     onDestroy(() => {
         modal = false;
@@ -57,7 +60,7 @@
         class="loadingBlock"
         style="margin-top: 0px; height:fit-content;min-height: 40vh; display:flex; justify-content:center; align-items:center;  "
     >
-        <div class="loadingContent" style="height: 5cm; width:70%;">
+        <div class="loadingContent" style="height: 5cm; width:60%;">
             <div class="dots">
                 {#each dotStates as dotState, index}
                     <button
