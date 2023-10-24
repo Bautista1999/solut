@@ -1,3 +1,7 @@
+<script>
+    export let msg = "Signed in successfully!";
+</script>
+
 <div class="loginBlock">
     <div class="loginContent">
         <img
@@ -6,7 +10,7 @@
             style="width:35%; margin:20px;"
             class="centered-image"
         />
-        <h3>Signed in successfully!</h3>
+        <h3>{msg}</h3>
         <div class="textbody">
             <p>Going back to the page...</p>
         </div>
@@ -24,9 +28,9 @@
         display: flex;
         justify-content: center;
         width: 100%;
-        min-height: 100vh;
         z-index: 0;
-        margin-top: 4cm;
+        margin-top: 1cm;
+        margin-bottom: 1cm;
     }
 
     .loginContent {
@@ -37,7 +41,7 @@
         background-color: white;
         border-color: black;
         border-width: 2px;
-        width: 22%;
+        width: fit-content;
         height: fit-content;
         padding-top: 7px;
         box-shadow: 10px 10px 0px rgba(0, 0, 0, 1);
@@ -46,15 +50,13 @@
     @media (max-width: 768px) {
         .loginContent {
             width: 90%; /* Adjust the width for smaller screens */
-            height: 7cm; /* Adjust the height for smaller screens */
             box-shadow: 5px 5px 0px rgba(0, 0, 0, 1); /* Adjust the box-shadow for smaller screens */
         }
         .loginBlock {
             display: flex;
             justify-content: center;
             width: 100%;
-            margin-top: 5cm;
-            min-height: 100vh;
+            margin-top: 1cm;
             z-index: 0;
         }
     }
