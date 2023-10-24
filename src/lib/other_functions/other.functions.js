@@ -1,3 +1,4 @@
+import { createSolution } from "$lib/data_objects/data_objects";
 import { decimalToBigInt, info, signedIn } from "$lib/stores/auth.state";
 import { NotSignedIn, pledgeModal } from "$lib/stores/loading";
 import { DateInTheFutureValidator } from "$lib/validators/create.validator";
@@ -151,10 +152,19 @@ export function getClosestDate(dates) {
     for (let i = 0; i < dates.length; i++) {
         let inTheFuture = DateInTheFutureValidator(dates[i].newDate.day, dates[i].newDate.month, dates[i].newDate.year);
         if (inTheFuture) {
-            return dates[i].title;
+            return dates[i];
         };
     }
-    return "Everything in the past";
+    let returnData = {
+        newDate: {
+            day: 0,
+            month: 0,
+            year: 2023,
+        },
+        title: "",
+
+    };
+    return returnData;
 }
 /**
 * @param {any[]} list1
@@ -215,6 +225,7 @@ export function AdvancedSubList(list, amount, orientation, position) {
  * @param {any[]} list
  * @param {string} item
  */
+//This works for a list of strings.
 export function substractItem(list, item) {
     const index = list.indexOf(item);
 
@@ -223,4 +234,149 @@ export function substractItem(list, item) {
     }
     console.log(list);
     return list;
+}
+let deadlines = createSolution().deadlines;
+//let newDeadline = { newDate: { day: "", month: "", year: "" }, title: "" };
+/**
+ * @param {deadlines[]} list
+ */
+export function orderByDate(list) {
+    let returnList = list;
+
+    //Order by year
+    //In every iteration, it will find the position of the deadline with
+    //the minimum year and put it at the top of the list. 
+    for (let i = 0; i < list.length; i++) {
+        // @ts-ignore
+        let year = returnList[i].newDate.year;
+        let deadline = returnList[i];
+        let minYear = year;
+        let minYearPos = i;
+        let minHasChanged = false;
+
+        for (let j = i; j < list.length; j++) {
+            if (j != i) {
+                // @ts-ignore
+                let year2 = returnList[j].newDate.year;
+                if (minYear > year2 && i < j) { //si el ano es mayor que el ano siguiente Y esta en una posicion
+                    //en la lista que es inferior al del ano siguiente, hay que cambiarlos. 
+                    //aca los cambiamos de posicion
+                    minYear = year2
+                    minYearPos = j;
+                    minHasChanged = true;
+                }
+            }
+        }
+        if (minHasChanged) {
+            returnList[i] = returnList[minYearPos];
+            returnList[minYearPos] = deadline;
+        }
+        minHasChanged = false;
+
+    }
+
+    //Order by month
+    for (let i = 0; i < list.length; i++) {
+        // @ts-ignore
+        let year = returnList[i].newDate.year;
+        // @ts-ignore
+        let month = returnList[i].newDate.month;
+        let deadline = returnList[i];
+        let minMonth = month;
+        let minMonthPos = i;
+        let minHasChanged = false;
+
+        for (let j = i; j < list.length; j++) {
+            if (j != i) {
+                // @ts-ignore
+                let year2 = returnList[j].newDate.year;
+                if (year2 == year) {
+                    // @ts-ignore
+                    let month2 = returnList[j].newDate.month;
+                    if (minMonth > month2 && i < j) { //si el ano es mayor que el ano siguiente Y esta en una posicion
+                        //en la lista que es inferior al del ano siguiente, hay que cambiarlos. 
+                        //aca los cambiamos de posicion
+                        minMonth = month2
+                        minMonthPos = j;
+                        minHasChanged = true;
+                    }
+                }
+            }
+        }
+        if (minHasChanged) {
+            returnList[i] = returnList[minMonthPos];
+            returnList[minMonthPos] = deadline;
+        }
+        minHasChanged = false;
+
+    }
+    console.log(returnList);
+    //Order by day
+    for (let i = 0; i < list.length; i++) {
+        // @ts-ignore
+        let year = returnList[i].newDate.year;
+        // @ts-ignore
+        let month = returnList[i].newDate.month;
+        // @ts-ignore
+        let day = returnList[i].newDate.day;
+        let deadline = returnList[i];
+        let minDay = day;
+        let minDayPos = i;
+        let minHasChanged = false;
+
+        for (let j = i; j < list.length; j++) {
+            if (j != i) {
+                // @ts-ignore
+                let year2 = returnList[j].newDate.year;
+                // @ts-ignore
+                let month2 = returnList[j].newDate.month;
+                if (year2 == year && month == month2) {
+                    // @ts-ignore
+                    let day2 = returnList[j].newDate.day;
+                    if (minDay > day2 && i < j) { //si el ano es mayor que el ano siguiente Y esta en una posicion
+                        //en la lista que es inferior al del ano siguiente, hay que cambiarlos. 
+                        //aca los cambiamos de posicion
+                        minDay = day2;
+                        minDayPos = j;
+                        minHasChanged = true;
+                    }
+                }
+            }
+        }
+        if (minHasChanged) {
+            returnList[i] = returnList[minDayPos];
+            returnList[minDayPos] = deadline;
+        }
+        minHasChanged = false;
+
+    }
+    return returnList;
+}
+/**
+ * @param {any} opt
+ * @param {any[]} list
+ */
+export function substractItem_General(opt, list) {
+    // @ts-ignore
+    const index = list.indexOf(opt);
+
+    if (index !== -1) {
+        list.splice(index, 1);
+    }
+    list = list;
+    return list;
+}
+/**
+ * @param {any} opt
+ * @param {any[]} list
+ */
+export function itemExists_General(opt, list) {
+    // @ts-ignore
+    const index = list.indexOf(opt);
+
+    if (index !== -1) {
+        return false;
+    }
+    return true;
+
 }
