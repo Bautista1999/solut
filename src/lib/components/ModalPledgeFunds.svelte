@@ -54,7 +54,7 @@
                 documentID,
                 fromUSDtoICP(amountUSD),
                 "e4204e024181e960a018a5cbdc51b8af834f33932bfe4d711909b492b16767eb",
-                collectionName
+                "solutions"
             );
             pledgeModal.set(false);
         }}
