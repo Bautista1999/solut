@@ -760,16 +760,6 @@
                 <button
                     class="updateBlock"
                     on:click={() => {
-                        // //let update = {
-                        //     creator: latestUpdate.creator,
-                        //     status: latestUpdate.status,
-                        //     subject: latestUpdate.subject,
-                        //     images: latestUpdate.images,
-                        //     body: latestUpdate.body,
-                        //     nxtTitle: latestUpdate.nxtTitle,
-                        //     nxtDate: latestUpdate.nxtDate,
-                        //     date: latestUpdate.date,
-                        // };
                         let update = latestUpdate;
                         updateImages.set(latestUpdate.images);
                         openUpdate(update);
