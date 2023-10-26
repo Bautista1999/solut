@@ -15,6 +15,8 @@ export const PostUpdateModal = writable(false);
  */
 let images = [];
 export const updateImages = writable(images);
+
 export const displayedUpdImages = writable(images);
+export const amountNotis = writable(0);
 
 
