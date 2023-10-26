@@ -152,7 +152,7 @@ export function decimalToBigInt(decimalValue, multiplier) {
 }
 
 export async function signedIn() {
-
+    await basicInfo();
     console.log("Get info.key: ", get(info).key);
     if (get(info).key == "" || get(info).key == null) {
         loginedIn.set(false);
