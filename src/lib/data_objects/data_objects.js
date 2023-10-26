@@ -94,6 +94,7 @@ let solution = {
     deadlines: [],
     updates: [],
     tokensAddress: "",
+    transactionHistory: []
 
 
 };
@@ -107,6 +108,9 @@ let advancedDate = {
     hour: 0,
     minutes: 0,
     seconds: 0,
+}
+export function createAdvancedDate() {
+    return advancedDate;
 }
 let notification = {
     link: "",
@@ -123,4 +127,25 @@ let notification = {
 }
 export function createNotification() {
     return notification;
+}
+
+let user = {
+    nickname: "",
+    address: "",
+    walletAddress: "",
+    followedIdeas: [],
+    followers: [],
+    picture: "",
+    backgroundPicture: "",
+    areasOfInterest: [],
+    comments: [],
+    balance: 0,
+    pledged: 0,
+    funded: 0,
+    transactionHistory: [],
+    notificationsKey: "",
+    amountNotifictions: 0,
+}
+export function createUser() {
+    return user;
 }
