@@ -2,19 +2,32 @@
     import { TabGroup, Tab, TabAnchor } from "@skeletonlabs/skeleton";
     import { page } from "$app/stores";
     import { LightSwitch } from "@skeletonlabs/skeleton";
-    import { signedIn } from "$lib/stores/auth.state";
-    import { afterUpdate, onMount } from "svelte";
+    import { basicInfo, info, signedIn } from "$lib/stores/auth.state";
+    import { afterUpdate, onDestroy, onMount } from "svelte";
     import { signIn, signOut } from "@junobuild/core";
-    import { loginedIn } from "$lib/stores/loading";
+    import { amountNotis, loginedIn } from "$lib/stores/loading";
     import { createNotification } from "$lib/data_objects/data_objects";
+    import { howLongAgo } from "$lib/other_functions/other.functions";
+    import {
+        check_new_notifications,
+        get_user_notifications,
+    } from "$lib/data_functions/docu.functions";
+    import MagicalDots from "./magicalDots.svelte";
     let signed = false;
     export let profilePicture =
         "https://www.shareicon.net/data/2015/12/09/685026_arrow_512x512.png";
+    let notification = createNotification();
+    /**
+     * @type {notification[]} userNotifications
+     */
+    $: userNotifications = [];
+    let notisLoading = false;
+    $: newNotis = $amountNotis;
+
     onMount(async () => {
-        signed = await signedIn();
-        if (signed) {
-            loginedIn.set(true);
-        }
+        await basicInfo();
+        // @ts-ignore
+        check_new_notifications();
     });
 
     async function signOutPopUp() {
@@ -29,21 +42,19 @@
     }
 
     let isDropdownOpen = false;
-    let notification1 = createNotification();
+
     let today = new Date();
     let currentDay = today.getDate();
     let currentMonth = today.getMonth() + 1;
 
     let currentYear = today.getFullYear();
-    notification1 = {
+    notification = {
         link: "xh6qb-uyaaa-aaaal-acuaq-cai.icp0.io/homepage",
         seen: false,
         picture:
-            "https://beebom.com/wp-content/uploads/2022/02/Featured.jpg?w=750&quality=75",
+            "https://cdn1.vectorstock.com/i/1000x1000/10/95/cute-young-man-avatar-character-cartoon-style-vector-36081095.jpg",
         createBy: "aaaaaa-bbbbb-ccccc-ddddd-eeeee",
-        subject:
-            notification1.createBy +
-            " has posted a new update on the project FitnessGo.",
+        subject: "New update on the project FitnessGo.",
         body: "Hey guys! Been working really hard this last couple of weeks. The team is thrilled to anounce the creation of new buttons.",
 
         date: {
@@ -57,8 +68,8 @@
         elementName: "FitnessGo",
     };
     let notifications = [
-        notification1,
-        notification1,
+        notification,
+        notification,
         // Add more notifications here
     ];
     let backgroundcolor = "transparent";
@@ -79,48 +90,22 @@
     function goToIdea(where) {
         window.location.href = "/" + where;
     }
+    async function loadNotifications() {
+        if (!isDropdownOpen) {
+            amountNotis.set(0);
+            return;
+        }
+        if (loginedIn) {
+            if (userNotifications.length == 0) {
+                notisLoading = true;
+            }
+            userNotifications = await get_user_notifications();
+            notisLoading = false;
+        }
+    }
+    let index = 0;
 </script>
 
-<header>
-    <!-- <TabGroup class="text-2xl px-10 py-5" style="font-family:Barlow;">
-        <TabAnchor
-            href="/homepage"
-            selected={$page.url.pathname === "/homepage"}>Home</TabAnchor
-        >
-        <TabAnchor href="/about" selected={$page.url.pathname === "/about"}
-            >About</TabAnchor
-        >
-        <TabAnchor href="/about" selected={$page.url.pathname === "/about"}
-            >Profile</TabAnchor
-        >
-        <TabAnchor href="/about" selected={$page.url.pathname === "/about"}
-            >Feed</TabAnchor
-        >
-        <TabAnchor
-            href="/billetera"
-            selected={$page.url.pathname === "/billetera"}>Wallet</TabAnchor
-        >
-        <TabAnchor href="/about" selected={$page.url.pathname === "/about"}
-            >Contact</TabAnchor
-        >
-
-        <TabAnchor href="/create" selected={$page.url.pathname === "/create"}>
-            <div><button> Create</button></div>
-        </TabAnchor>
-        <TabAnchor>
-            <LightSwitch />
-        </TabAnchor>
-        {#if $loginedIn}
-            <!-- svelte-ignore a11y-missing-attribute -->
-    <!-- <button on:click={() => signOutPopUp()}>
-                <img class="profile" src={profilePicture} /></button
-            >
-        {:else}
-            <!-- svelte-ignore a11y-missing-attribute -->
-    <!-- <button on:click={() => signInPopUp()}> Sign in</button>
-        {/if} -->
-    <!-- </TabGroup> -->
-</header>
 <header>
     <div class="tabClosed">
         <button
@@ -149,52 +134,135 @@
             Create
         </button>
     </div>
-
-    <div class="notificationBlock">
-        <button
-            class="tabNoti"
-            style="background-color: {backgroundcolor}; color:{color};"
-            on:click={() => {
-                toggleDropdown();
-            }}>Notifications</button
-        >
-        {#if isDropdownOpen}
-            <div class="notification-dropdown">
-                {#each notifications as notification}
-                    <button class="notification">{notification.subject}</button>
-                {/each}
-                <div style="height: 0.3cm;" />
+    {#if $loginedIn}
+        <div class="notificationBlock">
+            {#if newNotis == 0}
+                <button
+                    class="tabNoti"
+                    style="background-color: {backgroundcolor}; color:{color};"
+                    on:click={async () => {
+                        toggleDropdown();
+                        await loadNotifications();
+                    }}>Notifications</button
+                >
+            {:else}
                 <div
-                    style="display: flex; align-items:center; justify-content:center;"
+                    style="display: flex; justify-content:center;align-items:center;"
                 >
                     <button
-                        on:click={() => {
+                        class="tabNoti"
+                        style="background-color: {backgroundcolor}; color:{color};"
+                        on:click={async () => {
                             toggleDropdown();
-                        }}
-                        class="tabClosed"
-                        style="font-size: large; padding-top:0px;
+                            await loadNotifications();
+                        }}>Notifications</button
+                    >
+                    {#if newNotis > 99}
+                        <div class="newNotis">+{99}</div>
+                    {:else}
+                        <div class="newNotis">{newNotis}</div>
+                    {/if}
+                </div>
+            {/if}
+            {#if isDropdownOpen}
+                <div class="notification-dropdown">
+                    {#if notisLoading}
+                        <div style="margin-bottom: 30px;">
+                            <MagicalDots />
+                        </div>
+                    {:else}
+                        {#if userNotifications.length == 0}
+                            <p
+                                style="display: flex; justify-content:center; align-items:center; font-size:large;"
+                            >
+                                - No notifications yet -
+                            </p>
+                        {:else}
+                            {#each userNotifications as notification, index}
+                                <button
+                                    class="notification"
+                                    on:click={() => {
+                                        window.location.href =
+                                            notification.link;
+                                    }}
+                                    style="background-color: {index < newNotis
+                                        ? 'antiquewhite'
+                                        : ''}"
+                                >
+                                    <div>
+                                        <div class="notiColumns">
+                                            <div class="profilePicture">
+                                                <img
+                                                    src={notification.picture}
+                                                    alt=""
+                                                />
+                                            </div>
+
+                                            <div style="width: 9.3cm;">
+                                                <p style="font-weight:700;">
+                                                    {notification.elementName}
+                                                </p>
+                                                <p>
+                                                    {notification.subject}
+                                                </p>
+                                                {#if notification.body != ""}
+                                                    <p
+                                                        style="font-style: italic;"
+                                                    >
+                                                        "{notification.body.substring(
+                                                            0,
+                                                            80
+                                                        )}...""
+                                                    </p>
+                                                {/if}
+                                            </div>
+                                        </div>
+                                        <p style="color: orangered;">
+                                            {howLongAgo(
+                                                notification.date
+                                            ).amount.toString() +
+                                                " " +
+                                                howLongAgo(notification.date)
+                                                    .timeframe}
+                                            ago
+                                        </p>
+                                    </div>
+                                </button>
+                            {/each}
+                        {/if}
+                        <div style="height: 0.3cm;" />
+                        <div
+                            style="display: flex; align-items:center; justify-content:center;"
+                        >
+                            <button
+                                on:click={() => {
+                                    toggleDropdown();
+                                }}
+                                class="tabClosed"
+                                style="font-size: large; padding-top:0px;
                     padding-bottom:0px; padding-left:10px;padding-right:10px;
                     border-color:darkslategrey;
                     border-width:0.5px;
                     
                     "
-                    >
-                        close
-                    </button>
+                            >
+                                close
+                            </button>
+                        </div>
+                    {/if}
                 </div>
-            </div>
-        {/if}
-    </div>
-    <div class="tabClosed">
-        <button
-            on:click={() => {
-                goToIdea("profile");
-            }}
-        >
-            Profile
-        </button>
-    </div>
-    {#if $loginedIn}
+            {/if}
+        </div>
+        <div class="tabClosed">
+            <button
+                on:click={() => {
+                    goToIdea("profile?id=" + $info.key);
+                }}
+            >
+                Profile
+            </button>
+        </div>
+
         <!-- svelte-ignore a11y-missing-attribute -->
         <button class="tabClosed" on:click={() => signOutPopUp()}>
             <img class="profile" src={profilePicture} /></button
@@ -217,6 +285,43 @@
         width: 1.2cm;
         margin-right: 0px;
     }
+    .profilePicture {
+        width: 2cm;
+        height: 2cm;
+        overflow: hidden;
+        border: 1px solid black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .profilePicture img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .newNotis {
+        width: 0.8cm;
+        height: 0.8cm;
+        background-color: orangered;
+        color: white;
+        border-color: black;
+        border-width: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: medium;
+
+        border-radius: 50%;
+    }
+    .notiColumns {
+        gap: 10px;
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+        line-height: 1.1;
+        max-width: 11.2cm;
+    }
     .horizontalLine {
         width: 80%;
         border-color: rgba(240, 248, 255, 0.149);
@@ -232,23 +337,28 @@
         top: 100%; /* Position below the "Notifications" button */
         left: 0; /* Align with the left edge of the button */
         background-color: white;
+        width: 12.1cm;
+        overflow-y: auto;
+        overflow-x: hidden;
         margin-top: 10px;
         color: darkslategrey;
         border-color: black;
         border-width: 2px;
         z-index: 2; /* Place it above other content (e.g., z-index: 1) */
         padding-bottom: 5px;
-        box-shadow: 8px 8px 0px rgba(0, 0, 0, 1);
-        max-height: 40vh;
+        box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.5);
+        max-height: 80vh;
         padding: 10px;
         border-radius: 3px;
     }
 
     .notification {
-        width: 5cm;
+        width: 11.2cm;
         display: flex;
         justify-content: flex-start;
         align-items: flex-start;
+        text-align: left;
+        font-size: medium;
         padding-left: 10px;
         padding-right: 10px;
         padding-top: 5px;
