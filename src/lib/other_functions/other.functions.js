@@ -1,4 +1,5 @@
-import { createSolution } from "$lib/data_objects/data_objects";
+import { post_pledge_notification } from "$lib/data_functions/docu.functions";
+import { createAdvancedDate, createSolution } from "$lib/data_objects/data_objects";
 import { decimalToBigInt, info, signedIn } from "$lib/stores/auth.state";
 import { NotSignedIn, pledgeModal } from "$lib/stores/loading";
 import { DateInTheFutureValidator } from "$lib/validators/create.validator";
@@ -61,7 +62,7 @@ export async function pledgeFunds(documentID, amountICP, address, collectionName
     //2) Create a transactionHistory in the idea
     console.log("Getting idea document...");
     const myDoc = await getDoc({
-        collection: "ideas",
+        collection: collectionName,
         // @ts-ignore
         key: documentID,
     });
@@ -79,9 +80,9 @@ export async function pledgeFunds(documentID, amountICP, address, collectionName
     // @ts-ignore
     topicData.moneyPledged += amountICP;
     // @ts-ignore
-    topicData.transactionHistory.push(newTransactionIdea);
+    // topicData.transactionHistory.push(newTransactionIdea);
     // @ts-ignore
-    topicData.transactionHistory = topicData.transactionHistory;
+    // topicData.transactionHistory = topicData.transactionHistory;
     console.log("Updating idea`s info in DB...");
     await setDoc({
         collection: collectionName,
@@ -133,7 +134,8 @@ export async function pledgeFunds(documentID, amountICP, address, collectionName
     const bigIntRepresentation = decimalToBigInt(amountICP, 10 ** 8);
     console.log(bigIntRepresentation); // Expected: 200000
     // @ts-ignore
-    let result = transferFrom(address, bigIntRepresentation);
+    //let result = transferFrom(address, bigIntRepresentation);
+    await post_pledge_notification(get(info).key, collectionName, documentID, amountICP);
 }
 let date = {
     newDate: { day: 22, month: 8, year: 23 },
@@ -379,4 +381,114 @@ export function itemExists_General(opt, list) {
     }
     return true;
 
+}
+let dateAdv = createAdvancedDate();
+/**
+ * @param {dateAdv} date
+ */
+export function howLongAgo(date) {
+    let now = new Date();
+    let day = now.getDate();
+    let month = now.getMonth() + 1;
+    let year = now.getFullYear();
+    let minutes = now.getMinutes();
+    let hours = now.getHours();
+    let seconds = now.getSeconds();
+    let time = {
+        timeframe: "",
+        amount: 0,
+    };
+    if (year == date.year) {
+        if (month == date.month) {
+            if (day == date.day) {
+                if (hours == date.hour) {
+                    if (minutes == date.minutes) {
+                        if (seconds == date.seconds) {
+
+                        } else {
+                            let diff = seconds - date.seconds;
+                            if (diff > 1) {
+                                return time = {
+                                    timeframe: "seconds",
+                                    amount: diff,
+                                };
+                            } else {
+                                return time = {
+                                    timeframe: "second",
+                                    amount: diff,
+                                }
+                            }
+                        }
+                    } else {
+                        let diff = minutes - date.minutes;
+                        if (diff > 1) {
+                            return time = {
+                                timeframe: "minutes",
+                                amount: diff,
+                            };
+                        } else {
+                            return time = {
+                                timeframe: "minute",
+                                amount: diff,
+                            }
+                        }
+                    }
+                } else {
+                    let diff = hours - date.hour;
+                    if (diff > 1) {
+                        return time = {
+                            timeframe: "hours",
+                            amount: diff,
+                        };
+                    } else {
+                        return time = {
+                            timeframe: "hour",
+                            amount: diff,
+                        }
+                    }
+                }
+            } else {
+                let diff = day - date.day;
+                if (diff > 1) {
+                    return time = {
+                        timeframe: "days",
+                        amount: diff,
+                    };
+                } else {
+                    return time = {
+                        timeframe: "day",
+                        amount: diff,
+                    }
+                }
+            }
+        } else {
+            let diff = month - date.month;
+            if (diff > 1) {
+                return time = {
+                    timeframe: "months",
+                    amount: diff,
+                };
+            } else {
+                return time = {
+                    timeframe: "month",
+                    amount: diff,
+                }
+            }
+        }
+    } else {
+        let diff = year - date.year;
+        if (diff > 1) {
+            return time = {
+                timeframe: "years",
+                amount: diff,
+            };
+        } else {
+            return time = {
+                timeframe: "year",
+                amount: diff,
+            }
+        }
+
+    }
+    return time;
 }
