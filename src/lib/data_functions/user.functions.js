@@ -2,22 +2,10 @@ import { basicInfo, signedIn } from "$lib/stores/auth.state";
 import { isLoading, loginedIn, signInSuccessful } from "$lib/stores/loading";
 import { getDoc, setDoc, signIn } from "@junobuild/core";
 import { info } from "../stores/auth.state";
-
-let user = {
-    nickname: "",
-    address: "",
-    walletAddress: "",
-    followedIdeas: [],
-    followers: [],
-    picture: "",
-    backgroundPicture: "",
-    areasOfInterest: [],
-    comments: [],
-    balance: 0,
-    pledged: 0,
-    funded: 0,
-    transactionHistory: [],
-}
+import { createNotification, createUser } from "$lib/data_objects/data_objects";
+import { nanoid } from "nanoid";
+import { post_follow_notification } from "./docu.functions";
+let user = createUser();
 
 
 export async function login() {
@@ -45,17 +33,29 @@ export async function login() {
  * @param {String} UserKey
  */
 export async function registerUser(UserKey) {
-    console.log("Starting registration...")
+    console.log("Looking if the user is registered...")
     const inDB = await isRegistered(UserKey);
     console.log(inDB);
-    if (inDB === true) { return; };
+    if (inDB === true) {
+        console.log("Already registered!")
+        return;
+    };
+    console.log("Not registered: registering now...");
     user.address = UserKey;
-    console.log("Not registered");
+    user.notificationsKey = "NOT_" + UserKey;
+
     await setDoc({
         collection: "users",
         doc: {
             key: UserKey,
             data: user,
+        },
+    });
+    await setDoc({
+        collection: "notifications",
+        doc: {
+            key: user.notificationsKey,
+            data: [],
         },
     });
 }
@@ -203,6 +203,7 @@ export async function followIdea(userKey, ideaKey, collectionName) {
             data: userData,
         },
     });
+    await post_follow_notification(userKey, collectionName, ideaKey);
     return "Success";
 
 }
