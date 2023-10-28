@@ -149,3 +149,47 @@ let user = {
 export function createUser() {
     return user;
 }
+
+let topic = {
+    title: "",
+    subtitle: "",
+    description: "",
+    image: "",
+    followers: [],
+    amountFollowers: 0,
+    moneyPledged: 0,
+    moneyFunded: 0,
+    transactionHistory: [],
+    comments: [],
+    opSystems: [],
+    categories: [],
+    solutions: [],
+    ideas: [],
+};
+export function createTopic() {
+    return topic;
+}
+let myDoc = {
+    created_at: 0,
+    data: createTopic(),
+    description: "",
+    key: "",
+    owner: "",
+    updated_at: 0,
+
+}
+export function createJunoTopic() {
+    return myDoc;
+}
+let myDoc2 = {
+    created_at: 0,
+    data: createSolution(),
+    description: "",
+    key: "",
+    owner: "",
+    updated_at: 0,
+
+}
+export function createJunoSolution() {
+    return myDoc2;
+}
