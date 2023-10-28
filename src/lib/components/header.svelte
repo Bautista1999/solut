@@ -2,8 +2,8 @@
     import { TabGroup, Tab, TabAnchor } from "@skeletonlabs/skeleton";
     import { page } from "$app/stores";
     import { LightSwitch } from "@skeletonlabs/skeleton";
-    import { basicInfo, info, signedIn } from "$lib/stores/auth.state";
-    import { afterUpdate, onDestroy, onMount } from "svelte";
+    import { basicInfo, info, initDB, signedIn } from "$lib/stores/auth.state";
+    import { afterUpdate, beforeUpdate, onDestroy, onMount } from "svelte";
     import { signIn, signOut } from "@junobuild/core";
     import { amountNotis, loginedIn } from "$lib/stores/loading";
     import { createNotification } from "$lib/data_objects/data_objects";
@@ -13,7 +13,6 @@
         get_user_notifications,
     } from "$lib/data_functions/docu.functions";
     import MagicalDots from "./magicalDots.svelte";
-    let signed = false;
     export let profilePicture =
         "https://www.shareicon.net/data/2015/12/09/685026_arrow_512x512.png";
     let notification = createNotification();
@@ -25,6 +24,7 @@
     $: newNotis = $amountNotis;
 
     onMount(async () => {
+        await initDB();
         await basicInfo();
         // @ts-ignore
         check_new_notifications();
@@ -67,11 +67,6 @@
         },
         elementName: "FitnessGo",
     };
-    let notifications = [
-        notification,
-        notification,
-        // Add more notifications here
-    ];
     let backgroundcolor = "transparent";
     let color = "azure";
     function toggleDropdown() {
@@ -116,15 +111,7 @@
             Home
         </button>
     </div>
-    <div class="tabClosed">
-        <button
-            on:click={() => {
-                goToIdea("billetera");
-            }}
-        >
-            Wallet
-        </button>
-    </div>
+
     <div class="tabClosed">
         <button
             on:click={() => {
@@ -277,6 +264,7 @@
 <div style="display: flex; justify-content:center; align-items:center">
     <div class="horizontalLine" />
 </div>
+<slot />
 
 <style>
     .profile {
