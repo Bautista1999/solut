@@ -104,8 +104,6 @@
             key: data.id,
         });
 
-        await basicInfo();
-
         title = myDoc?.data.title;
         subtitle = myDoc?.data.subtitle;
         description = myDoc?.data.description;
