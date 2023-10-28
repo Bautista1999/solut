@@ -8,6 +8,7 @@ import { loginedIn } from "./loading";
 
 
 
+
 let userPrincipal = null;
 let walletAddress = null;
 /**
@@ -30,19 +31,29 @@ export const info = writable({
     userBalance: null,
     loading: true
 });
-export async function basicInfo() {
+export async function initDB() {
     await initJuno({
         satelliteId: "vehbc-zaaaa-aaaal-acyba-cai",
     });
+}
+export async function basicInfo() {
 
     await new Promise((resolve, reject) => {
         authSubscribe(async (user) => {
             try {
-                console.log("User:", user);
-
                 if (user != null) {
-
+                    loginedIn.set(true);
                     let userPrincipal = Principal.fromText(user.key);
+                    info.set({
+                        key: user.key,
+                        userPrincipal: null,
+                        walletAddress: null,
+                        identity: null,
+                        agent: null,
+                        ledgerID: "",
+                        userBalance: null,
+                        loading: true
+                    });
                     const accountIdent = AccountIdentifier.fromPrincipal({ principal: userPrincipal })
                     let walletAddress = accountIdent.toHex();
                     let identity = await unsafeIdentity();
