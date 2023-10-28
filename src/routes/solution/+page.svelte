@@ -150,7 +150,6 @@
             key: data.id,
         });
 
-        await basicInfo();
         console.log(myDoc);
         title = myDoc?.data.title;
         subtitle = myDoc?.data.subtitle;
