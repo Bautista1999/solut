@@ -2,11 +2,16 @@
     import Header from "$lib/components/header.svelte";
     import Loading from "$lib/components/loading.svelte";
     import Modal from "$lib/components/modal.svelte";
-    import { getDocu, updateData } from "$lib/data_functions/docu.functions";
+    import {
+        getDocu,
+        updateData,
+        usernameExists,
+    } from "$lib/data_functions/docu.functions";
     import { createUser } from "$lib/data_objects/data_objects";
     import { onMount } from "svelte";
     import { clipboard } from "@skeletonlabs/skeleton";
     import { basicInfo, info } from "$lib/stores/auth.state";
+    import Layout from "../+layout.svelte";
     /** @type {import('./$types').PageData} */
     // @ts-ignore
     export let data;
@@ -27,7 +32,6 @@
      */
     onMount(async () => {
         userLoading = true;
-        await basicInfo();
         myUserDoc = await getDocu("users", data.id || "");
         userData = myUserDoc?.data;
         amountTokens = Number($info.userBalance);
@@ -46,20 +50,26 @@
         userLoading = false;
         window.location.reload();
     }
+    let nicknameError = "";
     async function changeNickname() {
-        changeUserName = false;
-        // @ts-ignore
-        myUserDoc.data = userData;
-        msg = "Updating username";
-        userLoading = true;
+        let exists = await usernameExists(userData.nickname);
+        if (exists == true) {
+            nicknameError = "username already taken";
+        } else {
+            nicknameError = "";
+            changeUserName = false;
+            // @ts-ignore
+            myUserDoc.data = userData;
+            msg = "Updating username";
+            userLoading = true;
 
-        await updateData(myUserDoc, "users", data.id || "");
-        userLoading = false;
-        window.location.reload();
+            await updateData(myUserDoc, "users", data.id || "");
+            userLoading = false;
+            window.location.reload();
+        }
     }
 </script>
 
-<Header />
 {#if userLoading}
     <Loading {msg} />
 {:else}
@@ -97,7 +107,7 @@
                         bind:value={userData.nickname}
                     />
                 </p>
-
+                <p style="font-style: italic; color:red;">{nicknameError}</p>
                 <button
                     class="textButton"
                     on:click={async () => {
@@ -199,7 +209,9 @@
                         <div style="height: 0.3cm;" />
                         <div style="display:flex; justify-content:center;">
                             <button
-                                use:clipboard={{ element: "exampleElement" }}
+                                use:clipboard={{
+                                    element: "exampleElement",
+                                }}
                                 class="btn variant-filled"
                                 style="border-radius: 0px; padding:5px;
                             padding-left:10px;
@@ -246,6 +258,7 @@
             bind:value={userData.picture}
             style="width: 100%; border-color:black; border-width:1px; padding:5px;"
         />
+
         <br />
         <br />
         <button
@@ -342,11 +355,6 @@
         height: 2cm;
         border-color: antiquewhite;
         border-width: 1px;
-    }
-    .horizontalLine {
-        width: 70%;
-        border-color: antiquewhite;
-        border-width: 0.5px;
     }
     .content {
         width: 80%;
