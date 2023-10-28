@@ -1,10 +1,12 @@
-import { basicInfo, signedIn } from "$lib/stores/auth.state";
+import { basicInfo, initDB, signedIn } from "$lib/stores/auth.state";
 import { amountNotis, isLoading, loginedIn, signInSuccessful } from "$lib/stores/loading";
 import { getDoc, listDocs, setDoc, signIn } from "@junobuild/core";
 import { info } from "../stores/auth.state";
 import { createAdvancedDate, createDeadline, createNotification, createSolution, createUpdate } from "$lib/data_objects/data_objects";
 import { orderByDate } from "$lib/other_functions/other.functions";
 import { get } from "svelte/store";
+
+await initDB();
 
 /**
  * @param {string} collectionName
@@ -18,6 +20,7 @@ export async function getDocu(collectionName, key) {
 
     return myDoc;
 }
+
 /**
  * @param {string} collectionName
  */
@@ -292,6 +295,7 @@ export async function check_new_notifications() {
     let userKey = store.key;
     if (userKey == "" || userKey == null) {
         amountNotis.set(0);
+        return;
     }
     let myUserDoc = await getDocu("users", userKey);
 
@@ -369,4 +373,143 @@ export async function post_update_notification(userKey, elementKey, body) {
     notification.date.seconds = now.getSeconds();
     await post_all_notifications(elementKey, notification, "solutions");
 }
-//export async function post_follow_notification(userKey, collectionName, elementKey) {
+/**
+ * @param {string} username
+ */
+export async function usernameExists(username) {
+    let myListDocs = await listDocu("users");
+    let items = myListDocs.items;
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].key != get(info).key) {
+            if (items[i].data.nickname == username) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/**
+ * @param {string} category //"🦾 Technology", "💰 Business", "👨‍⚕️ Health care","💵 E-commerce","🪙 Crypto","🏦 Finance","🎸 Music","👥 Social","⚡ ICP","🏋️‍♂️ Sports and Fitness","Other",none
+
+ * @param {string} order //popularity, funding, recent, oldest, , none
+ * @param {string} collectionName //solutions or idea, doesnt apply for subideas and users
+ //solutions or idea, doesnt apply for subideas and users
+ * @param {number | string} amount //a number or the word "all"
+ //a number or the word "all"
+ * @param {boolean} [followed]
+ */
+export async function listIdeas(category, order, collectionName, amount, followed) {
+    let myList = await getListDocs(collectionName);
+    let items = myList.items;
+    let returnList = [];
+    //We first order by category selected
+    if (category != "none") {
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].data.categories.includes(category)) {
+                returnList.push(items[i]);
+            }
+        }
+    } else {
+        returnList = myList.items;
+    }
+    switch (order) {
+        case "popularity": {
+            for (let i = 0; i < returnList.length; i++) {
+                // @ts-ignore
+                let amountFoll = returnList[i].data.followers.length;
+                let thisItem = returnList[i];
+                let minHasChanged = false;
+                let minFoll = amountFoll;
+                let minFollPos = i;
+
+                for (let j = i; j < returnList.length; j++) {
+                    if (j != i) {
+                        // @ts-ignore
+                        let amountFoll2 = returnList[i].data.followers.length;
+                        if (minFoll > amountFoll2 && i < j) { //si el ano es mayor que el ano siguiente Y esta en una posicion
+                            //en la lista que es inferior al del ano siguiente, hay que cambiarlos. 
+                            //aca los cambiamos de posicion
+                            minFoll = amountFoll2;
+                            minFollPos = j;
+                            minHasChanged = true;
+                        }
+                    }
+                }
+                if (minHasChanged) {
+                    returnList[i] = returnList[minFollPos];
+                    returnList[minFollPos] = thisItem;
+                }
+                minHasChanged = false;
+            };
+        }
+
+        case "funding": {
+            for (let i = 0; i < returnList.length; i++) {
+                // @ts-ignore
+                let amount = returnList[i].data.moneyPledged;
+                let thisItem = returnList[i];
+                let minHasChanged = false;
+                let min = amount;
+                let minPos = i;
+
+                for (let j = i; j < returnList.length; j++) {
+                    if (j != i) {
+                        // @ts-ignore
+                        let amount2 = returnList[i].data.moneyPledged;
+                        if (min > amount && i < j) { //si el ano es mayor que el ano siguiente Y esta en una posicion
+                            //en la lista que es inferior al del ano siguiente, hay que cambiarlos. 
+                            //aca los cambiamos de posicion
+                            min = amount2;
+                            minPos = j;
+                            minHasChanged = true;
+                        }
+                    }
+                }
+                if (minHasChanged) {
+                    returnList[i] = returnList[minPos];
+                    returnList[minPos] = thisItem;
+                }
+                minHasChanged = false;
+            };
+        }
+        case "recent": {
+            break
+        }
+        case "oldest": {
+            let auxList = [];
+            for (let i = returnList.length - 1; i >= 0; i--) {
+                auxList.push(returnList[i]);
+            }
+            returnList = auxList;
+        }
+        case "none": {
+            break;
+        }
+
+
+    }
+    if (followed) {
+        let auxList = [];
+        for (let i = 0; i < returnList.length; i++) {
+            if (returnList[i].data.followers.includes(get(info).key)) {
+                auxList.push(returnList[i]);
+            }
+        }
+    }
+    return returnList;
+}
+/**
+ * @param {string} userKey
+ */
+export async function getUsername(userKey) {
+    let myDoc = await getDocu("users", userKey);
+    return myDoc?.data.nickname || { userKey };
+}
+/**
+ * @param {string} userKey
+ */
+export async function getProfilePicture(userKey) {
+    let myDoc = await getDocu("users", userKey);
+    return myDoc?.data.picture || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+}
