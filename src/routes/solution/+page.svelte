@@ -295,7 +295,6 @@
     }
 </script>
 
-<Header />
 {#if isLoading}
     <Loading />
 {:else if solutionSuccess}
