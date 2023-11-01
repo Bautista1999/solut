@@ -6,7 +6,7 @@ import { createAdvancedDate, createDeadline, createNotification, createSolution,
 import { orderByDate } from "$lib/other_functions/other.functions";
 import { get } from "svelte/store";
 
-await initDB();
+//await initDB();
 
 /**
  * @param {string} collectionName
