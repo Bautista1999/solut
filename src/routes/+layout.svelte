@@ -11,7 +11,6 @@
   import { onMount } from "svelte";
   import { basicInfo, info, initDB } from "$lib/stores/auth.state";
   import Header from "$lib/components/header.svelte";
-  import { count } from "$lib/stores/loading";
   import { beforeUpdate } from "svelte";
   import { authSubscribe } from "@junobuild/core";
 
