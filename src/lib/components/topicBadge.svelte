@@ -246,4 +246,16 @@
     p {
         text-align: justify;
     }
+    @media (max-width: 768px) {
+        .followersInfo {
+            gap: 20px;
+        }
+        .project {
+            width: 8cm;
+            height: 16cm;
+        }
+        .infoSection {
+            height: 14.7cm;
+        }
+    }
 </style>
