@@ -33,7 +33,8 @@
     async function signOutPopUp() {
         await signOut();
         loginedIn.set(false);
-        window.location.reload();
+
+        goToIdea("homepage");
     }
     async function signInPopUp() {
         await signIn();
@@ -44,6 +45,7 @@
     let isDropdownOpen = false;
 
     let today = new Date();
+    let menuOpen = false;
     let currentDay = today.getDate();
     let currentMonth = today.getMonth() + 1;
 
@@ -101,41 +103,128 @@
     let index = 0;
 </script>
 
-<header>
-    <div class="tabClosed">
-        <button
-            on:click={() => {
-                goToIdea("homepage");
-            }}
-        >
-            Home
-        </button>
-    </div>
-
-    <div class="tabClosed">
-        <button
-            on:click={() => {
-                goToIdea("create");
-            }}
-        >
-            Create
-        </button>
-    </div>
-    {#if $loginedIn}
-        <div class="notificationBlock">
-            {#if newNotis == 0}
+{#if window.innerWidth < 720}
+    <div
+        style="display:flex; flex-direction:column; flex-start; align-items:flex-start;
+        margin-left:10px;
+        margin-top:10px;
+        "
+    >
+        {#if menuOpen}
+            <div class="menu-dropdown">
                 <button
-                    class="tabNoti"
-                    style="background-color: {backgroundcolor}; color:{color};"
-                    on:click={async () => {
-                        toggleDropdown();
-                        await loadNotifications();
-                    }}>Notifications</button
+                    class="menuItem"
+                    on:click={() => {
+                        goToIdea("homepage");
+                    }}
                 >
-            {:else}
+                    Home
+                </button>
+                <button
+                    class="menuItem"
+                    on:click={() => {
+                        goToIdea("create");
+                    }}
+                >
+                    Create
+                </button>
+                {#if $loginedIn}
+                    <button
+                        class="menuItem"
+                        on:click={() => {
+                            goToIdea("notifications?id=" + $info.key);
+                        }}
+                    >
+                        Notifications
+                    </button>
+                    <button
+                        class="menuItem"
+                        on:click={() => {
+                            goToIdea("profile?id=" + $info.key);
+                        }}
+                    >
+                        Profile
+                    </button>
+
+                    <button
+                        class="menuItem"
+                        on:click={() => {
+                            signOutPopUp();
+                        }}
+                    >
+                        Sign out
+                    </button>
+                {:else}
+                    <button
+                        class="menuItem"
+                        on:click={() => {
+                            signInPopUp();
+                        }}
+                    >
+                        Sign in
+                    </button>
+                {/if}
+                <div style="height: 0.2cm;" />
+                <button
+                    on:click={() => {
+                        menuOpen = !menuOpen;
+                    }}
+                    class=" menuItem"
+                    style="font-size: large; padding-top:0px; 
+                    padding-bottom:0px; padding-left:10px;padding-right:10px;
+                    border-color:alicewhite;
+                    border-width:0.5px;
+                    color:antiquewhite;
+                    width:fit-content;
+                    margin-left:auto;
+                    margin-right:auto;"
+                >
+                    close
+                </button>
+            </div>
+        {:else}
+            <div class="menuLogo">
                 <div
-                    style="display: flex; justify-content:center;align-items:center;"
+                    class="profilePicture"
+                    style="width: 1cm;
+            height: 1cm;
+            border: 0px solid black;
+           
+            "
+                    on:click={() => {
+                        menuOpen = !menuOpen;
+                    }}
                 >
+                    <img src="/assets/menuLogo.png" alt="" />
+                </div>
+            </div>
+        {/if}
+    </div>
+    <div style="height: 0.5cm;" />
+{:else}
+    <header>
+        <div class="tabClosed">
+            <button
+                on:click={() => {
+                    goToIdea("homepage");
+                }}
+            >
+                Home
+            </button>
+        </div>
+
+        <div class="tabClosed">
+            <button
+                on:click={() => {
+                    goToIdea("create");
+                }}
+            >
+                Create
+            </button>
+        </div>
+        {#if $loginedIn}
+            <div class="notificationBlock">
+                {#if newNotis == 0}
                     <button
                         class="tabNoti"
                         style="background-color: {backgroundcolor}; color:{color};"
@@ -144,126 +233,142 @@
                             await loadNotifications();
                         }}>Notifications</button
                     >
-                    {#if newNotis > 99}
-                        <div class="newNotis">+{99}</div>
-                    {:else}
-                        <div class="newNotis">{newNotis}</div>
-                    {/if}
-                </div>
-            {/if}
-            {#if isDropdownOpen}
-                <div class="notification-dropdown">
-                    {#if notisLoading}
-                        <div style="margin-bottom: 30px;">
-                            <MagicalDots />
-                        </div>
-                    {:else}
-                        {#if userNotifications.length == 0}
-                            <p
-                                style="display: flex; justify-content:center; align-items:center; font-size:large;"
-                            >
-                                - No notifications yet -
-                            </p>
-                        {:else}
-                            {#each userNotifications as notification, index}
-                                <button
-                                    class="notification"
-                                    on:click={() => {
-                                        window.location.href =
-                                            notification.link;
-                                    }}
-                                    style="background-color: {index < newNotis
-                                        ? 'antiquewhite'
-                                        : ''}"
-                                >
-                                    <div>
-                                        <div class="notiColumns">
-                                            <div class="profilePicture">
-                                                <img
-                                                    src={notification.picture}
-                                                    alt=""
-                                                />
-                                            </div>
-
-                                            <div style="width: 9.3cm;">
-                                                <p style="font-weight:700;">
-                                                    {notification.elementName}
-                                                </p>
-                                                <p>
-                                                    {notification.subject}
-                                                </p>
-                                                {#if notification.body != ""}
-                                                    <p
-                                                        style="font-style: italic;"
-                                                    >
-                                                        "{notification.body.substring(
-                                                            0,
-                                                            80
-                                                        )}...""
-                                                    </p>
-                                                {/if}
-                                            </div>
-                                        </div>
-                                        <p style="color: orangered;">
-                                            {howLongAgo(
-                                                notification.date
-                                            ).amount.toString() +
-                                                " " +
-                                                howLongAgo(notification.date)
-                                                    .timeframe}
-                                            ago
-                                        </p>
-                                    </div>
-                                </button>
-                            {/each}
-                        {/if}
-                        <div style="height: 0.3cm;" />
-                        <div
-                            style="display: flex; align-items:center; justify-content:center;"
+                {:else}
+                    <div
+                        style="display: flex; justify-content:center;align-items:center;"
+                    >
+                        <button
+                            class="tabNoti"
+                            style="background-color: {backgroundcolor}; color:{color};"
+                            on:click={async () => {
+                                toggleDropdown();
+                                await loadNotifications();
+                            }}>Notifications</button
                         >
-                            <button
-                                on:click={() => {
-                                    toggleDropdown();
-                                }}
-                                class="tabClosed"
-                                style="font-size: large; padding-top:0px;
+                        {#if newNotis > 99}
+                            <div class="newNotis">+{99}</div>
+                        {:else}
+                            <div class="newNotis">{newNotis}</div>
+                        {/if}
+                    </div>
+                {/if}
+                {#if isDropdownOpen}
+                    <div class="notification-dropdown">
+                        {#if notisLoading}
+                            <div style="margin-bottom: 30px;">
+                                <MagicalDots />
+                            </div>
+                        {:else}
+                            {#if userNotifications.length == 0}
+                                <p
+                                    style="display: flex; justify-content:center; align-items:center; font-size:large;"
+                                >
+                                    - No notifications yet -
+                                </p>
+                            {:else}
+                                {#each userNotifications as notification, index}
+                                    <button
+                                        class="notification"
+                                        on:click={() => {
+                                            window.location.href =
+                                                notification.link;
+                                        }}
+                                        style="background-color: {index <
+                                        newNotis
+                                            ? 'antiquewhite'
+                                            : ''}"
+                                    >
+                                        <div>
+                                            <div class="notiColumns">
+                                                <div class="profilePicture">
+                                                    <img
+                                                        src={notification.picture}
+                                                        alt=""
+                                                    />
+                                                </div>
+
+                                                <div style="width: 9.3cm;">
+                                                    <p style="font-weight:700;">
+                                                        {notification.elementName}
+                                                    </p>
+                                                    <p>
+                                                        {notification.subject}
+                                                    </p>
+                                                    {#if notification.body != ""}
+                                                        <p
+                                                            style="font-style: italic;"
+                                                        >
+                                                            "{notification.body.substring(
+                                                                0,
+                                                                80
+                                                            )}...""
+                                                        </p>
+                                                    {/if}
+                                                </div>
+                                            </div>
+                                            <p style="color: orangered;">
+                                                {howLongAgo(
+                                                    notification.date
+                                                ).amount.toString() +
+                                                    " " +
+                                                    howLongAgo(
+                                                        notification.date
+                                                    ).timeframe}
+                                                ago
+                                            </p>
+                                        </div>
+                                    </button>
+                                {/each}
+                            {/if}
+                            <div style="height: 0.3cm;" />
+                            <div
+                                style="display: flex; align-items:center; justify-content:center;"
+                            >
+                                <button
+                                    on:click={() => {
+                                        toggleDropdown();
+                                    }}
+                                    class="tabClosed"
+                                    style="font-size: large; padding-top:0px;
                     padding-bottom:0px; padding-left:10px;padding-right:10px;
                     border-color:darkslategrey;
                     border-width:0.5px;
                     
                     "
-                            >
-                                close
-                            </button>
-                        </div>
-                    {/if}
-                </div>
-            {/if}
-        </div>
-        <div class="tabClosed">
-            <button
-                on:click={() => {
-                    goToIdea("profile?id=" + $info.key);
-                }}
-            >
-                Profile
-            </button>
-        </div>
+                                >
+                                    close
+                                </button>
+                            </div>
+                        {/if}
+                    </div>
+                {/if}
+            </div>
+            <div class="tabClosed">
+                <button
+                    on:click={() => {
+                        goToIdea("profile?id=" + $info.key);
+                    }}
+                >
+                    Profile
+                </button>
+            </div>
 
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <button class="tabClosed" on:click={() => signOutPopUp()}>
-            <img class="profile" src={profilePicture} /></button
-        >
-    {:else}
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <button class="tabClosed" on:click={() => signInPopUp()}>
-            Sign in</button
-        >
-    {/if}
-</header>
-<div style="display: flex; justify-content:center; align-items:center">
-    <div class="horizontalLine" />
-</div>
+            <!-- svelte-ignore a11y-missing-attribute -->
+            <button class="tabClosed" on:click={() => signOutPopUp()}>
+                <img class="profile" src={profilePicture} /></button
+            >
+        {:else}
+            <!-- svelte-ignore a11y-missing-attribute -->
+            <button class="tabClosed" on:click={() => signInPopUp()}>
+                Sign in</button
+            >
+        {/if}
+    </header>
+
+    <div style="display: flex; justify-content:center; align-items:center">
+        <div class="horizontalLine" />
+    </div>
+{/if}
 <slot />
 
 <style>
@@ -428,5 +533,60 @@
         box-shadow: none;
         border-width: 0.5px;
         /* background-color: rgba(255, 245, 191, 0.5); */
+    }
+    .menuLogo {
+        background-color: black;
+        position: absolute;
+        width: 1.5cm;
+        height: 1.5cm;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.5);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .menuLogo:hover {
+        transform: scale(
+            1.08
+        ); /* scales the button to 105% of its original size on hover */
+    }
+    .menuLogo:active {
+        transform: scale(
+            0.98
+        ); /* scales the button to 105% of its original size on hover */
+        box-shadow: none;
+        /* background-color: rgba(255, 245, 191, 0.5); */
+    }
+    .menu-dropdown {
+        background-color: darkslategrey;
+        position: absolute;
+        flex-direction: column;
+        display: flex;
+        font-size: 150%;
+        gap: 10px;
+        color: orangered;
+        align-items: flex-start;
+        justify-content: flex-start;
+        width: 80%;
+        height: fit-content;
+        overflow-y: auto;
+        overflow-x: hidden;
+        margin-top: 10px;
+        color: darkslategrey;
+        z-index: 2; /* Place it above other content (e.g., z-index: 1) */
+        padding-bottom: 5px;
+        box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.5);
+        max-height: 80vh;
+        padding: 10px;
+        border-radius: 3px;
+    }
+    .menuItem {
+        color: antiquewhite;
+        width: 100%;
+        z-index: 3;
+    }
+    .menuItem:active {
+        color: antiquewhite;
+        background-color: rgba(255, 255, 255, 0.2);
     }
 </style>
