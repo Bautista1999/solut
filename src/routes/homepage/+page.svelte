@@ -10,12 +10,19 @@
     import { listIdeas } from "$lib/data_functions/docu.functions";
     import TopicBadge from "$lib/components/topicBadge.svelte";
     import { createJunoTopic } from "$lib/data_objects/data_objects";
+    import Loading from "$lib/components/loading.svelte";
+    import LoadingBadge from "$lib/components/loadingBadge.svelte";
 
     // @ts-ignore
     /**
      * @type {{ title: string; subtitle: string; description: string; image: string; }[] | { [x: string]: any; }[]}
      */
     let list = []; //ListResults<Doc<any>>
+    let loadingBadges = [0, 1, 3];
+    if (window.innerWidth < 500) {
+        loadingBadges = [0];
+    }
+
     /**
      * @type {any[]}
      */
@@ -29,18 +36,22 @@
      * @type {topic []}
      */
     let mostFunded = [];
+    let fundedLoading = true;
     /**
      * @type {topic []}
      */
     let techIdeas = [];
+    let techLoading = true;
     /**
      * @type {topic []}
      */
     let recentIdeas = [];
+    let recentLoading = true;
     /**
      * @type {topic []}
      */
     let popularIdeas = [];
+    let popularLoading = true;
     let imageSrc = "/assets/appImageExample.jpeg";
     let id = "33";
     /**
@@ -70,9 +81,15 @@
         const MyList = await listDocs({
             collection: "ideas",
         });
-
+        //     let fundedLoading = false;
+        // let techLoading = false;
+        // let recentLoading = false;
+        // let popularLoading = false;
+        fundedLoading = true;
         // @ts-ignore
         mostFunded = await listIdeas("none", "funding", "ideas", "all", false);
+        fundedLoading = false;
+        techLoading = true;
         // @ts-ignore
         techIdeas = await listIdeas(
             "🦾 Technology",
@@ -81,8 +98,12 @@
             "all",
             false
         );
+        techLoading = false;
+        recentLoading = true;
         // @ts-ignore
         recentIdeas = await listIdeas("none", "recent", "ideas", "all", false);
+        recentLoading = false;
+        popularLoading = true;
         // @ts-ignore
         popularIdeas = await listIdeas(
             "none",
@@ -91,6 +112,7 @@
             "all",
             false
         );
+        popularLoading = false;
         console.log("Ordered ideas", mostFunded);
         // @ts-ignore
         n = list.length;
@@ -119,65 +141,100 @@
     <h1 class="title" style="font-family: Barlow; line-height:1.1;">
         Welcome to Solutio.
     </h1>
+    <button class="webButton">
+        <p>Who are we?</p>
+    </button>
 </div>
 <div
     class="horizontalLine"
     style="border-color: aliceblue; width:80%; border-width:0.5px; margin-left:auto;margin-right:auto; opacity:0.5;"
 />
 <div class="itemsDisplay">
-    <h1 class="elementTitle">Most funded topics</h1>
+    {#if !fundedLoading}
+        <h1 class="elementTitle">Most funded topics</h1>
+    {/if}
     <div class="projectsSection">
-        {#each mostFunded as topic}
-            <div style="width: fit-content;">
-                <TopicBadge
-                    topic={topic.data}
-                    creator={topic.owner}
-                    key={topic.key}
-                />
-            </div>
-        {/each}
+        {#if fundedLoading}
+            {#each loadingBadges as lod}
+                <LoadingBadge msg={"Most funded topics loading"} />
+            {/each}
+        {:else}
+            {#each mostFunded as topic}
+                <div style="width: fit-content;">
+                    <TopicBadge
+                        topic={topic.data}
+                        creator={topic.owner}
+                        key={topic.key}
+                    />
+                </div>
+            {/each}
+        {/if}
     </div>
 </div>
 <div class="itemsDisplay">
-    <h1 class="elementTitle">Popular project solutions</h1>
+    {#if !popularLoading}
+        <h1 class="elementTitle">Popular project solutions</h1>
+    {/if}
     <div class="projectsSection">
-        {#each popularIdeas as topic}
-            <div style="width: fit-content;">
-                <TopicBadge
-                    topic={topic.data}
-                    creator={topic.owner}
-                    key={topic.key}
-                />
-            </div>
-        {/each}
+        {#if popularLoading}
+            {#each loadingBadges as lod}
+                <LoadingBadge msg={"Most popular topics loading"} />
+            {/each}
+        {:else}
+            {#each popularIdeas as topic}
+                <div style="width: fit-content;">
+                    <TopicBadge
+                        topic={topic.data}
+                        creator={topic.owner}
+                        key={topic.key}
+                    />
+                </div>
+            {/each}
+        {/if}
     </div>
 </div>
 <div class="itemsDisplay">
-    <h1 class="elementTitle">Technology</h1>
+    {#if !techLoading}
+        <h1 class="elementTitle">Technology</h1>
+    {/if}
     <div class="projectsSection">
-        {#each techIdeas as topic}
-            <div style="width: fit-content;">
-                <TopicBadge
-                    topic={topic.data}
-                    creator={topic.owner}
-                    key={topic.key}
-                />
-            </div>
-        {/each}
+        {#if techLoading}
+            {#each loadingBadges as lod}
+                <LoadingBadge msg={"Tech topics loading"} />
+            {/each}
+        {:else}
+            {#each techIdeas as topic}
+                <div style="width: fit-content;">
+                    <TopicBadge
+                        topic={topic.data}
+                        creator={topic.owner}
+                        key={topic.key}
+                    />
+                </div>
+            {/each}
+        {/if}
     </div>
 </div>
 <div class="itemsDisplay">
-    <h1 class="elementTitle">Most recent</h1>
+    {#if !recentLoading}
+        <h1 class="elementTitle">Most recent</h1>
+    {/if}
     <div class="projectsSection">
-        {#each recentIdeas as topic}
-            <div style="width: fit-content;">
-                <TopicBadge
-                    topic={topic.data}
-                    creator={topic.owner}
-                    key={topic.key}
-                />
-            </div>
-        {/each}
+        {#if recentLoading}
+            {#each loadingBadges as lod}
+                <LoadingBadge msg={"Most recent topics loading"} />
+            {/each}
+        {:else}
+            {#each recentIdeas as topic}
+                <div style="width: fit-content;">
+                    <TopicBadge
+                        topic={topic.data}
+                        creator={topic.owner}
+                        key={topic.key}
+                    />
+                </div>
+            {/each}
+        {/if}
     </div>
 </div>
 
@@ -216,254 +273,122 @@
         justify-content: flex-start;
         overflow-x: auto;
     }
-    .verticalLine {
-        height: 1cm;
-        border-color: #ff6000;
-        border-width: 0.5px;
-    }
-    .horizontalLine {
-        width: 100%;
-        border-color: black;
-        border-width: 0.5px;
-    }
-    .followersInfo {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 40px;
-    }
-    .centeredImage {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-    .creatorPicture {
-        width: 0.8cm;
-        height: 0.8cm;
-        overflow: hidden;
-        border: 1px solid black;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+
+    p {
+        text-align: justify;
     }
 
-    .creatorPicture img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+    .title {
+        font-size: 600%;
+        position: relative; /* needed for z-index to work */
+        margin: 0;
+        margin-top: 0.2em;
     }
-    .barra {
-        width: 90%;
-        height: 30px;
-        margin-top: 0px;
-        margin-bottom: 0px;
-        margin-left: auto;
-        margin-right: auto;
-        display: flex;
-        align-items: center;
-        background-color: #e0e0e0;
-        border-radius: 2px;
-        overflow: visible;
-        border-style: groove;
-        border-width: 1px;
-        border-color: black;
-    }
-    .progreso {
-        height: 100%;
-        background: linear-gradient(
-            to right,
-            orange,
-            orangered
-        ); /* Naranja claro a naranja fuerte */
-        transition: width 0.3s;
-        padding: 1%;
-        display: flex;
-        align-items: center; /* Vertical alignment */
-        justify-content: center; /* Horizontal alignment */
-        color: #e0e0e0;
-        font-size: larger;
-        font-weight: 450;
-        border-radius: 2px;
-    }
-    .progreso2 {
-        margin: 3%;
-        flex: 1; /* Ocupará todo el espacio restante después del div progreso */
-        display: flex;
-        align-items: center; /* Alineación vertical en el centro */
-        justify-content: flex-start; /* Alineación horizontal al inicio */
-        color: orangered;
-        font-size: larger;
-    }
-    .projectBody {
-        padding-top: 15px;
-        padding-left: 15px;
-        padding-right: 15px;
-        padding-bottom: 5px;
-        line-height: 1.5;
-    }
-    .profilePicture {
-        width: 100%;
-        height: 40%;
-        overflow: hidden;
-        border: 1px solid black;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .profilePicture img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .infoSection {
-        width: 100%;
-        height: 12.7cm;
-    }
-    .footerSection {
-        width: 100%;
-        height: 1.3cm;
-        padding-left: 5px;
-        padding-top: 6px;
-        display: flex;
-        flex-direction: row;
-        gap: 10px;
-        color: antiquewhite;
+    .webButton {
+        width: fit-content;
+        height: 1.5cm;
+        border: 1px groove black;
         background: linear-gradient(
             to right,
             #ff6000,
             rgb(255, 132, 9),
             #ff6000
         );
-    }
-    .project {
-        width: 10cm;
-        height: 14cm;
+        margin-top: 1cm;
+        font-size: 200%;
         display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: flex-start;
-        text-align: left;
-        background-color: antiquewhite;
-        color: darkslategray;
-        border-color: black;
-        border-width: 2px;
-        box-shadow: 10px 10px 0px rgb(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        padding-left: 10px;
+        padding-right: 10px;
+        box-shadow: 5px 5px 0px rgb(0, 0, 0, 0.5);
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease;
     }
-    .image-container {
-        background-size: cover; /* Scale the image to cover the entire element */
-        background-position: center; /* Center the image in the container */
-        background-repeat: no-repeat; /* Do not repeat the image */
+    .webButton:hover {
+        transform: scale(1.05);
     }
-    .card-container {
-        position: relative;
-        display: inline-block; /* Keep it inline with other content */
-        z-index: 0; /* Normal layering */
-    }
-    .card-container:before {
-        content: "";
-        position: absolute;
-        width: 103%; /* Extend beyond the div */
-        height: 95%; /* Extend beyond the div */
-        background: radial-gradient(
-            circle at top left,
-            orangered,
-            /* Top-left color */ rgba(0, 255, 255, 0.5) 50%,
-            /* Top-right color */ rgba(254, 2, 254, 0.5) 50%,
-            /* Bottom-left color */ rgba(0, 255, 21, 0.5) 80%
-        );
-        filter: blur(40px);
-        top: 5%;
-        left: -5%;
-        z-index: 0; /* Put it behind the card */
-        transition: opacity 0.3s ease-in-out;
-        opacity: 0;
-    }
-    .card-container:hover:before {
-        opacity: 1; /* Make it visible when hovered */
-    }
-    .card-container:hover {
-        z-index: 1; /* Raise above other content when hovered */
-    }
-
-    .trending {
-        margin-left: 2%;
-        margin-top: 1%;
-        font-size: xx-large;
-        font-weight: 200;
-    }
-    .snap-x {
-        margin-left: 2%;
-    }
-    p {
-        text-align: justify;
-    }
-    .snap-start {
-        border-radius: 20px;
-    }
-
-    .title {
-        font-size: 600%;
-        position: relative; /* needed for z-index to work */
-        z-index: 3; /* set to a number higher than the div's z-index to make it appear on top */
-        margin: 0;
-        margin-top: 0.2em;
-        margin-bottom: 1.5em;
+    .webButton:active {
+        transform: scale(0.98);
+        box-shadow: none;
     }
     .div {
         display: flex;
         flex-direction: column;
-        justify-content: flex-end;
-        text-align: left;
-        margin-left: 2.5em;
-        margin-right: 2.5em;
-        height: 10cm;
-        background-image: url("/assets/homeBackground.png");
-
-        background-size: 10cm; /* changes here */
-        background-repeat: no-repeat; /* add this to prevent the image from repeating */
-        background-position: right; /* aligns the background image to the right */
-        position: relative; /* needed for z-index to work */
-    }
-    .input {
-        width: 70%;
-        margin: 3em;
-        border-radius: 20px; /* Adjust as needed */
-        padding-left: 20px; /* adjust as necessary */
-    }
-    .rounded-top {
-        border-top-left-radius: 20px; /* Adjust as needed */
-        border-top-right-radius: 20px; /* Adjust as needed */
-    }
-    .rounded-bottom {
-        border-bottom-left-radius: 20px; /* Adjust as needed */
-        border-bottom-right-radius: 20px; /* Adjust as needed */
-    }
-    .card-hover {
-        transition: transform 0.1s ease-in-out;
-        z-index: 1; /* Put it in front of the blur */
-        position: relative;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        margin-top: 1cm;
+        margin-bottom: 1cm;
     }
 
-    .card-hover:before {
-        content: "";
-        position: absolute;
-        width: 100%; /* Adjusted to 100% */
-        height: 100%; /* Adjusted to 100% */
-        background-color: rgba(255, 115, 0, 0.5); /* White light */
-        filter: blur(20px); /* Blur effect */
-        opacity: 0; /* Set opacity to 0 to make it invisible when not hovered */
-        transition: opacity 0.2s ease-in-out; /* Transition opacity */
-    }
-
-    .card-hover:hover:before {
-        opacity: 0; /* Set opacity to 1 when hovered */
-        transform: scale(1); /* Scale to full size when hovered */
-    }
-
-    .card-hover:hover {
-        transform: scale(1.07); /* Scale the card when hovered */
+    @media (max-width: 768px) {
+        .projectsSection {
+            height: fit-content;
+            width: 40vh;
+            padding-top: 20px;
+            padding-bottom: 20px;
+            /* border-color: black;
+        border-width: 2px;
+        background-color: rgba(255, 128, 0, 0.863); */
+            background-size: cover; /* Optional: Scale the image to cover the entire element */
+            background-position: center; /* Optional: Position the image in the center */
+            background-repeat: no-repeat;
+            max-width: 150vh;
+            gap: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            overflow-x: auto;
+        }
+        .title {
+            font-size: 400%;
+            position: relative; /* needed for z-index to work */
+            margin: 0;
+            margin-top: 0.2em;
+        }
+        .webButton {
+            width: fit-content;
+            height: 1cm;
+            border: 1px groove black;
+            background: linear-gradient(
+                to right,
+                #ff6000,
+                rgb(255, 132, 9),
+                #ff6000
+            );
+            margin-top: 1cm;
+            font-size: 150%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            padding-left: 10px;
+            padding-right: 10px;
+            box-shadow: 5px 5px 0px rgb(0, 0, 0, 0.5);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease;
+        }
+        .webButton:hover {
+            transform: scale(1.05);
+        }
+        .webButton:active {
+            transform: scale(0.98);
+            box-shadow: none;
+        }
+        .div {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            margin-top: 1cm;
+            margin-bottom: 1cm;
+        }
+        .itemsDisplay {
+            margin-left: 5%;
+            margin-top: 20px;
+        }
     }
 </style>
