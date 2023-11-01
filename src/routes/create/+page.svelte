@@ -59,7 +59,6 @@
     afterUpdate(() => {});
 </script>
 
-<Header />
 {#if !$loginedIn}
     <Signin />
 {:else if !$isLoading && !created}

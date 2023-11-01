@@ -641,7 +641,6 @@
     }
 </script>
 
-<Header />
 {#if !isLoading}
     <div class="body">
         <div class="content">
