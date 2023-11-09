@@ -1,10 +1,24 @@
 let newDeadline = { newDate: { day: 0, month: 0, year: 0 }, title: "" };
 let newDate = { day: 0, month: 0, year: 0 };
+let detailedDate = { day: 0, month: 0, year: 0, minutes: 0, hours: 0, };
 export function createDeadline() {
     return newDeadline;
 }
 export function createDate() {
     return newDate;
+}
+export function createDetailedDate() {
+    return detailedDate;
+}
+let currentDate = new Date();
+export function CurrentDate() {
+    let today = createDetailedDate();
+    today.day = currentDate.getDate()
+    today.month = currentDate.getMonth() + 1;
+    today.year = currentDate.getFullYear();
+    today.hours = currentDate.getHours();
+    today.minutes = currentDate.getMinutes();
+    return today;
 }
 let update = {
     creator: "",
@@ -67,6 +81,40 @@ let ideaRel = {
     key: "",
     title: ""
 }
+let finalUpdate = {
+    creator: "",
+    key: "",
+    status: "",
+    subject: "",
+    /**
+     * @type {string[]} images
+     */
+    images: [],
+    body: "",
+    nxtTitle: "",
+    /**
+     * @type {newDate} nxtDate
+     */
+    nxtDate: {
+        day: 0,
+        month: 0,
+        year: 0
+    },
+    /**
+     * @type {newDate} date
+     */
+    date: {
+        day: 0,
+        month: 0,
+        year: 0
+    },
+    link: "",
+    walletAddress: "",
+};
+export function createFinalUpdate() {
+    return finalUpdate;
+}
+let fnlUpdate = createFinalUpdate();
 let solution = {
     topic: "",
     title: "",
@@ -94,7 +142,11 @@ let solution = {
     deadlines: [],
     updates: [],
     tokensAddress: "",
-    transactionHistory: []
+    transactionHistory: [],
+
+
+    finalUpdate: fnlUpdate,
+
 
 
 };
@@ -128,7 +180,13 @@ let notification = {
 export function createNotification() {
     return notification;
 }
-
+let pledgeElement = {
+    key: "",
+    amount: 0,
+};
+export function createPledgedElement() {
+    return pledgeElement;
+}
 let user = {
     nickname: "",
     address: "",
@@ -145,6 +203,10 @@ let user = {
     transactionHistory: [],
     notificationsKey: "",
     amountNotifictions: 0,
+    /**
+     * @type {pledgeElement []} pledgedElements
+     */
+    pledgedElements: [],
 }
 export function createUser() {
     return user;
@@ -192,4 +254,23 @@ let myDoc2 = {
 }
 export function createJunoSolution() {
     return myDoc2;
+}
+
+let transfer = {
+    idea: "",
+    amountICP: 3.4,
+    sentTo: "",
+    date: newDate,
+}
+export function createTransfer() {
+    return transfer;
+}
+
+let approvalResult = {
+    Error: "",
+    creatorTransfer: "",
+    developerTransfer: ""
+};
+export function createTransferResult() {
+    return approvalResult;
 }
