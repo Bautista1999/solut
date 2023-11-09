@@ -3,7 +3,9 @@
     import Loading from "$lib/components/loading.svelte";
     import Modal from "$lib/components/modal.svelte";
     import {
+        ICPtoDecimal,
         getDocu,
+        getWalletAddress,
         updateData,
         usernameExists,
     } from "$lib/data_functions/docu.functions";
@@ -31,12 +33,15 @@
      * @type {string[]}
      */
     onMount(async () => {
+        debugger;
         userLoading = true;
         myUserDoc = await getDocu("users", data.id || "");
         userData = myUserDoc?.data;
-        amountTokens = Number($info.userBalance);
+        await basicInfo();
         // @ts-ignore
-        address = $info.walletAddress;
+        amountTokens = ICPtoDecimal($info.userBalance).toFixed(3);
+        // @ts-ignore
+        address = await getWalletAddress(data.id || "");
         userLoading = false;
     });
     async function changeProfilePicture() {
