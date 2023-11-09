@@ -7,6 +7,8 @@
         createSubidea,
         createDeadline,
         createSolution,
+        createFinalUpdate,
+        createTransferResult,
     } from "/Users/juanbautistamartinezrezzio/Documents/Dev/ic_project/solutio/src/lib/data_objects/data_objects.js";
 
     import Loading from "$lib/components/loading.svelte";
@@ -21,6 +23,8 @@
         PostUpdateModal,
         updateImages,
         displayedUpdImages,
+        finishProject,
+        loginedIn,
     } from "$lib/stores/loading";
 
     import {
@@ -67,19 +71,24 @@
     import MagicalDots from "$lib/components/magicalDots.svelte";
     import {
         addDeadline,
+        amountUserPledged,
+        approveSolution,
         deleteDeadline,
+        disapproveSolution,
         editSolution,
         getSolutionSubIdeas,
     } from "$lib/data_functions/docu.functions";
     import ModalPostUpdate from "$lib/components/ModalPostUpdate.svelte";
     import { optForm } from "@dfinity/candid";
     import Success from "$lib/components/success.svelte";
+    import FinishProject from "$lib/components/finishProject.svelte";
 
     // @ts-ignore
     export let data;
     let tabs = 0;
     let success = false;
     let editInfo = false;
+    let approveResult = createTransferResult();
     let newDeadline = createDeadline();
     let update = createUpdate();
 
@@ -88,12 +97,15 @@
      * @type {latestUpdate[]}
      */
     let updates = [];
+    let amount = 10;
+    let amountPledged = amount;
     let lastUpdate =
         "Team FitnessGo is thrilled to share our latest update! Over the past few months, we've been hard at work crafting a fitness app that's truly exceptional. We're excited to announce that our core features are now live and ready for you to experience. Whether you're a seasoned fitness enthusiast or just starting on your wellness journey, FitnessGo has something special in store for you.What can you expect from FitnessGo? Let's dive in: Personalized Workouts: Our app now offers tailored workout plans designed to meet your fitness goals. Whether you're looking to shed a few pounds, build muscle, or increase flexibility, we've got you covered.";
     let showModal4 = false;
     let showModal2 = false;
     let showModal3 = false;
     let showModal7 = false;
+    let showModal9 = false;
     let followLoading = false;
     let title = "";
     let subtitle = "";
@@ -138,6 +150,7 @@
     let displayedDeadlines = deadlines;
     let editSol = topicData;
     let imageURL = "";
+    let finalUpdate = createFinalUpdate();
     let closestDeadline = "";
     onMount(async () => {
         isLoading = true;
@@ -175,11 +188,14 @@
         // @ts-ignore
         amountFollowers = topicData.amountFollowers;
         // @ts-ignore
+        updates = topicData.updates;
+        // @ts-ignore
         moneyPledged = fromICPtoUSD(topicData.moneyPledged);
         // @ts-ignore
         userFollows = await checkFollow($info.key, data.id);
         // @ts-ignore
-        updates = topicData.updates;
+        finalUpdate = topicData.finalUpdate;
+
         // @ts-ignore
         latestUpdate = updates[0];
         // @ts-ignore
@@ -187,10 +203,15 @@
         closestDeadline = getClosestDate(deadlines).title;
         displayedDeadlines = subList(deadlines, 3);
         console.log("User follows: ", userFollows);
+        if ($loginedIn) {
+            amount = await amountUserPledged(topic || "");
+        }
 
+        amountPledged = amount;
         displayedIdeas = subList(ideas, 3);
         isLoading = false;
     });
+
     /**
      * @param {number} num
      */
@@ -445,6 +466,137 @@
                     >
                 {/if}
             </div>
+
+            <div>
+                <br />
+                <br />
+                {#if finalUpdate.status != ""}
+                    <div class="finalUpdateBlock">
+                        <div class="updateHeader">
+                            <div class="updateUser">
+                                {#if window.innerWidth < 500}
+                                    <div
+                                        class="profilePicture"
+                                        style=" width: 1.7cm; height: 1.7cm;box-shadow:none;"
+                                    >
+                                        <!-- svelte-ignore a11y-img-redundant-alt -->
+                                        <img
+                                            src="https://beebom.com/wp-content/uploads/2022/02/Featured.jpg?w=750&quality=75"
+                                            alt="Profile Picture"
+                                        />
+                                    </div>
+                                    <p style="width: 5cm;">
+                                        {finalUpdate.creator.substring(
+                                            0,
+                                            37
+                                        )}...
+                                    </p>
+                                {:else}
+                                    <div
+                                        class="profilePicture"
+                                        style="width: 1.7cm; height: 1.7cm; box-shadow:none;"
+                                    >
+                                        <!-- svelte-ignore a11y-img-redundant-alt -->
+                                        <img
+                                            src="https://beebom.com/wp-content/uploads/2022/02/Featured.jpg?w=750&quality=75"
+                                            alt="Profile Picture"
+                                        />
+                                    </div>
+                                    <p style="width: 8cm;">
+                                        {finalUpdate.creator}
+                                    </p>
+                                    <div
+                                        style="height: 1cm; border-color:black; border-width:0.5px;"
+                                    />
+                                    <p>
+                                        <span
+                                            style="font-weight: 700;display:flex;justify-content:center;text-align:center;"
+                                            >STATUS:
+                                        </span>{finalUpdate.status}
+                                    </p>
+                                {/if}
+                            </div>
+
+                            <p
+                                style=" width:fit-content;color:darkslategray; padding:5px;
+                                    border-style:solid;border-color:black;border-width:1px;
+                                "
+                            >
+                                {finalUpdate.date.month}/{finalUpdate.date
+                                    .day}/{finalUpdate.date.year}
+                            </p>
+                        </div>
+                        <p class="updateText" style="margin-bottom:0px ;">
+                            <span style="font-weight: 700; font-style:normal;"
+                                >SUBJECT:
+                            </span>{finalUpdate.subject}
+                        </p>
+                        {#if finalUpdate.body.length > 400}
+                            <p class="updateText">
+                                "{finalUpdate.body.substring(0, 400)}..."
+                            </p>
+                        {:else}
+                            <p class="updateText">
+                                "{finalUpdate.body}"
+                            </p>
+                        {/if}
+                        <div style="height:0.3cm;" />
+                        <div
+                            style="display: flex; justify-content:center; align-items:center;  width:100%;"
+                        >
+                            <button
+                                class="fundButton"
+                                style="margin-left:0px; width:fit-content; padding:8px; height:fit-content;"
+                                on:click={() => {
+                                    console.log(
+                                        "Final update: ",
+                                        finalUpdate.link
+                                    );
+                                    //window.location.href = finalUpdate.link;
+                                    window.open(finalUpdate.link, "_blank");
+                                }}
+                            >
+                                Check out the final product! ➡️
+                            </button>
+                        </div>
+                        <br />
+                        {#if $loginedIn}
+                            <div class="approvalSection">
+                                <p style="font-size: larger;">
+                                    Do you approve the project?
+                                </p>
+                                <div style="height:0.3cm;" />
+                                <div class="approvalButtonsSection">
+                                    <button
+                                        class="approvalButtons"
+                                        on:click={() => {
+                                            showModal9 = true;
+                                        }}
+                                    >
+                                        Approve 👍
+                                    </button>
+                                    <button
+                                        class="approvalButtons"
+                                        on:click={async () => {
+                                            isLoading = true;
+                                            await disapproveSolution(
+                                                amount,
+                                                topic
+                                            );
+                                            isLoading = false;
+                                        }}
+                                    >
+                                        Disapprove 👎
+                                    </button>
+                                </div>
+                            </div>
+                        {/if}
+
+                        <div class="horizontalLine" />
+                        <div class="updateDecoration" />
+                    </div>
+                {/if}
+            </div>
             <br />
             <div class="creatorClass">
                 {#if window.innerWidth < 500}
@@ -540,6 +692,20 @@
                         showModal7 = true;
                     }}>Edit info</button
                 >
+                <br />
+                {#if finalUpdate.status != ""}
+                    <div
+                        style="display: flex; justify-content:center; align-items:center;"
+                    >
+                        <button
+                            class="fundButton"
+                            style="width:4cm; background-color:green; color: white;"
+                            on:click={() => {
+                                finishProject.set(true);
+                            }}>Finish Project!</button
+                        >
+                    </div>
+                {/if}
             {/if}
             <br />
             <h4 style="font-size: xx-large; line-height: 1.1;">
@@ -1314,7 +1480,7 @@
     />
     <ModalSubidea />
     <ModalPostUpdate {deadlines} solutionKey={data.id || ""} />
-
+    <FinishProject solutionKey={data.id || ""} />
     <Modal
         bind:isOpen2={showModal2}
         close={() => {
@@ -1611,11 +1777,107 @@
             }}>Save</button
         >
     </Modal>
+    <Modal
+        bind:isOpen7={showModal9}
+        close={() => {
+            showModal9 = false;
+        }}
+    >
+        <p style="font-weight: bold; font-size:larger;">Approval</p>
+        <p>
+            You previously pledged <span style="color: orangered;"
+                >{amountPledged}
+            </span>icp tokens to this solution's topic.
+        </p>
+        <p>You want to change this amount?</p>
+        <input
+            type="number"
+            name=""
+            style="width:1cm;border-color: black; border-width:1px; padding-left:5px; padding:2px; margin-top:5px;"
+            id=""
+            bind:value={amount}
+        />
+        <div style="height: 0.3cm;" />
+        <p>
+            Do you wish to send these tokens to the solution's developer and the
+            creator of the topic?
+        </p>
+
+        <p style="font-weight: bold; ">Details of the transfer:</p>
+        <p>Tokens to the original creator (10%): {amount * 0.1} icp</p>
+        <p>Tokens to the solution's developer (90%): {amount * 0.9} icp</p>
+        <p>----------------------------</p>
+        <p>TOTAL: {amount} icp</p>
+        <br />
+        <div class="approvalButtonsSection">
+            <button
+                class="approvalButtons"
+                on:click={async () => {
+                    approveResult =
+                        (await approveSolution(topic, data.id || "", amount)) ||
+                        approveResult;
+                    console.log("Result: ", approveSolution);
+                }}
+            >
+                Yes, send tokens
+            </button>
+            <button
+                class="approvalButtons"
+                on:click={() => {
+                    showModal9 = false;
+                }}
+            >
+                Cancel
+            </button>
+        </div>
+        <br />
+        {#if approveResult.Error != ""}
+            <p style="color: red; font-style:italic;">{approveResult.Error}</p>
+        {/if}
+    </Modal>
 {/if}
 
 <style>
     .spacer {
         height: 20px;
+    }
+    .approvalSection {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 95%;
+        margin: auto;
+        padding: 10px;
+        padding-bottom: 20px;
+
+        border-width: 2px;
+        border-color: black;
+    }
+    .approvalButtonsSection {
+        display: flex;
+
+        justify-content: center;
+        gap: 10px;
+    }
+    .approvalButtons {
+        width: fit-content;
+        height: fit-content;
+        background-color: rgb(221, 243, 255);
+        padding-left: 8px;
+        font-size: medium;
+        padding-right: 8px;
+        border-style: groove;
+        border-color: black;
+        border-width: 1px;
+        display: flex;
+        align-items: center; /* Vertical alignment */
+        justify-content: center; /* Horizontal alignment */
+        font-weight: 330;
+        color: black;
+    }
+    .approvalButtons:hover {
+        background-color: rgb(255, 223, 201);
     }
     .body {
         display: flex;
@@ -1973,6 +2235,24 @@
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
     }
+    .finalUpdateBlock {
+        width: 100%;
+        height: fit-content;
+        display: flex;
+        flex-direction: column;
+        padding: 0px;
+        align-items: start;
+        border-color: black;
+        background-color: white;
+        border-width: 1px;
+        text-align: justify;
+        color: darkslategray;
+
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: -5px -5px 20px rgba(0, 128, 0, 0.5),
+            5px 5px 20px rgba(128, 0, 128, 0.5),
+            0px 0px 10px rgba(0, 157, 255, 1);
+    }
     .updateBlock:hover {
         transform: scale(
             1.08
@@ -1987,6 +2267,7 @@
     .updateDecoration {
         width: 100%;
         height: 0.4cm;
+
         background: linear-gradient(
             to right,
             rgb(154, 0, 154),
