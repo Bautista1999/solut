@@ -10,6 +10,7 @@ export const termsModal = writable(false);
 export const subideaModal = writable(false);
 export const subideaLoading = writable(false);
 export const PostUpdateModal = writable(false);
+export const finishProject = writable(false);
 /**
  * @type {string[]}
  */
