@@ -29,6 +29,7 @@
         checkFollowIdea,
     } from "$lib/data_functions/user.functions";
     import MagicalDots from "$lib/components/magicalDots.svelte";
+    import { createPledgedElement } from "$lib/data_objects/data_objects";
 
     /** @type {import('./$types').PageData} */
     // @ts-ignore
@@ -609,10 +610,19 @@
             date: now,
         };
         let userData = myDoc2?.data;
+        userData.balance -= amountICP;
+        if (userData.balance < 0) {
+            userData.balance = 0;
+        }
         userData.transactionHistory.push(newTransactionUser);
         userData.transactionHistory = userData.transactionHistory;
         console.log("Increasing amount of money pledged in the idea...");
         userData.pledged += amountICP;
+        let pledgedTopic = createPledgedElement();
+        pledgedTopic.amount += amountICP;
+        pledgedTopic.key = data.id;
+        userData.pledgedElements.unshift(pledgedTopic);
+        userData.pledgedElements = userData.pledgedElements;
         console.log("Updating user`s info in DB...");
         await setDoc({
             collection: "users",
@@ -630,7 +640,6 @@
         const bigIntRepresentation = decimalToBigInt(amountICP, 10 ** 8);
         console.log(bigIntRepresentation); // Expected: 200000
         // @ts-ignore
-        let result = transferFrom(address, bigIntRepresentation);
     }
     async function addSolution() {
         if (!signedIn()) {
@@ -646,8 +655,10 @@
         <div class="content">
             <div class="content-wrapper">
                 <div class="text-content">
-                    <h2 class="h2 text-body">{title}</h2>
-                    <h3 class="h3 text-body" style="font-weight: 400;">
+                    <div style="height:0.5cm;" />
+                    <h2 style="font-size: 250%; font-weight: 600;">{title}</h2>
+                    <br />
+                    <h3 style="font-size: 150%; font-weight: 400;">
                         {subtitle}
                     </h3>
                 </div>
@@ -661,6 +672,7 @@
                     <p style="text-align: center;">followers</p>
                 </div>
             </div>
+            <div style="height:0.3cm;" />
             <div class="image" style="background-image: url({topicImage}); " />
 
             <br />
