@@ -143,8 +143,6 @@ export async function transferFrom(destination, amount) {
     console.log(response);
 
     return response;
-
-
 }
 
 /**
