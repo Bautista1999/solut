@@ -544,6 +544,7 @@
         align-items: center;
         box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.5);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        z-index: 2;
     }
     .menuLogo:hover {
         transform: scale(
@@ -583,7 +584,7 @@
     .menuItem {
         color: antiquewhite;
         width: 100%;
-        z-index: 3;
+        z-index: 2;
     }
     .menuItem:active {
         color: antiquewhite;
