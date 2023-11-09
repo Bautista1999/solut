@@ -2,9 +2,12 @@ import { basicInfo, initDB, signedIn } from "$lib/stores/auth.state";
 import { amountNotis, isLoading, loginedIn, signInSuccessful } from "$lib/stores/loading";
 import { getDoc, listDocs, setDoc, signIn } from "@junobuild/core";
 import { info } from "../stores/auth.state";
-import { createAdvancedDate, createDeadline, createNotification, createSolution, createUpdate } from "$lib/data_objects/data_objects";
+import { CurrentDate, createAdvancedDate, createDeadline, createFinalUpdate, createNotification, createSolution, createTransfer, createTransferResult, createUpdate } from "$lib/data_objects/data_objects";
 import { orderByDate } from "$lib/other_functions/other.functions";
 import { get } from "svelte/store";
+import { Principal } from "@dfinity/principal";
+import { createAgent } from "@dfinity/utils";
+import { AccountIdentifier, LedgerCanister, Topic } from "@dfinity/nns";
 
 //await initDB();
 
@@ -86,7 +89,7 @@ export async function getSolutionSubIdeas(solutionKey) {
 }
 let update = createUpdate();
 /**
- * @param {update} update
+ * @param {update } update
  * @param {string} solutionKey
  */
 export async function postUpdate(update, solutionKey) {
@@ -95,6 +98,20 @@ export async function postUpdate(update, solutionKey) {
     myDoc?.data.updates.unshift(update);
     await updateData(myDoc, "solutions", solutionKey);
     await post_update_notification(update.creator, solutionKey, update.body);
+};
+let finalUpdate = createFinalUpdate();
+/**
+ * @param {finalUpdate } update
+ * @param {string} solutionKey
+ */
+export async function postFinalUpdate(update, solutionKey) {
+    debugger;
+    let myDoc = await getDocu("solutions", solutionKey);
+    let topicKey = myDoc?.data.topic;
+    // @ts-ignore
+    myDoc.data.finalUpdate = update;
+    await updateData(myDoc, "solutions", solutionKey);
+    await post_final_update_notification(update, solutionKey, topicKey);
 };
 /**
  * @param {update} update
@@ -374,6 +391,35 @@ export async function post_update_notification(userKey, elementKey, body) {
     await post_all_notifications(elementKey, notification, "solutions");
 }
 /**
+ * @param {finalUpdate} finalUpdate
+ * @param {string} elementKey
+ * @param {string} topicKey
+ */
+export async function post_final_update_notification(finalUpdate, elementKey, topicKey) {
+    let collectionName = "solutions";
+    let myDoc = await getDocu(collectionName, elementKey);
+    let notification = createNotification();
+    notification.body = finalUpdate.body;
+    notification.elementName = myDoc?.data.title;
+    notification.subject = "The project " + myDoc?.data.title + " has been delivered! Check it out.";
+    //window.location.href = "/idea?id=" + key;
+
+    notification.link = "/solution?id=" + elementKey;
+    notification.createBy = finalUpdate.creator;
+    notification.picture = myDoc?.data.images[0];
+    notification.seen = false;
+    notification.date = createAdvancedDate();
+    let now = new Date();
+    notification.date.day = now.getDate();
+    notification.date.month = now.getMonth() + 1;
+    notification.date.year = now.getFullYear();
+    notification.date.minutes = now.getMinutes();
+    notification.date.hour = now.getHours();
+    notification.date.seconds = now.getSeconds();
+    await post_all_notifications(elementKey, notification, "solutions");
+    await post_all_notifications(topicKey, notification, "ideas");
+}
+/**
  * @param {string} username
  */
 export async function usernameExists(username) {
@@ -512,4 +558,208 @@ export async function getUsername(userKey) {
 export async function getProfilePicture(userKey) {
     let myDoc = await getDocu("users", userKey);
     return myDoc?.data.picture || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+}
+
+
+/**
+ * @param {string} topicKey
+ * @param {string} solutionKey
+ * @param {number} amount
+ */
+export async function approveSolution(topicKey, solutionKey, amount) {
+    debugger;
+    let approvalResult = createTransferResult();
+    const store = get(info);
+
+    let wltAddres = await getWalletAddress(store.key);
+    console.log("Wallet address", wltAddres);
+    let amountBigInt = decimalToICP(amount);
+    let creatorCut = calculatePercentage(amountBigInt, 10);
+    let developerCut = calculatePercentage(amountBigInt, 90);
+    console.log("Store before transfer", store);
+
+    //0) We need to check that the user has the amount specified on its balance
+    let ledgerID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
+    const { accountBalance } = await LedgerCanister.create({
+        // @ts-ignore
+        agent: store.agent,
+        canisterId: Principal.fromText(ledgerID),
+    });
+    let userBalance = await accountBalance({
+        accountIdentifier: AccountIdentifier.fromPrincipal({
+            // @ts-ignore
+            principal: store.userPrincipal
+        })
+    });
+    console.log("User balance:", userBalance);
+    if (userBalance < amountBigInt) {
+        approvalResult.Error = "Not enought balance: " + userBalance + " < " + amountBigInt;
+        approvalResult.creatorTransfer = "Failed";
+        approvalResult.developerTransfer = "Failed";
+        return approvalResult;
+    }
+    //1) We need to update the user's transfer history
+    let myUserDoc = await getDocu("users", store.key);
+    let transfer = createTransfer();
+    transfer.amountICP = amount;
+    transfer.date = CurrentDate();
+    transfer.idea = solutionKey;
+    myUserDoc?.data.transactionHistory.push(transfer);
+    //2) We need to change the user's total pledged amount and funded amount
+    // @ts-ignore
+    myUserDoc.data.pledged -= amount;
+    // @ts-ignore
+    myUserDoc.data.funded += amount;
+    await updateData(myUserDoc, "users", store.key);
+    //3) Update the funding of the solution data
+    let mySolutionDoc = await getDocu("solutions", solutionKey);
+    // @ts-ignore
+    mySolutionDoc.data.moneyFunded += amount;
+    await updateData(mySolutionDoc, "solutions", solutionKey);
+    //4) Update the funding of the topic data
+    let myTopicDoc = await getDocu("ideas", topicKey);
+    // @ts-ignore
+    myTopicDoc.data.moneyFunded += amount;
+    await updateData(myTopicDoc, "ideas", topicKey);
+    //5) Transfer tokens to the creator (10%)
+    let amountCreator = amountBigInt * decimalToICP(0.1);
+    //5.1) We need to get the creator's wallet address
+    let topicOwner = myTopicDoc?.owner;
+    let ownerWltAddres = await getWalletAddress(topicOwner || "");
+    // ownerWltAddres = "c1f7c018e75c5b985754402c63f44340fb8d4ce12a0e337e5cbb3601f00279e1";
+    //5.2) Send tokens
+    let ownerTransferResult = await transferTo(ownerWltAddres, creatorCut);
+
+
+
+    //6) Transfer tokens to the developer (90%)
+    let amountDeveloper = amountBigInt;
+    //6.1) We need to get the solution's developer wallet address
+    let solutionOwner = mySolutionDoc?.owner;
+    let developerWltAddres = await getWalletAddress(solutionOwner || "");
+    //developerWltAddres = "e4204e024181e960a018a5cbdc51b8af834f33932bfe4d711909b492b16767eb";
+
+    //6.2) Send tokens
+    let developerTransferResult = await transferTo(developerWltAddres, developerCut);
+
+    //7) Send notification to the developer
+    //8) Send notification to the creator
+}
+/**
+ * @param {string} userKey
+ */
+export async function getWalletAddress(userKey) {
+    let userPrincipal = Principal.fromText(userKey);
+    const accountIdent = AccountIdentifier.fromPrincipal({ principal: userPrincipal })
+    let walletAddress = accountIdent.toHex();
+    return walletAddress;
+}
+/**
+ * Convert a decimal number to BigInt representation.
+ *
+ * @param {any} decimalValue - The decimal number to convert.
+ * @return {bigint} - The BigInt representation.
+ */
+export function decimalToICP(decimalValue) {
+    const icpBigInt = BigInt(decimalValue * 1e8);
+    return icpBigInt;
+}
+/**
+ * Convert a decimal number to BigInt representation.
+ *
+ * @param {bigint} icpValue - The decimal number to convert.
+ * @return {any} - The BigInt representation.
+ */
+export function ICPtoDecimal(icpValue) {
+    if (icpValue < 0n) {
+        throw new Error('ICP value must be a non-negative BigInt.');
+    }
+
+    // Convert ICP to decimal by dividing by 1e8.
+    const decimalValue = Number(icpValue) / 1e8;
+    return decimalValue;
+}
+/**
+ * @param {bigint} value
+ * @param {number } percentage
+ */
+function calculatePercentage(value, percentage) {
+    if (percentage >= 0 && percentage <= 100) {
+        // Calculate the percentage of the value.
+        const result = (value * BigInt(percentage)) / BigInt(100);
+        return result;
+    } else {
+        throw new Error('Percentage must be between 0 and 100.');
+    }
+}
+
+
+/**
+ * @param {string} destination
+ * @param {bigint} amount
+ */
+export async function transferTo(destination, amount) {
+    const store = get(info);
+    const canister = await LedgerCanister.create({
+        // @ts-ignore
+        agent: store.agent,
+        canisterId: Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai"),
+    });
+    let account = AccountIdentifier.fromHex(destination);
+    const response = await canister.transfer({
+        to: account,
+        amount: amount,
+    });
+    console.log(response);
+
+    return response;
+}
+
+/**
+ * @param {number} amount
+ * @param {string} topicKey
+ */
+export async function disapproveSolution(amount, topicKey) {
+    const store = get(info);
+    //1) We need to decrease the amount of money of the users pledge field 
+    let myUserDoc = await getDocu("users", store.key);
+    // @ts-ignore
+    myUserDoc.data.pledged -= amount;
+    if (myUserDoc?.data.pledged < 0) {
+        // @ts-ignore
+        myUserDoc.data.pledged = 0;
+    }
+
+    //2) Increase the balance in the user's balance field
+    // @ts-ignore
+    myUserDoc.data.balance += amount;
+    await updateData(myUserDoc, "users", store.key);
+    //3) Decrease the pledging in Topic's Key 
+    let myTopicDoc = await getDocu("ideas", topicKey);
+    // @ts-ignore
+    myTopicDoc.data.moneyPledged -= amount;
+    if (myTopicDoc?.data.moneyPledged < 0) {
+        // @ts-ignore
+        myTopicDoc.data.moneyPledged = 0;
+    }
+    await updateData(myTopicDoc, "ideas", topicKey);
+
+};
+
+
+/**
+ * @param {string} elementKey
+ */
+export async function amountUserPledged(elementKey) {
+    const store = get(info);
+    let myUserDoc = await getDocu("users", store.key);
+    let pledged = myUserDoc?.data.pledgedElements;
+    for (let i = 0; i < pledged.length; i++) {
+        if (pledged[i].key == elementKey) {
+            return pledged[i].amount;
+        }
+    }
+    return 0;
+
+
 }
