@@ -1,5 +1,5 @@
 import { post_pledge_notification } from "$lib/data_functions/docu.functions";
-import { createAdvancedDate, createSolution } from "$lib/data_objects/data_objects";
+import { createAdvancedDate, createPledgedElement, createSolution } from "$lib/data_objects/data_objects";
 import { decimalToBigInt, info, signedIn } from "$lib/stores/auth.state";
 import { NotSignedIn, pledgeModal } from "$lib/stores/loading";
 import { DateInTheFutureValidator } from "$lib/validators/create.validator";
@@ -116,7 +116,16 @@ export async function pledgeFunds(documentID, amountICP, address, collectionName
     userData.transactionHistory.push(newTransactionUser);
     userData.transactionHistory = userData.transactionHistory;
     console.log("Increasing amount of money pledged in the idea...");
+    userData.balance -= amountICP;
+    if (userData.balance < 0) {
+        userData.balance = 0;
+    }
     userData.pledged += amountICP;
+    let pledgedTopic = createPledgedElement();
+    pledgedTopic.amount += amountICP;
+    pledgedTopic.key = documentID;
+    userData.pledgedElements.unshift(pledgedTopic);
+    userData.pledgedElements = userData.pledgedElements;
     console.log("Updating user`s info in DB...");
     await setDoc({
         collection: "users",
@@ -134,7 +143,6 @@ export async function pledgeFunds(documentID, amountICP, address, collectionName
     const bigIntRepresentation = decimalToBigInt(amountICP, 10 ** 8);
     console.log(bigIntRepresentation); // Expected: 200000
     // @ts-ignore
-    //let result = transferFrom(address, bigIntRepresentation);
     await post_pledge_notification(get(info).key, collectionName, documentID, amountICP);
 }
 let date = {
