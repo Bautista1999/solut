@@ -6,7 +6,7 @@
     import Loading from "./loading.svelte";
     import { writable } from "svelte/store";
     import { onDestroy, onMount } from "svelte";
-    import { NotSignedIn } from "$lib/stores/loading";
+    import { NotSignedIn } from "$lib/stores/other_storestores";
 
     export let localSignIn = false;
     export let waiting = false;

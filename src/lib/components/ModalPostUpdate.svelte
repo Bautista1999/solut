@@ -3,7 +3,7 @@
         createDeadline,
         createUpdate,
     } from "/Users/juanbautistamartinezrezzio/Documents/Dev/ic_project/solutio/src/lib/data_objects/data_objects.js";
-    import { PostUpdateModal } from "../stores/loading";
+    import { PostUpdateModal } from "../stores/other_storestores";
     import Modal from "./modal.svelte";
     import {
         getClosestDate,

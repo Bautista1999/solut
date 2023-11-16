@@ -1,7 +1,7 @@
 import { post_pledge_notification } from "$lib/data_functions/docu.functions";
 import { createAdvancedDate, createPledgedElement, createSolution } from "$lib/data_objects/data_objects";
-import { decimalToBigInt, info, signedIn } from "$lib/stores/auth.state";
-import { NotSignedIn, pledgeModal } from "$lib/stores/loading";
+import { info, signedIn } from "$lib/stores/auth.state";
+import { pledgeModal } from "$lib/stores/other_stores";
 import { DateInTheFutureValidator } from "$lib/validators/create.validator";
 import { getDoc, setDoc } from "@junobuild/core";
 import { get, writable } from "svelte/store";
@@ -28,123 +28,8 @@ export async function copyLink() {
         copied.set(false);
     }, 2000);
 }
-let changeDollarICP = 0.34; // 1 dollar = {changeDollarICP} ICP
-/**
- * @param {number} amount
- */
-export function fromICPtoUSD(amount) {
 
-    let usdAmount = amount / changeDollarICP;
-    usdAmount = Math.round(usdAmount * 100) / 100;
-    return usdAmount;
-}
-/**
-     * @param {number} amount
-     */
-export function fromUSDtoICP(amount) {
-    let icpAmount = amount * changeDollarICP;
-    icpAmount = Math.round(icpAmount * 100) / 100;
-    return icpAmount;
-}
-/**
- * @param {number} amountICP
- * @param {string} address
- * @param {string} documentID
- * @param {string} collectionName
- */
-export async function pledgeFunds(documentID, amountICP, address, collectionName) {
-    if (!(await signedIn())) {
-        pledgeModal.set(false);
-        NotSignedIn.set(true);
-        return "Not signed in";
-    }
-    //1) We need to increase the amount of moneyPledged field of the idea
-    //2) Create a transactionHistory in the idea
-    console.log("Getting idea document...");
-    const myDoc = await getDoc({
-        collection: collectionName,
-        // @ts-ignore
-        key: documentID,
-    });
-    let topicData = myDoc?.data;
-    console.log("Done!");
-    console.log("Creating transaction...");
-    let now = Date.now();
-    let newTransactionIdea = {
-        user: get(info).key,
-        amountICP: amountICP,
-        sentTo: address,
-        date: now,
-    };
-    console.log("Increasing amount of money pledged in the idea...");
-    // @ts-ignore
-    topicData.moneyPledged += amountICP;
-    // @ts-ignore
-    // topicData.transactionHistory.push(newTransactionIdea);
-    // @ts-ignore
-    // topicData.transactionHistory = topicData.transactionHistory;
-    console.log("Updating idea`s info in DB...");
-    await setDoc({
-        collection: collectionName,
-        doc: {
-            // @ts-ignore
-            key: documentID,
-            // @ts-ignore
-            updated_at: myDoc?.updated_at,
-            data: topicData,
-        },
-    });
-    console.log("Done!");
 
-    //3) We need to increase the amount of pledged field of the user
-    //4) Create a transactionHistory in the user
-    console.log("Getting user`s doc...");
-    const myDoc2 = await getDoc({
-        collection: "users",
-        // @ts-ignore
-        key: get(info).key,
-    });
-    console.log("Done!");
-    console.log("Creating transaction in the user...");
-    let newTransactionUser = {
-        idea: documentID,
-        amountICP: amountICP,
-        sentTo: address,
-        date: now,
-    };
-    let userData = myDoc2?.data;
-    userData.transactionHistory.push(newTransactionUser);
-    userData.transactionHistory = userData.transactionHistory;
-    console.log("Increasing amount of money pledged in the idea...");
-    userData.balance -= amountICP;
-    if (userData.balance < 0) {
-        userData.balance = 0;
-    }
-    userData.pledged += amountICP;
-    let pledgedTopic = createPledgedElement();
-    pledgedTopic.amount += amountICP;
-    pledgedTopic.key = documentID;
-    userData.pledgedElements.unshift(pledgedTopic);
-    userData.pledgedElements = userData.pledgedElements;
-    console.log("Updating user`s info in DB...");
-    await setDoc({
-        collection: "users",
-        doc: {
-            // @ts-ignore
-            key: get(info).key,
-            // @ts-ignore
-            updated_at: myDoc2?.updated_at,
-            data: userData,
-        },
-    });
-    console.log("Done!");
-    // TODO
-    //5) We need to actually transfer the amountICP tokens to the given address
-    const bigIntRepresentation = decimalToBigInt(amountICP, 10 ** 8);
-    console.log(bigIntRepresentation); // Expected: 200000
-    // @ts-ignore
-    await post_pledge_notification(get(info).key, collectionName, documentID, amountICP);
-}
 let date = {
     newDate: { day: 22, month: 8, year: 23 },
     title: "",
@@ -177,12 +62,12 @@ export function getClosestDate(dates) {
     return returnData;
 }
 /**
+BRIEF DESCRIPTION: receives one list and a number, and basically it copies the first {number} items
+of the list into a new list and returns it. If {number} is greater than the list1 length,
+it copies the whole list1.
 * @param {any[]} list1
 * @param {number} amount
 */
-//receives one list and a number, and basically it copies the first {number} items
-// of the list into a new list and returns it. If {number} is greater than the list1 length,
-// it copies the whole list1.
 export function subList(list1, amount) {
     let returnList = [];
     let limit = list1.length - 1;
@@ -195,11 +80,13 @@ export function subList(list1, amount) {
     }
     return returnList;
 }
-//receives a list, a position, an amount, a orientation (left or right) and returns a copy of the list 
-// with {amount} elements inside it with {amount-1} elements before (if the orientation is left) or after 
-//(if it is right) from the position. 
-//PRE: It is expected to receive the first position of the displayed images in the ARRAY . 
+
 /**
+BRIEF DESCRIPTION: Receives a list, a position, an amount, a orientation (left or right) and returns a copy of the list 
+with {amount} elements inside it with {amount-1} elements before (if the orientation is left) or after 
+(if it is right) from the position. 
+
+PRE: It is expected to receive the first position of the displayed images in the ARRAY . 
  * @param {string[]} list
  * @param {number} amount
  * @param {string} orientation
@@ -232,10 +119,11 @@ export function AdvancedSubList(list, amount, orientation, position) {
     return returnList;
 }
 /**
+Pre: This works for a list of strings.
  * @param {any[]} list
  * @param {string} item
  */
-//This works for a list of strings.
+
 export function substractItem(list, item) {
     const index = list.indexOf(item);
 

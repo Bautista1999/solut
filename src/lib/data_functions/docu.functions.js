@@ -1,17 +1,25 @@
 import { basicInfo, initDB, signedIn } from "$lib/stores/auth.state";
-import { amountNotis, isLoading, loginedIn, signInSuccessful } from "$lib/stores/loading";
+import { amountNotis, isLoading, loginedIn, pledgeModal, signInSuccessful } from "$lib/stores/other_stores";
 import { getDoc, listDocs, setDoc, signIn } from "@junobuild/core";
 import { info } from "../stores/auth.state";
-import { CurrentDate, createAdvancedDate, createDeadline, createFinalUpdate, createNotification, createSolution, createTransfer, createTransferResult, createUpdate } from "$lib/data_objects/data_objects";
+import { CurrentDate, createAdvancedDate, createDeadline, createFinalUpdate, createNotification, createPledgedElement, createSolution, createTransfer, createTransferResult, createUpdate } from "$lib/data_objects/data_objects";
 import { orderByDate } from "$lib/other_functions/other.functions";
 import { get } from "svelte/store";
 import { Principal } from "@dfinity/principal";
 import { createAgent } from "@dfinity/utils";
 import { AccountIdentifier, LedgerCanister, Topic } from "@dfinity/nns";
 
-//await initDB();
+
 
 /**
+* BRIEF DESCRIPTION: This function retrieves a document from a collection in Juno's database
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno and have proper permissions.
+For example, a user cant get a Doc that isnt public. Recieves Juno's collection name and the key of the doc.
+
+* POST-CONDITIONS: Returns the document provided by Juno.
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc() 
  * @param {string} collectionName
  * @param {string} key
  */
@@ -25,9 +33,17 @@ export async function getDocu(collectionName, key) {
 }
 
 /**
+* BRIEF DESCRIPTION: This function retrieves a list of documents from a collection in Juno's database
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno and have proper permissions.
+For example, a user cant get a collection that isnt public. Recieves Juno's collection name.
+
+* POST-CONDITIONS: Returns the list of documents of that collection provided by Juno.
+
+* OUTSIDE FUNCTIONS: Juno --> listDocs() 
  * @param {string} collectionName
  */
-export async function listDocu(collectionName) {
+export async function getListDocs(collectionName) {
     const myDocs = await listDocs({
         collection: collectionName,
     });
@@ -35,6 +51,15 @@ export async function listDocu(collectionName) {
     return myDocs;
 }
 /**
+* BRIEF DESCRIPTION: This function updates a given document Data from a collection in Juno's database
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno and have proper permissions.
+For example, a user cant write a Doc that isnt public. Recieves Juno's collection name, doc's info, and the key of the doc.
+The docInfo provided is not the document data, but the kind of data provided by Juno when you do getDoc(). 
+
+* POST-CONDITIONS: Returns the document provided by Juno.
+
+* OUTSIDE FUNCTIONS: Juno --> setDoc() 
  * @param {string} collectionName
  * @param {string} key
  * @param {any} docInfo
@@ -51,18 +76,20 @@ export async function updateData(docInfo, collectionName, key) {
         },
     });
 }
-/**
- * @param {string} collectionName
- */
-export async function getListDocs(collectionName) {
-    const myDoc = await listDocs({
-        collection: collectionName,
-    });
-
-    return myDoc;
-}
 
 /**
+* BRIEF DESCRIPTION: This function provides the keys of ideas implemented by a specific solution. First,
+the function gets the solution document and it checks the ideas list inside that document. Second, its fetches
+the list of documents of all the ideas and check which ideas key matches with the list of the solution. Those
+ideas data are returned. 
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno and have proper permissions.
+This means to be the owner of the solution in discussion. Recieves the key of the solution in Juno.
+The docInfo provided is not the document data, but the kind of data provided by Juno when you do getDoc(). 
+
+* POST-CONDITIONS: Returns solution's ideas implemented data provided by Juno.
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc(), listDocs()
  * @param {string} solutionKey
  */
 export async function getSolutionSubIdeas(solutionKey) {
@@ -80,8 +107,6 @@ export async function getSolutionSubIdeas(solutionKey) {
             if (thisKey == subideasItems[j].key) {
                 returnData.push(subideasItems[j]);
                 returnData = returnData;
-                console.log("pushed item", subideasItems[j]);
-                console.log("image item", subideasItems[j].data.imageURL);
             }
         }
     }
@@ -89,6 +114,16 @@ export async function getSolutionSubIdeas(solutionKey) {
 }
 let update = createUpdate();
 /**
+* BRIEF DESCRIPTION: This function creates an update from the owner of the solution and updates
+the data in Juno's database. Additionally, it sends a notification to every user that follows the 
+solution's topic and the topic itself.
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno and have proper permissions.
+This means, to be the owner of the solution. Receives an update, and the Juno's key of the solution.
+
+* POST-CONDITIONS: --None--
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc(), setDoc() 
  * @param {update } update
  * @param {string} solutionKey
  */
@@ -101,6 +136,16 @@ export async function postUpdate(update, solutionKey) {
 };
 let finalUpdate = createFinalUpdate();
 /**
+* BRIEF DESCRIPTION: This function creates a final update from the owner of the solution and updates
+the data in Juno's database. This happens when the owner wishes to finish the project.
+Additionally, it sends a notification to every user that follows the solution's topic and the topic itself.
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno and have proper permissions.
+This means, to be the owner of the solution. Receives an update, and the Juno's key of the solution.
+
+* POST-CONDITIONS: --None--
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc(), setDoc() 
  * @param {finalUpdate } update
  * @param {string} solutionKey
  */
@@ -114,6 +159,15 @@ export async function postFinalUpdate(update, solutionKey) {
     await post_final_update_notification(update, solutionKey, topicKey);
 };
 /**
+* BRIEF DESCRIPTION: This function deletes a specific update from the owner of the solution and updates
+the data in Juno's database.
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno and have proper permissions.
+This means, to be the owner of the solution. Receives an update, and the Juno's key of the solution.
+
+* POST-CONDITIONS: --None--
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc(), setDoc() 
  * @param {update} update
  * @param {string} solutionKey
  */
@@ -149,6 +203,15 @@ export async function deleteUpdate(update, solutionKey) {
 
 let deadline = createDeadline();
 /**
+* BRIEF DESCRIPTION: This function adds a deadline from the owner of the solution and updates
+the data in Juno's database.
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno and have proper permissions.
+This means, to be the owner of the solution. Receives a deadline, and the Juno's key of the solution.
+
+* POST-CONDITIONS: --None--
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc(), setDoc() 
  * @param {deadline} deadline
  * @param {string} solutionKey
  */
@@ -162,6 +225,15 @@ export async function addDeadline(deadline, solutionKey) {
 };
 
 /**
+* BRIEF DESCRIPTION: This function deletes a deadline from solution and updates
+the data in Juno's database.
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno and have proper permissions.
+This means, to be the owner of the solution. Receives a deadline, and the Juno's key of the solution.
+
+* POST-CONDITIONS: --None--
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc(), setDoc() 
  * @param {deadline} deadline
  * @param {string} solutionKey
  */
@@ -198,6 +270,14 @@ export async function deleteDeadline(deadline, solutionKey) {
 
 let solution = createSolution();
 /**
+* BRIEF DESCRIPTION: This function edits a solution's data in the database.
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno and have proper permissions.
+This means, to be the owner of the solution. Receives a deadline, and the Juno's key of the solution.
+
+* POST-CONDITIONS: --None--
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc(), setDoc() 
  * @param {solution} solutionData;
  * @param {string} solutionKey
  */
@@ -207,7 +287,17 @@ export async function editSolution(solutionData, solutionKey) {
     myDoc.data = solutionData;
     await updateData(myDoc, "solutions", solutionKey);
 };
+/**
+* BRIEF DESCRIPTION: This function fetches the notifications for the signed in user. Dont need to pass
+user key, its automatically fetched by the function.
 
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno.
+. Receives a deadline, and the Juno's key of the solution.
+
+* POST-CONDITIONS: Returns the list of all the notifications of the user.
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc(), setDoc() 
+ */
 export async function get_user_notifications() {
     await basicInfo();
 
@@ -228,6 +318,7 @@ export async function get_user_notifications() {
 }
 
 let notification = createNotification();
+
 //The elementKey indicates the followers on which we should post the notification
 //EXAMPLE: If you receive a collecitonName of "solutions" and a elementKey of "aaa-bb-cc-dd",
 //the function is going to get the data of "aaa-bb-cc-dd" in the collection "solutions",
@@ -236,7 +327,17 @@ let notification = createNotification();
 
 //Each notification key of every user is the sum of "NOT_" + user.key
 //
+
 /**
+* BRIEF DESCRIPTION: This function post a notification to every follower of an element provided.
+This element can be a subidea, a user, a topic or a solution. 
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno. 
+Receives a notification, an element key and the Juno's collection name of the element. 
+
+* POST-CONDITIONS: --None--
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc(), listDocs(), setDoc() 
  * @param {string} elementKey //The element key could be from users, ideas, subideas, and topics
  * @param {notification} notificationData
  * @param {string} collectionName
@@ -261,6 +362,15 @@ export async function post_all_notifications(elementKey, notificationData, colle
 
 };
 /**
+* BRIEF DESCRIPTION: This function post a single notification to a specified user. The 
+notification data is posted on the collection of notifications.
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno. 
+Receives a notification and a notification key. 
+
+* POST-CONDITIONS: --None--
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc(), setDoc() 
  * @param {string} notiKey 
  * @param {notification} notificationData
  */
@@ -271,6 +381,16 @@ export async function post_single_notification(notificationData, notiKey) {
 };
 
 /**
+* BRIEF DESCRIPTION: This function post a follow notification to a specified user, which 
+is owner of the followed element. 
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno. 
+Receives a userKey, which is the "name"of the user that followed, the key of the followed
+element, and the collection name of that element. 
+
+* POST-CONDITIONS: --None--
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc(), setDoc() 
  * @param {string} userKey
  * @param {string} collectionName
  * @param {string} elementKey
@@ -306,7 +426,16 @@ export async function post_follow_notification(userKey, collectionName, elementK
     await post_single_notification(notification, "NOT_" + owner);
 }
 
+/**
+* BRIEF DESCRIPTION: This function checks the amount of new notifications a user has. 
 
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno. . 
+
+* POST-CONDITIONS: It updates a writable store in "../stores/info.store.js" called newNotis 
+with the new amounts of notifications. 
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc()
+ */
 export async function check_new_notifications() {
     const store = get(info);
     let userKey = store.key;
@@ -318,14 +447,21 @@ export async function check_new_notifications() {
 
     let myNotisDoc = await getDocu("notifications", "NOT_" + userKey);
     let newNotis = myNotisDoc?.data.length - myUserDoc?.data.amountNotifictions;
-    console.log("myNotisDoc?.data.length: ", myNotisDoc?.data.length);
-    console.log("myUserDoc?.data.amountNotifictions: ", myUserDoc?.data.amountNotifictions);
-    console.log("New notis: ", newNotis);
-
     amountNotis.set(newNotis);
 }
 
 /**
+* BRIEF DESCRIPTION: This function post a pledge notification to a specified user, which 
+is owner of the followed element. This happens when a user pledges in an element (topic, idea
+or solution)
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno. 
+Receives a userKey, which is the "name"of the user that pledged, the key of the pledged
+element, amount pledged, and the collection name of that element. 
+
+* POST-CONDITIONS: --None--
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc(), setDoc() 
  * @param {string} userKey
  * @param {string} collectionName  // can be subidea, idea, or solution
  * @param {string} elementKey
@@ -362,6 +498,15 @@ export async function post_pledge_notification(userKey, collectionName, elementK
 }
 
 /**
+* BRIEF DESCRIPTION: This function post an update notification to every follower of the elementKey.
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno. 
+Receives a userKey, which is the "name"of the user that followed, the key of the followed
+element, and the body of the notification. 
+
+* POST-CONDITIONS: --None--
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc(), setDoc() 
  * @param {string} userKey
  * @param {string} elementKey
  * @param {string} body
@@ -391,6 +536,14 @@ export async function post_update_notification(userKey, elementKey, body) {
     await post_all_notifications(elementKey, notification, "solutions");
 }
 /**
+* BRIEF DESCRIPTION: This function post a final update notification to every follower of the topic and solution.
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno. 
+Receives a final update, the keys of the followed topic and solution. 
+
+* POST-CONDITIONS: --None--
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc(), setDoc() 
  * @param {finalUpdate} finalUpdate
  * @param {string} elementKey
  * @param {string} topicKey
@@ -402,8 +555,6 @@ export async function post_final_update_notification(finalUpdate, elementKey, to
     notification.body = finalUpdate.body;
     notification.elementName = myDoc?.data.title;
     notification.subject = "The project " + myDoc?.data.title + " has been delivered! Check it out.";
-    //window.location.href = "/idea?id=" + key;
-
     notification.link = "/solution?id=" + elementKey;
     notification.createBy = finalUpdate.creator;
     notification.picture = myDoc?.data.images[0];
@@ -420,10 +571,18 @@ export async function post_final_update_notification(finalUpdate, elementKey, to
     await post_all_notifications(topicKey, notification, "ideas");
 }
 /**
+* BRIEF DESCRIPTION: This function checks if a requested username for a user is already taken.
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno. 
+Receives a username. 
+
+* POST-CONDITIONS: True if taken, false otherwise
+
+* OUTSIDE FUNCTIONS: Juno --> listDocs()
  * @param {string} username
  */
 export async function usernameExists(username) {
-    let myListDocs = await listDocu("users");
+    let myListDocs = await getListDocs("users");
     let items = myListDocs.items;
     for (let i = 0; i < items.length; i++) {
         if (items[i].key != get(info).key) {
@@ -436,6 +595,15 @@ export async function usernameExists(username) {
 }
 
 /**
+* BRIEF DESCRIPTION: This function checks the ideas or solutions published given a certain category 
+established.
+
+* PRE-CONDITIONS: Receives a category, an order, a collection name (in this case, solutions or topics),
+amount of elements requested, and if the signed in user follows (for this option the user needs to be signed in). 
+
+* POST-CONDITIONS: Return list of elements. 
+
+* OUTSIDE FUNCTIONS: Juno --> listDocs() 
  * @param {string} category //"🦾 Technology", "💰 Business", "👨‍⚕️ Health care","💵 E-commerce","🪙 Crypto","🏦 Finance","🎸 Music","👥 Social","⚡ ICP","🏋️‍♂️ Sports and Fitness","Other",none
 
  * @param {string} order //popularity, funding, recent, oldest, , none
@@ -546,6 +714,13 @@ export async function listIdeas(category, order, collectionName, amount, followe
     return returnList;
 }
 /**
+* BRIEF DESCRIPTION: This function gets the username of a user given the user's key. 
+
+* PRE-CONDITIONS: Receives a user key.
+
+* POST-CONDITIONS: Returns the username. 
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc() 
  * @param {string} userKey
  */
 export async function getUsername(userKey) {
@@ -553,6 +728,15 @@ export async function getUsername(userKey) {
     return myDoc?.data.nickname || { userKey };
 }
 /**
+/**
+* BRIEF DESCRIPTION: This function gets the profile picture of a user given the user's key. 
+
+* PRE-CONDITIONS: Receives a user key.
+
+* POST-CONDITIONS: Returns the picture's URL. If it has none it returns a default image for users
+that have no profile picture. 
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc() 
  * @param {string} userKey
  */
 export async function getProfilePicture(userKey) {
@@ -562,6 +746,24 @@ export async function getProfilePicture(userKey) {
 
 
 /**
+* BRIEF DESCRIPTION: This function is activated by the platform when a signed in user, that pledged the 
+topic or solution approves the project. This only can happen if the project is finished. The approval process
+has several steps, as follows. First checks that the user has enough balance to make the transfer, then it updates
+the transfer history of the user, then updates the amount of money pledged, decreasing it and updates the 
+total money funded, incresing it. After that, updates the topic's data increasing the amount funded, as for the 
+solution. Then, its sends 10% of the amount to the creator of ideas implemented and the topic creator and 90%
+to the solution provider. FInally, it sends a notification to the solution owner about the approval as well to 
+the other creators of ideas and topic. 
+
+* PRE-CONDITIONS: This is only available if the user has pledged in the topic or solution. Otherwise, the 
+option is not available. Receives the topic key, the solution key and the amount to transfer.
+
+* POST-CONDITIONS: Returns the result of the approval process, in the following form:
+    Error: string;
+    creatorTransfer: string;
+    developerTransfer: string;
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc() 
  * @param {string} topicKey
  * @param {string} solutionKey
  * @param {number} amount
@@ -642,10 +844,18 @@ export async function approveSolution(topicKey, solutionKey, amount) {
     //6.2) Send tokens
     let developerTransferResult = await transferTo(developerWltAddres, developerCut);
 
-    //7) Send notification to the developer
-    //8) Send notification to the creator
+    //7) TODO Send notification to the developer
+    //8) TODO Send notification to the creator
 }
+
 /**
+* BRIEF DESCRIPTION: This function gets the wallet address of a user given the user's key. 
+
+* PRE-CONDITIONS: Receives a user key.
+
+* POST-CONDITIONS: Returns the solutio's wallet address. 
+
+* OUTSIDE FUNCTIONS: dfinity/nns --> AccountIdentifier, dfinity/principal --> Principal
  * @param {string} userKey
  */
 export async function getWalletAddress(userKey) {
@@ -655,7 +865,13 @@ export async function getWalletAddress(userKey) {
     return walletAddress;
 }
 /**
- * Convert a decimal number to BigInt representation.
+* BRIEF DESCRIPTION: This function converts a decimal number to BigInt representation.
+
+* PRE-CONDITIONS: Receives a decimal value.
+
+* POST-CONDITIONS: Returns the decimal value converted in bigint.
+
+* OUTSIDE FUNCTIONS: --None--
  *
  * @param {any} decimalValue - The decimal number to convert.
  * @return {bigint} - The BigInt representation.
@@ -665,7 +881,13 @@ export function decimalToICP(decimalValue) {
     return icpBigInt;
 }
 /**
- * Convert a decimal number to BigInt representation.
+* BRIEF DESCRIPTION: This function converts a BigInt representation to decimal number.
+
+* PRE-CONDITIONS: Receives a bigint value.
+
+* POST-CONDITIONS: Returns a bigint.
+
+* OUTSIDE FUNCTIONS: --None--
  *
  * @param {bigint} icpValue - The decimal number to convert.
  * @return {any} - The BigInt representation.
@@ -680,6 +902,13 @@ export function ICPtoDecimal(icpValue) {
     return decimalValue;
 }
 /**
+* BRIEF DESCRIPTION: This function calculates certain percentage of a given value.
+
+* PRE-CONDITIONS: Receives the value and a percentage (0=>percentage<=100).
+
+* POST-CONDITIONS: Returns a the percentage of that value.
+
+* OUTSIDE FUNCTIONS: --None--
  * @param {bigint} value
  * @param {number } percentage
  */
@@ -695,6 +924,16 @@ function calculatePercentage(value, percentage) {
 
 
 /**
+* BRIEF DESCRIPTION: This function transfer tokens from the signed in user's wallet to the destination
+passed as a parameter.
+
+* PRE-CONDITIONS: User needs to be signed in to do this, and have enough balance. 
+Receives a destination and an amount.
+
+* POST-CONDITIONS: Returns dfinity's transfer response. 
+
+* OUTSIDE FUNCTIONS: dfinity/nns --> (LedgerCanister, AccountIdentifier), dfinity/principal --> Principal
+
  * @param {string} destination
  * @param {bigint} amount
  */
@@ -716,6 +955,14 @@ export async function transferTo(destination, amount) {
 }
 
 /**
+* BRIEF DESCRIPTION: This function dissaproves a solution. It decreases the pledged money of the user 
+and increases the available money for the user to pledge. It also decrease the amount of pledging of a topic.
+
+* PRE-CONDITIONS: Receives an amount and the key of the topic.
+
+* POST-CONDITIONS: --None--.
+
+* OUTSIDE FUNCTIONS: Juno --> (setDoc(),getDoc())
  * @param {number} amount
  * @param {string} topicKey
  */
@@ -748,6 +995,14 @@ export async function disapproveSolution(amount, topicKey) {
 
 
 /**
+* BRIEF DESCRIPTION: This function returns how much a user has pledged into a certain element. This element 
+can a topic, subidea or solution.  
+
+* PRE-CONDITIONS: Receives an element key.
+
+* POST-CONDITIONS: Returns a decimal value.
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc()
  * @param {string} elementKey
  */
 export async function amountUserPledged(elementKey) {
@@ -762,4 +1017,153 @@ export async function amountUserPledged(elementKey) {
     return 0;
 
 
+}
+
+/**
+BRIEF DESCRIPTION: Function to search topics, solutions, or ideas in Juno's database.
+
+PRE-CONDITIONS: Receives a word and a collection to search (solutions, ideas, subideas)
+
+POST-CONDITIONS: Returns the list of topics, ideas or solutions that include that word in their title.
+
+OUTSIDE FUNCTIONS: Juno --> listDocs();
+ * @param {string} searchWord
+ * @param {string} collectionName
+ */
+export async function searchBar(searchWord, collectionName) {
+    /**
+     * @type {any[]}
+     */
+    let result = [];
+    console.log("This is the word to search: ", searchWord)
+    const MyList = await listDocs({
+        collection: collectionName,
+    });
+    let AllSubIdeas = MyList?.items;
+    for (let i = 0; i < AllSubIdeas.length; i++) {
+        // @ts-ignore
+        if (AllSubIdeas[i]?.data.title.toLowerCase().includes(searchWord.toLowerCase())) {
+            // @ts-ignore
+            result.push(AllSubIdeas[i]);
+            result = result;
+        }
+    }
+    return result;
+}
+
+
+let changeDollarICP = 0.34; // 1 dollar = {changeDollarICP} ICP
+/**
+ * @param {number} amount
+ */
+export function fromICPtoUSD(amount) {
+
+    let usdAmount = amount / changeDollarICP;
+    usdAmount = Math.round(usdAmount * 100) / 100;
+    return usdAmount;
+}
+/**
+     * @param {number} amount
+     */
+export function fromUSDtoICP(amount) {
+    let icpAmount = amount * changeDollarICP;
+    icpAmount = Math.round(icpAmount * 100) / 100;
+    return icpAmount;
+}
+
+/**
+* BRIEF DESCRIPTION: This function is activated when a user wants to pledge funds into an element (topic, 
+idea, or solution). First, the method increase the amount of money pledged in the user's doc and in the
+element's doc. In the case of the user, its supposed to decrease the amount of money "available" for the user
+to pledge into other elements. It also creates a transaction history of the pledging in the user doc and in 
+the element doc. Note that this function doesnt touch real money, its just a pledging to show that the user
+would put money to fund this project if its ever come to reality. Additionally, it sends a pledge notification
+to the owner of the element.
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno. Receives the documentID, 
+the amount pledged (in number), the funding destination address, and the collection name.
+
+* POST-CONDITIONS: "Not signed in" if its not signed in.
+
+* OUTSIDE FUNCTIONS: Juno --> getDoc(), setDoc() 
+ * @param {number} amountICP
+ * @param {string} address
+ * @param {string} documentID
+ * @param {string} collectionName
+ */
+export async function pledgeFunds(documentID, amountICP, address, collectionName) {
+    if (!(await signedIn())) {
+        pledgeModal.set(false);
+        loginedIn.set(false);
+        return "Not signed in";
+    }
+    //1) We need to increase the amount of moneyPledged field of the idea
+    //2) Create a transactionHistory in the idea
+    const myDoc = await getDoc({
+        collection: collectionName,
+        // @ts-ignore
+        key: documentID,
+    });
+    let topicData = myDoc?.data;
+    let now = Date.now();
+    let newTransactionIdea = {
+        user: get(info).key,
+        amountICP: amountICP,
+        sentTo: address,
+        date: now,
+    };
+    // @ts-ignore
+    topicData.moneyPledged += amountICP;
+    // @ts-ignore
+    // topicData.transactionHistory.push(newTransactionIdea);
+    // @ts-ignore
+    // topicData.transactionHistory = topicData.transactionHistory;
+    await setDoc({
+        collection: collectionName,
+        doc: {
+            // @ts-ignore
+            key: documentID,
+            // @ts-ignore
+            updated_at: myDoc?.updated_at,
+            data: topicData,
+        },
+    });
+    //3) We need to increase the amount of pledged field of the user
+    //4) Create a transactionHistory in the user
+    const myDoc2 = await getDoc({
+        collection: "users",
+        // @ts-ignore
+        key: get(info).key,
+    });
+    let newTransactionUser = {
+        idea: documentID,
+        amountICP: amountICP,
+        sentTo: address,
+        date: now,
+    };
+    let userData = myDoc2?.data;
+    userData.transactionHistory.push(newTransactionUser);
+    userData.transactionHistory = userData.transactionHistory;
+    userData.balance -= amountICP;
+    if (userData.balance < 0) {
+        userData.balance = 0;
+    }
+    userData.pledged += amountICP;
+    let pledgedTopic = createPledgedElement();
+    pledgedTopic.amount += amountICP;
+    pledgedTopic.key = documentID;
+    userData.pledgedElements.unshift(pledgedTopic);
+    userData.pledgedElements = userData.pledgedElements;
+    await setDoc({
+        collection: "users",
+        doc: {
+            // @ts-ignore
+            key: get(info).key,
+            // @ts-ignore
+            updated_at: myDoc2?.updated_at,
+            data: userData,
+        },
+    });
+    // @ts-ignore
+    await post_pledge_notification(get(info).key, collectionName, documentID, amountICP);
 }

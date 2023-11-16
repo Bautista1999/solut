@@ -34,6 +34,30 @@ let solution = {
 
 
 /**
+BRIEF DESCRIPTION: This function validates a solution that is trying to be uploaded to Solutio's database.
+It receives a solution and checks that all expected fields are filled, and check that the dates of the 
+deadlines are not in the past and are coherent between each other (for example, the launch of a project
+cant happen after the project's finalization).
+
+PRE-CONDITIONS: Receives a solution. User needs to be signed in.
+
+
+POST-CONDITIONS: Returns the result of the validator.
+
+result = {
+        topicKey: "empty",
+        title: "empty",
+        subtitle: "empty",
+        description: "empty",
+        deadlines: {
+            projectKO: "empty",
+            solutionLaunch: "empty",
+        },
+        relatedCategories: "empty",
+        image: "empty",
+    };
+
+OUTSIDE FUNCTIONS: --None--
  * @param {solution} solution
  */
 export async function validateSolution(solution) {
@@ -120,6 +144,16 @@ let validator = {
     image: "empty",
 };
 /**
+BRIEF DESCRIPTION: This function checks if the validator returned some error or not. It basically checks if 
+the result from the validateSolution() return an error it any of its fields.
+
+PRE-CONDITIONS: Receives the validator result. User needs to be signed in.
+
+
+POST-CONDITIONS: Returns true if everything its ok, false otherwise.
+
+
+OUTSIDE FUNCTIONS: --None--
  * @param {validator} validator
  */
 export function checkValidatorSolution(validator) {
@@ -257,6 +291,23 @@ let topic = {
 
 
 /**
+BRIEF DESCRIPTION: This function validates a topic that is trying to be uploaded to Solutio's database.
+It receives a topic and checks that all expected fields are filled.
+
+PRE-CONDITIONS: Receives a topic. User needs to be signed in.
+
+
+POST-CONDITIONS: Returns the result of the validator.
+
+result = {
+         title: "empty",
+        subtitle: "empty",
+        description: "empty",
+        relatedCategories: "empty",
+        image: "empty",
+    };
+
+OUTSIDE FUNCTIONS: --None--
  * @param {topic} topic
  */
 export async function validateTopic(topic) {
@@ -295,6 +346,16 @@ let validatorTop = {
     image: "empty",
 };
 /**
+BRIEF DESCRIPTION: This function checks if the validator returned some error or not. It basically checks if 
+the result from the validateTopic() returned an error it any of its fields.
+
+PRE-CONDITIONS: Receives the validator result. User needs to be signed in.
+
+
+POST-CONDITIONS: Returns true if everything its ok, false otherwise.
+
+
+OUTSIDE FUNCTIONS: --None--
  * @param {validatorTop} validator
  */
 export function checkValidatorTopic(validator) {

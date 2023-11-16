@@ -1,11 +1,10 @@
 <script>
     import Modal from "./modal.svelte";
-    import { pledgeModal, termsModal } from "$lib/stores/loading";
+    import { pledgeModal, termsModal } from "$lib/stores/other_stores";
     import {
-        fromICPtoUSD,
         fromUSDtoICP,
         pledgeFunds,
-    } from "$lib/other_functions/other.functions";
+    } from "$lib/data_functions/docu.functions";
     import Terms from "./terms.svelte";
     let amountUSD = 10;
     export let documentID = "";

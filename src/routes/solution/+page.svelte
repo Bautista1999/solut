@@ -25,7 +25,7 @@
         displayedUpdImages,
         finishProject,
         loginedIn,
-    } from "$lib/stores/loading";
+    } from "$lib/stores/other_storestores";
 
     import {
         basicInfo,

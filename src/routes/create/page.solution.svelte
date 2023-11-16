@@ -7,8 +7,8 @@
     import Modal from "$lib/components/modal.svelte";
     import { nanoid } from "nanoid";
     import { goto } from "$app/navigation";
-    import { searchBar } from "$lib/stores/auth.state";
-    import { isLoading } from "$lib/stores/loading";
+    import { searchBar } from "$lib/data_functions/docu.functions";
+    import { isLoading } from "$lib/stores/other_storestores";
     import {
         itemExists_General,
         orderByDate,

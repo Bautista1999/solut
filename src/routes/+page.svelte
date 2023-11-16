@@ -9,7 +9,7 @@
 
     import { basicInfo, info } from "../lib/stores/auth.state";
     import { registerUser } from "$lib/data_functions/user.functions";
-    import { loginedIn } from "$lib/stores/loading";
+    import { loginedIn } from "$lib/stores/other_storestores";
 
     let SignedIn = false;
     let isLoading = false;

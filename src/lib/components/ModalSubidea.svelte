@@ -1,5 +1,5 @@
 <script>
-    import { NotSignedIn, subideaModal } from "$lib/stores/loading";
+    import { NotSignedIn, subideaModal } from "$lib/stores/other_storestores";
     import { ProgressRadial } from "@skeletonlabs/skeleton";
     import Modal from "./modal.svelte";
     import {

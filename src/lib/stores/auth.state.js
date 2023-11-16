@@ -4,7 +4,7 @@ import { authSubscribe, unsafeIdentity } from "@junobuild/core";
 import { Principal } from "@dfinity/principal";
 import { createAgent } from "@dfinity/utils";
 import { AccountIdentifier, LedgerCanister } from "@dfinity/nns";
-import { loginedIn } from "./loading";
+import { loginedIn } from "./other_stores";
 
 
 
@@ -20,7 +20,13 @@ let ledgerID = "";
 let userBalance = null;
 let loading = true;
 
-
+/**
+BRIEF DESCRIPTION: This store is supposed to hold basic info about the signed in user, provided by his/her
+internet identity through Juno. Throughout the whole platform many components, from to backend to the fronend,
+are interested to have this kind of information. For instance, the function approveSolutio() in docu_functions.js
+needs to know the user's principal to make a transaction, or user's key is important to have it when following
+a topic. 
+ */
 export const info = writable({
     key: "",
     userPrincipal: null,
@@ -31,11 +37,17 @@ export const info = writable({
     userBalance: null,
     loading: true
 });
+/**
+BRIEF DESCRIPTION: Function to initilize Juno's Solutio satellite (our database);
+ */
 export async function initDB() {
     await initJuno({
         satelliteId: "vehbc-zaaaa-aaaal-acyba-cai",
     });
 }
+/**
+BRIEF DESCRIPTION: Here we set the information for the store info;
+ */
 export async function basicInfo() {
 
     await new Promise((resolve, reject) => {
@@ -114,52 +126,17 @@ export async function basicInfo() {
 
 
 }
-let changeDollarICP = 0.31;
-/**
-     * @param {number} amount
-     */
-export function fromICPtoUSD(amount) {
-    let usdAmount = amount / changeDollarICP;
-    usdAmount = Math.round(usdAmount * 100) / 100;
-    return usdAmount;
-}
 
 /**
- * @param {string} destination
- * @param {bigint} amount
+BRIEF DESCRIPTION: Function to set the store loginedIn to true or to false, whether the user is signed in 
+or not. 
+
+PRE-CONDITIONS: --None--
+
+POST-CONDITIONS: Sets the loginedIn store to whether the uses is signed in or not. 
+
+OUTSIDE FUNCTIONS: --None--
  */
-export async function transferFrom(destination, amount) {
-    const store = get(info);
-    const canister = await LedgerCanister.create({
-        // @ts-ignore
-        agent: store.agent,
-        canisterId: Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai"),
-    });
-    let account = AccountIdentifier.fromHex(destination);
-    const response = await canister.transfer({
-        to: account,
-        amount: amount,
-    });
-    console.log(response);
-
-    return response;
-}
-
-/**
- * Convert a decimal number to BigInt representation.
- *
- * @param {number} decimalValue - The decimal number to convert.
- * @param {number} multiplier - The factor to multiply by, e.g., 10**8 if you have 8 decimal places of precision.
- * @return {bigint} - The BigInt representation.
- */
-export function decimalToBigInt(decimalValue, multiplier) {
-    // Convert the decimal value to its precise integer representation
-    const integerRepresentation = decimalValue * multiplier;
-
-    // Convert this integer to BigInt
-    return BigInt(Math.round(integerRepresentation));
-}
-
 export async function signedIn() {
     await basicInfo();
     console.log("Get info.key: ", get(info).key);
@@ -175,30 +152,7 @@ export async function signedIn() {
     return true;
 }
 
-/**
- * @param {string} searchWord
- * @param {string} collectionName
- */
-export async function searchBar(searchWord, collectionName) {
-    /**
-     * @type {any[]}
-     */
-    let result = [];
-    console.log("This is the word to search: ", searchWord)
-    const MyList = await listDocs({
-        collection: collectionName,
-    });
-    let AllSubIdeas = MyList?.items;
-    for (let i = 0; i < AllSubIdeas.length; i++) {
-        // @ts-ignore
-        if (AllSubIdeas[i]?.data.title.toLowerCase().includes(searchWord.toLowerCase())) {
-            // @ts-ignore
-            result.push(AllSubIdeas[i]);
-            result = result;
-        }
-    }
-    return result;
-}
+
 
 
 

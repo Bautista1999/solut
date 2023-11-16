@@ -1,6 +1,6 @@
 <script>
     import { login } from "../data_functions/user.functions";
-    import { isLoading, signInSuccessful } from "$lib/stores/loading";
+    import { isLoading, signInSuccessful } from "$lib/stores/other_storestores";
     import { onMount } from "svelte";
     import Loading from "./loading.svelte";
     import Success from "./success.svelte";
