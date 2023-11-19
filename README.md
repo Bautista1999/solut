@@ -25,12 +25,15 @@ These folders are related to the SvelteKit framework and contain build artifacts
 `/src`
 The main source code directory where most of the project logic resides.
 
-    `/lib`
-        `/components` 
+- `/lib`
+    
+    `/components` 
         Shared UI components used across various screens in Svelte.
-        `/data_functions`
+
+    `/data_functions`
         Backend functions for logic, connecting with the database (Juno), and external libraries like @dfinity/nns. Screens controllers connect with this backend for data operations.
-            `docu_functions.js`
+
+     `docu_functions.js`
             Provides CRUD operations for the database.
             `user_functions.js`
             Functions related to user operations.
