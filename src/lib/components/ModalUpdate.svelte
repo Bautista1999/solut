@@ -4,7 +4,7 @@
         displayedUpdImages,
         updateImages,
         updateModal,
-    } from "$lib/stores/other_storestores";
+    } from "$lib/stores/other_stores";
     import { afterUpdate, onMount } from "svelte";
     import Modal from "./modal.svelte";
     import { subList } from "$lib/data_functions/user.functions";

@@ -9,7 +9,8 @@ import { Principal } from "@dfinity/principal";
 import { createAgent } from "@dfinity/utils";
 import { AccountIdentifier, LedgerCanister, Topic } from "@dfinity/nns";
 
-
+// TODO: DIVIDE FUNCTIONS INTO DIFFERENT FILES (juno, local, dfinity), this one is too large. 
+// TODO: ADD A FIELD IN THE COMMENTS THAT SHOWS WHICH OUTSIDE FEATURES/ METHODS ARE USING THAT FUNCTION.
 
 /**
 * BRIEF DESCRIPTION: This function retrieves a document from a collection in Juno's database
@@ -769,7 +770,6 @@ option is not available. Receives the topic key, the solution key and the amount
  * @param {number} amount
  */
 export async function approveSolution(topicKey, solutionKey, amount) {
-    debugger;
     let approvalResult = createTransferResult();
     const store = get(info);
 

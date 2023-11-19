@@ -14,7 +14,7 @@
         checkValidatorTopic,
         validateTopic,
     } from "$lib/validators/create.validator";
-    import { isLoading } from "$lib/stores/other_storestores";
+    import { isLoading } from "$lib/stores/other_stores";
     let myId = nanoid();
     console.log(myId);
 

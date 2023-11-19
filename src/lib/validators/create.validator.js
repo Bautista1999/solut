@@ -149,9 +149,7 @@ the result from the validateSolution() return an error it any of its fields.
 
 PRE-CONDITIONS: Receives the validator result. User needs to be signed in.
 
-
 POST-CONDITIONS: Returns true if everything its ok, false otherwise.
-
 
 OUTSIDE FUNCTIONS: --None--
  * @param {validator} validator

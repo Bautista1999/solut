@@ -1,5 +1,5 @@
 <script>
-    import { termsModal } from "$lib/stores/other_storestores";
+    import { termsModal } from "$lib/stores/other_stores";
     import Modal from "./modal.svelte";
 </script>
 

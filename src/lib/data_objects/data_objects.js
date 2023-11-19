@@ -137,7 +137,7 @@ let solution = {
      */
     ideasRelated: [],
     /**
-     * @type {newDeadline []} 
+     * @type {newDeadline []} deadlines
      */
     deadlines: [],
     updates: [],

@@ -4,7 +4,7 @@
         createFinalUpdate,
         createUpdate,
     } from "/Users/juanbautistamartinezrezzio/Documents/Dev/ic_project/solutio/src/lib/data_objects/data_objects.js";
-    import { finishProject } from "../stores/other_storestores";
+    import { finishProject } from "../stores/other_stores";
     import Modal from "./modal.svelte";
     import {
         getClosestDate,

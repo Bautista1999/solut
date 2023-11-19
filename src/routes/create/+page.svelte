@@ -10,7 +10,7 @@
     let myId = nanoid();
     console.log(myId);
 
-    import { isLoading, loginedIn } from "$lib/stores/other_storestores";
+    import { isLoading, loginedIn } from "$lib/stores/other_stores";
     import Loading from "$lib/components/loading.svelte";
     import { basicInfo, signedIn } from "$lib/stores/auth.state";
     import Signin from "$lib/components/signin.svelte";

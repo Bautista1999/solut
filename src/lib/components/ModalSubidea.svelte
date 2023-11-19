@@ -1,5 +1,5 @@
 <script>
-    import { NotSignedIn, subideaModal } from "$lib/stores/other_storestores";
+    import { loginedIn, subideaModal } from "$lib/stores/other_stores";
     import { ProgressRadial } from "@skeletonlabs/skeleton";
     import Modal from "./modal.svelte";
     import {
@@ -80,7 +80,7 @@
                         "subideas"
                     );
                     if (result == "Not signed in") {
-                        NotSignedIn.set(true);
+                        loginedIn.set(false);
                         followLoading = false;
                         return;
                     }
@@ -104,7 +104,7 @@
                         "subideas"
                     );
                     if (result == "Not signed in") {
-                        NotSignedIn.set(true);
+                        loginedIn.set(false);
                         followLoading = false;
                         return;
                     }
@@ -182,7 +182,7 @@
                                 "subideas"
                             );
                             if (result == "Not signed in") {
-                                NotSignedIn.set(true);
+                                loginedIn.set(false);
                                 followLoading = false;
                                 return;
                             }
@@ -206,7 +206,7 @@
                                 "subideas"
                             );
                             if (result == "Not signed in") {
-                                NotSignedIn.set(true);
+                                loginedIn.set(false);
                                 followLoading = false;
                                 return;
                             }
