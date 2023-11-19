@@ -17,47 +17,47 @@ Solutio is a decentralized crowdbuilding platform built on the Internet Computer
 
 ## Solutio's project walkthrough
 ### Project's folder overview
-/Solutio	
-    /.svelte-kit	
-    /build
-	/node_modules
-	/src
-		/lib
-			/components 
-			/data_functions				
-                - docu_functions.js 
-				- user_functions.js  
-			/data_objects 				
-                data_objects.js			
-            /other_functions 
-			/stores
-			/validators 
-		/routes 
-			/create
-			/homepage
-			/idea			
-            /notifications
-			/profile
-			/solution
-			+layout.svelte
-			+layout.ts
-			+page.velte	
-		app.d.ts
-		app.html
-	/static
-		/assets
-			/fonts
-			(many images.jpg)
-	package.json
-	.gitattributes
-	.gitignore
-	jsconfig.json
-	postcss.config.cjs	
-    README.md
-	Juno.json
-	svelte.config.js
-	tailwind.config.js
-	vite.config.js
+    /Solutio	
+        /.svelte-kit	
+        /build
+        /node_modules
+        /src
+            /lib
+                /components 
+                /data_functions				
+                    - docu_functions.js 
+                    - user_functions.js  
+                /data_objects 				
+                    data_objects.js			
+                /other_functions 
+                /stores
+                /validators 
+            /routes 
+                /create
+                /homepage
+                /idea			
+                /notifications
+                /profile
+                /solution
+                +layout.svelte
+                +layout.ts
+                +page.velte	
+            app.d.ts
+            app.html
+        /static
+            /assets
+                /fonts
+                (many images.jpg)
+        package.json
+        .gitattributes
+        .gitignore
+        jsconfig.json
+        postcss.config.cjs	
+        README.md
+        Juno.json
+        svelte.config.js
+        tailwind.config.js
+        vite.config.js
 
 `/Solutio`
 The root directory contains the entire Solutio project.
