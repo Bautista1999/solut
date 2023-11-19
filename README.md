@@ -2,12 +2,12 @@
 
 Solutio is a decentralized crowdbuilding platform built on the Internet Computer (ICP) network. It enables users to create topics, contribute ideas, and pledge funds. Developers can propose solutions, and when accepted, receive funding from the community.
 
-# Key Components
-# Frontend
+## Key Components
+## Frontend
     Framework: Svelte and SvelteKit
     External Library: Skeleton for UI elements
     Structure: Screens, controllers, and shared components organized for optimal user interaction.
-# Backend
+## Backend
     Database: Juno, a decentralized database on the ICP network
     Functions: JavaScript functions connecting frontend to Juno for CRUD operations
     Data Objects: Models for interacting with the database
@@ -15,7 +15,7 @@ Solutio is a decentralized crowdbuilding platform built on the Internet Computer
     Stores: Svelte writable/readable stores for state management
     Validators: Ensure data integrity for topic and solution creation
 
-# Solutio's project walkthrough
+## Solutio's project walkthrough
 `/Solutio`
 The root directory contains the entire Solutio project.
 
@@ -60,15 +60,15 @@ The main source code directory where most of the project logic resides.
     `README.md, Juno.json, svelte.config.js, tailwind.config.js, vite.config.js`
     Documentation, configuration, and build files.
 
-# Decentralization and Blockchain Integration
+## Decentralization and Blockchain Integration
     Canister Hosting: Solutio is hosted on Juno's canister, relying on the ICP network for decentralization.
-# User Dashboard
+## User Dashboard
     Features: View topics, create topics, contribute ideas, pledge funds, approve solutions, provide solutions, view notifications, and manage profile.
-# User Engagement Features
+## User Engagement Features
     Engagement: Users can contribute ideas, pledge funds, approve solutions, and follow topics, ideas, or solutions.
-# Security Measures
+## Security Measures
     Security: Solutio relies on ICP through Juno for robust security, ensuring data integrity and user privacy.
-# Technology Stack
+## Technology Stack
     Frontend: Svelte, SvelteKit, Skeleton
     Backend: JavaScript, Juno
     Database: Juno, ICP network
