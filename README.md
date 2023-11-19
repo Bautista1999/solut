@@ -8,12 +8,12 @@ Solutio is a decentralized crowdbuilding platform built on the Internet Computer
 - External Library: Skeleton for UI elements
 - Structure: Screens, controllers, and shared components organized for optimal user interaction.
 ### Backend
-    Database: Juno, a decentralized database on the ICP network
-    Functions: JavaScript functions connecting frontend to Juno for CRUD operations
-    Data Objects: Models for interacting with the database
-    Other Functions: Additional logic not requiring database access
-    Stores: Svelte writable/readable stores for state management
-    Validators: Ensure data integrity for topic and solution creation
+- Database: Juno, a decentralized database on the ICP network
+- Functions: JavaScript functions connecting frontend to Juno for CRUD operations
+- Data Objects: Models for interacting with the database
+- Other Functions: Additional logic not requiring database access
+- Stores: Svelte writable/readable stores for state management
+- Validators: Ensure data integrity for topic and solution creation
 
 ## Solutio's project walkthrough
 ### Project's folder overview
@@ -122,18 +122,18 @@ The main source code directory where most of the project logic resides.
     Documentation, configuration, and build files.
 
 ## Decentralization and Blockchain Integration
-    Canister Hosting: Solutio is hosted on Juno's canister, relying on the ICP network for decentralization.
+Canister Hosting: Solutio is hosted on Juno's canister, relying on the ICP network for decentralization.
 ## User Dashboard
-    Features: View topics, create topics, contribute ideas, pledge funds, approve solutions, provide solutions, view notifications, and manage profile.
+- Features: View topics, create topics, contribute ideas, pledge funds, approve solutions, provide solutions, view notifications, and manage profile.
 ## User Engagement Features
-    Engagement: Users can contribute ideas, pledge funds, approve solutions, and follow topics, ideas, or solutions.
+Engagement: Users can contribute ideas, pledge funds, approve solutions, and follow topics, ideas, or solutions.
 ## Security Measures
-    Security: Solutio relies on ICP through Juno for robust security, ensuring data integrity and user privacy.
+- Security: Solutio relies on ICP through Juno for robust security, ensuring data integrity and user privacy.
 ## Technology Stack
-    Frontend: Svelte, SvelteKit, Skeleton
-    Backend: JavaScript, Juno
-    Database: Juno, ICP network
-    Integration: @dfinity/utils, @dfinity/principal, @dfinity/nns for ICP token management
+- Frontend: Svelte, SvelteKit, Skeleton
+- Backend: JavaScript, Juno
+- Database: Juno, ICP network
+- Integration: @dfinity/utils, @dfinity/principal, @dfinity/nns for ICP token management
 
 # Enviornment set-up
 # create-svelte
