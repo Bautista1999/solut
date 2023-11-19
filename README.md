@@ -27,41 +27,55 @@ The main source code directory where most of the project logic resides.
 
 - `/lib`
     
-    `/components` 
+    - `/components` 
         Shared UI components used across various screens in Svelte.
 
-    `/data_functions`
+    - `/data_functions`
         Backend functions for logic, connecting with the database (Juno), and external libraries like @dfinity/nns. Screens controllers connect with this backend for data operations.
 
-     `docu_functions.js`
+        - `docu_functions.js`
             Provides CRUD operations for the database.
-            `user_functions.js`
+            
+        - `user_functions.js`
             Functions related to user operations.
-        `/data_objects`
+
+    - `/data_objects`
         Files providing the construction of objects or models for interacting with the database.
-            `data_objects.js:`
+
+        - `data_objects.js:`
             Constructs objects for database interactions.
-        `/other_functions`
+
+    -  `/other_functions`
         Houses functions that don't require direct database access but involve logic.
-        `/stores`
+
+    - `/stores`
         Svelte writable/readable stores for managing state in components.
-        `/validators`
+
+    - `/validators`
         Validators for ensuring data integrity during topic and solution creation.
-    `/routes`
+
+- `/routes`
     Contains Svelte files representing each screen in the application. Each screen has a corresponding controller in the <script></script> section.
-        `/create, /homepage, /idea, /notifications, /profile, /solution`
+        
+    - `/create, /homepage, /idea, /notifications, /profile, /solution`
         Screens for creating topics, the homepage, individual ideas, notifications, user profile, and viewing solutions.
-        `+layout.svelte, +layout.ts`
+
+    - `+layout.svelte, +layout.ts`
         Layout components for consistent styling and structure across screens.
-        `+page.svelte`
+
+    - `+page.svelte`
         The main page in the platform; it is loaded when entering the solutions section.
-    `app.d.ts, app.html`
+
+- `app.d.ts, app.html`
     These files define the type and structure of the SvelteKit application.
-    `/static`
+
+- `/static`
     Contains static assets like fonts and images.
-    `package.json, .gitattributes, .gitignore, jsconfig.json, postcss.config.cjs`
+
+- `package.json, .gitattributes, .gitignore, jsconfig.json, postcss.config.cjs`
     Configuration files for package management, git, JavaScript, and PostCSS.
-    `README.md, Juno.json, svelte.config.js, tailwind.config.js, vite.config.js`
+    
+- `README.md, Juno.json, svelte.config.js, tailwind.config.js, vite.config.js`
     Documentation, configuration, and build files.
 
 ## Decentralization and Blockchain Integration
