@@ -17,7 +17,9 @@ Solutio is a decentralized crowdbuilding platform built on the Internet Computer
 
 ## Solutio's project walkthrough
 ### Project's folder overview
-    /Solutio	/.svelte-kit	/build
+/Solutio	
+    /.svelte-kit	
+    /build
 	/node_modules
 	/src
 		/lib
@@ -56,7 +58,7 @@ Solutio is a decentralized crowdbuilding platform built on the Internet Computer
 	svelte.config.js
 	tailwind.config.js
 	vite.config.js
-    
+
 `/Solutio`
 The root directory contains the entire Solutio project.
 
