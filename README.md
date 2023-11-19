@@ -24,6 +24,7 @@ These folders are related to the SvelteKit framework and contain build artifacts
 
 `/src`
 The main source code directory where most of the project logic resides.
+
     `/lib`
         `/components` 
         Shared UI components used across various screens in Svelte.
