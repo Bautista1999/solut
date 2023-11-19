@@ -3,11 +3,11 @@
 Solutio is a decentralized crowdbuilding platform built on the Internet Computer (ICP) network. It enables users to create topics, contribute ideas, and pledge funds. Developers can propose solutions, and when accepted, receive funding from the community.
 
 ## Key Components
-## Frontend
+### Frontend
     Framework: Svelte and SvelteKit
     External Library: Skeleton for UI elements
     Structure: Screens, controllers, and shared components organized for optimal user interaction.
-## Backend
+### Backend
     Database: Juno, a decentralized database on the ICP network
     Functions: JavaScript functions connecting frontend to Juno for CRUD operations
     Data Objects: Models for interacting with the database
