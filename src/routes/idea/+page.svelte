@@ -5,13 +5,7 @@
     import Header from "$lib/components/header.svelte";
     import Modal from "$lib/components/modal.svelte";
     import Loading from "$lib/components/loading.svelte";
-    import {
-        basicInfo,
-        info,
-        transferFrom,
-        signedIn,
-        decimalToBigInt,
-    } from "$lib/stores/auth.state.js";
+    import { basicInfo, info, signedIn } from "$lib/stores/auth.state.js";
     import {
         initJuno,
         getDoc,
@@ -637,8 +631,7 @@
         console.log("Done!");
         // TODO
         //5) We need to transfer the amountICP tokens to the given address
-        const bigIntRepresentation = decimalToBigInt(amountICP, 10 ** 8);
-        console.log(bigIntRepresentation); // Expected: 200000
+
         // @ts-ignore
     }
     async function addSolution() {
@@ -757,7 +750,8 @@
                     <button
                         class="copy"
                         style="background-color: orangered; color:white; width: 2.5cm; border-radius : 0px;"
-                        >Copied!👍</button
+                        >Copied! <span style="font-family: Noto Emoji;">👍</span
+                        ></button
                     >
                 {/if}
             </div>
