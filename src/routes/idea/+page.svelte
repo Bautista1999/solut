@@ -98,7 +98,7 @@
             // @ts-ignore
             key: data.id,
         });
-
+        console.log("Updated_at:", myDoc.updated_at);
         title = myDoc?.data.title;
         subtitle = myDoc?.data.subtitle;
         description = myDoc?.data.description;
@@ -713,7 +713,7 @@
                             let result = await unfollow(
                                 $info.key,
                                 data.id || "",
-                                "ideas"
+                                "ideas",
                             );
                             if (result == "cancel") {
                                 return;
@@ -730,7 +730,7 @@
                             let result = await follow(
                                 $info.key,
                                 data.id || "",
-                                "ideas"
+                                "ideas",
                             );
                             if (result == "cancel") {
                                 return;
@@ -879,7 +879,7 @@
                                             <h2 style="font-size:larger;">
                                                 {subidea?.data.title.substring(
                                                     0,
-                                                    40
+                                                    40,
                                                 )}{#if subidea?.data.title.length > 25}...{/if}
                                             </h2>
                                         </div>
@@ -893,7 +893,7 @@
                                                     on:click={(event) =>
                                                         openDeleteModal(
                                                             event,
-                                                            subidea?.key
+                                                            subidea?.key,
                                                         )}
                                                     >Delete
                                                 </button>
@@ -903,14 +903,14 @@
                                     <h5>
                                         {subidea?.data.subtitle.substring(
                                             0,
-                                            60
+                                            60,
                                         )}{#if subidea?.data.subtitle.length > 60}...{/if}
                                     </h5>
                                     <p>
                                         <!-- list[index]?.description.substring(0, 145) -->
                                         {subidea?.data.description.substring(
                                             0,
-                                            200
+                                            200,
                                         )}{#if subidea?.data.description.length > 200}...
                                         {/if}
                                     </p>
@@ -995,7 +995,7 @@
                                                 >
                                                     {subidea?.data.title.substring(
                                                         0,
-                                                        40
+                                                        40,
                                                     )}{#if subidea?.data.title.length > 25}...{/if}
                                                 </h2>
                                             </div>
@@ -1009,7 +1009,7 @@
                                                         on:click={(event) =>
                                                             openDeleteModal(
                                                                 event,
-                                                                subidea?.key
+                                                                subidea?.key,
                                                             )}
                                                         >Delete
                                                     </button>
@@ -1020,14 +1020,14 @@
                                         <h5 style="width:500px;">
                                             {subidea?.data.subtitle.substring(
                                                 0,
-                                                60
+                                                60,
                                             )}{#if subidea?.data.subtitle.length > 60}...{/if}
                                         </h5>
                                         <p style="width:500px;">
                                             <!-- list[index]?.description.substring(0, 145) -->
                                             {subidea?.data.description.substring(
                                                 0,
-                                                200
+                                                200,
                                             )}{#if subidea?.data.description.length > 200}...
                                             {/if}
                                         </p>
@@ -1156,7 +1156,7 @@
                                             <h2 style="font-size:larger;">
                                                 {sol.data.title.substring(
                                                     0,
-                                                    40
+                                                    40,
                                                 )}{#if sol?.data.title.length > 40}...{/if}
                                             </h2>
                                         </div>
@@ -1170,7 +1170,7 @@
                                                     on:click={(event) =>
                                                         openDeleteModal(
                                                             event,
-                                                            sol?.key
+                                                            sol?.key,
                                                         )}
                                                     >Delete
                                                 </button>
@@ -1180,14 +1180,14 @@
                                     <h5>
                                         {sol?.data.subtitle.substring(
                                             0,
-                                            60
+                                            60,
                                         )}{#if sol?.data.subtitle.length > 60}...{/if}
                                     </h5>
                                     <p>
                                         <!-- list[index]?.description.substring(0, 145) -->
                                         {sol?.data.description.substring(
                                             0,
-                                            200
+                                            200,
                                         )}{#if sol?.data.description.length > 200}...
                                         {/if}
                                     </p>
@@ -1279,7 +1279,7 @@
                                             >
                                                 {sol.data.title.substring(
                                                     0,
-                                                    40
+                                                    40,
                                                 )}{#if sol?.data.title.length > 40}...{/if}
                                             </h2>
                                         </div>
@@ -1293,7 +1293,7 @@
                                                     on:click={(event) =>
                                                         openDeleteModal(
                                                             event,
-                                                            sol?.key
+                                                            sol?.key,
                                                         )}
                                                     >Delete
                                                 </button>
@@ -1304,13 +1304,13 @@
                                     <h5>
                                         {sol.data.subtitle.substring(
                                             0,
-                                            60
+                                            60,
                                         )}{#if sol?.data.subtitle.length > 60}...{/if}
                                     </h5>
                                     <p>
                                         {sol?.data.description.substring(
                                             0,
-                                            200
+                                            200,
                                         )}{#if sol?.data.description.length > 200}...{/if}
                                     </p>
                                     <div style="height: 0.3cm;" />
@@ -1457,7 +1457,7 @@
                         on:click={() => {
                             pledgeFunds(
                                 fromUSDtoICP(amountUSD),
-                                "e4204e024181e960a018a5cbdc51b8af834f33932bfe4d711909b492b16767eb"
+                                "e4204e024181e960a018a5cbdc51b8af834f33932bfe4d711909b492b16767eb",
                             );
                             closeModal;
                         }}
@@ -1625,7 +1625,7 @@
                                     await signIn();
                                     console.log(
                                         "This is the info key",
-                                        $info.key
+                                        $info.key,
                                     );
                                     await registerUser($info.key);
                                     localSignIn = true;
@@ -1762,7 +1762,7 @@
                                     let result = await unfollow(
                                         $info.key,
                                         subIdeaOpen?.key || "",
-                                        "subideas"
+                                        "subideas",
                                     );
                                     if (result == "cancel") {
                                         return;
@@ -1780,7 +1780,7 @@
                                     let result = await follow(
                                         $info.key,
                                         subIdeaOpen?.key || "",
-                                        "subideas"
+                                        "subideas",
                                     );
                                     if (result == "cancel") {
                                         return;
@@ -1865,7 +1865,7 @@
                                             let result = await unfollow(
                                                 $info.key,
                                                 subIdeaOpen?.key || "",
-                                                "subideas"
+                                                "subideas",
                                             );
                                             if (result == "cancel") {
                                                 return;
@@ -1885,7 +1885,7 @@
                                             let result = await follow(
                                                 $info.key,
                                                 subIdeaOpen?.key || "",
-                                                "subideas"
+                                                "subideas",
                                             );
                                             if (result == "cancel") {
                                                 return;
@@ -2055,7 +2055,9 @@
         font-weight: 330;
         box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
         color: black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
         text-align: center;
     }
     .inputNumber {
@@ -2080,7 +2082,9 @@
         font-size: large;
         font-weight: 330;
         /* box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); horizontal, vertical, blur, color */
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .tabClosed:hover {
         transform: scale(
@@ -2106,7 +2110,9 @@
         font-weight: 330;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
         color: black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .tabs:hover {
         transform: scale(
@@ -2137,7 +2143,9 @@
         background-color: azure;
         box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
         border: 1px solid black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .dot:hover {
         transform: scale(1.1) translateX(7px);
@@ -2201,7 +2209,9 @@
         color: rgb(37, 88, 101);
         background-color: white;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
         display: flex; /* Use flexbox to center the emoji */
         align-items: left; /* Center the emoji vertically */
         justify-content: left; /* Center the emoji horizontally */
@@ -2251,7 +2261,9 @@
         border: 1px solid black; /* Add a black border */
         background-color: white; /* Optional: Set a background color */
         box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .copy:hover {
         transform: scale(1.08);
@@ -2278,7 +2290,9 @@
         font-weight: 330;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
         color: black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .fundButton:hover {
         transform: scale(

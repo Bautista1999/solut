@@ -8,7 +8,7 @@
     import { nanoid } from "nanoid";
     import { goto } from "$app/navigation";
     import { searchBar } from "$lib/data_functions/docu.functions";
-    import { isLoading } from "$lib/stores/other_storestores";
+    import { isLoading } from "$lib/stores/other_stores";
     import {
         itemExists_General,
         orderByDate,
@@ -651,7 +651,7 @@
                             on:click={() => {
                                 solution.images = substractReq(
                                     solution.images,
-                                    opt
+                                    opt,
                                 );
                             }}
                         >
@@ -670,7 +670,7 @@
                             on:click={() => {
                                 solution.images = substractReq(
                                     solution.images,
-                                    opt
+                                    opt,
                                 );
                             }}
                         >
@@ -787,7 +787,9 @@
         border-width: 1px;
         border-color: black;
         margin-left: 10px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
         box-shadow: 6px 6px 5px rgba(0, 0, 0, 0.2);
     }
     .inline-button:hover {
@@ -817,7 +819,9 @@
         font-weight: 330;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
         color: black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .tabs:hover {
         transform: scale(
