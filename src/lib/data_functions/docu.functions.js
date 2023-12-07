@@ -1,10 +1,13 @@
 import { basicInfo, initDB, signedIn } from "$lib/stores/auth.state";
 import { amountNotis, isLoading, loginedIn, pledgeModal, signInSuccessful } from "$lib/stores/other_stores";
-import { getDoc, listDocs, setDoc, signIn } from "@junobuild/core";
 import { info } from "../stores/auth.state";
 import { CurrentDate, createAdvancedDate, createDeadline, createFinalUpdate, createNotification, createPledgedElement, createSolution, createTransfer, createTransferResult, createUpdate } from "$lib/data_objects/data_objects";
 import { orderByDate } from "$lib/other_functions/other.functions";
+//Svelte library
 import { get } from "svelte/store";
+//Juno library
+import { getDoc, listDocs, setDoc, signIn } from "@junobuild/core";
+//Dfinity libraries
 import { Principal } from "@dfinity/principal";
 import { createAgent } from "@dfinity/utils";
 import { AccountIdentifier, LedgerCanister, Topic } from "@dfinity/nns";
