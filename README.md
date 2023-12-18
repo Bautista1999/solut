@@ -16,9 +16,10 @@ Solutio is a decentralized crowdbuilding platform built on the Internet Computer
 - Validators: Ensure data integrity for topic and solution creation
 
 ### Backend
-- Database: Juno, a decentralized database on the ICP network
-- Transfers: [dfinity/nns](http://www.example.com)
-- 
+- Database: [Juno](juno.build), a decentralized database on the ICP network. Here we hold our [canister](https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=vehbc-zaaaa-aaaal-acyba-cai)
+- Transfers: [dfinity/nns](https://github.com/dfinity/ic-js/tree/main/packages/nns)
+- [dfinity/utils](https://github.com/dfinity/ic-js/tree/main/packages/utils)
+- [dfinity/principal](https://github.com/dfinity/agent-js/tree/main/packages/principal)
 
 ## Solutio's project walkthrough
 ### Project's folder overview
