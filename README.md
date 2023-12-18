@@ -1,4 +1,4 @@
-# Solutio: Crowdbuilding Platform Overview
+# Solutio: Platform Architecture Overview
 <p align="center">
 <img src="static/assets/LogoSol3.png" alt="Alt Text" width="300">
 </p>
