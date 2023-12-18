@@ -2,7 +2,7 @@
 <p align="center">
 <img src="static/assets/LogoSol3.png" alt="Alt Text" width="300">
 </p>
-Solutio is a decentralized crowdbuilding platform built on the Internet Computer (ICP) network. It enables users to create topics, contribute ideas, and pledge funds. Developers can propose solutions, and when accepted, receive funding from the community.
+Solutio is a decentralized crowdbuilding platform built on the [Internet Computer](https://internetcomputer.org/) (ICP) network. It enables users to create topics, contribute ideas, and pledge funds. Developers can propose solutions, and when accepted, receive funding from the community.
 
 ## Key Components
 ### Frontend
@@ -16,10 +16,8 @@ Solutio is a decentralized crowdbuilding platform built on the Internet Computer
 - Validators: Ensure data integrity for topic and solution creation
 
 ### Backend
-- Database: [Juno](juno.build), a decentralized database on the ICP network. Here we hold our [canister](https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=vehbc-zaaaa-aaaal-acyba-cai)
+- Database: [Juno](https://juno.build), a decentralized database on the ICP network. Here we hold our [canister](https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=vehbc-zaaaa-aaaal-acyba-cai)
 - Transfers: [dfinity/nns](https://github.com/dfinity/ic-js/tree/main/packages/nns)
-- [dfinity/utils](https://github.com/dfinity/ic-js/tree/main/packages/utils)
-- [dfinity/principal](https://github.com/dfinity/agent-js/tree/main/packages/principal)
 
 ## Solutio's project walkthrough
 ### Project's folder overview
