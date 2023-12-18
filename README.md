@@ -121,6 +121,10 @@ The main source code directory where most of the project logic resides.
 - `README.md, Juno.json, svelte.config.js, tailwind.config.js, vite.config.js`
     Documentation, configuration, and build files.
 
+## Solutio's software architecture overview
+
+![Alt Text](/Users/juanbautistamartinezrezzio/Documents/Dev/ic_project/solutio/static/assets/Solutio_Architecture_19_12_2023.jpg)
+
 ## Decentralization and Blockchain Integration
 Canister Hosting: Solutio is hosted on Juno's canister, relying on the ICP network for decentralization.
 ## User Dashboard
