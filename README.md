@@ -18,7 +18,7 @@ Solutio is a decentralized idea incubator platform built on the [Internet Comput
 
 ### Backend
 - Database: [Juno](https://juno.build), a decentralized database on the ICP network. Here we hold our [canister](https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=vehbc-zaaaa-aaaal-acyba-cai)
-- Transfers: [dfinity/nns](https://github.com/dfinity/ic-js/tree/main/packages/nns)
+- ICP Ledger interaction: [Ledger canister](https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=ryjl3-tyaaa-aaaaa-aaaba-cai)
 
 ## Solutio's project walkthrough
 ### Project's folder overview
