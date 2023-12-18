@@ -1,5 +1,7 @@
 # Solutio: Crowdbuilding Platform Overview
 
+<img src="static/assets/logo_design_21062023_03-04.png" alt="Alt Text" >
+
 Solutio is a decentralized crowdbuilding platform built on the Internet Computer (ICP) network. It enables users to create topics, contribute ideas, and pledge funds. Developers can propose solutions, and when accepted, receive funding from the community.
 
 ## Key Components
