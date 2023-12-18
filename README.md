@@ -17,7 +17,7 @@ Solutio is a decentralized crowdbuilding platform built on the Internet Computer
 
 ### Backend
 - Database: Juno, a decentralized database on the ICP network
-- Transfers: [dfinity/nns](example.com)
+- Transfers: [dfinity/nns](http://www.example.com)
 - 
 
 ## Solutio's project walkthrough
