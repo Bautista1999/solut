@@ -96,7 +96,7 @@
             "none",
             "ideas",
             "all",
-            false
+            false,
         );
         techLoading = false;
         recentLoading = true;
@@ -110,7 +110,7 @@
             "popularity",
             "ideas",
             "all",
-            false
+            false,
         );
         popularLoading = false;
         console.log("Ordered ideas", mostFunded);
@@ -141,7 +141,12 @@
     <h1 class="title" style="font-family: Barlow; line-height:1.1;">
         Welcome to Solutio.
     </h1>
-    <button class="webButton">
+    <button
+        class="webButton"
+        on:click={() => {
+            goto("https://home.solutio.one/");
+        }}
+    >
         <p>Who are we?</p>
     </button>
 </div>
@@ -304,7 +309,9 @@
         padding-left: 10px;
         padding-right: 10px;
         box-shadow: 5px 5px 0px rgb(0, 0, 0, 0.5);
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease;
+        transition:
+            transform 0.2s ease-in-out,
+            box-shadow 0.2s ease;
     }
     .webButton:hover {
         transform: scale(1.05);
@@ -368,7 +375,9 @@
             padding-left: 10px;
             padding-right: 10px;
             box-shadow: 5px 5px 0px rgb(0, 0, 0, 0.5);
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease;
+            transition:
+                transform 0.2s ease-in-out,
+                box-shadow 0.2s ease;
         }
         .webButton:hover {
             transform: scale(1.05);

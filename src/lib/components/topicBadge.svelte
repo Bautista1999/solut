@@ -42,18 +42,18 @@
             </div>
 
             <div style="height: 0.2cm;" />
-            <p>This topic has raised {topic.moneyPledged} USD in icp tokens</p>
+            <p>This topic has raised {topic.moneyPledged} icp tokens</p>
         </div>
 
         <div class="barra">
-            <div class="progreso" style="width: {89}%">
-                {topic.moneyPledged - topic.moneyPledged * 0.2} USD
+            <div class="progreso" style="width: {91}%">
+                {topic.moneyPledged - topic.moneyPledged * 0.2} ICP
             </div>
             {#if percentage < 90}
                 {#if window.innerWidth < 500}
-                    <div class="progreso2">{topic.moneyPledged * 0.2}</div>
+                    <div class="progreso2"></div>
                 {:else}
-                    <div class="progreso2">{topic.moneyPledged * 0.2}</div>
+                    <div class="progreso2"></div>
                 {/if}
             {/if}
         </div>
@@ -233,7 +233,9 @@
         border-color: black;
         border-width: 2px;
         box-shadow: 10px 10px 0px rgb(0, 0, 0, 0.5);
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease;
+        transition:
+            transform 0.2s ease-in-out,
+            box-shadow 0.2s ease;
     }
     .project:hover {
         transform: scale(1.05);

@@ -6,7 +6,7 @@
     import Loading from "./loading.svelte";
     import { writable } from "svelte/store";
     import { onDestroy, onMount } from "svelte";
-    import { loginedIn } from "$lib/stores/other_stores";
+    import { NotSignedInModal, loginedIn } from "$lib/stores/other_stores";
 
     export let localSignIn = false;
     export let waiting = false;
@@ -14,7 +14,7 @@
 </script>
 
 <Modal
-    bind:isOpen5={$loginedIn}
+    bind:isOpen5={$NotSignedInModal}
     close={() => {
         loginedIn.set(true);
     }}
@@ -27,7 +27,7 @@
                 class="fundButton"
                 style="width: 3.3cm; height:0.8cm; color:white; background-color:orangered;"
                 on:click={() => {
-                    loginedIn.set(false);
+                    NotSignedInModal.set(false);
                 }}>Close</button
             >
             <div class="spacer" />
@@ -76,7 +76,9 @@
         font-weight: 330;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
         color: black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .fundButton:hover {
         transform: scale(

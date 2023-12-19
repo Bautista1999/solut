@@ -15,7 +15,7 @@
     import { goto } from "$app/navigation";
     import Modal from "$lib/components/modal.svelte";
     import {
-        NotSignedIn,
+        NotSignedInModal,
         pledgeModal,
         subideaModal,
         updateModal,
@@ -25,33 +25,20 @@
         displayedUpdImages,
         finishProject,
         loginedIn,
-    } from "$lib/stores/other_storestores";
+    } from "$lib/stores/other_stores";
 
+    import { info } from "$lib/stores/auth.state.js";
     import {
-        basicInfo,
-        info,
-        transferFrom,
-        signedIn,
-        decimalToBigInt,
         fromICPtoUSD,
         searchBar,
-    } from "$lib/stores/auth.state.js";
-    import {
-        initJuno,
-        getDoc,
-        setDoc,
-        listDocs,
-        deleteDoc,
-        signIn,
-    } from "@junobuild/core";
+    } from "$lib/data_functions/docu.functions";
+    import { initJuno, getDoc } from "@junobuild/core";
     import { onMount } from "svelte";
     import { nanoid } from "nanoid";
     import { ProgressRadial } from "@skeletonlabs/skeleton";
     import {
-        registerUser,
         followIdea,
         unfollowIdea,
-        checkFollowIdea,
         checkFollow,
         subList,
     } from "$lib/data_functions/user.functions";
@@ -59,7 +46,6 @@
     import {
         copyLink,
         copied,
-        pledgeFunds,
         getClosestDate,
         substractItem,
         substractItem_General,
@@ -79,7 +65,6 @@
         getSolutionSubIdeas,
     } from "$lib/data_functions/docu.functions";
     import ModalPostUpdate from "$lib/components/ModalPostUpdate.svelte";
-    import { optForm } from "@dfinity/candid";
     import Success from "$lib/components/success.svelte";
     import FinishProject from "$lib/components/finishProject.svelte";
 
@@ -110,6 +95,7 @@
     let title = "";
     let subtitle = "";
     let description = "";
+
     let subIdeas = [];
     let ideas = [];
     let subidea = createSubidea();
@@ -368,12 +354,12 @@
             <br />
             <div class="barra">
                 <div class="progreso" style="width: {75}%">
-                    ICP tok: USD {moneyPledged}
+                    ICP tok: {moneyPledged}
                 </div>
                 {#if window.innerWidth < 500}
-                    <div class="progreso2">BTC: 0</div>
+                    <div class="progreso2"></div>
                 {:else}
-                    <div class="progreso2">BTC: 0 USD</div>
+                    <div class="progreso2"></div>
                 {/if}
             </div>
             <br />
@@ -410,10 +396,10 @@
                             let result = await unfollowIdea(
                                 $info.key,
                                 data.id || "",
-                                "solutions"
+                                "solutions",
                             );
                             if (result == "Not signed in") {
-                                NotSignedIn.set(true);
+                                NotSignedInModal.set(true);
                                 followLoading = false;
                                 return;
                             }
@@ -431,10 +417,10 @@
                             let result = await followIdea(
                                 $info.key,
                                 data.id || "",
-                                "solutions"
+                                "solutions",
                             );
                             if (result == "Not signed in") {
-                                NotSignedIn.set(true);
+                                NotSignedInModal.set(true);
                                 followLoading = false;
                                 return;
                             }
@@ -488,7 +474,7 @@
                                     <p style="width: 5cm;">
                                         {finalUpdate.creator.substring(
                                             0,
-                                            37
+                                            37,
                                         )}...
                                     </p>
                                 {:else}
@@ -550,7 +536,7 @@
                                 on:click={() => {
                                     console.log(
                                         "Final update: ",
-                                        finalUpdate.link
+                                        finalUpdate.link,
                                     );
                                     //window.location.href = finalUpdate.link;
                                     window.open(finalUpdate.link, "_blank");
@@ -581,7 +567,7 @@
                                             isLoading = true;
                                             await disapproveSolution(
                                                 amount,
-                                                topic
+                                                topic,
                                             );
                                             isLoading = false;
                                         }}
@@ -1017,7 +1003,7 @@
                             changeTab(1);
                             subideaLoading.set(true);
                             displayedIdeas = await getSolutionSubIdeas(
-                                data.id || ""
+                                data.id || "",
                             );
                             subideaLoading.set(false);
                         }}>Related ideas</button
@@ -1094,7 +1080,7 @@
                                                 <p>
                                                     "{up.body.substring(
                                                         0,
-                                                        150
+                                                        150,
                                                     )}..."
                                                 </p>
                                             {:else}
@@ -1161,6 +1147,7 @@
                                 <button
                                     class="ideaVertical"
                                     on:click={() => {
+                                        subidea = sub;
                                         subideaModal.set(true);
                                     }}
                                 >
@@ -1175,7 +1162,7 @@
                                                 <h2 style="font-size:larger;">
                                                     {sub?.data.title.substring(
                                                         0,
-                                                        40
+                                                        40,
                                                     )}{#if sub?.data.title.length > 25}...{/if}
                                                 </h2>
                                             </div>
@@ -1200,14 +1187,14 @@
                                         <h5>
                                             {sub?.data.subtitle.substring(
                                                 0,
-                                                60
+                                                60,
                                             )}{#if sub?.data.subtitle.length > 60}...{/if}
                                         </h5>
                                         <p>
                                             <!-- list[index]?.description.substring(0, 145) -->
                                             {sub?.data.description.substring(
                                                 0,
-                                                200
+                                                200,
                                             )}{#if sub?.data.description.length > 200}...
                                             {/if}
                                         </p>
@@ -1291,7 +1278,7 @@
                                                     >
                                                         {sub?.data.title.substring(
                                                             0,
-                                                            40
+                                                            40,
                                                         )}{#if sub?.data.title.length > 40}...{/if}
                                                     </h2>
                                                 </div>
@@ -1303,7 +1290,7 @@
                                                             class="fundButton"
                                                             style=" background-color:red; color:white;height:0.7cm;width: 100px; margin:0x"
                                                             on:click={(
-                                                                event
+                                                                event,
                                                             ) => {
                                                                 // openDeleteModal(
                                                                 //     event,
@@ -1318,14 +1305,14 @@
                                             <h5 style="width:500px;">
                                                 {sub?.data.subtitle.substring(
                                                     0,
-                                                    60
+                                                    60,
                                                 )}{#if sub?.data.subtitle.length > 60}...{/if}
                                             </h5>
                                             <p style="width:500px;">
                                                 <!-- list[index]?.description.substring(0, 145) -->
                                                 {sub?.data.description.substring(
                                                     0,
-                                                    200
+                                                    200,
                                                 )}{#if sub?.data.description.length > 200}...
                                                 {/if}
                                             </p>
@@ -1419,7 +1406,7 @@
                         on:click={async () => {
                             changeTab(1);
                             displayedIdeas = await getSolutionSubIdeas(
-                                data.id || ""
+                                data.id || "",
                             );
                         }}>Related ideas</button
                     >
@@ -1478,7 +1465,7 @@
         solutionKey={data.id || ""}
         {update}
     />
-    <ModalSubidea />
+    <ModalSubidea subIdeaOpen={subidea} />
     <ModalPostUpdate {deadlines} solutionKey={data.id || ""} />
     <FinishProject solutionKey={data.id || ""} />
     <Modal
@@ -1758,7 +1745,7 @@
                         on:click={() =>
                             (editSol.ideasRelated = substractItem_General(
                                 opt,
-                                editSol.ideasRelated
+                                editSol.ideasRelated,
                             ))}
                     >
                         x
@@ -1951,7 +1938,9 @@
         font-weight: 330;
         box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
         color: black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
         text-align: center;
     }
     .progreso {
@@ -1993,7 +1982,9 @@
         border: 1px solid black; /* Add a black border */
         background-color: white; /* Optional: Set a background color */
         box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .copy:hover {
         transform: scale(1.08);
@@ -2052,7 +2043,9 @@
         font-weight: 330;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
         color: black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .fundButton:hover {
         transform: scale(
@@ -2144,7 +2137,9 @@
         font-size: large;
         font-weight: 330;
         /* box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); horizontal, vertical, blur, color */
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
         margin-top: 10px;
     }
     .breadcrumbClosed:hover {
@@ -2177,7 +2172,9 @@
         font-weight: 330;
         box-shadow: -7px 7px 0px rgba(0, 0, 0, 1); /* horizontal, vertical, blur, color */
         color: black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .breadcrumb:hover {
         transform: scale(
@@ -2232,7 +2229,9 @@
         text-align: justify;
         color: darkslategray;
 
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
     }
     .finalUpdateBlock {
@@ -2248,8 +2247,11 @@
         text-align: justify;
         color: darkslategray;
 
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        box-shadow: -5px -5px 20px rgba(0, 128, 0, 0.5),
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
+        box-shadow:
+            -5px -5px 20px rgba(0, 128, 0, 0.5),
             5px 5px 20px rgba(128, 0, 128, 0.5),
             0px 0px 10px rgba(0, 157, 255, 1);
     }
@@ -2305,7 +2307,9 @@
 
         border-color: black;
         border-width: 0.5px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease,
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease,
             background-color 0.3s ease;
     }
     .localUpdate:hover {
@@ -2344,7 +2348,9 @@
         font-size: large;
         font-weight: 330;
         /* box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); horizontal, vertical, blur, color */
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .tabClosed:hover {
         transform: scale(
@@ -2370,7 +2376,9 @@
         font-weight: 330;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
         color: black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .tabs:hover {
         transform: scale(
@@ -2424,7 +2432,9 @@
         color: rgb(37, 88, 101);
         background-color: white;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
         display: flex; /* Use flexbox to center the emoji */
         align-items: left; /* Center the emoji vertically */
         justify-content: left; /* Center the emoji horizontally */
@@ -2497,7 +2507,9 @@
         background-color: azure;
         box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
         border: 1px solid black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .dot:hover {
         transform: scale(1.1) translateX(7px);

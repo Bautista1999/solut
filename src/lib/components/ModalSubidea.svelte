@@ -1,5 +1,9 @@
 <script>
-    import { loginedIn, subideaModal } from "$lib/stores/other_stores";
+    import {
+        NotSignedInModal,
+        loginedIn,
+        subideaModal,
+    } from "$lib/stores/other_stores";
     import { ProgressRadial } from "@skeletonlabs/skeleton";
     import Modal from "./modal.svelte";
     import {
@@ -8,8 +12,9 @@
     } from "$lib/data_functions/user.functions";
     import { info } from "$lib/stores/auth.state";
     import MagicalDots from "./magicalDots.svelte";
+    import { createSubidea } from "$lib/data_objects/data_objects";
     export let followSub = false;
-    export let subIdeaOpen = {
+    export let subIdeaOpen = createSubidea() || {
         key: "",
         owner: "7klfv-r...wkg-lae",
         created: "",
@@ -46,12 +51,12 @@
         <br />
         <div class="barra">
             <div class="progreso" style="width: {65}%">
-                ICP tok: USD {subIdeaOpen?.data.pledged}
+                ICP tok: {subIdeaOpen?.data.pledged}
             </div>
             {#if window.innerWidth < 500}
-                <div class="progreso2">BTC: 0 $</div>
+                <div class="progreso2"></div>
             {:else}
-                <div class="progreso2">BTC: 0 USD</div>
+                <div class="progreso2"></div>
             {/if}
         </div>
         <br />
@@ -77,10 +82,10 @@
                     let result = await unfollowIdea(
                         $info.key,
                         subIdeaOpen.key || "",
-                        "subideas"
+                        "subideas",
                     );
                     if (result == "Not signed in") {
-                        loginedIn.set(false);
+                        NotSignedInModal.set(true);
                         followLoading = false;
                         return;
                     }
@@ -101,10 +106,10 @@
                     let result = await followIdea(
                         $info.key,
                         subIdeaOpen.key || "",
-                        "subideas"
+                        "subideas",
                     );
                     if (result == "Not signed in") {
-                        loginedIn.set(false);
+                        NotSignedInModal.set(true);
                         followLoading = false;
                         return;
                     }
@@ -150,12 +155,12 @@
                 <br />
                 <div class="barra">
                     <div class="progreso" style="width: {65}%">
-                        ICP tok: USD {subIdeaOpen?.data.pledged}
+                        ICP tok: {subIdeaOpen?.data.pledged}
                     </div>
                     {#if window.innerWidth < 500}
-                        <div class="progreso2">BTC: 0 $</div>
+                        <div class="progreso2"></div>
                     {:else}
-                        <div class="progreso2">BTC: 0 USD</div>
+                        <div class="progreso2"></div>
                     {/if}
                 </div>
                 <br />
@@ -179,10 +184,10 @@
                             let result = await unfollowIdea(
                                 $info.key,
                                 subIdeaOpen.key || "",
-                                "subideas"
+                                "subideas",
                             );
                             if (result == "Not signed in") {
-                                loginedIn.set(false);
+                                NotSignedInModal.set(true);
                                 followLoading = false;
                                 return;
                             }
@@ -203,10 +208,10 @@
                             let result = await followIdea(
                                 $info.key,
                                 subIdeaOpen.key || "",
-                                "subideas"
+                                "subideas",
                             );
                             if (result == "Not signed in") {
-                                loginedIn.set(false);
+                                NotSignedInModal.set(true);
                                 followLoading = false;
                                 return;
                             }
@@ -269,7 +274,9 @@
         font-weight: 330;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
         color: black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .fundButton:hover {
         transform: scale(

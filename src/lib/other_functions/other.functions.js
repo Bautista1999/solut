@@ -273,9 +273,9 @@ export function itemExists_General(opt, list) {
     const index = list.indexOf(opt);
 
     if (index !== -1) {
-        return false;
+        return true;
     }
-    return true;
+    return false;
 
 }
 let dateAdv = createAdvancedDate();

@@ -114,20 +114,7 @@
         console.log(solution.deadlines);
         solution.deadlines = solution.deadlines;
     }
-    /**
-     * @type {String[]}
-     */
-    let ideas = [];
-    let localIdea = "";
-    function addIdea() {
-        if (localIdea != "") {
-            ideas.push(localIdea);
-            console.log(ideas);
-            ideas = ideas;
-        }
 
-        localIdea = "";
-    }
     /**
      * @param {string} opt
      */
@@ -255,7 +242,13 @@
             key: idea?.key,
             title: idea?.data.title,
         };
-        if (!itemExists_General(idea, editSol.ideasRelated)) {
+        let alreadyAdded = false;
+        for (let i = 0; i < solution.ideasRelated.length; i++) {
+            if (solution.ideasRelated[i].key == addedIdea.key) {
+                alreadyAdded = true;
+            }
+        }
+        if (!alreadyAdded) {
             // @ts-ignore
             solution.ideasRelated.push(addedIdea);
             solution.ideasRelated = solution.ideasRelated;

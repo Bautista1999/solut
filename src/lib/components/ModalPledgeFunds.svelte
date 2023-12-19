@@ -1,6 +1,11 @@
 <script>
     import Modal from "./modal.svelte";
-    import { pledgeModal, termsModal } from "$lib/stores/other_stores";
+    import {
+        NotSignedInModal,
+        loginedIn,
+        pledgeModal,
+        termsModal,
+    } from "$lib/stores/other_stores";
     import {
         fromUSDtoICP,
         pledgeFunds,
@@ -49,11 +54,15 @@
     <br />
     <button
         on:click={async () => {
+            if (!$loginedIn) {
+                NotSignedInModal.set(true);
+                return;
+            }
             await pledgeFunds(
                 documentID,
                 fromUSDtoICP(amountUSD),
                 "e4204e024181e960a018a5cbdc51b8af834f33932bfe4d711909b492b16767eb",
-                "solutions"
+                "solutions",
             );
             pledgeModal.set(false);
         }}
@@ -88,7 +97,9 @@
         font-weight: 330;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
         color: black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .fundButton:hover {
         transform: scale(

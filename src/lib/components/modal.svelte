@@ -82,7 +82,7 @@
         </div>
     </div>
 {:else if isOpen5}
-    <div class="modal-background" on:click={close}>
+    <div class="modal-background" on:click={close} style="z-index: 2000;">
         <div class="modal-content" on:click|stopPropagation>
             <div class="ButtonClose" on:click={() => close5()}>
                 <button>X</button>
@@ -190,7 +190,9 @@
         border: 1px solid black; /* Just to ensure visibility */
         padding: 5px 10px;
         box-shadow: 5px 5px 2px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .ButtonClose:hover {
         transform: scale(

@@ -84,4 +84,9 @@ user.
  */
 export const amountNotis = writable(0);
 
+/**
+BRIEF DESCRIPTION: To know if the user is signed in or not
+ */
+export const NotSignedInModal = writable(false);
+
 

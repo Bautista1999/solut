@@ -6,6 +6,7 @@
     import Modal from "$lib/components/modal.svelte";
     import Loading from "$lib/components/loading.svelte";
     import { basicInfo, info, signedIn } from "$lib/stores/auth.state.js";
+    import { NotSignedInModal, loginedIn } from "$lib/stores/other_stores";
     import {
         initJuno,
         getDoc,
@@ -24,6 +25,7 @@
     } from "$lib/data_functions/user.functions";
     import MagicalDots from "$lib/components/magicalDots.svelte";
     import { createPledgedElement } from "$lib/data_objects/data_objects";
+    import ModalNotSignedIn from "$lib/components/ModalNotSignedIn.svelte";
 
     /** @type {import('./$types').PageData} */
     // @ts-ignore
@@ -675,9 +677,9 @@
                     ICP tok: USD {moneyPledged}
                 </div>
                 {#if window.innerWidth < 500}
-                    <div class="progreso2">BTC: 0</div>
+                    <div class="progreso2"></div>
                 {:else}
-                    <div class="progreso2">BTC: 0 USD</div>
+                    <div class="progreso2"></div>
                 {/if}
             </div>
             <br />
@@ -1062,10 +1064,10 @@
                                     <h5>{subidea?.data.pledged}</h5>
                                     <p>funding</p>
                                     <br />
-                                    <button class="copy" on:click={() => {}}
+                                    <!-- <button class="copy" on:click={() => {}}
                                         >👍</button
                                     >
-                                    <p>Follow Idea</p>
+                                    <p>Follow Idea</p> -->
                                     <br />
                                 </div>
                             </button>
@@ -1418,6 +1420,7 @@
             {/if}
             <!--MODALS**********-->
             <div>
+                <ModalNotSignedIn />
                 <!--Pledge modal**********-->
                 <Modal bind:isOpen={showModal} close={closeModal}>
                     <h2 style="font-size: 25px;">Funding process</h2>
@@ -1455,6 +1458,10 @@
                     <br />
                     <button
                         on:click={() => {
+                            if (!$loginedIn) {
+                                NotSignedInModal.set(true);
+                                return;
+                            }
                             pledgeFunds(
                                 fromUSDtoICP(amountUSD),
                                 "e4204e024181e960a018a5cbdc51b8af834f33932bfe4d711909b492b16767eb",
@@ -1735,9 +1742,9 @@
                                 ICP tok: USD {moneyPledged}
                             </div>
                             {#if window.innerWidth < 500}
-                                <div class="progreso2">BTC: 0 $</div>
+                                <div class="progreso2"></div>
                             {:else}
-                                <div class="progreso2">BTC: 0 USD</div>
+                                <div class="progreso2"></div>
                             {/if}
                         </div>
                         <br />
@@ -1837,9 +1844,9 @@
                                         ICP tok: USD {moneyPledged}
                                     </div>
                                     {#if window.innerWidth < 500}
-                                        <div class="progreso2">BTC: 0 $</div>
+                                        <div class="progreso2"></div>
                                     {:else}
-                                        <div class="progreso2">BTC: 0 USD</div>
+                                        <div class="progreso2"></div>
                                     {/if}
                                 </div>
                                 <br />
