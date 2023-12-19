@@ -16,7 +16,7 @@ import { AccountIdentifier, LedgerCanister, Topic } from "@dfinity/nns";
 // TODO: ADD A FIELD IN THE COMMENTS THAT SHOWS WHICH OUTSIDE FEATURES/ METHODS ARE USING THAT FUNCTION.
 
 /**
-* BRIEF DESCRIPTION: This function retrieves a document from a collection in Juno's database
+* BRIEF DESCRIPTION: This function retrieves a document from a collection in our database
 
 * PRE-CONDITIONS: For using this function the user needs to be signed in into Juno and have proper permissions.
 For example, a user cant get a Doc that isnt public. Recieves Juno's collection name and the key of the doc.
@@ -32,7 +32,6 @@ export async function getDocu(collectionName, key) {
         collection: collectionName,
         key: key,
     });
-
     return myDoc;
 }
 
@@ -128,7 +127,7 @@ This means, to be the owner of the solution. Receives an update, and the Juno's 
 * POST-CONDITIONS: --None--
 
 * OUTSIDE FUNCTIONS: Juno --> getDoc(), setDoc() 
- * @param {update } update
+ * @param {update} update
  * @param {string} solutionKey
  */
 export async function postUpdate(update, solutionKey) {
@@ -154,7 +153,6 @@ This means, to be the owner of the solution. Receives an update, and the Juno's 
  * @param {string} solutionKey
  */
 export async function postFinalUpdate(update, solutionKey) {
-    debugger;
     let myDoc = await getDocu("solutions", solutionKey);
     let topicKey = myDoc?.data.topic;
     // @ts-ignore
