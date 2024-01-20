@@ -4,6 +4,7 @@
     import Modal from "$lib/components/modal.svelte";
     import {
         ICPtoDecimal,
+        getBalance,
         getDocu,
         getWalletAddress,
         updateData,
@@ -33,13 +34,14 @@
      * @type {string[]}
      */
     onMount(async () => {
-        debugger;
         userLoading = true;
         myUserDoc = await getDocu("users", data.id || "");
         userData = myUserDoc?.data;
         await basicInfo();
+        let userBalance = await getBalance();
+        console.log("balance", userBalance);
         // @ts-ignore
-        amountTokens = ICPtoDecimal($info.userBalance).toFixed(3);
+        amountTokens = ICPtoDecimal(userBalance).toFixed(3);
         // @ts-ignore
         address = await getWalletAddress(data.id || "");
         userLoading = false;
@@ -153,7 +155,7 @@
                 </div>
                 <div class="verticalLine" />
                 <div class="centeredImage">
-                    <p>{userData.pledged} USD</p>
+                    <p>{userData.pledged.toFixed(3)} USD</p>
                     <p>pledged</p>
                 </div>
             </div>
@@ -407,7 +409,9 @@
         font-weight: 330;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
 
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .fundButton:hover {
         transform: scale(

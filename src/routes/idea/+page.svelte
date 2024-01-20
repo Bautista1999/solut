@@ -651,7 +651,11 @@
             <div class="content-wrapper">
                 <div class="text-content">
                     <div style="height:0.5cm;" />
-                    <h2 style="font-size: 250%; font-weight: 600;">{title}</h2>
+                    <h2
+                        style="font-size: 250%; font-weight: 600; line-height: 1.1em;"
+                    >
+                        {title}
+                    </h2>
                     <br />
                     <h3 style="font-size: 150%; font-weight: 400;">
                         {subtitle}
@@ -674,7 +678,7 @@
 
             <div class="barra">
                 <div class="progreso" style="width: {75}%">
-                    ICP tok: USD {moneyPledged}
+                    ICP tok: {moneyPledged}
                 </div>
                 {#if window.innerWidth < 500}
                     <div class="progreso2"></div>
@@ -1739,7 +1743,7 @@
                         <br />
                         <div class="barra">
                             <div class="progreso" style="width: {65}%">
-                                ICP tok: USD {moneyPledged}
+                                ICP tok: {moneyPledged}
                             </div>
                             {#if window.innerWidth < 500}
                                 <div class="progreso2"></div>
@@ -1841,7 +1845,7 @@
                                 <br />
                                 <div class="barra">
                                     <div class="progreso" style="width: {65}%">
-                                        ICP tok: USD {moneyPledged}
+                                        ICP tok: {moneyPledged}
                                     </div>
                                     {#if window.innerWidth < 500}
                                         <div class="progreso2"></div>

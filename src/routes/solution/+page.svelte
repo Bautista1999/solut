@@ -1250,6 +1250,7 @@
                                 <button
                                     class="idea"
                                     on:click={() => {
+                                        subidea = sub;
                                         subideaModal.set(true);
                                     }}
                                     style="height:7.25cm;"
@@ -1350,11 +1351,7 @@
                                         <br />
                                         <h5>{sub?.data.pledged}</h5>
                                         <p>funding</p>
-                                        <br />
-                                        <button class="copy" on:click={() => {}}
-                                            >👍</button
-                                        >
-                                        <p>Follow Idea</p>
+
                                         <br />
                                     </div>
                                 </button>
