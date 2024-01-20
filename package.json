@@ -23,7 +23,6 @@
     "typescript": "^5.0.0",
     "vite": "^4.4.2"
   },
-  "type": "module",
   "dependencies": {
     "@dfinity/agent": "^0.18.1",
     "@dfinity/candid": "^0.18.1",
@@ -33,6 +32,7 @@
     "@dfinity/utils": "^0.0.19",
     "@junobuild/core": "^0.0.22",
     "buffer": "^6.0.3",
-    "openai": "^3.3.0"
-  }
+    "openai": "^4.24.7"
+  },
+  "type": "module"
 }
