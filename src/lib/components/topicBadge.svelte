@@ -20,6 +20,8 @@
             console.log(creator);
         }
     });
+    let length = 25;
+    let subtitleLength = 199;
 </script>
 
 <button
@@ -33,16 +35,23 @@
             <img src={topic.image} />
         </div>
         <div class="projectBody">
-            <h1>{topic.title}</h1>
-            <h2>{topic.subtitle}</h2>
-            <div style=" white-space: normal;">
+            {#if topic.title.length > length}
+                <h1>{topic.title.substring(0, length)}...</h1>
+            {:else}
+                <h1>{topic.title}</h1>
+            {/if}
+            {#if topic.subtitle.length > subtitleLength}
+                <p>{topic.subtitle.substring(0, subtitleLength)}...</p>
+            {:else}
+                <p>{topic.subtitle}</p>
+            {/if}
+            <!-- <div style=" white-space: normal;">
                 <p style="line-height: 1.1;">
                     {topic.description.substring(0, 130)}...
                 </p>
-            </div>
+            </div> -->
 
             <div style="height: 0.2cm;" />
-            <p>This topic has raised {topic.moneyPledged} icp tokens</p>
         </div>
 
         <div class="barra">
