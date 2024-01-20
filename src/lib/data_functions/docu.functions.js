@@ -6,7 +6,7 @@ import { orderByDate } from "$lib/other_functions/other.functions";
 //Svelte library
 import { get } from "svelte/store";
 //Juno library
-import { getDoc, listDocs, setDoc, signIn } from "@junobuild/core";
+import { authSubscribe, getDoc, listDocs, setDoc, signIn, unsafeIdentity } from "@junobuild/core";
 //Dfinity libraries
 import { Principal } from "@dfinity/principal";
 import { createAgent } from "@dfinity/utils";
@@ -779,7 +779,7 @@ export async function approveSolution(topicKey, solutionKey, amount) {
     let amountBigInt = decimalToICP(amount);
     let creatorCut = calculatePercentage(amountBigInt, 10);
     let developerCut = calculatePercentage(amountBigInt, 90);
-    console.log("Store before transfer", store);
+
 
     //0) We need to check that the user has the amount specified on its balance
     let ledgerID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
@@ -1167,4 +1167,25 @@ export async function pledgeFunds(documentID, amountICP, address, collectionName
     });
     // @ts-ignore
     await post_pledge_notification(get(info).key, collectionName, documentID, amountICP);
+}
+//export async function pledgeFunds(documentID, amountICP, address, collectionName)
+export async function getBalance(){
+    const store = get(info);
+    let ledgerID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
+    console.log(store.agent);
+    if(store.userPrincipal==null){
+        await basicInfo();
+    }
+    const { accountBalance } = await LedgerCanister.create({
+        // @ts-ignore
+        agent: store.agent,
+        canisterId: Principal.fromText(ledgerID),
+    });
+    let userBalance = await accountBalance({
+        accountIdentifier: AccountIdentifier.fromPrincipal({
+            // @ts-ignore
+            principal: store.userPrincipal
+        })
+    });
+    return userBalance;
 }
