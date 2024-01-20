@@ -14,28 +14,7 @@
     import MagicalDots from "./magicalDots.svelte";
     import { createSubidea } from "$lib/data_objects/data_objects";
     export let followSub = false;
-    export let subIdeaOpen = createSubidea() || {
-        key: "",
-        owner: "7klfv-r...wkg-lae",
-        created: "",
-
-        updated: "",
-        data: {
-            title: "an idea for this shitty app",
-            subtitle: "a subtitle",
-            description: "decndwiovn3ion",
-            requirements: [],
-            imageURL:
-                "https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxleHBsb3JlLWZlZWR8NHx8fGVufDB8fHx8fA%3D%3D&w=1000&q=80",
-            parent: "U0f3TaPBJI9uceIOkAulW",
-            amountFollowers: 0,
-            pledged: 0,
-            funded: 0,
-            followers: [],
-            transactionHistory: [],
-            comments: [],
-        },
-    };
+    export let subIdeaOpen = createSubidea();
     let followLoading = false;
 </script>
 
