@@ -4,7 +4,6 @@
     import Layout from "../+layout.svelte";
     import { initJuno, listDocs } from "@junobuild/core";
     import { onMount } from "svelte";
-    import { get } from "svelte/store";
     import { Modal, modalStore } from "@skeletonlabs/skeleton";
     import { goto } from "$app/navigation";
     import { listIdeas } from "$lib/data_functions/docu.functions";
