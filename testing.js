@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import OpenAI from "openai";
+import { initJuno } from "@junobuild/core";
 
 //import OPENAI_API_KEY from "key.txt";
 let api = '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';
@@ -46,7 +47,7 @@ async function createAnImage(somePrompt){
   console.log(image_url);
 }
 //main("I want an app that's able to create fitness plans according to you time availability. Can you provide a 500 character description of this app?");
-textToSpeech(
-  "Imagine if there was a social network built just for ideas... A place where users are rewarded for the great ideas they share, a place where developers can earn big, building meaningful apps for thousands of people, a place where people can help decide what products are built and what features they’ll have."
-  );
+// textToSpeech(
+//   "Imagine if there was a social network built just for ideas... A place where users are rewarded for the great ideas they share, a place where developers can earn big, building meaningful apps for thousands of people, a place where people can help decide what products are built and what features they’ll have."
+//  );
 //createAnImage("An social media platform designed for people to train hard and become the best version of themselves.")
