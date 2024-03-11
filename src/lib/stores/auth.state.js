@@ -2,9 +2,10 @@ import { get, writable } from "svelte/store";
 import { initJuno, listDocs } from "@junobuild/core";
 import { authSubscribe, unsafeIdentity } from "@junobuild/core";
 import { Principal } from "@dfinity/principal";
-import { createAgent } from "@dfinity/utils";
-import { AccountIdentifier, LedgerCanister } from "@dfinity/nns";
+import { idlFactory } from "$lib/declarations/icrc.declarations.did";
 import { loginedIn } from "./other_stores";
+import { Actor, HttpAgent } from "@dfinity/agent";
+import  {AccountIdentifier, LedgerCanister}  from "@dfinity/ledger-icp";
 
 
 
@@ -16,10 +17,10 @@ let walletAddress = null;
  */
 let identity = null;
 let agent = null;
-let ledgerID = "";
+let ledgerID = 'ryjl3-tyaaa-aaaaa-aaaba-cai';
 let userBalance = null;
 let loading = true;
-
+let canisterId = ledgerID;
 /**
 BRIEF DESCRIPTION: This store is supposed to hold basic info about the signed in user, provided by his/her
 internet identity through Juno. Throughout the whole platform many components, from to backend to the fronend,
@@ -49,16 +50,20 @@ export async function initDB() {
 BRIEF DESCRIPTION: Here we set the information for the store info;
  */
 export async function basicInfo() {
-
     await new Promise((resolve, reject) => {
         authSubscribe(async (user) => {
             try {
                 if (user != null) {
                     loginedIn.set(true);
+                    if(user.key == "" || user.key == null){
+                        await setTimeout(()=>{
+                        },3000);
+                    };
                     let userPrincipal = Principal.fromText(user.key);
                     info.set({
                         key: user.key,
-                        userPrincipal: null,
+                        // @ts-ignore
+                        userPrincipal: userPrincipal,
                         walletAddress: null,
                         identity: null,
                         agent: null,
@@ -66,16 +71,12 @@ export async function basicInfo() {
                         userBalance: null,
                         loading: true
                     });
-                    const accountIdent = AccountIdentifier.fromPrincipal({ principal: userPrincipal })
-                    let walletAddress = accountIdent.toHex();
+                    //toUint8Array()
+                    const accountIdente = AccountIdentifier.fromPrincipal({principal:Principal.fromText(user.key)})
+                    let walletAddress = accountIdente.toHex();
                     let identity = await unsafeIdentity();
-                    let agent = await createAgent({
-                        // @ts-ignore
-                        identity,
-                        host: "https://icp-api.io",
-                    });
-                    let ledgerID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
-                    const { accountBalance } = await LedgerCanister.create({
+                    let agent = new HttpAgent({ identity: identity, host: "https://ic0.app" })
+                    const {accountBalance} = await LedgerCanister.create({
                         agent: agent,
                         canisterId: Principal.fromText(ledgerID),
                     });
@@ -84,7 +85,6 @@ export async function basicInfo() {
                             principal: userPrincipal
                         })
                     });
-
                     // Set the data into the store
                     info.set({
                         key: user.key,
@@ -126,6 +126,16 @@ export async function basicInfo() {
 
 
 }
+
+export async function accountBalance(){
+    let identity = await unsafeIdentity();
+                    let agent = new HttpAgent({ identity: identity, host: "https://ic0.app" })
+                    let ledgerID = "";
+                    const icrc = Actor.createActor(idlFactory, {
+                        agent,
+                        canisterId,
+                    });
+};
 
 /**
 BRIEF DESCRIPTION: Function to set the store loginedIn to true or to false, whether the user is signed in 
