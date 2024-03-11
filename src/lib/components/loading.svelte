@@ -101,7 +101,7 @@
         width: 100%;
         min-height: 100vh;
         z-index: 0;
-        margin-top: 4cm;
+        margin-top: 0.52cm;
     }
 
     .loadingContent {
@@ -127,7 +127,7 @@
             display: flex;
             justify-content: center;
             width: 100%;
-            margin-top: 5cm;
+            margin-top: 2cm;
             min-height: 100vh;
             z-index: 0;
         }
@@ -146,9 +146,13 @@
         background-color: azure;
         box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.5);
         border: 1px solid black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
         transform: translateY(0);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
 
     /* Define the final state (dots moved upward) */
