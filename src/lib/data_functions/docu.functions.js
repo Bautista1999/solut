@@ -10,7 +10,7 @@ import { authSubscribe, getDoc, listDocs, setDoc, signIn, unsafeIdentity } from 
 //Dfinity libraries
 import { Principal } from "@dfinity/principal";
 import { createAgent } from "@dfinity/utils";
-import { AccountIdentifier, LedgerCanister, Topic } from "@dfinity/nns";
+import { AccountIdentifier, LedgerCanister } from "@dfinity/ledger-icp";
 
 // TODO: DIVIDE FUNCTIONS INTO DIFFERENT FILES (juno, local, dfinity), this one is too large. 
 // TODO: ADD A FIELD IN THE COMMENTS THAT SHOWS WHICH OUTSIDE FEATURES/ METHODS ARE USING THAT FUNCTION.
