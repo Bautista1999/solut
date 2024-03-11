@@ -645,6 +645,24 @@
     }
 </script>
 
+<svelte:head>
+    <!-- Twitter -->
+    <title>Solutio</title>
+    <meta name="description" content="Solutio idea page" />
+    <meta name="twitter:site" content="@nytimesbits" />
+    <meta name="twitter:creator" content="@nickbilton" />
+    <meta
+        property="twitter:image"
+        content="https://www.ericfavre.com/lifestyle/es/wp-content/uploads/sites/8/2021/09/force-1-1024x637-1.jpg"
+    />
+    <meta
+        property="twitter:url"
+        content="https://xh6qb-uyaaa-aaaal-acuaq-cai.icp0.io/idea?id=2lRq1Zc3xdId1cWCfYW9Y"
+    />
+    <meta property="twitter:title" content="Working on Another app" />
+    <meta property="twitter:description" content="Some description" />
+</svelte:head>
+
 {#if !isLoading}
     <div class="body">
         <div class="content">
