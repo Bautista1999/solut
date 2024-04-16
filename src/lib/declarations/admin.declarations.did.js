@@ -85,7 +85,14 @@ export const idlFactory = ({ IDL }) => {
     'docInput' : DocInput,
   });
   return IDL.Service({
+    'createNotification' : IDL.Func([], [IDL.Text], []),
+    'createPersonalNotification' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Text],
+        [],
+      ),
     'deleteDoc' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
+    'deleteElement' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
     'deleteManyDocs' : IDL.Func(
         [
           IDL.Vec(
@@ -100,7 +107,11 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'editPledgeTry' : IDL.Func([User, PledgeActive], [IDL.Vec(User)], []),
-    'followerCounter' : IDL.Func([IDL.Text, IDL.Bool], [IDL.Text], []),
+    'followerCounter' : IDL.Func(
+        [IDL.Text, IDL.Bool, IDL.Text],
+        [IDL.Text],
+        [],
+      ),
     'fromCandidDescription' : IDL.Func(
         [IDL.Text],
         [IDL.Variant({ 'ok' : IDL.Vec(User), 'err' : IDL.Text })],
@@ -109,6 +120,7 @@ export const idlFactory = ({ IDL }) => {
     'getDoc' : IDL.Func([IDL.Text, IDL.Text], [GetDocResult], []),
     'getManyDocs' : IDL.Func([GetManyDocsInput], [GetManyDocsResult], []),
     'ideaCounter' : IDL.Func([IDL.Text], [IDL.Text], []),
+    'ideaRevenueCounter' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Text], []),
     'listDocs' : IDL.Func([IDL.Text, ListDocsFilter], [ListDocsResult], []),
     'pledgeApprovedVerify' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Nat64, IDL.Nat64],
@@ -127,6 +139,12 @@ export const idlFactory = ({ IDL }) => {
       ),
     'setDoc' : IDL.Func([IDL.Text, IDL.Text, DocInput], [IDL.Text], []),
     'setManyDocs' : IDL.Func([SetManyDocsInput], [IDL.Text], []),
+    'solutionApproveEdit' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Nat64, IDL.Nat64],
+        [IDL.Text],
+        [],
+      ),
+    'solutionReject' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
     'solutionSubmit' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
     'solutionsCompletedCounter' : IDL.Func([], [IDL.Text], []),
     'transfersBuildersCounter' : IDL.Func([IDL.Nat], [IDL.Text], []),
