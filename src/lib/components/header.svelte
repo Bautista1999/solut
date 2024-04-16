@@ -1,7 +1,4 @@
 <script>
-    import { TabGroup, Tab, TabAnchor } from "@skeletonlabs/skeleton";
-    import { page } from "$app/stores";
-    import { LightSwitch } from "@skeletonlabs/skeleton";
     import { basicInfo, info, initDB, signedIn } from "$lib/stores/auth.state";
     import { afterUpdate, beforeUpdate, onDestroy, onMount } from "svelte";
     import { signIn, signOut } from "@junobuild/core";
@@ -300,7 +297,7 @@
                                                         >
                                                             "{notification.body.substring(
                                                                 0,
-                                                                80
+                                                                80,
                                                             )}...""
                                                         </p>
                                                     {/if}
@@ -308,11 +305,11 @@
                                             </div>
                                             <p style="color: orangered;">
                                                 {howLongAgo(
-                                                    notification.date
+                                                    notification.date,
                                                 ).amount.toString() +
                                                     " " +
                                                     howLongAgo(
-                                                        notification.date
+                                                        notification.date,
                                                     ).timeframe}
                                                 ago
                                             </p>
@@ -417,7 +414,7 @@
     }
     .horizontalLine {
         width: 80%;
-        border-color: rgba(240, 248, 255, 0.149);
+        border-color: rgb(255, 255, 255);
         border-width: 0.2px;
     }
 
@@ -452,7 +449,7 @@
         align-items: flex-start;
         text-align: left;
         font-size: medium;
-        padding-left: 10px;
+        padding: 10px;
         padding-right: 10px;
         padding-top: 5px;
         padding-bottom: 5px;
@@ -467,8 +464,9 @@
         align-items: center;
         font-size: x-large;
         gap: 30px;
-        margin-top: 10px;
-        margin-bottom: 25px;
+        height: 70px;
+        background-color: #ff6000;
+        background-image: linear-gradient(to right, #ff6000, #672800);
     }
     header > :last-child {
         order: 1;
@@ -485,7 +483,9 @@
         justify-content: center; /* Horizontal alignment */
         font-size: x-large;
         font-weight: 330;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .tabClosed:hover {
         transform: scale(
@@ -516,7 +516,9 @@
         justify-content: center; /* Horizontal alignment */
         font-size: x-large;
         font-weight: 330;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .tabNoti:hover {
         transform: scale(
@@ -543,7 +545,9 @@
         justify-content: center;
         align-items: center;
         box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.5);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
         z-index: 2;
     }
     .menuLogo:hover {
