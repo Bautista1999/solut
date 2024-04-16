@@ -66,13 +66,13 @@ body{
 p{
     font-family: 'Barlow'; 
     font-weight:400;
+    margin:0px;
     
 }
 h1{
     font-family: 'Barlow'; 
     font-size:x-large;
-    font-style:normal;
-    
+    font-style:normal;    
 }
 h2{
     font-family: 'Barlow'; 
@@ -86,4 +86,23 @@ h4{
     font-family: 'Barlow'; 
     
 }
+body {
+  background: linear-gradient(90deg, #141414 50%, #2b2b2b 100%);
+  min-height: 100vh; /* Full viewport height */
+  margin: 0; /* Remove default margin */
+  color: #fff; /* Set default text color to white for visibility */
+}
+
+
+:root {
+    --primary-color: #ff6000; /* red */
+    --secondary-color: white; /* green */
+    --tertiary-color: black; /* blue */
+    /* Define more colors as needed */
+}
+p{
+    color:var(--secondary-color);
+};
+
+
 
