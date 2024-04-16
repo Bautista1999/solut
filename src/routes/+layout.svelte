@@ -1,13 +1,7 @@
 <script>
-  // Your selected Skeleton theme:
-  import "@skeletonlabs/skeleton/themes/theme-skeleton.css";
-
-  // This contains the bulk of Skeletons required styles:
-  import "@skeletonlabs/skeleton/styles/skeleton.css";
-
   // Finally, your application's global stylesheet (sometimes labeled 'app.css')
   import "../app.postcss";
-  import "@skeletonlabs/skeleton/themes/theme-rocket.css";
+
   import { onMount } from "svelte";
   import { basicInfo, info, initDB } from "$lib/stores/auth.state";
   import Header from "$lib/components/header.svelte";
@@ -32,5 +26,15 @@
   onMount(async () => {});
 </script>
 
-<Header />
-<slot />
+<div class="body">
+  <Header />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+  />
+
+  <slot />
+</div>
+
+<style>
+</style>
