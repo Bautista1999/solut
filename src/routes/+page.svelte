@@ -2,9 +2,8 @@
     import { onMount } from "svelte";
     import { signIn, signOut } from "@junobuild/core";
 
-    import { ProgressRadial } from "@skeletonlabs/skeleton";
     import { goto } from "$app/navigation";
-    import { LightSwitch } from "@skeletonlabs/skeleton";
+
     import Loading from "$lib/components/loading.svelte";
 
     import { basicInfo, info } from "../lib/stores/auth.state";
@@ -84,9 +83,6 @@
             <span>🚀</span>
             <span style="color: aliceblue;">Sign In</span>
         </button>
-        <div class="light-switch-container">
-            <LightSwitch />
-        </div>
     </div>
 {/if}
 
@@ -96,11 +92,6 @@
         justify-content: center;
     }
 
-    div {
-        margin-block-start: 20%;
-        text-align: center;
-        height: 44%;
-    }
     .card {
         position: absolute;
         left: 50%;
