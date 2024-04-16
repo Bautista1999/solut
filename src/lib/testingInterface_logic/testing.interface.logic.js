@@ -11,9 +11,13 @@ import { IndexCanister } from "@dfinity/ledger-icp";
 import { get } from "svelte/store";
 import { info } from "$lib/stores/auth.state";
 import { idlFactory as ICRC } from "$lib/declarations/icrc.declarations.did";
+import { idlFactory as Escrow } from "$lib/declarations/escrow.declarations.did";
 import { AccountIdentifier, LedgerCanister } from "@dfinity/ledger-icp";
+import { Nat } from "@dfinity/candid/lib/cjs/idl";
 // import("../declarations/juno.declarations.did.js")._SERVICE.set_doc;
-let canisterId = "ocpcu-jaaaa-aaaab-qab6q-cai";
+let canisterId = "3f6pv-baaaa-aaaab-qacoq-cai";
+export let solution_id = "T_BVS86cjl7AqpVn0LyDt";
+export let idea_id = "X_ThbidrSb7nOf9oyvkMC";
 
 /**
  * @param {string | undefined} [id]
@@ -677,7 +681,6 @@ export async function getUserBalance(){
         console.log("Not signed in");
         return BigInt(0) ;
     }
-    console.log("Shouldnt be 0");
     const store = get(info);
     let ledgerID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
     console.log(store.agent);
@@ -774,14 +777,14 @@ export async function createSolution () {
 
 export async function submitSolution(){
     // func solutionSubmit(sol_id : Text, idea_id : Text)
-    console.log("Submiting solution...");
+    console.log("Submiting solution q6xiqhV0e9Lg1Keh3Qa2B...");
     let identity = await unsafeIdentity();
     const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
     const admin = Actor.createActor(idlFactory, {
         agent,
         canisterId,
     });
-    let result = await admin.solutionSubmit("T_BVS86cjl7AqpVn0LyDt","X_ThbidrSb7nOf9oyvkMC");
+    let result = await admin.solutionSubmit("q6xiqhV0e9Lg1Keh3Qa2B","X_ThbidrSb7nOf9oyvkMC");
     console.log ("Solution submit result: ", result);
 }
 
@@ -914,7 +917,7 @@ export async function follow(){
     });
     // pledgeApprovedVerify(sol_id : Text, idea_id : Text, amount : Nat64, trans_number : Nat)
     //followerCounter(el_id : Text, instruction : Bool)
-    let result = await admin.followerCounter("2dgol-6t7gr-wbceo-axkyn-3qinp-vxv32-zrqbv-oj6tr-ztuvk-el3ln-3ae",true );
+    let result = await admin.followerCounter("2dgol-6t7gr-wbceo-axkyn-3qinp-vxv32-zrqbv-oj6tr-ztuvk-el3ln-3ae",true,"user" );
     console.log ("Increasing result: ", result);
 };
 export async function unfollow(){
@@ -946,7 +949,7 @@ export async function unfollow(){
     
     console.log("Decreasing fairtale's total followers");
     //followerCounter(el_id : Text, instruction : Bool)
-    let result = await admin.followerCounter("2dgol-6t7gr-wbceo-axkyn-3qinp-vxv32-zrqbv-oj6tr-ztuvk-el3ln-3ae",false );
+    let result = await admin.followerCounter("2dgol-6t7gr-wbceo-axkyn-3qinp-vxv32-zrqbv-oj6tr-ztuvk-el3ln-3ae",false,"user" );
     console.log ("Decreasing result: ", result);
 };
 
@@ -966,4 +969,419 @@ export async function increaseUserRevenue(){
     console.log ("Revenue increasing result: ", result);
 };
 
+export async function createNotification(){
+    if ( get(info).key == "" || get(info).key == null) {
+        console.log("Not signed in");
+        return;
+    }
+    console.log("Creating notification...");
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+    const admin = Actor.createActor(idlFactory, {
+        agent,
+        canisterId,
+    });
+    
+    let result = await admin.createNotification();
+    console.log ("Creation result: ", result);
+};
 
+export async function deleteElement(){
+    if ( get(info).key == "" || get(info).key == null) {
+        console.log("Not signed in");
+        return;
+    }
+    console.log("Deleting idea 6moxXV7YDJenlXWeZ7i62...");
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+    const admin = Actor.createActor(idlFactory, {
+        agent,
+        canisterId,
+    });
+    
+    let result = await admin.deleteElement("6moxXV7YDJenlXWeZ7i62","idea");
+    console.log ("Deletion result: ", result);
+};
+
+export async function rejectSolution(){
+    if ( get(info).key == "" || get(info).key == null) {
+        console.log("Not signed in");
+        return;
+    }
+    console.log("Rejecting solution T_BVS86cjl7AqpVn0LyDt...");
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+    const admin = Actor.createActor(idlFactory, {
+        agent,
+        canisterId,
+    });
+    
+    let result = await admin.solutionReject("T_BVS86cjl7AqpVn0LyDt","X_ThbidrSb7nOf9oyvkMC");
+    console.log ("Rejection result: ", result);
+};
+
+export async function approveTransaction(){
+    if ( get(info).key == "" || get(info).key == null) {
+        console.log("Not signed in");
+        return;
+    };
+    console.log("Approving transaction...");
+    let intValue = 0.5;
+    // Convert the integer to BigInt, effectively treating it as Nat64
+    let nat64Value = BigInt(intValue * 1e8);
+    let nat64Value_developer = BigInt(intValue * 1e8 * 0.8);
+    let nat64Value_ideator = BigInt(intValue * 1e8 * 0.1);
+    let nat64Value_solutio = BigInt(nat64Value-nat64Value_developer-nat64Value_ideator); //left overs for solutio
+    
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+    // ICRC approve section
+    let ledgerID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
+      
+    const { approve } = IcrcLedgerCanister.create({
+        agent,
+        canisterId: Principal.fromText(ledgerID),
+    });
+    const currentTime = Date.now(); // Get current time in milliseconds
+    console.log("Current time: ", currentTime);
+    let result2 = await approve({spender:{owner: Principal.fromText(canisterId),subaccount:[]},amount:nat64Value});
+    console.log("Approval result: ", result2 );
+    const admin2 = Actor.createActor(ICRC, {
+        agent,
+        canisterId:ledgerID,
+    });
+    let result4 = await admin2.query_blocks({start:result2,length:1});
+    console.log("Query blocks result: ", result4 );
+    //console.log("These are the transactions: ", result3 );
+    // Admin section
+    const escrow = Actor.createActor(Escrow, {
+        agent,
+        canisterId,
+    });
+    // pledgeApprovedVerify(sol_id : Text, idea_id : Text, amount : Nat64, trans_number : Nat)
+    console.log("Amount sending: ", Number(nat64Value));
+    // public type Approval = {
+    //     sender : Principal;
+    //     target : Principal;
+    //     amount : Nat;
+    //     approval_transaction_number : Nat;
+    // };
+    let approval1 = {
+        sender : Principal.fromText(get(info).key),
+        target : Principal.fromText("4mn74-2q4jr-tuf3f-giso4-nqrtg-b2wvc-m33xx-ivv5t-hy2ir-af7hz-zae"),
+        amount : nat64Value_developer,
+        approval_transaction_number : result2,
+    }
+    let approval2 = { //Paying Solutio
+        sender : Principal.fromText(get(info).key),
+        target : Principal.fromText("4mn74-2q4jr-tuf3f-giso4-nqrtg-b2wvc-m33xx-ivv5t-hy2ir-af7hz-zae"), 
+        amount : nat64Value_solutio,
+        approval_transaction_number : result2,
+    }
+    let approval3  = { //Sending back
+        sender : Principal.fromText(get(info).key),
+        target : Principal.fromText(get(info).key), 
+        amount : nat64Value_ideator,
+        approval_transaction_number : result2,
+    }
+    let approvals = [approval1,approval2,approval3];
+    let result = await escrow.storeApprovals(solution_id,approvals );
+    await updateTheReputation();
+    console.log("Storing approvals result:", result)
+};
+export async function removeApproval(){
+    if ( get(info).key == "" || get(info).key == null) {
+        console.log("Not signed in");
+        return;
+    };
+    console.log("Withdrawing transaction...");
+    let intValue = 0;
+    // Convert the integer to BigInt, effectively treating it as Nat64
+    let nat64Value = BigInt(intValue * 1e8);
+    
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+    // ICRC approve section
+    let ledgerID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
+      
+    const { approve } = IcrcLedgerCanister.create({
+        agent,
+        canisterId: Principal.fromText(ledgerID),
+    });
+    const currentTime = Date.now(); // Get current time in milliseconds
+    console.log("Current time: ", currentTime);
+    let result2 = await approve({spender:{owner: Principal.fromText(canisterId),subaccount:[]},amount:nat64Value});
+    console.log("Approval result: ", result2 );
+    const admin2 = Actor.createActor(ICRC, {
+        agent,
+        canisterId:ledgerID,
+    });
+    let result4 = await admin2.query_blocks({start:result2,length:1});
+    console.log("Query blocks result: ", result4 );
+    const escrow = Actor.createActor(Escrow, {
+        agent,
+        canisterId,
+    });
+    
+    let result = await escrow.removeApprovals_bySender(solution_id, Principal.fromText(get(info).key));
+    console.log("Removing approvals result:", result)
+    await editTheReputation();
+    // @ts-ignore
+    return result;
+};
+let appr = {
+    approval_transaction_number: IDL.Nat,
+    sender: IDL.Principal,
+    target: IDL.Principal,
+    amount: IDL.Nat,
+};
+
+/**
+ * @return {Promise<appr[] | []>} 
+ */
+export async function getApprovals(){
+    if ( get(info).key == "" || get(info).key == null) {
+        console.log("Not signed in");
+        return [];
+    };
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+    const escrow = Actor.createActor(Escrow, {
+        agent,
+        canisterId,
+    });
+    
+    let result = await escrow.getApprovals(solution_id);
+    console.log("Fetching approvals result:", result)
+    // @ts-ignore
+    return result;
+};
+
+
+export async function completeSolution(){
+
+    if ( get(info).key == "" || get(info).key == null) {
+        console.log("Not signed in");
+        return;
+    };
+    console.log("Initializing completion process...");
+
+    
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+   
+    const escrow = Actor.createActor(Escrow, {
+        agent,
+        canisterId,
+    });
+    
+    let result = await escrow.solutionCompletion(solution_id, idea_id);
+    console.log("Solution completion result:", result)
+    // @ts-ignore
+    return result;
+
+};
+
+let trans = {
+    status: IDL.Text,
+    created_at: IDL.Nat64,
+    sender: IDL.Principal,
+    target: IDL.Principal,
+    message: IDL.Text,
+    project_id: IDL.Text,
+    transaction_number: IDL.Opt(IDL.Nat),
+    amount: IDL.Nat,
+};
+/**
+ * @return {Promise<trans[] | []>}
+ */
+export async function getTransactions(){
+    if ( get(info).key == "" || get(info).key == null) {
+        console.log("Not signed in");
+        return [];
+    };
+    console.log("Getting transactions...");
+
+    
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+   
+    const escrow = Actor.createActor(Escrow, {
+        agent,
+        canisterId,
+    });
+    
+    let result = await escrow.getTransactionsByProject(solution_id);
+    // @ts-ignore
+    return result;
+};
+/**
+ * @return {Promise<trans[] | []>}
+ * @param {string} target
+ */
+export async function getTransactions_byTarget(target){
+    if ( get(info).key == "" || get(info).key == null) {
+        console.log("Not signed in");
+        return [];
+    };
+    console.log("Getting transactions of target " + target +"...");
+
+    
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+   
+    const escrow = Actor.createActor(Escrow, {
+        agent,
+        canisterId,
+    });
+    
+    let result = await escrow.getTransactionsByTarget(Principal.fromText(target));
+    // @ts-ignore
+    return result;
+};
+/**
+ * @return {Promise<trans[] | []>}
+ * @param {string} target
+ */
+export async function getTransactions_bySender(target){
+    if ( get(info).key == "" || get(info).key == null) {
+        console.log("Not signed in");
+        return [];
+    };
+    console.log("Getting transactions of sender " + target +"...");
+
+    
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+   
+    const escrow = Actor.createActor(Escrow, {
+        agent,
+        canisterId,
+    });
+    
+    let result = await escrow.getTransactionsBySender(Principal.fromText(target));
+    // @ts-ignore
+    return result;
+};
+/**
+ * @return {Promise<trans[] | []>}
+ * @param {string} target
+ */
+export async function getTransactions_byProject(target){
+    if ( get(info).key == "" || get(info).key == null) {
+        console.log("Not signed in");
+        return [];
+    };
+    console.log("Getting transactions of project " + target +"...");
+
+    
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+   
+    const escrow = Actor.createActor(Escrow, {
+        agent,
+        canisterId,
+    });
+    
+    let result = await escrow.getTransactionsByProject((target));
+    // @ts-ignore
+    return result;
+};
+let Reputation = {
+    amount_promised : IDL.Nat,
+    amount_paid : IDL.Nat,
+    number : IDL.Nat,
+  };
+/**
+ * @return {Promise<Reputation>}
+ * 
+ */
+export async function getReputation(){
+    if ( get(info).key == "" || get(info).key == null) {
+        console.log("Not signed in");
+        return {
+            amount_promised : IDL.Nat,
+            amount_paid : IDL.Nat,
+            number : IDL.Nat,
+        };
+    };
+    console.log("Getting reputation of principal " + get(info).key +"...");
+
+    
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+   
+    const escrow = Actor.createActor(Escrow, {
+        agent,
+        canisterId,
+    });
+    
+    let result = await escrow.getUserReputation(Principal.fromText(get(info).key));
+    // @ts-ignore
+    return result;
+};
+export async function updateTheReputation(){
+    if ( get(info).key == "" || get(info).key == null) {
+        console.log("Not signed in");
+        return "Not signed in";
+    };
+    console.log("Updating reputation of principal " + get(info).key +"...");
+
+    
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+   
+    const escrow = Actor.createActor(Escrow, {
+        agent,
+        canisterId,
+    });
+    
+    let result = await escrow.updateReputation(Principal.fromText(get(info).key), BigInt(0.5*1e8),BigInt(1.2*1e8));
+    // @ts-ignore
+    return result;
+};
+export async function editTheReputation(){
+    if ( get(info).key == "" || get(info).key == null) {
+        console.log("Not signed in");
+        return "Not signed in";
+    };
+    console.log("Updating reputation of principal " + get(info).key +"...");
+
+    
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+   
+    const escrow = Actor.createActor(Escrow, {
+        agent,
+        canisterId,
+    });
+    
+    let result = await escrow.editReputation(Principal.fromText(get(info).key),BigInt(0*1e8) , BigInt(0*1e8),BigInt(0.5*1e8),BigInt(0*1e8));
+    // @ts-ignore
+    return result;
+};
+let revenue = IDL.Nat;
+/**
+ * @return {Promise<revenue>}
+ * @param {string} user
+ */
+export async function getUser_Revenue(user){
+    if ( get(info).key == "" || get(info).key == null) {
+        console.log("Not signed in");
+        return IDL.Nat;
+    };
+    console.log("Getting revenue of user " + user +"...");
+
+    
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+   
+    const escrow = Actor.createActor(Escrow, {
+        agent,
+        canisterId,
+    });
+    
+    let result = await escrow.getUserRevenue(Principal.fromText(user));
+    // @ts-ignore
+    return result;
+}
