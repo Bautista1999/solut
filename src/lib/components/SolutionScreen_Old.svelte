@@ -7,7 +7,7 @@
         createSolution,
         createFinalUpdate,
         createTransferResult,
-    } from "/Users/juanbautistamartinezrezzio/Documents/Dev/ic_project/solutio/src/lib/data_objects/data_objects.js";
+    } from "$lib/data_objects/data_objects.js";
 
     import Loading from "$lib/components/loading.svelte";
     import { goto } from "$app/navigation";

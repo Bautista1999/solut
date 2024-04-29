@@ -3,13 +3,13 @@
         createDeadline,
         createFinalUpdate,
         createUpdate,
-    } from "/Users/juanbautistamartinezrezzio/Documents/Dev/ic_project/solutio/src/lib/data_objects/data_objects.js";
+    } from "$lib/data_objects/data_objects.js";
     import { finishProject } from "../stores/other_stores";
     import Modal from "./modal.svelte";
     import {
         getClosestDate,
         substractItem,
-    } from "/Users/juanbautistamartinezrezzio/Documents/Dev/ic_project/solutio/src/lib/other_functions/other.functions.js";
+    } from "$lib/other_functions/other.functions.js";
     import { info } from "$lib/stores/auth.state";
     import {
         postFinalUpdate,
@@ -133,7 +133,7 @@
                             on:click={() => {
                                 update.images = substractItem(
                                     update.images,
-                                    opt
+                                    opt,
                                 );
                             }}
                         >
@@ -152,7 +152,7 @@
                             on:click={() => {
                                 update.images = substractItem(
                                     update.images,
-                                    opt
+                                    opt,
                                 );
                             }}
                         >
@@ -199,7 +199,9 @@
         font-weight: 330;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
         color: black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .fundButton:hover {
         transform: scale(
@@ -228,7 +230,9 @@
         font-weight: 330;
         box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
         color: black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
         text-align: center;
     }
     .tabs {
@@ -246,7 +250,9 @@
         font-weight: 330;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
         color: black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .tabs:hover {
         transform: scale(
