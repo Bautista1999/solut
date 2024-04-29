@@ -645,6 +645,7 @@
     }
 </script>
 
+@ -1,2487 +0,0 @@
 <svelte:head>
     <!-- Twitter -->
     <title>Solutio</title>

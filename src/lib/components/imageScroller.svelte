@@ -70,7 +70,6 @@
         position: relative; /* Establish a positioning context for absolutely positioned children */
         overflow: hidden; /* Hide any overflowing content */
         background-position: 10%;
-        background-image: url(" https://st3.depositphotos.com/23594922/31822/v/450/depositphotos_318221368-stock-illustration-missing-picture-page-for-website.jpg ");
     }
 
     #image-scroller img {

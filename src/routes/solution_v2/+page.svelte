@@ -1,5 +1,4 @@
 <script>
-    import IdeaCard from "$lib/components/IdeaCard.svelte";
     import BasicButton from "$lib/components/basicButton.svelte";
     import FollowersSection from "$lib/components/followersSection.svelte";
     import FundingBar from "$lib/components/fundingBar.svelte";
@@ -11,14 +10,11 @@
     import IdeaCardContainer from "$lib/components/IdeaCard_container.svelte";
     import CardScroller from "$lib/components/CardScroller.svelte";
     import TransactionDisplay from "$lib/components/TransactionDisplay.svelte";
-    import FinishProject from "$lib/components/finishProject.svelte";
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
-    import { space } from "postcss/lib/list";
     import Breadcrumbs from "$lib/components/breadcrumbs.svelte";
     import PageTabs from "$lib/components/PageTabs.svelte";
     import AboutProject from "$lib/components/AboutProject.svelte";
     import CommentSection from "$lib/components/CommentSection.svelte";
-    import Footer from "$lib/components/Footer.svelte";
     export let msg = "Label";
     /** @type {import('./$types').PageData} */
     // @ts-ignore

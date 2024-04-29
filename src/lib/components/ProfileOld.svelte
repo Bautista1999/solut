@@ -12,9 +12,7 @@
     import { createUser } from "$lib/data_objects/data_objects";
     import { onMount } from "svelte";
     import { basicInfo, info } from "$lib/stores/auth.state";
-    /** @type {import('./$types').PageData} */
-    // @ts-ignore
-    export let data;
+
     let address = "aaaaa-bbbbbbb-cccccc-dddddd";
     let userLoading = false;
     let editPicture = false;
@@ -32,7 +30,6 @@
      */
     onMount(async () => {
         userLoading = true;
-        myUserDoc = await getDocu("users", data.id || "");
         userData = myUserDoc?.data;
         await basicInfo();
         let userBalance = await getBalance();
@@ -50,7 +47,6 @@
         msg = "Updating profile picture";
         userLoading = true;
 
-        await updateData(myUserDoc, "users", data.id || "");
         userLoading = false;
         window.location.reload();
     }
@@ -67,13 +63,13 @@
             msg = "Updating username";
             userLoading = true;
 
-            await updateData(myUserDoc, "users", data.id || "");
             userLoading = false;
             window.location.reload();
         }
     }
 </script>
 
+@ -1,436 +0,0 @@
 {#if userLoading}
     <Loading {msg} />
 {:else}
@@ -99,7 +95,7 @@
             <br />
 
             <p style="font-size:larger;">
-                User key: <span style="font-size:medium;">{data.id}</span>
+                User key: <span style="font-size:medium;"></span>
             </p>
             <div style="height: 0.1cm;" />
             {#if changeUserName}

@@ -1,6 +1,4 @@
 <script>
-    /** @type {import('./$types').PageData} */
-
     import Header from "$lib/components/header.svelte";
     import {
         createUpdate,
@@ -228,7 +226,7 @@
     let deadlineLoading = false;
     async function addDline() {
         deadlineLoading = true;
-        await addDeadline(newDeadline, data.id || "");
+        //await addDeadline(newDeadline, data.id || "");
         success = true;
         deadlineLoading = false;
         newDeadline = createDeadline();
@@ -244,7 +242,7 @@
     let msg = "";
     async function deleteDline() {
         delDeadlineLoading = true;
-        await deleteDeadline(delDeadline, data.id || "");
+        // await deleteDeadline(delDeadline, data.id || "");
         delDeadlineLoading = false;
         delSuccess = true;
         delDeadline = createDeadline();
@@ -290,7 +288,7 @@
     async function editSolu() {
         showModal7 = false;
         isLoading = true;
-        await editSolution(editSol, data.id || "");
+        //await editSolution(editSol, data.id || "");
         isLoading = false;
         msg = "Solution updated successfully!";
         solutionSuccess = true;
@@ -301,6 +299,7 @@
     }
 </script>
 
+@ -1,2565 +0,0 @@
 {#if isLoading}
     <Loading />
 {:else if solutionSuccess}
@@ -392,16 +391,16 @@
                         style="background-color: orangered; color:white; display: block;margin-right: 3em; width:fit-content; padding-left:12px;padding-right:12px;"
                         on:click={async () => {
                             followLoading = true;
-                            let result = await unfollowIdea(
-                                $info.key,
-                                data.id || "",
-                                "solutions",
-                            );
-                            if (result == "Not signed in") {
-                                NotSignedInModal.set(true);
-                                followLoading = false;
-                                return;
-                            }
+                            // let result = await unfollowIdea(
+                            //     $info.key,
+                            //     data.id || "",
+                            //     "solutions",
+                            // );
+                            // if (result == "Not signed in") {
+                            //     NotSignedInModal.set(true);
+                            //     followLoading = false;
+                            //     return;
+                            // }
                             followLoading = false;
                             userFollows = false;
                             amountFollowers--;
@@ -413,16 +412,16 @@
                         style="background-color: white; color:black; display: block;margin-right: 3em; width:fit-content; padding-left:12px;padding-right:12px;"
                         on:click={async () => {
                             followLoading = true;
-                            let result = await followIdea(
-                                $info.key,
-                                data.id || "",
-                                "solutions",
-                            );
-                            if (result == "Not signed in") {
-                                NotSignedInModal.set(true);
-                                followLoading = false;
-                                return;
-                            }
+                            // let result = await followIdea(
+                            //     $info.key,
+                            //     data.id || "",
+                            //     "solutions",
+                            // );
+                            // if (result == "Not signed in") {
+                            //     NotSignedInModal.set(true);
+                            //     followLoading = false;
+                            //     return;
+                            // }
                             userFollows = true;
                             followLoading = false;
                             amountFollowers++;
@@ -1001,9 +1000,9 @@
                         on:click={async () => {
                             changeTab(1);
                             subideaLoading.set(true);
-                            displayedIdeas = await getSolutionSubIdeas(
-                                data.id || "",
-                            );
+                            // displayedIdeas = await getSolutionSubIdeas(
+                            //     data.id || "",
+                            // );
                             subideaLoading.set(false);
                         }}>Related ideas</button
                     >
@@ -1401,9 +1400,9 @@
                         class="tabClosed"
                         on:click={async () => {
                             changeTab(1);
-                            displayedIdeas = await getSolutionSubIdeas(
-                                data.id || "",
-                            );
+                            // displayedIdeas = await getSolutionSubIdeas(
+                            //     data.id || "",
+                            // );
                         }}>Related ideas</button
                     >
                     <button class="tabs">Comments</button>
@@ -1449,7 +1448,7 @@
         </div>
     </Modal>
     <ModalNotSignedIn />
-    <ModalPledgeFunds documentID={data.id || ""} collectionName="solutions" />
+    <!-- <ModalPledgeFunds documentID={data.id || ""} collectionName="solutions" />
     <ModalUpdate
         description={update.body}
         creator={update.creator}
@@ -1460,10 +1459,10 @@
         nxtStatus={update.nxtTitle}
         solutionKey={data.id || ""}
         {update}
-    />
+    /> -->
     <ModalSubidea subIdeaOpen={subidea} />
-    <ModalPostUpdate {deadlines} solutionKey={data.id || ""} />
-    <FinishProject solutionKey={data.id || ""} />
+    <!-- <ModalPostUpdate {deadlines} solutionKey={data.id || ""} /> -->
+    <!-- <FinishProject solutionKey={data.id || ""} /> -->
     <Modal
         bind:isOpen2={showModal2}
         close={() => {
@@ -1796,10 +1795,10 @@
             <button
                 class="approvalButtons"
                 on:click={async () => {
-                    approveResult =
-                        (await approveSolution(topic, data.id || "", amount)) ||
-                        approveResult;
-                    console.log("Result: ", approveSolution);
+                    // approveResult =
+                    //     (await approveSolution(topic, data.id || "", amount)) ||
+                    //     approveResult;
+                    // console.log("Result: ", approveSolution);
                 }}
             >
                 Yes, send tokens

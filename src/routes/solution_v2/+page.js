@@ -1,12 +1,14 @@
 import { error } from '@sveltejs/kit';
 
-/** @type {import('./$types').PageLoad} */
-export function load({ url: { searchParams } }) {
-    const id = searchParams?.get("id");
+/** @type {import('@sveltejs/kit').Load} */
+export function load({ params }) {
+    const { id } = params;
 
     console.log(id);
 
     return {
-        id
-    }
+        props: {
+            id
+        }
+    };
 }
