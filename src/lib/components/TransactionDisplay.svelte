@@ -30,20 +30,29 @@
 
 <table class="transaction-table">
     <tr style="background-color: transparent; ">
-        <th>Feature</th>
-        <th>transaction type</th>
-        <th>description</th>
-        <th>Date</th>
+        <th></th>
+        <th>destination</th>
+        <th
+            ><form action="" method="get"></form>
+            from</th
+        >
+        <th>type</th>
+
+        <th>date</th>
+        <th>time</th>
         <th>currency</th>
         <th>amount</th>
     </tr>
 
     {#each transactions as transaction}
-        <tr style="border: 3px solid var(--tertiary-color);">
+        <tr class="rows">
             <td><img src={transaction.image} alt="Transaction" /></td>
-            <td>{transaction.transactionType}</td>
             <td>{transaction.description}</td>
+            <td>{"Erik"}</td>
+            <td>{transaction.transactionType}</td>
+
             <td>{transaction.date}</td>
+            <td>17h 42m 34s</td>
             <td>{transaction.currency}</td>
             <td>{transaction.amount}</td>
         </tr>
@@ -58,25 +67,35 @@
     .transaction-table tr {
         width: 100%;
         border-collapse: collapse;
-        background-color: var(--secondary-color);
-        color: var(--tertiary-color);
+        color: var(--secondary-color);
     }
 
     .transaction-table th,
     .transaction-table td {
         padding-inline: 0px;
-        padding-block: 10px;
+        padding-block: 5px;
         text-align: center;
+        margin-block: 5px;
+        font-weight: 300;
+    }
+
+    .transaction-table td {
+        padding-top: 5px;
+    }
+    .rows {
+        border: 1px solid var(--secondary-color);
+        margin-top: 15px;
+        background-color: var(--tertiary-color);
     }
 
     .transaction-table th {
-        color: var(--secondary-color);
-        font-weight: 100;
+        font-weight: 400;
     }
 
     .transaction-table img {
-        width: 60px; /* Adjust as needed */
+        width: 40px; /* Adjust as needed */
         height: 40px;
+        border-radius: 50%;
         object-fit: cover;
     }
 </style>

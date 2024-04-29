@@ -3,7 +3,6 @@
 
     import { setDoc, initJuno, getDoc } from "@junobuild/core";
     import { onMount } from "svelte";
-    import { ListBox, ListBoxItem } from "@skeletonlabs/skeleton";
     import Modal from "$lib/components/modal.svelte";
     import { nanoid } from "nanoid";
     import { goto } from "$app/navigation";

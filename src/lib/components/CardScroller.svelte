@@ -39,7 +39,7 @@
             "wght" 400,
             "GRAD" 0,
             "opsz" 48;
-        color: var(--secondary-color);
+        color: var(--tertiary-color);
     }
     .material-symbols-outlined:hover {
         font-variation-settings:
@@ -68,19 +68,13 @@
         ); /* Background color of the buttons container */
         width: fit-content; /* Container width to fit its content */
         padding: 5px; /* Padding around the content inside the container */
-        border-radius: 5px; /* Rounded corners for the container */
+        border-radius: 0px; /* Rounded corners for the container */
         border: 0px solid var(--primary-color);
         opacity: 100%;
         border: 1px solid var(--primary-color);
         transition: background-color 0.3s ease;
     }
-    .buttons:hover {
-        background-color: rgb(
-            72,
-            72,
-            72
-        ); /* Background color of the buttons container */
-    }
+
     .buttons img {
         /* Add width and height for the image */
         width: 30px; /* Set a fixed width */

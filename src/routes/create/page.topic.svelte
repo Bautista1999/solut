@@ -1,11 +1,6 @@
 <script>
     import { setDoc, initJuno, getDoc } from "@junobuild/core";
     import { onMount } from "svelte";
-    import {
-        ListBox,
-        ListBoxItem,
-        ProgressRadial,
-    } from "@skeletonlabs/skeleton";
 
     import { nanoid } from "nanoid";
     import { goto } from "$app/navigation";
@@ -272,47 +267,6 @@
             <p>Operating systems</p>
             <div class="spacer" />
 
-            <ListBox multiple>
-                <div class="option">
-                    <ListBoxItem
-                        bind:group={systems}
-                        name="medium"
-                        value="Android"
-                        class="option">🤖 Android</ListBoxItem
-                    >
-                </div>
-                <div class="option">
-                    <ListBoxItem
-                        bind:group={systems}
-                        name="medium"
-                        value="IOS"
-                        class="option">💻 IOS</ListBoxItem
-                    >
-                </div>
-                <div class="option">
-                    <ListBoxItem
-                        bind:group={systems}
-                        name="medium"
-                        value="other"
-                        class="option">Other</ListBoxItem
-                    >
-                </div>
-            </ListBox>
-            <br />
-            <p>Related categories</p>
-            <div class="spacer" />
-            {#each options as opt}
-                <ListBox multiple>
-                    <div class="option">
-                        <ListBoxItem
-                            bind:group={categories}
-                            name="other"
-                            value={opt}
-                            class="option">{opt}</ListBoxItem
-                        >
-                    </div>
-                </ListBox>
-            {/each}
             {#if validator.relatedCategories == "empty"}
                 <p style="color: red; font-style:italic;">
                     Choose at least one category.
@@ -398,7 +352,9 @@
         font-weight: 330;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
         color: black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .tabs:hover {
         transform: scale(

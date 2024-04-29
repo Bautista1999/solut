@@ -25,7 +25,7 @@
     <div class="barra" style="width: 95%;">
         <div
             class="progreso"
-            style="width: {75}%; height:20px; font-size:small; color:var(--secondary-color); font-weight:400;"
+            style="width: {75}%; height:20px; font-size:small; color:var(--tertiary-color); font-weight:400;"
         >
             Expected: {exp} USD
         </div>
@@ -39,7 +39,10 @@
     </div>
 {:else}
     <div class="barra">
-        <div class="progreso" style="width: {75}%;">
+        <div
+            class="progreso"
+            style="width: {75}%; color:var(--tertiary-color);"
+        >
             Expected: {exp} USD
         </div>
         {#if window.innerWidth < 500}

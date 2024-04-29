@@ -1,6 +1,6 @@
 <script>
     export let msg = "Label";
-    export let icon = "paid";
+    export let icon = "";
 </script>
 
 <link

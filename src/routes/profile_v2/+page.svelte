@@ -1,0 +1,379 @@
+<script>
+    import Badges from "$lib/components/Badges.svelte";
+    import BalanceChart from "$lib/components/BalanceChart.svelte";
+    import CardScroller from "$lib/components/CardScroller.svelte";
+    import PageTabs from "$lib/components/PageTabs.svelte";
+    import Reputation from "$lib/components/Reputation.svelte";
+    import TransactionDisplay from "$lib/components/TransactionDisplay.svelte";
+    import Wallet from "$lib/components/Wallet.svelte";
+    import ProfilePicture from "$lib/components/profilePicture.svelte";
+    let user_name = "erik_thebest";
+    let description =
+        "Used to build #Apps for corporations Now build #dApps for people  #ProductDesign & #Marketing Founder @SolutioApp";
+    let profile =
+        "https://png.pngtree.com/thumb_back/fh260/background/20230612/pngtree-in-the-style-of-2d-game-art-image_2884743.jpg";
+    let reputation = 50;
+    let x_account = "@fairtail3";
+    let insta_account = "@fairtail3";
+    let linkedIn_account = "Erik Jung";
+    let Github_account = "@Fairtale19";
+    let images = [
+        "https://cloudfront-us-east-2.images.arcpublishing.com/reuters/4CG5FU4IIJMHZCDXESLO7GEYDM.jpg",
+        "https://media.ambito.com/p/9c57bcc58b3be5c19ea3a38d32f54fca/adjuntos/239/imagenes/038/684/0038684219/1200x675/smart/ethereum-banco-centraljpg.jpg",
+        "https://s2-valor.glbimg.com/oXwS6x_i8WgCUl-XfqaLBdWpyRk=/0x0:3973x2649/888x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_63b422c2caee4269b8b34177e8876b93/internal_photos/bs/2023/V/1/0BYTKITrifXhSGhdSv5w/btc-e-eth-unsplash.jpg",
+    ];
+    let transaction = {
+        image: images[0], // Replace with your image path
+        transactionType: "Pledge",
+        description: "erik_thebest",
+        date: "17 July 2024",
+        currency: "ICP",
+        amount: "5.11",
+    };
+    let transaction2 = {
+        image: images[1], // Replace with your image path
+        transactionType: "Withdraw",
+        description: "eljuan_sito",
+        date: "17 July 2024",
+        currency: "ICP",
+        amount: "4.03",
+    };
+    let transaction3 = {
+        image: images[2], // Replace with your image path
+        transactionType: "Transfer",
+        description: "snassy.icp",
+        date: "17 July 2024",
+        currency: "ICP",
+        amount: "3.45",
+    };
+    let transaction4 = {
+        image: images[0], // Replace with your image path
+        transactionType: "Withdraw",
+        description: "sakimoto--icp",
+        date: "17 July 2024",
+        currency: "ICP",
+        amount: "11.45",
+    };
+    export let transactions = [
+        transaction,
+        transaction2,
+        transaction3,
+        transaction4,
+        transaction,
+        transaction2,
+        transaction3,
+        transaction4,
+        transaction2,
+        transaction3,
+    ];
+
+    // State to control whether the input field is visible or not
+    let isEditing = false;
+
+    // State to store the edited username
+    let editedUserName = "";
+    function toggleEditing() {
+        isEditing = !isEditing;
+        if (!isEditing) {
+            // Reset the edited username when exiting editing mode
+            editedUserName = "";
+        } else {
+            // Set the edited username to the current user_name when entering editing mode
+            editedUserName = user_name;
+        }
+    }
+
+    // Function to handle saving the edited username
+    function saveUserName() {
+        user_name = editedUserName; // Update the user_name
+        toggleEditing(); // Exit editing mode
+    }
+</script>
+
+<div class="container">
+    <div class="UserInfo">
+        <div class="Profile">
+            <ProfilePicture src={profile} />
+        </div>
+        {#if !isEditing}
+            <div class="UserName">
+                <span>@{user_name}</span>
+                <br />
+                <span on:click={toggleEditing} class="EditButton"> edit</span>
+            </div>
+        {:else}
+            <input type="text" bind:value={editedUserName} />
+            <button on:click={saveUserName}>Save</button>
+            <button on:click={toggleEditing}>Cancel</button>
+        {/if}
+        <div class="Description">{description}</div>
+    </div>
+    <div class="Badges">
+        <div class="BudgesTitle">Badges</div>
+        <div class="BadgesSection">
+            <Badges />
+        </div>
+    </div>
+    <div class="Social-Section">
+        <div class="SocialsTitle">Socials</div>
+        <div class="SocialsList">
+            <div class="SocialsListItem">
+                <div class="iconWrapper">
+                    <img
+                        src="/assets/11244080_x_twitter_elon musk_twitter new logo_icon.png"
+                        alt="Twitter Logo"
+                        style="width: 20px; 
+            height: 20px;
+            object-fit: contain;"
+                    />
+                </div>
+                X: {x_account}
+            </div>
+            <div class="SocialsListItem">
+                <div class="iconWrapper">
+                    <img
+                        src="/assets/1161953_instagram_icon.png"
+                        alt="Twitter Logo"
+                        style="width: 20px; 
+            height: 20px;
+            object-fit: contain;"
+                    />
+                </div>
+                Instagram: {insta_account}
+            </div>
+            <div class="SocialsListItem">
+                <div class="iconWrapper">
+                    <img
+                        src="/assets/394187_github_icon.png"
+                        alt="Twitter Logo"
+                        style="width: 20px; 
+            height: 20px;
+            object-fit: contain;"
+                    />
+                </div>
+                Github: {Github_account}
+            </div>
+            <div class="SocialsListItem">
+                <div class="iconWrapper">
+                    <img
+                        src="/assets/104493_linkedin_icon.png"
+                        alt="Twitter Logo"
+                        style="width: 20px; 
+            height: 20px;
+            object-fit: contain;"
+                    />
+                </div>
+                LinkedIn: {linkedIn_account}
+            </div>
+        </div>
+    </div>
+    <div class="FinancialInfo">
+        Wallet
+        <Wallet />
+        <div class="Balance">
+            Balance
+            <BalanceChart />
+        </div>
+    </div>
+
+    <div class="Reputation">
+        <Reputation {reputation} />
+    </div>
+    <div class="Transactions">
+        <div class="TransactionTitle">Transactions Timeline</div>
+        <div class="TransactionsDisplay">
+            <TransactionDisplay {transactions} />
+            <CardScroller />
+        </div>
+    </div>
+</div>
+
+<style>
+    .container {
+        display: grid;
+        grid-template-columns: 0.7fr 1.6fr 0.6fr;
+        grid-template-rows: 0.4fr 0fr 0fr 0.7fr;
+        gap: 0px 10px;
+        padding: 20px;
+        grid-template-areas:
+            "UserInfo Transactions Wallet"
+            "Reputation Transactions Wallet"
+            "Badges Transactions Balance"
+            "Social-Section Transactions Balance";
+    }
+    .iconWrapper {
+        background-color: white;
+        width: fit-content;
+        padding: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .Transactions {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-rows: 0.2fr 0fr 1.5fr 1.5fr;
+        gap: 5px 0px;
+        grid-template-areas:
+            "TransactionTitle TransactionTitle TransactionTitle"
+            "TransactionTitle TransactionTitle TransactionTitle"
+            "TransactionsDisplay TransactionsDisplay TransactionsDisplay"
+            "TransactionsDisplay TransactionsDisplay TransactionsDisplay";
+        grid-area: Transactions;
+    }
+    .TransactionTitle {
+        grid-area: TransactionTitle;
+        text-align: center;
+        margin-block: 15px;
+        font-size: larger;
+    }
+    .TransactionsDisplay {
+        grid-area: TransactionsDisplay;
+    }
+
+    .UserInfo {
+        display: grid;
+        grid-template-columns: 0.3fr 0.3fr 1fr 1fr;
+        grid-template-rows: 1fr 1fr 1fr 1fr;
+        gap: 10px 0px;
+        grid-auto-flow: row;
+        grid-template-areas:
+            "Profile Profile UserName UserName"
+            "Profile Profile UserName UserName"
+            "Description Description Description Description"
+            "Description Description Description Description";
+        grid-area: 1 / 1 / 2 / 2;
+        height: fit-content;
+        padding: 8px;
+    }
+
+    .Profile {
+        grid-area: Profile;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 5px;
+    }
+
+    .UserName {
+        grid-area: UserName;
+        text-align: center;
+        display: flex;
+        justify-content: left;
+        align-items: center;
+        padding: 7px;
+        gap: 5px;
+    }
+    .EditButton {
+        background-color: transparent;
+        border: 0px;
+        text-decoration: underline;
+        color: var(--primary-color);
+        cursor: pointer;
+    }
+    .EditButton:hover {
+        background-color: transparent;
+        border: 0px;
+        text-decoration: underline;
+        color: var(--sedondary-color);
+    }
+
+    .Description {
+        grid-area: Description;
+        padding: 5px;
+    }
+
+    .Badges {
+        display: grid;
+        grid-template-columns: 0fr 1fr 0fr;
+        grid-template-rows: 0fr 0fr 0fr;
+        gap: 0px 0px;
+        grid-auto-flow: row;
+        grid-template-areas:
+            "BudgesTitle BudgesTitle BudgesTitle"
+            "BadgesSection BadgesSection BadgesSection"
+            "BadgesSection BadgesSection BadgesSection";
+        grid-area: 3 / 1 / 4 / 2;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .BudgesTitle {
+        grid-area: BudgesTitle;
+        text-align: center;
+        padding-block: 15px;
+        font-size: larger;
+    }
+
+    .BadgesSection {
+        grid-area: BadgesSection;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+    }
+
+    .Social-Section {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-rows: 0fr 0fr 0fr;
+        gap: 0px 0px;
+        grid-auto-flow: row;
+        grid-template-areas:
+            "SocialsTitle SocialsTitle SocialsTitle"
+            "SocialsList SocialsList SocialsList"
+            "SocialsList SocialsList SocialsList";
+        grid-area: 4 / 1 / 5 / 2;
+    }
+
+    .SocialsTitle {
+        grid-area: SocialsTitle;
+        text-align: center;
+        padding-block: 15px;
+        font-size: larger;
+    }
+
+    .SocialsList {
+        grid-area: SocialsList;
+    }
+    .SocialsListItem {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin: 10px;
+        cursor: pointer;
+    }
+    .SocialsListItem:hover {
+        color: var(--primary-color);
+    }
+
+    .FinancialInfo {
+        grid-area: 1 / 3 / 3 / 4;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        font-size: larger;
+        padding-top: 15px;
+        height: fit-content;
+    }
+
+    .Balance {
+        grid-area: 3 / 3 / 5 / 4;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        width: 100%;
+        font-size: large;
+        margin-block: 20px;
+    }
+
+    .Reputation {
+        align-self: center;
+        grid-area: 2 / 1 / 3 / 2;
+    }
+</style>

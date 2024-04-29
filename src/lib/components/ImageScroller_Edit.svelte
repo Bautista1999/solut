@@ -1,9 +1,9 @@
 <script>
     /**
-     * @type {string | any[]}
+     * @type {string[]}
      */
-    export let images = []; // Array of image URLs passed in as a prop
-    let currentImageIndex = 0;
+    let images = []; // Array of image URLs passed in as a prop
+    export let currentImageIndex = images.length;
 
     /**
      * @param {number} direction
@@ -12,18 +12,47 @@
         currentImageIndex =
             (currentImageIndex + direction + images.length) % images.length;
     }
+    function deleteImage() {
+        if (images.length > 0 && currentImageIndex >= 0) {
+            images.splice(currentImageIndex, 1); // Remove the image at the current index
+            images = [...images];
+            if (currentImageIndex > 0) {
+                currentImageIndex--; // Adjust the index if needed
+            }
+        }
+    }
+    /**
+     * @param {string} newImage
+     */
+    export function addNewImage(newImage) {
+        if (newImage == "") {
+            return;
+        }
+        images = [...images, newImage]; // Use spread syntax to trigger reactivity
+        currentImageIndex = images.length - 1;
+        newImage = "";
+    }
 </script>
 
 <div id="image-scroller">
     {#if images.length > 0}
+        <div class="delete-button-container">
+            <button class="delete-button" on:click={deleteImage}>
+                <span class="material-symbols-outlined deleteIconHover">
+                    delete
+                </span>
+            </button>
+        </div>
         <img alt="Scroller Image" src={images[currentImageIndex]} />
     {:else}
         <div
             style="display: flex; justify-content:center ;align-items:center; margin:auto;height:100%; background-color:black;color:var(--tertiary-color)"
         >
-            No images included.
+            You havent included any image. Include some images in the text
+            field.
         </div>
     {/if}
+
     <div class="ButtonSection">
         <div class="buttons">
             <button on:click={() => scroll(-1)}>
@@ -61,6 +90,12 @@
             "GRAD" 0,
             "opsz" 48;
         color: var(--primary-color);
+    }
+    .deleteIconHover {
+        color: var(--tertiary-color);
+    }
+    .deleteIconHover:hover {
+        color: var(--red-wine);
     }
 
     #image-scroller {
@@ -118,5 +153,33 @@
         background-color: transparent;
         cursor: pointer;
         border: 0px solid var(--primary-color);
+    }
+
+    .delete-button-container {
+        position: absolute; /* Position relative to image-scroller */
+        top: 10px; /* Adjust as needed */
+        right: 10px; /* Adjust as needed */
+        z-index: 2; /* Ensure it's above the image */
+    }
+
+    .delete-button {
+        background-color: var(
+            --red-wine
+        ); /* Use a color that indicates a delete action */
+        color: var(--tertiary-color);
+        box-shadow: 4px 4px 0px 0px var(--tertiary-color);
+        border: 1px solid var(--tertiary-color);
+        padding: 2px;
+        cursor: pointer;
+        /* Additional styles as needed */
+    }
+
+    .delete-button:hover {
+        background-color: var(
+            --tertiary-color
+        ); /* Use a color that indicates a delete action */
+        color: var(--red-wine);
+        box-shadow: 4px 4px 0px 0px var(--red-wine);
+        border: 1px solid var(--red-wine);
     }
 </style>

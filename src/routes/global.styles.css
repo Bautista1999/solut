@@ -1,12 +1,14 @@
 /* Write your global styles here, in PostCSS syntax */
 @import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300&display=swap');
+
 @font-face {
     font-family: 'JetBrainsMono';
     src: url('assets/fonts/JetBrains/JetBrainsMono-Regular.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
 }
+
 @font-face {
     font-family: 'Barlow';
     src: url('assets/fonts/Barlow/barlow-v12-latin-regular.woff2') format('woff2');
@@ -17,8 +19,8 @@
 @font-face {
     font-family: 'Barlow';
     src: url('assets/fonts/Barlow/barlow-v12-latin-700.woff2') format('woff2');
-font-weight: 700    ;
-font-style: normal;
+    font-weight: 700;
+    font-style: normal;
 }
 
 @font-face {
@@ -34,24 +36,28 @@ font-style: normal;
     font-weight: 300;
     font-style: normal;
 }
+
 @font-face {
     font-family: 'Barlow';
     src: url('assets/fonts/Barlow/barlow-v12-latin-500.woff2') format('woff2');
     font-weight: 500;
     font-style: normal;
 }
+
 @font-face {
     font-family: 'Barlow';
     src: url('assets/fonts/Barlow/barlow-v12-latin-600.woff2') format('woff2');
     font-weight: 600;
     font-style: normal;
 }
+
 @font-face {
     font-family: 'Barlow';
     src: url('assets/fonts/Barlow/barlow-v12-latin-800.woff2') format('woff2');
     font-weight: 800;
     font-style: normal;
 }
+
 @font-face {
     font-family: 'Barlow';
     src: url('assets/fonts/Barlow/barlow-v12-latin-900.woff2') format('woff2');
@@ -59,95 +65,117 @@ font-style: normal;
     font-style: normal;
 }
 
-body{
-    font-family: 'Barlow'; 
-    
+body {
+    font-family: 'Barlow';
+
 }
-p{
-    font-family: 'Barlow'; 
-    font-weight:400;
-    margin:0px;
-    
+
+p {
+    font-family: 'Barlow';
+    font-size: medium;
+    font-weight: 400;
+    margin: 0px;
+
 }
-h1{
-    font-family: 'Barlow'; 
-    font-size:x-large;
-    font-style:normal; 
-    font-weight:600;   
+
+h1 {
+    font-family: 'Barlow';
+    font-size: x-large;
+    font-style: normal;
+    font-weight: 600;
 }
-h2{
-    font-family: 'Barlow'; 
-    font-weight:500;  
-    
+
+h2 {
+    font-family: 'Barlow';
+    font-weight: 500;
+
 }
-h3{
-    font-family: 'Barlow'; 
-    font-weight:500;  
-    
+
+h3 {
+    font-family: 'Barlow';
+    font-weight: 500;
+
 }
-h4{
-    font-family: 'Barlow'; 
-    font-weight:400;
-    
+
+h4 {
+    font-family: 'Barlow';
+    font-weight: 400;
+
 }
 
 
 
 :root {
-    --primary-color: #ff6000; /*orange*/
-    --secondary-color: #222831; /*black-ish*/
-    --tertiary-color: white; 
-    --forth-color:#EEEEEE; /*white_v2 (?)*/
-    --forth-color-v2:#c7c7c7;
-    --fifth-color:#FFE6C7; /*white-orange*/
-    --sixth-color:#FFA559; /*white-orange*/
-    --seventh-color:black; /*black*/
+    --primary-color: #ff6000;
+    /*orange*/
+    --secondary-color: #222831;
+    /*black-ish*/
+    --tertiary-color: white;
+    --forth-color: #EEEEEE;
+    /*white_v2 (?)*/
+    --forth-color-v2: #c7c7c7;
+    --fifth-color: #FFE6C7;
+    /*white-orange*/
+    --sixth-color: #FFA559;
+    /*white-orange*/
+    --seventh-color: black;
+    /*black*/
     --red-wine: #D42160;
     --sky-blue: #6bc9e1;
 }
-p{
-    color:var(--secondary-color);
-};
-body, button, input, textarea, p, h1, h2, h3, h4 {
+
+
+
+;
+
+body,
+button,
+input,
+textarea,
+p,
+h1,
+h2,
+h3,
+h4 {
     color: var(--secondary-color);
-    font-family: 'Barlow'; 
+    font-family: 'Barlow';
 }
+
 body {
-  background: linear-gradient(90deg, var(--forth-color) 50%, var(--forth-color) 100%);
-  min-height: 100vh; 
-  margin: 0; 
+    background: linear-gradient(90deg, var(--forth-color) 50%, var(--forth-color) 100%);
+    min-height: 100vh;
+    margin: 0;
 
 }
 
 .TextContrast {
-    color:white;
+    color: white;
 }
 
 .InputErrorMessage {
     color: var(--red-wine);
     font-style: italic;
-    font-size:small;
+    font-size: small;
 }
+
 .InputWarningMessage {
     color: var(--sixth-color);
     font-style: italic;
-    font-size:small;
+    font-size: small;
 }
 
-.EditTextOption{
-    color: var(--secondary-color); 
-    
-    cursor:pointer;
-    border-bottom:2px solid var(--secondary-color);
-    
+.EditTextOption {
+    color: var(--secondary-color);
+
+    cursor: pointer;
+    /* border-bottom: 2px solid var(--secondary-color); */
+
     padding-inline: 5px;
 }
 
-.EditTextOption:hover{
-    color: var(--sky-blue); 
-    font-style:italic;
-    border-bottom:2px solid var(--sky-blue);
-    
+.EditTextOption:hover {
+    color: var(--sky-blue);
+
+    border-bottom: 2px solid var(--sky-blue);
+
 }
-
-

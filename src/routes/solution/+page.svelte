@@ -35,7 +35,6 @@
     import { initJuno, getDoc } from "@junobuild/core";
     import { onMount } from "svelte";
     import { nanoid } from "nanoid";
-    import { ProgressRadial } from "@skeletonlabs/skeleton";
     import {
         followIdea,
         unfollowIdea,

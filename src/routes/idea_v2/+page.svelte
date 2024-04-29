@@ -16,18 +16,24 @@
     import { space } from "postcss/lib/list";
     import Breadcrumbs from "$lib/components/breadcrumbs.svelte";
     import PageTabs from "$lib/components/PageTabs.svelte";
+    import AboutProject from "$lib/components/AboutProject.svelte";
+    import CommentSection from "$lib/components/CommentSection.svelte";
+    import Footer from "$lib/components/Footer.svelte";
     export let msg = "Label";
+    /** @type {import('./$types').PageData} */
+    // @ts-ignore
+    export let data;
+    let key = "";
     let images = [
         "https://cloudfront-us-east-2.images.arcpublishing.com/reuters/4CG5FU4IIJMHZCDXESLO7GEYDM.jpg",
         "https://media.ambito.com/p/9c57bcc58b3be5c19ea3a38d32f54fca/adjuntos/239/imagenes/038/684/0038684219/1200x675/smart/ethereum-banco-centraljpg.jpg",
         "https://s2-valor.glbimg.com/oXwS6x_i8WgCUl-XfqaLBdWpyRk=/0x0:3973x2649/888x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_63b422c2caee4269b8b34177e8876b93/internal_photos/bs/2023/V/1/0BYTKITrifXhSGhdSv5w/btc-e-eth-unsplash.jpg",
     ];
-    let title =
-        "Solutio: The Decentralized Idea Incubator located n Llyion, France.";
+    let title = "An example of an amazing idea! Heres an Example";
     let subtitle =
         "Empowering Innovation: Solutio's Decentralized Platform for Crowdsourcing and Collaborative Development. Located in Llyion, France. This app should try to go bananas on the features, should make ev";
     let description =
-        "Solutio is a decentralized platform designed to transform how ideas are shared, developed, and funded. Users can submit ideas, crowdsource feature requests to address these ideas, and crowdfund resources to bring the best features to life. This platform leverages blockchain technology to ensure transparency and fairness, allowing contributors to earn bounties and users to pay only upon delivery. Solutio's innovative use of a reputation system enhances safety and trust without requiring KYC, supporting anonymous accounts for those prioritizing privacy.";
+        "This idea is a decentralized platform designed to transform how ideas are shared, developed, and funded. Users can submit ideas, crowdsource feature requests to address these ideas, and crowdfund resources to bring the best features to life. This platform leverages blockchain technology to ensure transparency and fairness, allowing contributors to earn bounties and users to pay only upon delivery. Solutio's innovative use of a reputation system enhances safety and trust without requiring KYC, supporting anonymous accounts for those prioritizing privacy.";
     let user = "Johannes Jung";
     let userPicture =
         "https://i.pinimg.com/474x/05/c3/59/05c359cd010df3e7f1ea3cb6f6f54fad.jpg";
@@ -39,7 +45,7 @@
     let pledgersImages = [
         "https://cdn.weasyl.com/static/media/88/89/98/8889989c353bd7d79a5a56daf9b118ed72a9b3f7f5c852f7c9daef6bbf105225.png",
         "https://avatarfiles.alphacoders.com/103/103875.png",
-        "https://lh3.googleusercontent.com/proxy/ThxP8p-U98BZj5fV--k0zwPVtiBzE46DJX0aKMv7jc2EWye2NRIEudGYVoC7CO3TKKbAoemou8U9kbhQvdNHsOkzpc_1CtHX1sn-bB51qkujjECYgkyZrGOYvaEx",
+        "https://i.pinimg.com/236x/63/dd/c2/63ddc24b5f730d8fe4134708fbcc93df.jpg",
         "https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg",
         "https://i.pinimg.com/474x/05/c3/59/05c359cd010df3e7f1ea3cb6f6f54fad.jpg",
     ];
@@ -131,13 +137,22 @@
         transaction3,
         transaction4,
     ];
+    let tabs = ["Pledge Timeline", "Comments", "About the project"];
+    let activeTab = tabs[0]; // default active tab
+    // Function to change active tab
+    /**
+     * @param {string} tab
+     */
+    function setActiveTab(tab) {
+        activeTab = tab;
+    }
 </script>
 
 <div class="body">
     <div class="content">
         <div class="container">
             <div class="Subtitle">{subtitle}</div>
-            <div class="Title">
+            <div class="Title" style="color: var(--secondary-color);">
                 <h1>{title}</h1>
             </div>
             <div class="Profile">
@@ -215,7 +230,7 @@
             </div>
 
             <div class="ActivitySection">
-                <div class="ActivityTabs">
+                <div class="ActivityTabs" style="gap:45px">
                     <div class="CommentsTab">
                         <div class="Add_Solution_Idea_Section">
                             <BasicButtonDark
@@ -224,17 +239,23 @@
                             />
                             <br />
                             <BasicButtonDark
-                                msg={"Propose an idea"}
+                                msg={"Create feature-request"}
                                 icon={"emoji_objects"}
                             />
                         </div>
                     </div>
                     <div class="PledgersTab"></div>
-                    <PageTabs tabs={["Pledge Timeline", "Comments"]} />
+                    <PageTabs {tabs} {activeTab} setActive={setActiveTab} />
                 </div>
 
                 <div class="ActivityContent">
-                    <TransactionDisplay {transactions} />
+                    {#if activeTab === tabs[0]}
+                        <TransactionDisplay {transactions} />
+                    {:else if activeTab === tabs[1]}
+                        <CommentSection project_id={key} />
+                    {:else if activeTab === tabs[2]}
+                        <AboutProject {description} />
+                    {/if}
                 </div>
             </div>
         </div>
@@ -256,9 +277,7 @@
         width: 80%;
         max-width: 800px;
         text-align: left; /* aligns the text to the left */
-        height: 12cm;
         margin: 20px auto 0 auto; /* top margin creates space from the top */
-        z-index: 0;
     }
 
     .material-symbols-outlined {
@@ -312,7 +331,7 @@
 
     .Pictures {
         grid-area: Pictures;
-        background-color: rgb(50, 50, 50);
+        background-color: var(--secondary-color);
     }
 
     .Breadcrumbs {
@@ -487,7 +506,7 @@
     .FeaturesScrollerSection {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
-        grid-template-rows: 6.7fr 0.1fr 49.7fr;
+        grid-template-rows: 0fr 0.1fr 0fr;
         gap: 0px 0px;
         grid-auto-flow: row;
         grid-template-areas:
@@ -533,6 +552,9 @@
 
     .ActivityContent {
         grid-area: ActivityContent;
+        min-height: 300px;
+        width: 100%;
+        height: fit-content;
     }
     .Add_Solution_Idea_Section {
         display: flex;

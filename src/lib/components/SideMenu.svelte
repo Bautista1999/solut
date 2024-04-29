@@ -1,0 +1,356 @@
+<script>
+    import { fade, slide } from "svelte/transition";
+    import AboutProject from "./AboutProject.svelte";
+    import Badges from "./Badges.svelte";
+    let isOpen = false;
+
+    function toggleSidebar() {
+        isOpen = !isOpen;
+    }
+    let seconds = 0.5;
+    let idea1 = {
+        title: "Solutio, the decentralized idea incubator",
+        image: "/assets/LogoSol3.png",
+    };
+    let idea2 = {
+        title: "ICRC-7: A new standard for the ICP ecosystem",
+        image: "https://opengraph.githubassets.com/7c70681dfb31fc0b7a7e9e27a9936dab6e43c9e318ecca3b65e7ee49392e23bb/dfinity/ICRC/issues/7",
+    };
+    let idea3 = {
+        title: "New DEX:  A new decentralized exchange in the ecosystem ICP",
+        image: "https://cryptoadventure.com/wp-content/uploads/2022/01/Decentralized-Exchanges-2022-Which-is-the-Best-Crypto-DEX-to-Trade-on.jpg",
+    };
+    let ideas = [idea1, idea2, idea3];
+
+    let maxChars = 17;
+</script>
+
+<div class="SideBar {isOpen ? 'open' : ''}">
+    <div class="SideBarHead">
+        <div class="SideBarElement" style="padding-left: 19px;">
+            <img src="/assets/LogoSol3.png" alt="Solutio Logo" />
+            {#if isOpen}
+                <span
+                    class="label"
+                    style="overflow-x: hidden; position:absolute; "
+                    in:fade={{ duration: seconds * 1000 }}
+                    out:fade={{ duration: seconds * 1000 }}
+                >
+                    <h2>
+                        SOLUTIO<span style="color: var(--primary-color);"
+                            >N</span
+                        >.
+                    </h2>
+                </span>
+            {/if}
+        </div>
+    </div>
+    <div class="SideBarBody">
+        <div class="SideBarContent">
+            <div class="SideBarElement">
+                <span class="material-symbols-outlined"> home </span>
+                {#if isOpen}
+                    <span
+                        class="label"
+                        in:fade={{ duration: seconds * 1000 }}
+                        out:fade={{ duration: seconds * 1000 }}
+                        style="overflow-x: hidden; position:absolute;"
+                        >Home</span
+                    >
+                {/if}
+            </div>
+            <div class="SideBarElement">
+                <span class="material-symbols-outlined"> notifications </span>
+                {#if isOpen}<span
+                        class="label"
+                        in:fade={{ duration: seconds * 1000 }}
+                        out:fade={{ duration: seconds * 1000 }}
+                        style="
+
+                        display: flex;
+                        align-items:center;
+                        width: 280px;
+                        gap:15px;
+                        height: 38px;
+                        white-space: nowrap;  text-overflow: ellipsis; 
+                        position:absolute;
+                        overflow: hidden;
+                        max-width: 100%;"
+                        >Notifications <span
+                            style="display:flex; align-items:center; justify-content:center; align-self:center;
+                             background-color:var(--primary-color); color: var(--tertiary-color); width: fit-content;
+                             padding-inline:10px;
+                             height: 18px;
+                             flex-shrink: 0;"
+                        >
+                            15
+                        </span></span
+                    >
+                {/if}
+            </div>
+            <div class="SideBarElement">
+                <span class="material-symbols-outlined"> emoji_objects </span>
+                {#if isOpen}<span
+                        class="label"
+                        in:fade={{ duration: seconds * 1000 }}
+                        out:fade={{ duration: seconds * 1000 }}
+                        style="white-space: nowrap;  text-overflow: ellipsis; 
+                        display: block; 
+                        max-width: 100%; position:absolute;
+                        overflow: hidden; ">My ideas</span
+                    >{/if}
+            </div>
+            <div class="SideBarElement">
+                <span class="material-symbols-outlined">
+                    batch_prediction
+                </span>
+                {#if isOpen}<span
+                        class="label"
+                        in:fade={{ duration: seconds * 1000 }}
+                        out:fade={{ duration: seconds * 1000 }}
+                        style="white-space: nowrap;  text-overflow: ellipsis; 
+                        display: block; 
+                        max-width: 100%; position:absolute;
+                        overflow: hidden; ">Followed ideas</span
+                    >{/if}
+            </div>
+            <!-- <div class="SideBarElement">
+                <span class="material-symbols-outlined"> account_circle </span>
+                {#if isOpen}<span
+                        class="label"
+                        in:fade={{ duration: seconds * 1000 }}
+                        out:fade={{ duration: seconds * 1000 }}
+                        style="overflow-x: hidden; position:absolute;"
+                        >Account</span
+                    >{/if}
+            </div> -->
+            <div class="SideBarElement">
+                <span class="material-symbols-outlined"> contact_support </span>
+                {#if isOpen}<span
+                        class="label"
+                        in:fade={{ duration: seconds * 1000 }}
+                        out:fade={{ duration: seconds * 1000 }}
+                        style="overflow-x: hidden; position:absolute;"
+                        >Forum</span
+                    >{/if}
+            </div>
+
+            <div class="SideBarElement" style="margin-top:25px;">
+                <span class="material-symbols-outlined"> </span>
+                {#if isOpen}
+                    <span
+                        class="label"
+                        in:fade={{ duration: seconds * 1000 }}
+                        out:fade={{ duration: seconds * 1000 }}
+                        style="white-space: nowrap;  text-overflow: ellipsis; 
+                display: block; 
+                max-width: 100%; position:absolute;
+                overflow: hidden; 
+                font-size: 12px;
+font-style: normal;
+font-weight: 500;
+line-height: 16px;
+color: var(--ffffff-transparent, rgba(255, 255, 255, 0.75));
+">Recent ideas</span
+                    >
+                {/if}
+            </div>
+            {#each ideas as idea}
+                <div class="SideBarElement" style="padding-left: 22px;">
+                    <img
+                        src={idea.image}
+                        alt="Solutio Logo"
+                        style="width: 25px; height:25px; object-fit:cover; 
+                        "
+                    />
+                    {#if isOpen}
+                        <span
+                            class="label"
+                            in:fade={{ duration: seconds * 1000 }}
+                            out:fade={{ duration: seconds * 1000 }}
+                            style="white-space: nowrap;  text-overflow: ellipsis; 
+                display: block; 
+                max-width: 100%; position:absolute;
+                overflow: hidden; 
+
+"
+                            >{#if idea.title.length > maxChars}{idea.title.substring(
+                                    0,
+                                    maxChars,
+                                )}...{:else}{idea.title}{/if}</span
+                        >
+                    {/if}
+                </div>
+            {/each}
+
+            <span
+                class="material-symbols-outlined"
+                style="bottom:0px; padding: 7.5px 170px 6.5px 27px;"
+                on:click={() => {
+                    toggleSidebar();
+                }}
+            >
+                {#if isOpen}arrow_circle_left{:else}arrow_circle_right{/if}
+            </span>
+        </div>
+    </div>
+    <div class="SideBarFooter">
+        <div class="SideBarElement">
+            <span class="material-symbols-outlined"> account_circle </span>
+            {#if isOpen}<span
+                    class="label"
+                    in:fade={{ duration: seconds * 1000 }}
+                    out:fade={{ duration: seconds * 1000 }}
+                    style="overflow-x: hidden; position:absolute;">Account</span
+                >{/if}
+        </div>
+    </div>
+</div>
+
+<style>
+    .recentIdeas {
+        background-color: transparent;
+        display: flex;
+        width: 300px;
+        height: 188px;
+        padding: 0px 10px 1px 10px;
+        justify-content: center;
+        align-items: center;
+        flex-shrink: 0;
+    }
+    .SideBar {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 0fr 0fr 0fr;
+        gap: 0px 0px;
+        grid-template-areas:
+            "SideBarHead"
+            "SideBarBody"
+            "SideBarFooter";
+        grid-area: Sidebar;
+        background-color: black;
+        position: fixed; /* Fixed position */
+        top: 0; /* Align to the top */
+        left: 0; /* Align to the left */
+        width: 78px; /* Set the width of the sidebar */
+
+        height: 100%; /* Full height */
+        overflow-y: auto; /* Enable scroll if content is taller than the screen */
+        display: flex;
+        flex-direction: column; /* Stack children vertically */
+        justify-content: space-between; /* Distribute space between the elements */
+        color: var(--tertiary-color);
+        transition: width 0.5s ease;
+        gap: 30px;
+        z-index: 3000;
+    }
+    .SideBar.open {
+        width: 220px; /* width of the opened sidebar */
+        background-color: black;
+        position: fixed; /* Fixed position */
+        top: 0; /* Align to the top */
+        left: 0; /* Align to the left */
+        height: 100%; /* Full height */
+        overflow-y: auto; /* Enable scroll if content is taller than the screen */
+        overflow: hidden;
+        color: var(--tertiary-color);
+
+        gap: 30px;
+    }
+    .SideBarContent {
+        height: fit-content;
+        overflow-y: auto;
+        display: flex;
+        justify-content: start;
+        align-items: left;
+        overflow-y: auto;
+        flex-direction: column;
+
+        padding: 11px 0px;
+        gap: 20px;
+    }
+    .material-symbols-outlined {
+        font-variation-settings:
+            "FILL" 0,
+            "wght" 400,
+            "GRAD" 0,
+            "opsz" 48;
+        cursor: pointer;
+        font-size: 16px;
+        font-style: normal;
+    }
+    .material-symbols-outlined:hover {
+        font-variation-settings:
+            "FILL" 0,
+            "wght" 400,
+            "GRAD" 0,
+            "opsz" 48;
+        cursor: pointer;
+        color: var(--primary-color);
+    }
+    .SideBarElement {
+        display: flex;
+        justify-content: start;
+        align-items: center;
+        flex-direction: row;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 700;
+        line-height: 24px;
+        padding: 7.5px 170px 6.5px 27px;
+    }
+    .SideBarElement:hover {
+        color: var(--primary-color);
+        cursor: pointer;
+    }
+    .label {
+        opacity: 0;
+        transition: opacity 2s ease; /* Delay visibility transition so it doesn't cut off early */
+        margin-left: 40px;
+        overflow: hidden;
+        position: fixed;
+    }
+    .SideBar.open .label {
+        opacity: 1;
+        overflow: hidden;
+        transition: opacity 2s ease;
+    }
+    .SidebarWrapper {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 0fr 0fr 0.3fr;
+        gap: 0px 0px;
+        grid-template-areas:
+            "SideBarHead"
+            "SideBarBody"
+            "SideBarFooter";
+        grid-area: Sidebar;
+    }
+    .SideBarHead {
+        grid-area: SideBarHead;
+        height: fit-content;
+        display: flex;
+        justify-content: left;
+        align-items: center;
+        gap: 20px;
+        padding-top: 20px;
+    }
+    .SideBarHead img {
+        width: 35px; /* Set a fixed width */
+        height: 35px; /* Set a fixed height */
+        object-fit: contain; /* Image will maintain its aspect ratio */
+    }
+    .SideBarBody {
+        grid-area: SideBarBody;
+    }
+    .SideBarFooter {
+        grid-area: SideBarFooter;
+
+        padding: 11px 0px;
+        height: fit-content;
+        display: flex;
+        justify-content: start;
+        align-items: center;
+        margin-top: auto;
+    }
+</style>

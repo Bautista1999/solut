@@ -1,4 +1,6 @@
 <script>
+    import { goto } from "$app/navigation";
+
     // You can pass the image source as a prop if it needs to be dynamic
     export let src =
         "https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/no-profile-picture-icon.png";
@@ -8,7 +10,7 @@
     function handleProfileClick(event) {
         // Stop the click event from bubbling up to parent elements
         event.stopPropagation();
-
+        goto("/profile_v2");
         // Your logic for when the profile picture is clicked
         console.log("Profile picture clicked!");
     }
@@ -25,9 +27,10 @@
 
 <style>
     .profile-pic-container {
-        width: 60px; /* width and height should be the same */
-        height: 60px; /* width and height should be the same */
-        position: absolute;
+        width: 40px; /* width and height should be the same */
+        height: 40px; /* width and height should be the same */
+        right: 0;
+        position: relative;
         border-radius: 50%; /* Makes the container circular */
         overflow: hidden; /* Ensures the content doesn't spill outside the border */
         display: flex; /* Utilizes Flexbox for centering content */
@@ -42,7 +45,7 @@
             transform 0.3s ease;
     }
     .profile-pic-container:hover {
-        position: absolute;
+        position: relative;
         transform: scale(1.2);
         border-radius: 50%; /* Makes the container circular */
         overflow: hidden; /* Ensures the content doesn't spill outside the border */
@@ -52,7 +55,7 @@
         border: 2px solid var(--primary-color);
     }
     .profile-pic-container:active {
-        position: absolute;
+        position: relative;
         transform: scale(1);
         border-radius: 50%; /* Makes the container circular */
         overflow: hidden; /* Ensures the content doesn't spill outside the border */

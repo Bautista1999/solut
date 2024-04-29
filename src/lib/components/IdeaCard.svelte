@@ -105,16 +105,13 @@
     }
     .container:hover {
         color: var(--secondary-color);
-        background-color: var(--primary-color);
-
+        background-color: var(--fifth-color);
         border: 2px solid var(--secondary-color);
         box-shadow: 6px 6px 0px 0px var(--secondary-color);
         transform: scale(1);
     }
     .container:active {
         color: var(--secondary-color);
-        background-color: var(--primary-color);
-
         border: 2px solid var(--secondary-color);
         box-shadow: 0px 0px 0px 0px var(--secondary-color);
         transform: scale(1);

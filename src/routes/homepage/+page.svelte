@@ -1,10 +1,8 @@
 <script>
     import Header from "$lib/components/header.svelte";
-    import { TabGroup, Tab, TabAnchor } from "@skeletonlabs/skeleton";
     import Layout from "../+layout.svelte";
     import { initJuno, listDocs } from "@junobuild/core";
     import { onMount } from "svelte";
-    import { Modal, modalStore } from "@skeletonlabs/skeleton";
     import { goto } from "$app/navigation";
     import { listIdeas } from "$lib/data_functions/docu.functions";
     import TopicBadge from "$lib/components/topicBadge.svelte";
@@ -242,9 +240,7 @@
     </div>
 </div>
 
-{#if showModal}
-    <Modal />
-{/if}
+{#if showModal}{/if}
 
 <style>
     .itemsDisplay {

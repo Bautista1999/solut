@@ -4,7 +4,6 @@
         loginedIn,
         subideaModal,
     } from "$lib/stores/other_stores";
-    import { ProgressRadial } from "@skeletonlabs/skeleton";
     import Modal from "./modal.svelte";
     import {
         followIdea,

@@ -1,5 +1,4 @@
 <script>
-    import Header from "$lib/components/header.svelte";
     import Loading from "$lib/components/loading.svelte";
     import Modal from "$lib/components/modal.svelte";
     import {
@@ -12,9 +11,7 @@
     } from "$lib/data_functions/docu.functions";
     import { createUser } from "$lib/data_objects/data_objects";
     import { onMount } from "svelte";
-    import { clipboard } from "@skeletonlabs/skeleton";
     import { basicInfo, info } from "$lib/stores/auth.state";
-    import Layout from "../+layout.svelte";
     /** @type {import('./$types').PageData} */
     // @ts-ignore
     export let data;
@@ -214,19 +211,9 @@
                             </div>
                         {/if}
                         <div style="height: 0.3cm;" />
-                        <div style="display:flex; justify-content:center;">
-                            <button
-                                use:clipboard={{
-                                    element: "exampleElement",
-                                }}
-                                class="btn variant-filled"
-                                style="border-radius: 0px; padding:5px;
-                            padding-left:10px;
-                            padding-right:10px;
-                            
-                            ">Copy address</button
-                            >
-                        </div>
+                        <div
+                            style="display:flex; justify-content:center;"
+                        ></div>
                         <div style="height: 0.3cm;" />
                         <p>
                             This address belongs to you, not to Solutio or
