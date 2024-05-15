@@ -10,7 +10,7 @@
     function handleProfileClick(event) {
         // Stop the click event from bubbling up to parent elements
         event.stopPropagation();
-        goto("/profile_v2");
+        goto("/profile");
         // Your logic for when the profile picture is clicked
         console.log("Profile picture clicked!");
     }

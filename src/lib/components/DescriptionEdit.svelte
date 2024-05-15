@@ -6,6 +6,9 @@
     export let active = false;
     export let title = "";
     export let clickToEdit = "(click to edit)";
+    export let descriptionMessage =
+        "In the 'about the project' field, you should describe the essence of the challenge you are trying to solve.";
+    export let popUpTitle = "About the project";
     let maxLength = 500;
 
     /**
@@ -16,9 +19,6 @@
         element.style.height = "auto"; // Reset the height so the scroll height can shrink if needed
         element.style.height = `${element.scrollHeight}px`; // Set the height to the scroll height
     }
-    onMount((/** @type {{ textarea: { target: any; }; }} */ event) => {
-        adjustHeight(event.textarea);
-    });
 
     export let show = false;
 
@@ -93,10 +93,9 @@ line-height: 1.5;
             </span>
             {#if show}
                 <TutotialMessagePopUp
-                    title={"About the project"}
-                    message={"In the 'about the project' field, you should describe the essence of the challenge you are trying to solve."}
+                    title={popUpTitle}
+                    message={descriptionMessage}
                     {closeTooltip}
-                    note={"This is not the place for your ideas. "}
                     topPercentage={70}
                     rightPercentage={2}
                 />
@@ -119,24 +118,6 @@ line-height: 1.5;
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 
 <style>
-    .tooltip {
-        position: absolute;
-        top: 70%;
-        right: 5%;
-        transform: translateX(0%);
-        padding: 20px;
-        color: var(--seventh-color);
-        background-color: var(--tertiary-color);
-        border: 1px solid var(--sky-blue);
-        border-radius: 8px;
-        box-shadow: 6px 6px 0px 0px var(--sky-blue);
-        display: flex;
-        align-items: left;
-        justify-content: left;
-        flex-direction: column;
-        gap: 10px;
-        z-index: 100;
-    }
     .material-symbols-outlined:hover {
         font-variation-settings:
             "FILL" 1,

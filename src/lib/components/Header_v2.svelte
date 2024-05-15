@@ -49,15 +49,21 @@
             </div>
             <div class="mainHeaderContent">
                 <nav class="navigation">
-                    <a href="/home">Home</a>
-                    <a href="/about">About</a>
+                    <a href="/">Home</a>
+                    <a href="https://home.solutio.one/">About</a>
                     <!-- <a href="/contact">Contact</a> -->
                     <a href="/signin" class="tab-button">Sign In</a>
                 </nav>
             </div>
             <div class="rightHeader">
                 <!-- Right-aligned content here -->
-                <BasicButtonSmall msg={"Create New"} icon={"add_circle"} />
+                <BasicButtonSmall
+                    msg={"Create New"}
+                    icon={"add_circle"}
+                    someFunction={() => {
+                        goto("/create");
+                    }}
+                />
                 <ProfilePictureSmall
                     src={"https://pics.craiyon.com/2023-12-04/ISH99-XlQSyzrqzjzpoDhQ.webp"}
                 />

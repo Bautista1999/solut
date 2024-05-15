@@ -63,7 +63,7 @@
     grid-area: Body-content;
     padding-top: 50px; /* Padding at the top */
     padding-left: 75px; /* Padding to the left */
-    padding-bottom: 0px; /* Adjust as needed */
+    padding-bottom: 30px; /* Adjust as needed */
     min-height: 100vh;
 
     /* Removed flex: 1 as it's not necessary with grid and can be removed */

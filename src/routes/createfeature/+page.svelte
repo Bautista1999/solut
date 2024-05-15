@@ -18,6 +18,11 @@
     import BasicButtonDarkSmall from "$lib/components/BasicButton_Dark_Small.svelte";
     import DescriptionEdit from "$lib/components/DescriptionEdit.svelte";
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
+    //import { success, isLoading } from "$lib/stores/other_stores";
+    import Loading from "$lib/components/loading.svelte";
+    import Success from "$lib/components/success.svelte";
+    import { goto } from "$app/navigation";
+    import AddFeaturesSection from "$lib/components/AddFeaturesSection.svelte";
 
     export let msg = "Label";
     /** @type {import('./$types').PageData} */
@@ -29,6 +34,7 @@
      */
     let images = [];
     $: title = "";
+    let ideaTitle = "Parent Idea";
     let subtitle = "";
     let description =
         "This idea is a decentralized platform designed to transform how ideas are shared, developed, and funded. Users can submit ideas, crowdsource feature requests to address these ideas, and crowdfund resources to bring the best features to life. This platform leverages blockchain technology to ensure transparency and fairness, allowing contributors to earn bounties and users to pay only upon delivery. Solutio's innovative use of a reputation system enhances safety and trust without requiring KYC, supporting anonymous accounts for those prioritizing privacy.";
@@ -84,131 +90,167 @@
         tags.splice(currentIndex, 1);
         tags = [...tags];
     }
+    let isLoading = false;
+    let success = false;
+    async function onPost() {
+        document.body.scrollIntoView({ behavior: "smooth" });
+        isLoading = true;
+
+        setTimeout(() => {
+            isLoading = false;
+            success = true;
+        }, 2500);
+    }
+    /**
+     * @type {never[]}
+     */
+    let ideas = [];
 </script>
 
 <div class="body">
-    <div class="content">
-        <div class="container">
-            <div class="Subtitle">
-                <EditSubtitle title={subtitle} active={subtitleActive} />
-                <div style="height: 10px;"></div>
-            </div>
-
-            <div class="Title">
-                <EditTitle {active} {title} />
-                <div style="height: 10px;"></div>
-            </div>
-            <div class="Profile">
-                <ProfilePicture src={userPicture} />
-            </div>
-
-            <div class="Breadcrumbs">
-                <Breadcrumbs
-                    breadcrumbs={[
-                        { title: "Home", link: "" },
-                        { title: title, link: "" },
-                    ]}
-                />
-                <div style="height: 10px;"></div>
-            </div>
-            <div class="Pictures">
-                <div style="background-color: var(--secondary-color);">
-                    <ImageScrollerEdit bind:this={imageScroller} />
+    {#if !isLoading && !success}
+        <div class="content">
+            <div class="container">
+                <div class="Subtitle">
+                    <EditSubtitle
+                        title={subtitle}
+                        active={subtitleActive}
+                        messageSubtitle={"Here type the subtitle of the feature."}
+                    />
+                    <div style="height: 10px;"></div>
                 </div>
 
-                <br />
-                <div
-                    style="display: flex; justify-content:left;align-items:center;
+                <div class="Title">
+                    <EditTitle
+                        {active}
+                        {title}
+                        messageTitle={"Here type the title of the feature."}
+                    />
+                    <div style="height: 10px;"></div>
+                </div>
+                <div class="Profile">
+                    <ProfilePicture src={userPicture} />
+                </div>
+
+                <div class="Breadcrumbs">
+                    <Breadcrumbs
+                        breadcrumbs={[
+                            { title: "Home", link: "" },
+                            { title: ideaTitle, link: "/idea" },
+                            { title: title, link: "" },
+                        ]}
+                    />
+                    <div style="height: 10px;"></div>
+                </div>
+                <div class="Pictures">
+                    <div style="background-color: var(--secondary-color);">
+                        <ImageScrollerEdit bind:this={imageScroller} />
+                    </div>
+
+                    <br />
+                    <div
+                        style="display: flex; justify-content:left;align-items:center;
                     gap:20px;
                     
                     "
-                >
-                    <input
-                        type="text"
-                        placeholder="Type the url of the image here..."
-                        style="width: 40%;
-                        height:fit-content;
-                        overflow-y: hidden;
-                color: var(--secondary-color);
-    font-family: 'Barlow';
-    font-size:medium;
-    padding: 5px; 
-    line-height: 1.5;  
-    ; 
-                "
-                        bind:value={newImage}
-                    />
-                    <BasicButtonDarkSmall
-                        msg={"Add image"}
-                        someFunction={addImage}
-                    />
+                    >
+                        <input
+                            type="text"
+                            placeholder="Type the url of the image here..."
+                            class="InputText"
+                            bind:value={newImage}
+                        />
+                        <BasicButtonDarkSmall
+                            msg={"Add image"}
+                            someFunction={addImage}
+                        />
+                    </div>
+                </div>
+
+                <div class="ActivitySection">
+                    <div class="ActivityTabs">
+                        <h3>Describe the feature here</h3>
+                    </div>
+
+                    <div class="ActivityContent">
+                        {#if activeTab === tabs[0]}
+                            <!-- <TransactionDisplay {transactions} /> -->
+                        {:else if activeTab === tabs[1]}
+                            <!-- <CommentSection project_id={key} /> -->
+                        {:else if activeTab === tabs[2]}
+                            <DescriptionEdit
+                                descriptionMessage={"Describe the feature or idea you are thinking."}
+                                popUpTitle={"Description of the feature"}
+                            />
+                        {/if}
+                    </div>
                 </div>
             </div>
-
-            <div class="ActivitySection">
-                <div class="ActivityTabs">
-                    <h3>About the project</h3>
-                </div>
-
-                <div class="ActivityContent">
-                    {#if activeTab === tabs[0]}
-                        <!-- <TransactionDisplay {transactions} /> -->
-                    {:else if activeTab === tabs[1]}
-                        <!-- <CommentSection project_id={key} /> -->
-                    {:else if activeTab === tabs[2]}
-                        <DescriptionEdit />
-                    {/if}
-                </div>
+            <h3>Tags</h3>
+            <div class="tagInput">
+                <input
+                    type="text"
+                    maxlength="20"
+                    bind:value={newTag}
+                    class="InputText"
+                    on:keypress={(event) => {
+                        if (event.key == "Enter") {
+                            addTag();
+                        }
+                    }}
+                />
+                <BasicButtonDarkSmall msg={"Add tag"} someFunction={addTag} />
+            </div>
+            {#if tagsTooLong}
+                <p class="InputErrorMessage">
+                    You can't have more than 10 tags.
+                </p>
+            {/if}
+            <div class="tags">
+                {#each tags as tag}
+                    <!-- svelte-ignore a11y-no-static-element-interactions -->
+                    <div class="tag">
+                        <p>{tag}</p>
+                        <!-- svelte-ignore a11y-click-events-have-key-events -->
+                        <span
+                            class="material-symbols-outlined"
+                            style="cursor: pointer;"
+                            on:click={() => {
+                                deleteTag(tag);
+                            }}
+                        >
+                            delete
+                        </span>
+                    </div>
+                {/each}
+            </div>
+            <div
+                style="display: flex; justify-content:center;align-items:center;"
+            >
+                <BasicButtonDark
+                    msg={"Post feature"}
+                    icon={"emoji_objects"}
+                    someFunction={() => {
+                        onPost();
+                    }}
+                />
             </div>
         </div>
-        <h3>Tags</h3>
-        <div class="tagInput">
-            <input
-                type="text"
-                maxlength="20"
-                bind:value={newTag}
-                style="width: 30%;
-                                overflow-y: hidden;
-                                color: var(--secondary-color);
-                                font-family: 'Barlow';
-                                font-size:medium;
-                                line-height: 1.5; 
-                                padding-inline:5px; "
-                on:keypress={(event) => {
-                    if (event.key == "Enter") {
-                        addTag();
-                    }
+    {:else if success}
+        <div
+            style="display: flex; justify-content:center; align-items:center; flex-direction:column"
+        >
+            <Success msg={"Feature-request added successfully"} />
+            <BasicButtonDark
+                msg={"See the new feature created"}
+                someFunction={() => {
+                    goto("/feature");
                 }}
             />
-            <BasicButtonDarkSmall msg={"Add tag"} someFunction={addTag} />
         </div>
-        {#if tagsTooLong}
-            <p class="InputErrorMessage">You can't have more than 10 tags.</p>
-        {/if}
-        <div class="tags">
-            {#each tags as tag}
-                <!-- svelte-ignore a11y-no-static-element-interactions -->
-                <div class="tag">
-                    <p>{tag}</p>
-                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                    <span
-                        class="material-symbols-outlined"
-                        style="cursor: pointer;"
-                        on:click={() => {
-                            deleteTag(tag);
-                        }}
-                    >
-                        delete
-                    </span>
-                </div>
-            {/each}
-        </div>
-
-        <br />
-        <div style="display: flex; justify-content:center;align-items:center;">
-            <BasicButtonDark msg={"Post idea"} icon={"emoji_objects"} />
-        </div>
-    </div>
+    {:else}
+        <Loading msg={"Uploading data"} width={30} />
+    {/if}
 </div>
 
 <style>

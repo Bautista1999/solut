@@ -1,4 +1,6 @@
 <script>
+    import CircledButtonDarkSmall from "./CircledButtonDarkSmall.svelte";
+
     export let isOpen = false;
     export let isOpen2 = false;
     export let isOpen3 = false;
@@ -43,13 +45,18 @@
 {#if isOpen}
     <div class="modal-background" on:click={close}>
         <div class="modal-content" on:click|stopPropagation>
-            <div
-                class="ButtonClose"
-                on:click={() => {
-                    isOpen = false;
-                }}
-            >
-                <button>X</button>
+            <div class="delete-button-container">
+                <button
+                    class="delete-button"
+                    on:click={() => {
+                        isOpen = false;
+                    }}
+                    style="position:fixed;"
+                >
+                    <span class="material-symbols-outlined deleteIconHover">
+                        close
+                    </span>
+                </button>
             </div>
             <slot />
         </div>
@@ -111,7 +118,12 @@
             on:click|stopPropagation
         >
             <div class="ButtonClose" on:click={() => close7()}>
-                <button>X</button>
+                <CircledButtonDarkSmall
+                    icon="close"
+                    someFunction={() => {
+                        close7;
+                    }}
+                />
             </div>
             <slot />
         </div>
@@ -169,13 +181,14 @@
 
     .modal-content {
         position: relative; /* Added this */
-        background: #fff;
-        padding: 20px;
+        background: var(--tertiary-color);
+        padding-inline: 20px;
+        padding-bottom: 20px;
         width: 400px;
         border-radius: 0px;
         border-width: 2px;
         border-color: black;
-        color: rgb(37, 88, 101);
+        color: var(--secondary-color);
         box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
         max-height: 80vh; /* Set the maximum height to 80% of the viewport height */
         overflow-y: auto; /* Set vertical scrolling */
@@ -185,24 +198,59 @@
         top: 10px; /* Adjust as needed */
         right: 10px; /* Adjust as needed */
         z-index: 1000;
-        color: white;
-        background-color: red; /* Just to ensure visibility */
-        border: 1px solid black; /* Just to ensure visibility */
         padding: 5px 10px;
-        box-shadow: 5px 5px 2px rgba(0, 0, 0, 0.2);
-        transition:
-            transform 0.3s ease,
-            box-shadow 0.3s ease;
     }
-    .ButtonClose:hover {
-        transform: scale(
-            1.08
-        ); /* scales the button to 105% of its original size on hover */
+
+    .material-symbols-outlined {
+        font-variation-settings:
+            "FILL" 0,
+            "wght" 400,
+            "GRAD" 0,
+            "opsz" 48;
+        color: var(--tertiary-color);
     }
-    .ButtonClose:active {
-        transform: scale(
-            0.95
-        ); /* scales the button to 95% of its original size on click */
-        box-shadow: none; /* removes the shadow */
+    .material-symbols-outlined:hover {
+        font-variation-settings:
+            "FILL" 0,
+            "wght" 400,
+            "GRAD" 0,
+            "opsz" 48;
+        color: var(--primary-color);
+    }
+    .deleteIconHover {
+        color: var(--tertiary-color);
+    }
+    .deleteIconHover:hover {
+        color: var(--red-wine);
+    }
+    .delete-button-container {
+        position: absolute; /* Position relative to image-scroller */
+        top: 10px; /* Adjust as needed */
+        right: 40px; /* Adjust as needed */
+        z-index: 2; /* Ensure it's above the image */
+    }
+
+    .delete-button {
+        background-color: var(
+            --red-wine
+        ); /* Use a color that indicates a delete action */
+        color: var(--tertiary-color);
+        box-shadow: 4px 4px 0px 0px var(--tertiary-color);
+        border: 1px solid var(--tertiary-color);
+        padding: 2px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* Additional styles as needed */
+    }
+
+    .delete-button:hover {
+        background-color: var(
+            --tertiary-color
+        ); /* Use a color that indicates a delete action */
+        color: var(--red-wine);
+        box-shadow: 4px 4px 0px 0px var(--red-wine);
+        border: 1px solid var(--red-wine);
     }
 </style>

@@ -1,4 +1,6 @@
 <script>
+    import { goto } from "$app/navigation";
+
     // You can pass the image source as a prop if it needs to be dynamic
     export let src =
         "https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/no-profile-picture-icon.png";
@@ -10,7 +12,7 @@
         event.stopPropagation();
 
         // Your logic for when the profile picture is clicked
-        console.log("Profile picture clicked!");
+        goto("/profile");
     }
 </script>
 
@@ -63,8 +65,8 @@
     }
 
     .profile-pic {
-        width: auto; /* Maintains aspect ratio */
-        height: 100%; /* Fills the height of the container */
-        object-fit: cover; /* Ensures the image covers the area without stretching, cropping as needed */
+        width: 100%; /* Ensures the image is at least as wide as the container */
+        height: 100%; /* Ensures the image is at least as tall as the container */
+        object-fit: cover; /* Covers the area, cropping as needed */
     }
 </style>

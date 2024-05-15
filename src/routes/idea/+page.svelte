@@ -18,7 +18,14 @@
     import PageTabs from "$lib/components/PageTabs.svelte";
     import AboutProject from "$lib/components/AboutProject.svelte";
     import CommentSection from "$lib/components/CommentSection.svelte";
-    import Footer from "$lib/components/Footer.svelte";
+    import { isLoading, pledgeModal, success } from "$lib/stores/other_stores";
+    import ModalPledgeFunds from "$lib/components/ModalPledgeFunds.svelte";
+    import { onMount } from "svelte";
+    import LoadingBadge from "$lib/components/loadingBadge.svelte";
+    import Loading from "$lib/components/loading.svelte";
+    import Success from "$lib/components/success.svelte";
+    import { goto } from "$app/navigation";
+
     export let msg = "Label";
     /** @type {import('./$types').PageData} */
     // @ts-ignore
@@ -92,7 +99,7 @@
         featureExample,
         featureExample2,
         featureExample3,
-        featureExample,
+        //featureExample,
         // featureExample,
         // featureExample2,
         // featureExample,
@@ -146,119 +153,145 @@
     function setActiveTab(tab) {
         activeTab = tab;
     }
+    function pledgeModalOpen() {
+        pledgeModal.set(true);
+    }
+    onMount(() => {
+        isLoading.set(true);
+        setTimeout(() => {
+            isLoading.set(false);
+        }, 2500);
+    });
 </script>
 
 <div class="body">
     <div class="content">
-        <div class="container">
-            <div class="Subtitle">{subtitle}</div>
-            <div class="Title" style="color: var(--secondary-color);">
-                <h1>{title}</h1>
-            </div>
-            <div class="Profile">
-                <ProfilePicture src={userPicture} />
-            </div>
-            <div class="Pictures">
-                <ImageScroller {images} />
-            </div>
+        {#if !$isLoading && !$success}
+            <div class="container">
+                <div class="Subtitle">{subtitle}</div>
+                <div class="Title" style="color: var(--secondary-color);">
+                    <h1>{title}</h1>
+                </div>
+                <div class="Profile">
+                    <ProfilePicture src={userPicture} />
+                </div>
+                <div class="Pictures">
+                    <ImageScroller {images} />
+                </div>
 
-            <div class="Breadcrumbs">
-                <Breadcrumbs
-                    breadcrumbs={[
-                        { title: "Home", link: "" },
-                        { title: title, link: "" },
-                    ]}
-                />
-            </div>
+                <div class="Breadcrumbs">
+                    <Breadcrumbs
+                        breadcrumbs={[
+                            { title: "Home", link: "/" },
+                            { title: title, link: "/idea" },
+                        ]}
+                    />
+                </div>
 
-            <div class="FundingSection">
-                <div class="Funding-bar">
-                    <FundingBar {expected} {total} />
-                </div>
-                <div class="Funding-info">
-                    <p
-                        style="font-size:small; display:flex; justify-content:center;align-items:center;"
-                    >
-                        Prediction on past perfomance. No garantee of payment. <span
-                            style="text-decoration: underline;cursor:pointer;"
+                <div class="FundingSection">
+                    <div class="Funding-bar">
+                        <FundingBar {expected} {total} />
+                    </div>
+                    <div class="Funding-info">
+                        <p
+                            style="font-size:small; display:flex; justify-content:center;align-items:center;"
                         >
-                            Read more</span
-                        >
-                    </p>
+                            Prediction on past perfomance. No garantee of
+                            payment. <span
+                                style="text-decoration: underline;cursor:pointer;"
+                            >
+                                Read more</span
+                            >
+                        </p>
+                    </div>
                 </div>
-            </div>
-            <div class="PledgingSection">
-                <div class="PledgeButton">
-                    <BasicButton msg={"Pledge"} />
-                </div>
-                <div class="PledgeInfo">
-                    <p style="margin:0px; font-size:small;">
-                        Fully refundable until second confirmation. <span
-                            style="text-decoration: underline;cursor:pointer;"
-                            >Read more</span
-                        >
-                    </p>
-                </div>
-                <FollowersSection amount={totalFollowers} />
-                <div
-                    style="display: flex;
+                <div class="PledgingSection">
+                    <div class="PledgeButton">
+                        <BasicButton
+                            msg={"Pledge"}
+                            someFunction={pledgeModalOpen}
+                        />
+                    </div>
+                    <div class="PledgeInfo">
+                        <p style="margin:0px; font-size:small;">
+                            Fully refundable until second confirmation. <span
+                                style="text-decoration: underline;cursor:pointer;"
+                                >Read more</span
+                            >
+                        </p>
+                    </div>
+                    <FollowersSection amount={totalFollowers} />
+                    <div
+                        style="display: flex;
                 justify-content: center; 
                 align-items: center; 
                 flex-direction: row; 
                 gap:10px;
                 justify-content:space-between;"
-                >
-                    <div class="ShareButton"><ShareButton /></div>
-                    <div class="PledgersSection">
-                        <PledgersSection
-                            pledgersAmount={amountPledgers}
-                            images={pledgersImages}
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <div class="FeaturesSection">
-                <div class="FeaturesTitle"><h3>Feature Requests</h3></div>
-                <div class="Features">
-                    <IdeaCardContainer features={featuresExamples} />
-                </div>
-
-                <div class="FeaturesScrollerSection">
-                    <div class="FeaturesScroller"><CardScroller /></div>
-                </div>
-            </div>
-
-            <div class="ActivitySection">
-                <div class="ActivityTabs" style="gap:45px">
-                    <div class="CommentsTab">
-                        <div class="Add_Solution_Idea_Section">
-                            <BasicButtonDark
-                                msg={"Propose a solution"}
-                                icon={"cognition"}
-                            />
-                            <br />
-                            <BasicButtonDark
-                                msg={"Create feature-request"}
-                                icon={"emoji_objects"}
+                    >
+                        <div class="ShareButton"><ShareButton /></div>
+                        <div class="PledgersSection">
+                            <PledgersSection
+                                pledgersAmount={amountPledgers}
+                                images={pledgersImages}
                             />
                         </div>
                     </div>
-                    <div class="PledgersTab"></div>
-                    <PageTabs {tabs} {activeTab} setActive={setActiveTab} />
                 </div>
 
-                <div class="ActivityContent">
-                    {#if activeTab === tabs[0]}
-                        <TransactionDisplay {transactions} />
-                    {:else if activeTab === tabs[1]}
-                        <CommentSection project_id={key} />
-                    {:else if activeTab === tabs[2]}
-                        <AboutProject {description} />
-                    {/if}
+                <div class="FeaturesSection">
+                    <div class="FeaturesTitle"><h3>Feature Requests</h3></div>
+                    <div class="Features">
+                        <IdeaCardContainer features={featuresExamples} />
+                    </div>
+
+                    <div class="FeaturesScrollerSection">
+                        <div class="FeaturesScroller"><CardScroller /></div>
+                    </div>
                 </div>
+
+                <div class="ActivitySection">
+                    <div class="ActivityTabs">
+                        <div class="CommentsTab">
+                            <div class="Add_Solution_Idea_Section">
+                                <BasicButtonDark
+                                    msg={"Propose a solution"}
+                                    icon={"cognition"}
+                                    someFunction={() => {
+                                        goto("/createsolution");
+                                    }}
+                                />
+                                <br />
+                                <BasicButtonDark
+                                    msg={"Create feature-request"}
+                                    icon={"emoji_objects"}
+                                    someFunction={() => {
+                                        goto("/createfeature");
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div class="PledgersTab"></div>
+                        <PageTabs {tabs} {activeTab} setActive={setActiveTab} />
+                    </div>
+
+                    <div class="ActivityContent">
+                        {#if activeTab === tabs[0]}
+                            <TransactionDisplay {transactions} />
+                        {:else if activeTab === tabs[1]}
+                            <CommentSection project_id={key} />
+                        {:else if activeTab === tabs[2]}
+                            <AboutProject {description} />
+                        {/if}
+                    </div>
+                </div>
+                <ModalPledgeFunds />
             </div>
-        </div>
+        {:else if $success}
+            <Success msg={"Pledge successfully created"} />
+        {:else}
+            <Loading />
+        {/if}
         <br />
     </div>
 </div>

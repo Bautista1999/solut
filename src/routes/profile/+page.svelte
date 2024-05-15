@@ -2,11 +2,17 @@
     import Badges from "$lib/components/Badges.svelte";
     import BalanceChart from "$lib/components/BalanceChart.svelte";
     import CardScroller from "$lib/components/CardScroller.svelte";
+    import CircledButtonDarkSmall from "$lib/components/CircledButtonDarkSmall.svelte";
+    import FlatButtonDarkSmall from "$lib/components/FlatButtonDarkSmall.svelte";
     import PageTabs from "$lib/components/PageTabs.svelte";
+    import ProfilePictureEdit from "$lib/components/ProfilePictureEdit.svelte";
     import Reputation from "$lib/components/Reputation.svelte";
     import TransactionDisplay from "$lib/components/TransactionDisplay.svelte";
     import Wallet from "$lib/components/Wallet.svelte";
+    import Loading from "$lib/components/loading.svelte";
     import ProfilePicture from "$lib/components/profilePicture.svelte";
+    import { isLoading } from "$lib/stores/other_stores";
+    import { onMount } from "svelte";
     let user_name = "erik_thebest";
     let description =
         "Used to build #Apps for corporations Now build #dApps for people  #ProductDesign & #Marketing Founder @SolutioApp";
@@ -17,6 +23,10 @@
     let insta_account = "@fairtail3";
     let linkedIn_account = "Erik Jung";
     let Github_account = "@Fairtale19";
+    let x_account_edited = "";
+    let insta_account_edited = "";
+    let linkedIn_account_edited = "";
+    let Github_account_edited = "";
     let images = [
         "https://cloudfront-us-east-2.images.arcpublishing.com/reuters/4CG5FU4IIJMHZCDXESLO7GEYDM.jpg",
         "https://media.ambito.com/p/9c57bcc58b3be5c19ea3a38d32f54fca/adjuntos/239/imagenes/038/684/0038684219/1200x675/smart/ethereum-banco-centraljpg.jpg",
@@ -71,128 +81,226 @@
     let isEditing = false;
 
     // State to store the edited username
+    // State to store the edited description
+    let editedDescription = "";
     let editedUserName = "";
     function toggleEditing() {
         isEditing = !isEditing;
         if (!isEditing) {
             // Reset the edited username when exiting editing mode
             editedUserName = "";
+            editedDescription = "";
+            x_account_edited = "";
+            insta_account_edited = "";
+            linkedIn_account_edited = "";
+            Github_account_edited = "";
         } else {
             // Set the edited username to the current user_name when entering editing mode
             editedUserName = user_name;
+            editedDescription = description;
+            x_account_edited = x_account;
+            insta_account_edited = insta_account;
+            linkedIn_account_edited = linkedIn_account;
+            Github_account_edited = Github_account;
         }
     }
 
     // Function to handle saving the edited username
-    function saveUserName() {
+    function save() {
         user_name = editedUserName; // Update the user_name
+        description = editedDescription; // Update the user_name
+        x_account = x_account_edited;
+        insta_account = insta_account_edited;
+        linkedIn_account = linkedIn_account_edited;
+        Github_account = Github_account_edited;
         toggleEditing(); // Exit editing mode
     }
+
+    onMount(() => {
+        isLoading.set(true);
+        setTimeout(() => {
+            isLoading.set(false);
+        }, 200);
+    });
 </script>
 
-<div class="container">
-    <div class="UserInfo">
-        <div class="Profile">
-            <ProfilePicture src={profile} />
-        </div>
-        {#if !isEditing}
-            <div class="UserName">
-                <span>@{user_name}</span>
-                <br />
-                <span on:click={toggleEditing} class="EditButton"> edit</span>
-            </div>
-        {:else}
-            <input type="text" bind:value={editedUserName} />
-            <button on:click={saveUserName}>Save</button>
-            <button on:click={toggleEditing}>Cancel</button>
-        {/if}
-        <div class="Description">{description}</div>
-    </div>
-    <div class="Badges">
-        <div class="BudgesTitle">Badges</div>
-        <div class="BadgesSection">
-            <Badges />
-        </div>
-    </div>
-    <div class="Social-Section">
-        <div class="SocialsTitle">Socials</div>
-        <div class="SocialsList">
-            <div class="SocialsListItem">
-                <div class="iconWrapper">
-                    <img
-                        src="/assets/11244080_x_twitter_elon musk_twitter new logo_icon.png"
-                        alt="Twitter Logo"
-                        style="width: 20px; 
-            height: 20px;
-            object-fit: contain;"
+{#if !$isLoading}
+    <div class="container">
+        <div class="UserInfo">
+            <div class="VerticallyAligned HorizontallyAligned">
+                <br /><br /><br />
+                {#if !isEditing}
+                    <span>@{user_name}</span>
+                    <FlatButtonDarkSmall
+                        someFunction={toggleEditing}
+                        msg={"Edit profile"}
                     />
-                </div>
-                X: {x_account}
-            </div>
-            <div class="SocialsListItem">
-                <div class="iconWrapper">
-                    <img
-                        src="/assets/1161953_instagram_icon.png"
-                        alt="Twitter Logo"
-                        style="width: 20px; 
-            height: 20px;
-            object-fit: contain;"
+                {:else}
+                    <input
+                        type="text"
+                        bind:value={editedUserName}
+                        class="InputTextSmall"
                     />
-                </div>
-                Instagram: {insta_account}
-            </div>
-            <div class="SocialsListItem">
-                <div class="iconWrapper">
-                    <img
-                        src="/assets/394187_github_icon.png"
-                        alt="Twitter Logo"
-                        style="width: 20px; 
-            height: 20px;
-            object-fit: contain;"
-                    />
-                </div>
-                Github: {Github_account}
-            </div>
-            <div class="SocialsListItem">
-                <div class="iconWrapper">
-                    <img
-                        src="/assets/104493_linkedin_icon.png"
-                        alt="Twitter Logo"
-                        style="width: 20px; 
-            height: 20px;
-            object-fit: contain;"
-                    />
-                </div>
-                LinkedIn: {linkedIn_account}
-            </div>
-        </div>
-    </div>
-    <div class="FinancialInfo">
-        Wallet
-        <Wallet />
-        <div class="Balance">
-            Balance
-            <BalanceChart />
-        </div>
-    </div>
+                    <br />
 
-    <div class="Reputation">
-        <Reputation {reputation} />
-    </div>
-    <div class="Transactions">
-        <div class="TransactionTitle">Transactions Timeline</div>
-        <div class="TransactionsDisplay">
-            <TransactionDisplay {transactions} />
-            <CardScroller />
+                    <div
+                        class="VerticallyAligned"
+                        style="position: absolute; transform:translateX(170%) translateY(0%)"
+                    >
+                        <CircledButtonDarkSmall
+                            someFunction={save}
+                            icon={"Save"}
+                        />
+                        <CircledButtonDarkSmall
+                            someFunction={toggleEditing}
+                            icon={"Cancel"}
+                        />
+                    </div>
+                {/if}
+            </div>
+            <div class="Profile">
+                <ProfilePictureEdit src={profile} />
+            </div>
+            <br />
+            <br />
+
+            {#if !isEditing}
+                <div class="Description">{description}</div>
+            {:else}
+                <textarea
+                    bind:value={editedDescription}
+                    class="Description InputTextSmall"
+                    style="width: 95%;
+                    height:100px;
+                    overflow: hidden;
+                    min-height: 40px; /* Minimum height */
+                    resize: none; /* Disable resizing */"
+                />
+            {/if}
+        </div>
+        <div class="Badges">
+            <div class="BudgesTitle">Badges</div>
+            <div class="BadgesSection">
+                <Badges />
+            </div>
+        </div>
+        <div class="Social-Section">
+            <div class="SocialsTitle">Socials</div>
+            <div class="SocialsList">
+                <div class="SocialsListItem">
+                    <div class="iconWrapper">
+                        <img
+                            src="/assets/11244080_x_twitter_elon musk_twitter new logo_icon.png"
+                            alt="Twitter Logo"
+                            style="width: 20px; 
+            height: 20px;
+            object-fit: contain;"
+                        />
+                    </div>
+                    {#if !isEditing}
+                        X: {x_account}
+                    {:else}
+                        <input
+                            type="text"
+                            bind:value={x_account_edited}
+                            class="InputTextSmall"
+                        />
+                    {/if}
+                </div>
+                <div class="SocialsListItem">
+                    <div class="iconWrapper">
+                        <img
+                            src="/assets/1161953_instagram_icon.png"
+                            alt="Twitter Logo"
+                            style="width: 20px; 
+            height: 20px;
+            object-fit: contain;"
+                        />
+                    </div>
+
+                    {#if !isEditing}
+                        Instagram: {insta_account}
+                    {:else}
+                        <input
+                            type="text"
+                            bind:value={insta_account_edited}
+                            class="InputTextSmall"
+                        />
+                    {/if}
+                </div>
+                <div class="SocialsListItem">
+                    <div class="iconWrapper">
+                        <img
+                            src="/assets/394187_github_icon.png"
+                            alt="Twitter Logo"
+                            style="width: 20px; 
+            height: 20px;
+            object-fit: contain;"
+                        />
+                    </div>
+
+                    {#if !isEditing}
+                        Github: {Github_account}
+                    {:else}
+                        <input
+                            type="text"
+                            bind:value={Github_account_edited}
+                            class="InputTextSmall"
+                        />
+                    {/if}
+                </div>
+                <div class="SocialsListItem">
+                    <div class="iconWrapper">
+                        <img
+                            src="/assets/104493_linkedin_icon.png"
+                            alt="Twitter Logo"
+                            style="width: 20px; 
+            height: 20px;
+            object-fit: contain;"
+                        />
+                    </div>
+
+                    {#if !isEditing}
+                        LinkedIn: {linkedIn_account}
+                    {:else}
+                        <input
+                            type="text"
+                            bind:value={linkedIn_account_edited}
+                            class="InputTextSmall"
+                        />
+                    {/if}
+                </div>
+            </div>
+        </div>
+        <div class="FinancialInfo">
+            Wallet
+            <Wallet />
+            <div class="Balance">
+                Balance
+                <BalanceChart />
+            </div>
+        </div>
+
+        <div class="Reputation">
+            <Reputation {reputation} />
+        </div>
+        <div class="Transactions">
+            <div class="TransactionTitle">Transactions Timeline</div>
+            <div class="TransactionsDisplay">
+                <TransactionDisplay {transactions} />
+                <CardScroller />
+            </div>
         </div>
     </div>
-</div>
+{:else}
+    <Loading width={30} />
+{/if}
 
 <style>
     .container {
         display: grid;
         grid-template-columns: 0.7fr 1.6fr 0.6fr;
-        grid-template-rows: 0.4fr 0fr 0fr 0.7fr;
+        grid-template-rows: 0.3fr 0fr 0fr 0.7fr;
         gap: 0px 10px;
         padding: 20px;
         grid-template-areas:
@@ -234,8 +342,8 @@
 
     .UserInfo {
         display: grid;
-        grid-template-columns: 0.3fr 0.3fr 1fr 1fr;
-        grid-template-rows: 1fr 1fr 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        grid-template-rows: 0fr 0fr 1fr 0fr;
         gap: 10px 0px;
         grid-auto-flow: row;
         grid-template-areas:

@@ -6,6 +6,7 @@
     export let clickToEdit = "(click to edit)";
 
     export let show = false;
+    export let messageTitle = "Here type the title of the challenge.";
 
     function closeTooltip() {
         show = false;
@@ -76,7 +77,8 @@
         {#if show}
             <TutotialMessagePopUp
                 title={"Title"}
-                message={"Here type the title of the challenge. The title max characters is 70, for SEO optimization."}
+                message={messageTitle +
+                    " The title max characters is 70, for SEO optimization."}
                 {closeTooltip}
                 topPercentage={12}
                 rightPercentage={12}

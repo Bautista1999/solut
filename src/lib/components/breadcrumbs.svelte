@@ -1,4 +1,6 @@
 <script>
+    import { goto } from "$app/navigation";
+
     let breadcrumb = {
         link: "",
         title: "",
@@ -11,11 +13,14 @@
 
 {#each breadcrumbs as breadcr}
     <div class="Breadcrumbs">
-        <button style="cursor: pointer;" class="breacrumbButton"
+        <button
+            style="cursor: pointer;"
+            class="breacrumbButton"
+            on:click={() => goto(breadcr.link)}
             >{breadcr.title.substring(
                 0,
                 20,
-            )}{#if breadcr.title.length > 30}...{/if}</button
+            )}{#if breadcr.title.length > 20}...{/if}</button
         >
 
         {#if breadcrumbs.indexOf(breadcr) != breadcrumbs.length - 1}

@@ -1,4 +1,5 @@
 <script>
+    import { goto } from "$app/navigation";
     import FundingBar from "./fundingBar.svelte";
     import PledgersSection from "./pledgersSection.svelte";
     import ProfilePicture from "./profilePicture.svelte";
@@ -28,7 +29,7 @@
     export let padding = 7;
 </script>
 
-<div class="container">
+<div class="container" on:click={() => goto("feature")}>
     <div class="Image">
         <img src={featureExample.image} alt="" />
     </div>

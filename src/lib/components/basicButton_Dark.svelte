@@ -1,13 +1,16 @@
 <script>
     export let msg = "Label";
     export let icon = "";
+    export let someFunction = () => {};
 </script>
 
 <link
     rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
 />
-<button> {msg} <span class="material-symbols-outlined"> {icon} </span></button>
+<button on:click={() => someFunction()}>
+    {msg} <span class="material-symbols-outlined"> {icon} </span></button
+>
 
 <style>
     button {

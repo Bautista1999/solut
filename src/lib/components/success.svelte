@@ -27,9 +27,10 @@
     .loginBlock {
         display: flex;
         justify-content: center;
+        align-items: center;
         width: 100%;
         z-index: 0;
-        margin-top: 1cm;
+        margin-top: 20%;
         margin-bottom: 1cm;
     }
 
@@ -38,14 +39,13 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        background-color: white;
-        border-color: black;
+        background-color: var(--tertiary-color);
         border-width: 2px;
-        width: fit-content;
-        height: fit-content;
+        border: 2px solid var(--seventh-color);
+
         padding-top: 7px;
-        box-shadow: 10px 10px 0px rgba(0, 0, 0, 1);
-        color: rgb(0, 91, 91);
+        box-shadow: 6px 6px 0px rgba(0, 0, 0, 1);
+        color: var(--seventh-color);
     }
     @media (max-width: 768px) {
         .loginContent {

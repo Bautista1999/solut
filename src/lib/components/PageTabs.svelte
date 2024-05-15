@@ -18,9 +18,10 @@
         <div
             class="tab"
             class:active={tab === activeTab}
+            style="font-weight: 50;"
             on:click={() => setActive(tab)}
         >
-            {tab}
+            <h3>{tab}</h3>
         </div>
     {/each}
 </div>
@@ -32,10 +33,6 @@
         align-items: center;
         gap: 40px;
         cursor: pointer;
-        font-weight: 100;
-        font-size: larger;
-
-        margin-bottom: 15px;
     }
     .tab:hover {
         color: var(--primary-color);

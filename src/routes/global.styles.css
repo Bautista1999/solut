@@ -93,13 +93,15 @@ h2 {
 
 h3 {
     font-family: 'Barlow';
-    font-weight: 500;
+    font-weight: 400;
+    margin-bottom: 30px;
 
 }
 
 h4 {
     font-family: 'Barlow';
-    font-weight: 400;
+    font-weight: 300;
+
 
 }
 
@@ -158,6 +160,56 @@ body {
     font-size: small;
 }
 
+.InputText {
+    border: 1px solid var(--seventh-color);
+    padding: 20px;
+    font-family: 'Barlow';
+    font-size: medium;
+    height: fit-content;
+}
+
+.InputTextSmall {
+    border: 1px solid var(--seventh-color);
+    padding: 10px;
+    font-family: 'Barlow';
+    font-size: medium;
+    height: fit-content;
+}
+
+.InputText:focus {
+    border: 2px solid var(--primary-color);
+    /* Change to orange when the input is focused */
+    outline: none;
+    /* Optional: removes the default focus outline */
+}
+
+.InputTextSmall:focus {
+    border: 1px solid var(--primary-color);
+    /* Change to orange when the input is focused */
+    outline: none;
+    /* Optional: removes the default focus outline */
+}
+
+.SmallSeparator {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.VerticallyAligned {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.HorizontallyAligned {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+;
+
 .InputWarningMessage {
     color: var(--sixth-color);
     font-style: italic;
@@ -178,4 +230,29 @@ body {
 
     border-bottom: 2px solid var(--sky-blue);
 
+}
+
+.PaymentDetails {
+    max-width: 100%;
+    border: 1px solid var(--seventh-color);
+    background-color: var(--fifth-color);
+    box-shadow: 4px 4px 0px 0px var(--seventh-color);
+    min-height: 30px;
+    padding-block: 10px;
+    padding-left: 10px;
+    padding: 10px;
+}
+
+.HorizontalLine {
+    align-self: center;
+    width: 100%;
+    height: 0px;
+    border: 0.1px solid var(--seventh-color);
+}
+
+.VerticalLine {
+    align-self: center;
+    width: 0%;
+    height: 100%;
+    border: 0.1px solid var(--seventh-color);
 }

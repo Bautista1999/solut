@@ -109,16 +109,21 @@
         width: 30px;
         height: 30px;
         border-radius: 50%;
-        background-color: azure;
-        box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.5);
-        border: 1px solid black;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background-color: var(--tertiary-color);
+        box-shadow: 0px 4px 0px 0px var(--primary-color);
+        border: 1px solid var(--primary-color);
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
         transform: translateY(0);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
 
     /* Define the final state (dots moved upward) */
     .dot.move-up {
         transform: translateY(-40px);
+        box-shadow: 0px 16px 0px 0px orangered;
     }
 </style>

@@ -1,4 +1,6 @@
 <script>
+    import CircledButtonDarkSmall from "./CircledButtonDarkSmall.svelte";
+
     /**
      * @type {string[]}
      */

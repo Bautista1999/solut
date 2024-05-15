@@ -89,4 +89,21 @@ BRIEF DESCRIPTION: To know if the user is signed in or not
  */
 export const NotSignedInModal = writable(false);
 
+export const success = writable(false);
+
+export const featureTotalFunding_1 = writable(0);
+export const featureTotalFunding_2 = writable(0);
+export const featureTotalFunding_3 = writable(0);
+export const ideaTotalFunding = writable(0);
+
+export const PaymentModal = writable(false);
+
+export const TransactionsInProgress = writable(false);
+export const TransactionsSuccess = writable(false);
+
+export const DeliveryModal = writable(false);
+
+export const ApprovalModal =  writable(false);
+export const RejectModal =  writable(false);
+
 

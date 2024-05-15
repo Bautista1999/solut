@@ -2,8 +2,10 @@
     import Modal from "./modal.svelte";
     import {
         NotSignedInModal,
+        isLoading,
         loginedIn,
         pledgeModal,
+        success,
         termsModal,
     } from "$lib/stores/other_stores";
     import {
@@ -11,6 +13,9 @@
         pledgeFunds,
     } from "$lib/data_functions/docu.functions";
     import Terms from "./terms.svelte";
+    import BasicButton from "./basicButton.svelte";
+    import BasicButtonSmall from "./BasicButton_Small.svelte";
+    import BasicButtonDarkSmall from "./BasicButton_Dark_Small.svelte";
     let amountUSD = 10;
     export let documentID = "";
     export let collectionName = "";
@@ -23,22 +28,18 @@
         pledgeModal.set(false);
     }}
 >
-    <h2 style="font-size: 25px;">Funding process</h2>
-    <div class="spacer" />
+    <h2>Pledge funds</h2>
     <p>
-        Right now, you have 0.159 ICP tokens in your solutio wallet. If you wish
-        to add more, go to your <a
-            href="/billetera"
-            style="color:blue; text-decoration:underline;"
-            >Solutio wallet page</a
+        Right now, you have 12.159 ICP tokens in your wallet. If you wish to add
+        more, go to your <a
+            href="/profile"
+            style="color:blue; text-decoration:underline;">profile</a
         >.
     </p>
     <br />
-    <h3>Pick amount in US dollars.</h3>
-    <div class="spacer" />
     <p>
         <input type="number" class="inputNumber" bind:value={amountUSD} />
-        USD = {fromUSDtoICP(amountUSD)} ICP tokens
+        ICP
     </p>
     <br />
     <p>
@@ -52,7 +53,7 @@
         >
     </p>
     <br />
-    <button
+    <!-- <button
         on:click={async () => {
             if (!$loginedIn) {
                 NotSignedInModal.set(true);
@@ -69,14 +70,32 @@
         class="fundButton"
         style="background-color: #ff6000; color:aliceblue; display: block; margin-left: auto; margin-right: auto;"
         >Pledge</button
+    > -->
+    <!-- <BasicButton_Small msg={"Pledge"} /> -->
+    <div
+        style="display: flex; justify-content:center; align-items:center; width:100%;align-self:center;"
     >
+        <BasicButtonDarkSmall
+            msg={"Pledge"}
+            someFunction={() => {
+                pledgeModal.set(false);
+                isLoading.set(true);
+
+                setTimeout(() => {
+                    isLoading.set(false);
+                    success.set(true);
+                    setTimeout(() => {
+                        success.set(false);
+                    }, 2500);
+                }, 2500);
+            }}
+        />
+    </div>
+
     <br />
     <p>
-        Your tokens won't go to the creator of the issue, nor the developer, it
-        will go to a smart contract that represents this idea. Find out more <a
-            href=""
-            style="color:blue; text-decoration:underline;">here</a
-        >.
+        Your pledge will be displayed along with the expected payout. Find out
+        more <a href="" style="color:blue; text-decoration:underline;">here</a>.
     </p>
 </Modal>
 <Terms />
@@ -93,7 +112,6 @@
         display: flex;
         align-items: center; /* Vertical alignment */
         justify-content: center; /* Horizontal alignment */
-        font-size: large;
         font-weight: 330;
         box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
         color: black;
@@ -112,11 +130,9 @@
         ); /* scales the button to 95% of its original size on click */
         box-shadow: none; /* removes the shadow */
     }
-    .spacer {
-        height: 0.3cm;
-    }
+
     .inputNumber {
-        width: 50%;
+        width: 25%;
         border-color: black;
         border-width: 1px;
         padding: 5px;

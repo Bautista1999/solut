@@ -2,6 +2,7 @@
     import { fade, slide } from "svelte/transition";
     import AboutProject from "./AboutProject.svelte";
     import Badges from "./Badges.svelte";
+    import { goto } from "$app/navigation";
     let isOpen = false;
 
     function toggleSidebar() {
@@ -28,13 +29,18 @@
 <div class="SideBar {isOpen ? 'open' : ''}">
     <div class="SideBarHead">
         <div class="SideBarElement" style="padding-left: 19px;">
-            <img src="/assets/LogoSol3.png" alt="Solutio Logo" />
+            <img
+                src="/assets/LogoSol3.png"
+                alt="Solutio Logo"
+                on:click={() => goto("/")}
+            />
             {#if isOpen}
                 <span
                     class="label"
                     style="overflow-x: hidden; position:absolute; "
                     in:fade={{ duration: seconds * 1000 }}
                     out:fade={{ duration: seconds * 1000 }}
+                    on:click={() => goto("/")}
                 >
                     <h2>
                         SOLUTIO<span style="color: var(--primary-color);"
@@ -48,19 +54,29 @@
     <div class="SideBarBody">
         <div class="SideBarContent">
             <div class="SideBarElement">
-                <span class="material-symbols-outlined"> home </span>
+                <span
+                    class="material-symbols-outlined"
+                    on:click={() => goto("/")}
+                >
+                    home
+                </span>
                 {#if isOpen}
                     <span
                         class="label"
                         in:fade={{ duration: seconds * 1000 }}
                         out:fade={{ duration: seconds * 1000 }}
                         style="overflow-x: hidden; position:absolute;"
-                        >Home</span
+                        on:click={() => goto("/")}>Home</span
                     >
                 {/if}
             </div>
             <div class="SideBarElement">
-                <span class="material-symbols-outlined"> notifications </span>
+                <span
+                    class="material-symbols-outlined"
+                    on:click={() => goto("/notifications")}
+                >
+                    notifications
+                </span>
                 {#if isOpen}<span
                         class="label"
                         in:fade={{ duration: seconds * 1000 }}
@@ -76,12 +92,14 @@
                         position:absolute;
                         overflow: hidden;
                         max-width: 100%;"
+                        on:click={() => goto("/notifications")}
                         >Notifications <span
                             style="display:flex; align-items:center; justify-content:center; align-self:center;
                              background-color:var(--primary-color); color: var(--tertiary-color); width: fit-content;
                              padding-inline:10px;
                              height: 18px;
                              flex-shrink: 0;"
+                            on:click={() => goto("/notifications")}
                         >
                             15
                         </span></span
@@ -89,7 +107,12 @@
                 {/if}
             </div>
             <div class="SideBarElement">
-                <span class="material-symbols-outlined"> emoji_objects </span>
+                <span
+                    class="material-symbols-outlined"
+                    on:click={() => goto("/myideas")}
+                >
+                    emoji_objects
+                </span>
                 {#if isOpen}<span
                         class="label"
                         in:fade={{ duration: seconds * 1000 }}
@@ -97,11 +120,15 @@
                         style="white-space: nowrap;  text-overflow: ellipsis; 
                         display: block; 
                         max-width: 100%; position:absolute;
-                        overflow: hidden; ">My ideas</span
+                        overflow: hidden; "
+                        on:click={() => goto("/myideas")}>My ideas</span
                     >{/if}
             </div>
             <div class="SideBarElement">
-                <span class="material-symbols-outlined">
+                <span
+                    class="material-symbols-outlined"
+                    on:click={() => goto("/feed")}
+                >
                     batch_prediction
                 </span>
                 {#if isOpen}<span
@@ -111,7 +138,8 @@
                         style="white-space: nowrap;  text-overflow: ellipsis; 
                         display: block; 
                         max-width: 100%; position:absolute;
-                        overflow: hidden; ">Followed ideas</span
+                        overflow: hidden; "
+                        on:click={() => goto("/feed")}>Followed ideas</span
                     >{/if}
             </div>
             <!-- <div class="SideBarElement">
@@ -125,12 +153,20 @@
                     >{/if}
             </div> -->
             <div class="SideBarElement">
-                <span class="material-symbols-outlined"> contact_support </span>
+                <span
+                    class="material-symbols-outlined"
+                    on:click={() =>
+                        goto("https://forum.solutio.one/categories")}
+                >
+                    contact_support
+                </span>
                 {#if isOpen}<span
                         class="label"
                         in:fade={{ duration: seconds * 1000 }}
                         out:fade={{ duration: seconds * 1000 }}
                         style="overflow-x: hidden; position:absolute;"
+                        on:click={() =>
+                            goto("https://forum.solutio.one/categories")}
                         >Forum</span
                     >{/if}
             </div>
@@ -196,12 +232,18 @@ color: var(--ffffff-transparent, rgba(255, 255, 255, 0.75));
     </div>
     <div class="SideBarFooter">
         <div class="SideBarElement">
-            <span class="material-symbols-outlined"> account_circle </span>
+            <span
+                class="material-symbols-outlined"
+                on:click={() => goto("/account")}
+            >
+                account_circle
+            </span>
             {#if isOpen}<span
                     class="label"
                     in:fade={{ duration: seconds * 1000 }}
                     out:fade={{ duration: seconds * 1000 }}
-                    style="overflow-x: hidden; position:absolute;">Account</span
+                    style="overflow-x: hidden; position:absolute;"
+                    on:click={() => goto("/account")}>Account</span
                 >{/if}
         </div>
     </div>
@@ -235,7 +277,7 @@ color: var(--ffffff-transparent, rgba(255, 255, 255, 0.75));
         width: 78px; /* Set the width of the sidebar */
 
         height: 100%; /* Full height */
-        overflow-y: auto; /* Enable scroll if content is taller than the screen */
+        overflow-y: hidden; /* Enable scroll if content is taller than the screen */
         display: flex;
         flex-direction: column; /* Stack children vertically */
         justify-content: space-between; /* Distribute space between the elements */
@@ -243,6 +285,7 @@ color: var(--ffffff-transparent, rgba(255, 255, 255, 0.75));
         transition: width 0.5s ease;
         gap: 30px;
         z-index: 3000;
+        overflow-x: hidden;
     }
     .SideBar.open {
         width: 220px; /* width of the opened sidebar */
@@ -251,7 +294,7 @@ color: var(--ffffff-transparent, rgba(255, 255, 255, 0.75));
         top: 0; /* Align to the top */
         left: 0; /* Align to the left */
         height: 100%; /* Full height */
-        overflow-y: auto; /* Enable scroll if content is taller than the screen */
+        /* overflow-y: auto; Enable scroll if content is taller than the screen */
         overflow: hidden;
         color: var(--tertiary-color);
 
@@ -259,11 +302,11 @@ color: var(--ffffff-transparent, rgba(255, 255, 255, 0.75));
     }
     .SideBarContent {
         height: fit-content;
-        overflow-y: auto;
+        /* overflow-y: auto; */
         display: flex;
         justify-content: start;
         align-items: left;
-        overflow-y: auto;
+        overflow-x: hidden;
         flex-direction: column;
 
         padding: 11px 0px;
@@ -297,18 +340,20 @@ color: var(--ffffff-transparent, rgba(255, 255, 255, 0.75));
         font-style: normal;
         font-weight: 700;
         line-height: 24px;
+        overflow-x: hidden;
         padding: 7.5px 170px 6.5px 27px;
     }
-    .SideBarElement:hover {
-        color: var(--primary-color);
-        cursor: pointer;
-    }
+
     .label {
         opacity: 0;
         transition: opacity 2s ease; /* Delay visibility transition so it doesn't cut off early */
         margin-left: 40px;
         overflow: hidden;
         position: fixed;
+        cursor: pointer;
+    }
+    .label:hover {
+        color: var(--primary-color);
     }
     .SideBar.open .label {
         opacity: 1;

@@ -8,7 +8,7 @@
     export let msg = "Data loading";
     export let modal = false;
     export let marginTop = 4;
-    export let width = 30;
+    export let width = 50;
     // Function to animate the dots
     async function animateDots() {
         if (activeDot == 0 && count == 3) {
@@ -83,7 +83,7 @@
                     <button
                         class="dot"
                         class:move-up={dotState}
-                        style="width: 20px; height: 20px;"
+                        style="width: 15px; height: 15px;"
                     />
                 {/each}
             </div>
@@ -110,12 +110,11 @@
         justify-content: center;
         align-items: center;
         background-color: white;
-        border-color: black;
-        border-width: 2px;
+        border: 2px solid var(--seventh-color);
         width: 30%;
         height: 7cm;
         box-shadow: 10px 10px 0px rgba(0, 0, 0, 1);
-        color: rgb(0, 91, 91);
+        color: var(--seventh-color);
     }
     @media (max-width: 768px) {
         .loadingContent {
@@ -140,12 +139,10 @@
         margin-top: 1cm;
     }
     .dot {
-        width: 30px;
-        height: 30px;
         border-radius: 50%;
         background-color: azure;
-        box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.5);
-        border: 1px solid black;
+        box-shadow: 2px 2px 0px 0px var(--seventh-color);
+        border: 1.5px solid black;
         transition:
             transform 0.3s ease,
             box-shadow 0.3s ease;

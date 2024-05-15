@@ -14,19 +14,49 @@
     // @ts-ignore
     export let data;
     let newNotis = 1;
-    let notisLoading = true;
+    let notisLoading = false;
     let backgroundcolor = "transparent";
     let color = "azure";
-    let notification = createNotification();
+    let advancedDate = {
+        day: 0,
+        month: 0,
+        year: 2023,
+        hour: 0,
+        minutes: 0,
+        seconds: 0,
+    };
+    let notification = {
+        link: "https://svftd-daaaa-aaaal-adr3a-cai.icp0.io/",
+        seen: false,
+        picture:
+            "https://i.pinimg.com/474x/05/c3/59/05c359cd010df3e7f1ea3cb6f6f54fad.jpg",
+        createBy: "Erik_Jung",
+        subject: "Erik_Jung has followed you",
+        body: "You have earned a new follower!",
+        /**
+         * @type {advancedDate} date
+         */
+        date: advancedDate,
+        elementName: "",
+    };
+    //let notification = createNotification();
     /**
      * @type {notification[]} userNotifications
      */
-    $: userNotifications = [];
+    $: userNotifications = [
+        notification,
+        notification,
+        notification,
+        notification,
+        notification,
+        notification,
+    ];
+
     onMount(async () => {
         // @ts-ignore
-        await basicInfo();
-        check_new_notifications();
-        await loadNotifications();
+        // await basicInfo();
+        // check_new_notifications();
+        // await loadNotifications();
     });
     async function loadNotifications() {
         if (userNotifications.length == 0) {
@@ -56,9 +86,9 @@
                     <button
                         class="notification"
                         on:click={() => {
-                            window.location.href = notification.link;
+                            window.location.href =
+                                "https://svftd-daaaa-aaaal-adr3a-cai.icp0.io/";
                         }}
-                        style="border-color: {index < newNotis ? 'white' : ''}"
                     >
                         <div>
                             <div class="notiColumns">
@@ -77,7 +107,7 @@
                                         <p style="font-style: italic;">
                                             "{notification.body.substring(
                                                 0,
-                                                80
+                                                80,
                                             )}...""
                                         </p>
                                     {/if}
@@ -85,7 +115,7 @@
                             </div>
                             <p style="color: orangered;">
                                 {howLongAgo(
-                                    notification.date
+                                    notification.date,
                                 ).amount.toString() +
                                     " " +
                                     howLongAgo(notification.date).timeframe}
@@ -154,17 +184,15 @@
     }
 
     .notificationBlock {
-        position: relative; /* Make sure it's a positioned container */
     }
 
     .notification-dropdown {
-        width: 90%;
+        width: 50%;
         margin-left: auto;
         margin-right: auto;
         overflow-y: auto;
         overflow-x: hidden;
         margin-top: 10px;
-        color: antiquewhite;
 
         z-index: 0; /* Place it above other content (e.g., z-index: 1) */
         padding-bottom: 5px;
@@ -172,19 +200,26 @@
         max-height: fit-content;
         padding: 10px;
         border-radius: 3px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
     }
 
     .notification {
         width: 100%;
         display: flex;
-        justify-content: flex-start;
-        align-items: flex-start;
+        justify-content: start;
+        align-items: start;
         text-align: left;
         font-size: medium;
         padding-left: 10px;
         padding-right: 10px;
         padding-top: 5px;
         padding-bottom: 5px;
+        border: 1px solid var(--secondary-color);
+        background-color: var(--tertiary-color);
+        cursor: pointer;
     }
     .notification:hover {
         background-color: antiquewhite;
@@ -214,7 +249,9 @@
         justify-content: center; /* Horizontal alignment */
         font-size: x-large;
         font-weight: 330;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .tabClosed:hover {
         transform: scale(
@@ -245,7 +282,9 @@
         justify-content: center; /* Horizontal alignment */
         font-size: x-large;
         font-weight: 330;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .tabNoti:hover {
         transform: scale(
@@ -272,7 +311,9 @@
         justify-content: center;
         align-items: center;
         box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.5);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
     }
     .menuLogo:hover {
         transform: scale(

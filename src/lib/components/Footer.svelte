@@ -1,4 +1,6 @@
 <script>
+    import { goto } from "$app/navigation";
+
     // Footer logic here (if any)
 
     import BasicButtonSmall from "./BasicButton_Small.svelte";
@@ -9,11 +11,29 @@
         <div class="footer-section about">
             <h2 style="color: var(--primary-color);">SOLUTIO</h2>
             <ul>
-                <li>About</li>
-                <li>Forum</li>
-                <li>Discord</li>
-                <li>Twitter</li>
-                <li>Github</li>
+                <li on:click={() => goto("https://home.solutio.one/")}>
+                    About
+                </li>
+                <li
+                    on:click={() =>
+                        goto("https://forum.solutio.one/categories")}
+                >
+                    Forum
+                </li>
+                <li on:click={() => goto("https://discord.gg/tXqVjgPh")}>
+                    Discord
+                </li>
+                <li on:click={() => goto("https://twitter.com/SolutioApp")}>
+                    Twitter
+                </li>
+                <li
+                    on:click={() =>
+                        goto(
+                            "https://github.com/Bautista1999/solut/blob/main/README.md",
+                        )}
+                >
+                    Github
+                </li>
             </ul>
         </div>
 
@@ -22,10 +42,10 @@
             <p class="TextContrast">
                 Sign up to receive Solutio news and to try our alpha version!
             </p>
-            <form class="subscribe-form">
+            <div class="subscribe-form">
                 <input type="email" placeholder="Email" />
                 <BasicButtonSmall msg={"Subscribe"} />
-            </form>
+            </div>
             <br />
             <p class="TextContrast">
                 &copy; 2024 Solutio. All Rights Reserved.
@@ -46,7 +66,6 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        font-family: "Open Sans", sans-serif; /* Use your desired font */
     }
 
     .footer-content {
@@ -70,6 +89,10 @@
 
     .about li {
         margin-bottom: 0.5rem;
+        cursor: pointer;
+    }
+    .about li:hover {
+        color: var(--primary-color);
     }
 
     .subscribe-form {
