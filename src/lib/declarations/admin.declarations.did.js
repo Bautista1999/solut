@@ -5,9 +5,13 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Text,
     'amount_paid' : IDL.Nat,
   });
-  const PledgeActive = IDL.Record({
-    'pledge' : IDL.Nat64,
-    'expected' : IDL.Nat64,
+  const Pledge = IDL.Record({
+    'feature_id' : IDL.Text,
+    'expected_amount' : IDL.Nat64,
+    'user' : IDL.Principal,
+    'idea_id' : IDL.Text,
+    'amount' : IDL.Nat64,
+    'doc_key' : IDL.Text,
   });
   const GetDocResponse = IDL.Record({
     'updated_at' : IDL.Nat64,
@@ -15,19 +19,19 @@ export const idlFactory = ({ IDL }) => {
     'data' : IDL.Vec(IDL.Nat8),
     'description' : IDL.Opt(IDL.Text),
     'created_at' : IDL.Nat64,
+    'version' : IDL.Opt(IDL.Nat64),
   });
   const GetDocResult = IDL.Variant({ 'ok' : GetDocResponse, 'err' : IDL.Text });
   const GetManyDocsInput = IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text));
-  const DocResponse = IDL.Record({
+  const Doc = IDL.Record({
     'updated_at' : IDL.Nat64,
     'owner' : IDL.Principal,
     'data' : IDL.Vec(IDL.Nat8),
     'description' : IDL.Opt(IDL.Text),
     'created_at' : IDL.Nat64,
+    'version' : IDL.Opt(IDL.Nat64),
   });
-  const GetManyDocsResponse = IDL.Vec(
-    IDL.Tuple(IDL.Text, IDL.Opt(DocResponse))
-  );
+  const GetManyDocsResponse = IDL.Vec(IDL.Tuple(IDL.Text, IDL.Opt(Doc)));
   const GetManyDocsResult = IDL.Variant({
     'ok' : GetManyDocsResponse,
     'err' : IDL.Text,
@@ -55,13 +59,6 @@ export const idlFactory = ({ IDL }) => {
     'matcher' : Matcher,
     'paginate' : Paginate,
   });
-  const Doc = IDL.Record({
-    'updated_at' : IDL.Opt(IDL.Nat64),
-    'owner' : IDL.Principal,
-    'data' : IDL.Vec(IDL.Nat8),
-    'description' : IDL.Opt(IDL.Text),
-    'created_at' : IDL.Nat64,
-  });
   const ListDocsResponse = IDL.Record({
     'matches_pages' : IDL.Opt(IDL.Nat64),
     'matches_length' : IDL.Nat64,
@@ -74,9 +71,9 @@ export const idlFactory = ({ IDL }) => {
     'err' : IDL.Text,
   });
   const DocInput = IDL.Record({
-    'updated_at' : IDL.Opt(IDL.Nat64),
     'data' : IDL.Vec(IDL.Nat8),
     'description' : IDL.Opt(IDL.Text),
+    'version' : IDL.Opt(IDL.Nat64),
   });
   const SetManyDocsInput = IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text, DocInput));
   const CollectionKeyPair = IDL.Record({
@@ -99,14 +96,14 @@ export const idlFactory = ({ IDL }) => {
             IDL.Tuple(
               IDL.Text,
               IDL.Text,
-              IDL.Record({ 'updated_at' : IDL.Opt(IDL.Nat64) }),
+              IDL.Record({ 'version' : IDL.Opt(IDL.Nat64) }),
             )
           ),
         ],
         [IDL.Text],
         [],
       ),
-    'editPledgeTry' : IDL.Func([User, PledgeActive], [IDL.Vec(User)], []),
+    'editPledgeTry' : IDL.Func([User, Pledge], [IDL.Vec(User)], []),
     'followerCounter' : IDL.Func(
         [IDL.Text, IDL.Bool, IDL.Text],
         [IDL.Text],

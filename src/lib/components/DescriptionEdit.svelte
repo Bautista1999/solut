@@ -4,7 +4,7 @@
     import TutotialMessagePopUp from "./TutotialMessagePopUp.svelte";
 
     export let active = false;
-    export let title = "";
+    export let description = "";
     export let clickToEdit = "(click to edit)";
     export let descriptionMessage =
         "In the 'about the project' field, you should describe the essence of the challenge you are trying to solve.";
@@ -37,7 +37,7 @@
         }}
     >
         {#if !active}
-            {#if title == ""}
+            {#if description == ""}
                 <p>
                     <span
                         style="font-style: italic;"
@@ -49,7 +49,7 @@
                 </p>
             {:else}
                 <p style="white-space: pre-wrap;">
-                    {title}
+                    {description}
                     <span
                         style="font-size:small; font-weight:300; font-style:italic; "
                         >{" " + clickToEdit}</span
@@ -72,7 +72,7 @@ line-height: 1.5;
                 id=""
                 on:input={adjustHeight}
                 on:click={adjustHeight}
-                bind:value={title}
+                bind:value={description}
                 placeholder="Include your description here"
                 on:keypress={(event) => {
                     if (event.key === "Enter" && !event.shiftKey) {
@@ -100,14 +100,14 @@ line-height: 1.5;
                     rightPercentage={2}
                 />
             {/if}
-            {#if title.length == maxLength}
+            {#if description.length == maxLength}
                 <p class="InputErrorMessage">
                     The description cannot be longer than {maxLength} characters.
                 </p>
-            {:else if title.length > 150}
+            {:else if description.length > 150}
                 <p class="InputWarningMessage">
                     Cant exceed {maxLength} characters. Charecters left: {maxLength -
-                        title.length}
+                        description.length}
                 </p>
             {/if}
         {/if}

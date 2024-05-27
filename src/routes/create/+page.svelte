@@ -23,6 +23,11 @@
     import Success from "$lib/components/success.svelte";
     import { goto } from "$app/navigation";
     import AddFeaturesSection from "$lib/components/AddFeaturesSection.svelte";
+    import Error from "../+error.svelte";
+    import ErrorMessage from "$lib/components/ErrorMessage.svelte";
+    import LoadingNew from "$lib/components/LoadingNew.svelte";
+    import SuccessNew from "$lib/components/Success_New.svelte";
+    import { setIdea } from "$lib/data_functions/create_functions";
 
     export let msg = "Label";
     /** @type {import('./$types').PageData} */
@@ -35,11 +40,9 @@
     let images = [];
     $: title = "";
     let subtitle = "";
-    let description =
-        "This idea is a decentralized platform designed to transform how ideas are shared, developed, and funded. Users can submit ideas, crowdsource feature requests to address these ideas, and crowdfund resources to bring the best features to life. This platform leverages blockchain technology to ensure transparency and fairness, allowing contributors to earn bounties and users to pay only upon delivery. Solutio's innovative use of a reputation system enhances safety and trust without requiring KYC, supporting anonymous accounts for those prioritizing privacy.";
-    let user = "Johannes Jung";
-    let userPicture =
-        "https://i.pinimg.com/474x/05/c3/59/05c359cd010df3e7f1ea3cb6f6f54fad.jpg";
+    let desc = "";
+    let user = "";
+    let userPicture = "";
     let tabs = ["Pledge Timeline", "Comments", "About the project"];
     let activeTab = tabs[2]; // default active tab
     // Function to change active tab
@@ -89,34 +92,87 @@
         tags.splice(currentIndex, 1);
         tags = [...tags];
     }
-    let isLoading = false;
     let success = false;
+    /**
+     * @type {never[]}
+     */
+    let videos = [];
+    let ideaKey = "";
     async function onPost() {
         document.body.scrollIntoView({ behavior: "smooth" });
         isLoading = true;
 
-        setTimeout(() => {
+        let ideaPost = {
+            title: title,
+            subtitle: subtitle,
+            description: desc,
+            images: images,
+            videos: videos,
+            categories: tags,
+        };
+        /**
+         * @type {import("$lib/data_objects/data_types").feature[]}
+         */
+        let featuresPost = [];
+        for (let i = 0; i < ideas.length; i++) {
+            let idea = ideas[i];
+            let featurePost = {
+                title: idea.title,
+                subtitle: idea.subtitle,
+                description: idea.description,
+                images: idea.images,
+                videos: idea.videos,
+                categories: idea.categories,
+            };
+            featuresPost.push(featurePost);
+            featuresPost = featuresPost;
+        }
+        isLoading = true;
+        try {
+            let creation = await setIdea(ideaPost, featuresPost);
+            if (typeof creation === "string") {
+                error = true;
+                errorMsg = creation;
+            } else if (Array.isArray(creation) && creation.length > 0) {
+                ideaKey = creation[0].key;
+            } else {
+                ideaKey = "";
+            }
+            console.log("Your creation: ", creation);
+        } catch (e) {
             isLoading = false;
+            error = true;
+            console.log(e);
+            errorMsg = String(e); // Convert the error object to a string
+        }
+        isLoading = false;
+        if (!error) {
             success = true;
-        }, 2500);
+        }
     }
     /**
-     * @type {never[]}
+     * @type {import("$lib/data_objects/data_types").feature[]}
      */
     let ideas = [];
+    let error = false;
+    let isLoading = false;
+    let errorMsg = "";
 </script>
 
 <div class="body">
-    {#if !isLoading && !success}
+    {#if !isLoading && !success && !error}
         <div class="content">
             <div class="container">
                 <div class="Subtitle">
-                    <EditSubtitle title={subtitle} active={subtitleActive} />
+                    <EditSubtitle
+                        bind:title={subtitle}
+                        active={subtitleActive}
+                    />
                     <div style="height: 10px;"></div>
                 </div>
 
                 <div class="Title">
-                    <EditTitle {active} {title} />
+                    <EditTitle {active} bind:title />
                     <div style="height: 10px;"></div>
                 </div>
                 <div class="Profile">
@@ -168,7 +224,7 @@
                         {:else if activeTab === tabs[1]}
                             <!-- <CommentSection project_id={key} /> -->
                         {:else if activeTab === tabs[2]}
-                            <DescriptionEdit />
+                            <DescriptionEdit bind:description={desc} />
                         {/if}
                     </div>
                 </div>
@@ -212,7 +268,7 @@
                 {/each}
             </div>
             <h3>You have some ideas for this challenge? Include them here!</h3>
-            <AddFeaturesSection {ideas} />
+            <AddFeaturesSection bind:ideas />
             <br />
             <div
                 style="display: flex; justify-content:center;align-items:center;"
@@ -227,19 +283,23 @@
             </div>
         </div>
     {:else if success}
-        <div
-            style="display: flex; justify-content:center; align-items:center; flex-direction:column"
-        >
-            <Success msg={"Idea created successfully"} />
-            <BasicButtonDark
-                msg={"See the new idea created"}
-                someFunction={() => {
-                    goto("/feature");
-                }}
-            />
-        </div>
+        <SuccessNew
+            message={"Idea created successfully"}
+            someFunction={() => {
+                goto("/idea/" + ideaKey);
+            }}
+        />
+    {:else if error}
+        <ErrorMessage
+            message={"The creation of the idea failed."}
+            error={errorMsg}
+            someFunction={() => {
+                error = false;
+            }}
+        />
     {:else}
-        <Loading msg={"Uploading data"} width={30} />
+        <!-- <Loading msg={"Uploading data"} width={30} /> -->
+        <LoadingNew message={"Uploading data..."} />
     {/if}
 </div>
 

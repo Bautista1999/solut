@@ -23,15 +23,15 @@ export let idea_id = "X_ThbidrSb7nOf9oyvkMC";
  * @param {string | undefined} [id]
  */
 export async function testDatabase(id){
-    await initJuno({
-        satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
-    });
+    // await initJuno({
+    //     satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
+    // });
     await setDoc({
         collection: "idea",
         doc: {
             key:"TEST_"+ id,
             // @ts-ignore
-            updated_at: 2802838383, 
+            version: 2802838383, 
             data: {example: "hello"},
         },
     });
@@ -118,11 +118,11 @@ export async function setManyDocs(){
     let id1 = nanoid();
     let id2 = nanoid();
     let id3 = nanoid();
-    const docPair1 = [ "idea" , "TESTED_JUNO"+id1, { updated_at: [date], data: jsonArray, description: ["descriptionValue"] }];
+    const docPair1 = [ "idea" , "TESTED_JUNO"+id1, { version: [date], data: jsonArray, description: ["descriptionValue"] }];
       
-    const docPair2 = [ "idea", "TESTED_JUNO"+id2, { updated_at: [date], data: jsonArray2, description: ["descriptionValue"] }];
+    const docPair2 = [ "idea", "TESTED_JUNO"+id2, { version: [date], data: jsonArray2, description: ["descriptionValue"] }];
     
-    const docPair3 = [ "idea", "TEST_JUNO"+id3, { updated_at: [date], data: jsonArray2, description: ["descriptionValue"] }];
+    const docPair3 = [ "idea", "TEST_JUNO"+id3, { version: [date], data: jsonArray2, description: ["descriptionValue"] }];
    
     let result = await junoCanisterTry.setManyDocs([docPair1,docPair2,docPair3])
     // @ts-ignore
@@ -157,7 +157,7 @@ export async function setDocJunoBridge(id){
     const result = await junoCanisterTry.setDoc(
         "idea", 
         "TESTING_ADMIN_"+id, 
-        { updated_at: [date], data: jsonArray, description: ["descriptionValue"] }
+        { version: [date], data: jsonArray, description: ["descriptionValue"] }
     );
     console.log("Result: ", result);    
 };
@@ -230,7 +230,7 @@ export async function updateJunoDocument(){
     const result = await junoCanisterTry.updateDocument(
         "idea", 
         "TESTED_ADMIN_nZL5EZBhb83NSHb-ctJGV",
-        { updated_at: [date], data: jsonArray, description: ["descriptionValue"] }
+        { version: [date], data: jsonArray, description: ["descriptionValue"] }
 
     );
     console.log("Result: ", result); 
@@ -279,16 +279,16 @@ export async function deleteManyJunoDocs(){
         return;
     };
     // @ts-ignore
-    let updated_at1 = result1.ok[0][1][0].updated_at;
+    let version1 = result1.ok[0][1][0].version;
     // @ts-ignore
-    let updated_at2 = result1.ok[1][1][0].updated_at;
-    console.log("updated_at1: " , updated_at1);
-    console.log("updated_at2: " , updated_at2);
+    let version2 = result1.ok[1][1][0].version;
+    console.log("version1: " , version1);
+    console.log("version2: " , version2);
     console.log("Deleting docs...")
     let date = Date.now();
-    const docPair1 = [ "idea" , arraysKeysTest[0], { updated_at: [updated_at1]}];
+    const docPair1 = [ "idea" , arraysKeysTest[0], { version: [version1]}];
       
-    const docPair2 = [ "idea", arraysKeysTest[1], { updated_at: [updated_at2]}];
+    const docPair2 = [ "idea", arraysKeysTest[1], { version: [version2]}];
 
     let result2 = await junoCanisterTry.deleteManyDocs([docPair1,docPair2])
     // @ts-ignore
@@ -329,15 +329,15 @@ export async function setPledgesSolutionDoc(){
         
 
     let data = [dat1,dat2,dat3];
-    await initJuno({
-        satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
-    });
+    // await initJuno({
+    //     satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
+    // });
     await setDoc({
         collection: "idea",
         doc: {
             key:"TEST_solutionPledges",
             // @ts-ignore
-            updated_at: 2802838383, 
+            version: 2802838383, 
             data: data,
         },
     });
@@ -369,7 +369,7 @@ export async function CreateUser(){
     let userDocInput = {collection: "user", doc: userDoc};
     //create user reputation document
     let userRepDoc = {
-        updated_at: [date],
+        version: [date],
         data: await toArray({
             amount_promised: 0 ,
             amount_paid : 0 ,
@@ -388,7 +388,7 @@ export async function CreateUser(){
     let userIndexInput = {collection: "user_index", doc: userIndexDoc};
     //create user revenue document
     let userRevDoc = {
-        updated_at: [date],
+        version: [date],
         data: await toArray({
             total_revenue:0,
         }),
@@ -396,9 +396,9 @@ export async function CreateUser(){
     };
     let userRevInput = ["users_revenue_counter", rev_id , userRevDoc];
 
-    await initJuno({
-        satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
-    });
+    //await initJuno({
+//        satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
+ //   });
     let identity = await unsafeIdentity();
     const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
     const junoCanisterTry = Actor.createActor(idlFactory, {
@@ -410,7 +410,7 @@ export async function CreateUser(){
     // let id1 = nanoid();
     // let id2 = nanoid();
     // let id3 = nanoid();
-    // const docPair1 = [ "idea" , "TESTED_JUNO"+id1, { updated_at: [date], data: jsonArray, description: ["descriptionValue"] }];
+    // const docPair1 = [ "idea" , "TESTED_JUNO"+id1, { version: [date], data: jsonArray, description: ["descriptionValue"] }];
     let result3 = await junoCanisterTry.setManyDocs([userRepInput,userRevInput])
     // let result = await junoCanisterTry.setManyDocs([docPair1,docPair2,docPair3])
     let result = await setManyDocs_juno({docs:[userDocInput,userIndexInput]});
@@ -470,7 +470,7 @@ export async function CreateIdea(){
     // description: revenue
     let date = Date.now();
     let ideaRevDoc = {
-        updated_at: [date],
+        version: [date],
         data: await toArray({
             total_revenue:1,
         }),
@@ -481,7 +481,7 @@ export async function CreateIdea(){
     // 2) pledges_solution
     // description: user key of the user that pledged
     let pledgeSolDoc = {
-        updated_at: [date],
+        version: [date],
         data: await toArray([]),
         description:["SOL_ID"],
     };
@@ -490,7 +490,7 @@ export async function CreateIdea(){
     // 3) idea_revenue_counter
     // description: user key of the user that pledged
     let IdeaFeatDoc = {
-        updated_at: [date],
+        version: [date],
         data: await toArray({
             pledges: 0,
             expected: 0
@@ -510,9 +510,9 @@ export async function CreateIdea(){
     
 
     //***** Second: juno ******/
-    await initJuno({
-        satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
-    });
+    //await initJuno({
+//        satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
+ //   });
     let result = await setManyDocs_juno({docs:[indexInput, ideaInput]});
     
     console.log("Increasing idea counter...")
@@ -573,7 +573,7 @@ export async function CreateFeature(){
     // description: revenue
     let date = Date.now();
     let feaRevDoc = {
-        updated_at: [date],
+        version: [date],
         data: await toArray({
             total_revenue:0,
         }),
@@ -585,7 +585,7 @@ export async function CreateFeature(){
     // 3) idea_feature_pledge
     // description: user key of the user that pledged
     let IdeaFeatDoc = {
-        updated_at: [date],
+        version: [date],
         data: await toArray({
             pledges: 0,
             expected: 0
@@ -604,9 +604,9 @@ export async function CreateFeature(){
     let result3 = await admin.setManyDocs([ideaRevInput,IdeaFeatInput])
 
     //***** Second: juno ******/
-    await initJuno({
-        satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
-    });
+    //await initJuno({
+//        satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
+ //   });
     let result = await setManyDocs_juno({docs:[indexInput, featureInput]});
     
 
@@ -676,23 +676,27 @@ export async function WhoAmI(){
     console.log("I am: ", result3)
 };
 
-export async function getUserBalance(){
-    if (get(info).key == "" || get(info).key == null) {
-        console.log("Not signed in");
-        return BigInt(0) ;
-    }
-    const store = get(info);
+/**
+ * @param {string} userKey
+ */
+export async function getUserBalance(userKey){
+    // if (get(info).key == "" || get(info).key == null) {
+    //     console.log("Not signed in");
+    //     return BigInt(0) ;
+    // }
+    // const store = get(info);
     let ledgerID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
-    console.log(store.agent);
-    const { accountBalance } = await LedgerCanister.create({
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+    const { accountBalance } =  LedgerCanister.create({
         // @ts-ignore
-        agent: store.agent,
+        agent: agent,
         canisterId: Principal.fromText(ledgerID),
     });
     let userBalance = await accountBalance({
         accountIdentifier: AccountIdentifier.fromPrincipal({
             // @ts-ignore
-            principal: store.userPrincipal
+            principal: Principal.fromText(userKey),
         })
     });
     return userBalance;
@@ -764,9 +768,9 @@ export async function createSolution () {
     
 
     //***** Second: juno ******/
-    await initJuno({
-        satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
-    });
+    //await initJuno({
+//        satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
+ //   });
     let result = await setManyDocs_juno({docs:[indexInput, solutionInput, statusInput]});
     
 
@@ -874,9 +878,9 @@ export async function  createNewJunoDocument(){
     let indexInput6 = {collection: "solutio_numbers", doc: index6};
 
     //***** Juno ******/
-    await initJuno({
-        satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
-    });
+    //await initJuno({
+//        satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
+ //   });
     let result = await setManyDocs_juno({docs:[indexInput2,indexInput3,indexInput4,indexInput5,indexInput6]});
     
 
@@ -932,7 +936,7 @@ export async function unfollow(){
         key: "2dgol-6t7gr-wbceo-axkyn-3qinp-vxv32-zrqbv-oj6tr-ztuvk-el3ln-3ae_2dgol-6t7gr-wbceo-axkyn-3qinp-vxv32-zrqbv-oj6tr-ztuvk-el3ln-3ae",
         data: "" ,
         description:"",
-        updated_at:result2?.updated_at,
+        version:result2?.updated_at,
     };
     let result1 = await deleteDoc({collection:"follow", doc:index});
 

@@ -79,7 +79,6 @@
     //   ],
     // },
     onMount(() => {
-        debugger;
         for (let i = 0; i < pledges.length; i++) {
             total = total + pledges[i].amount;
         }

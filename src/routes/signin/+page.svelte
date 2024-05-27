@@ -5,7 +5,9 @@
     import BasicButtonDarkSmall from "$lib/components/BasicButton_Dark_Small.svelte";
     import BasicButton from "$lib/components/basicButton.svelte";
     import { page } from "$app/stores";
-    import { signIn } from "@junobuild/core";
+    import { authSubscribe, initJuno, signIn } from "@junobuild/core";
+    import { isRegistered } from "$lib/data_functions/user.functions";
+    import ErrorMessage from "$lib/components/ErrorMessage.svelte";
 
     // Accessing the parameter
     let inviteCode;
@@ -14,35 +16,72 @@
     // @ts-ignore
     export let data;
     let code = "";
+    let error = false;
+    let errorMsg = "Error: Sign in failed. Refresh to try again.";
     async function logIn() {
-        await signIn();
+        await initJuno({
+            satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
+        });
+        try {
+            await signIn();
+            await authSubscribe(async (user) => {
+                if (user == null) {
+                    error = true;
+                } else {
+                    let isReg = await isRegistered(user.key);
+                    switch (isReg) {
+                        case true:
+                            console.log("User key: ", user.key);
+                            goto("/");
+                            break;
+                        case false:
+                            console.log("User key: ", user.key);
+                            goto("/createaccount/" + user.key);
+                            break;
+                    }
+                }
+            });
+        } catch (e) {
+            error = true;
+            errorMsg = String(e);
+        }
     }
 </script>
 
-<div class="body">
-    <div class="container">
-        <h1 style="font-size: 2.5em;">Sign in</h1>
-        <p>Choose your option to sign in into Solutio.</p>
-        <br />
-        <BasicButtonLarger
-            msg={"Sign in with interent identity"}
-            icon={"all_inclusive"}
-            someFunction={async () => {
-                await logIn();
-            }}
-        />
-        <br />
-        <p>If you have an invite code, include it here:</p>
-        <br />
-        <div class="interests-container">
-            <input
-                class="interest-input"
-                bind:value={code}
-                placeholder="Your invite code goes here."
+{#if !error}
+    <div class="body">
+        <div class="container">
+            <h1 style="font-size: 2.5em;">Sign in</h1>
+            <p>Choose your option to sign in into Solutio.</p>
+            <br />
+            <BasicButtonLarger
+                msg={"Sign in with interent identity"}
+                icon={"all_inclusive"}
+                someFunction={async () => {
+                    await logIn();
+                }}
             />
+            <br />
+            <p>If you have an invite code, include it here:</p>
+            <br />
+            <div class="interests-container">
+                <input
+                    class="interest-input"
+                    bind:value={code}
+                    placeholder="Your invite code goes here."
+                />
+            </div>
         </div>
     </div>
-</div>
+{:else if error}
+    <ErrorMessage
+        message={"Sign in failed"}
+        error={errorMsg}
+        someFunction={() => {
+            error = false;
+        }}
+    />
+{/if}
 
 <style>
     .body {

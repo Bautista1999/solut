@@ -1,7 +1,10 @@
 <script>
+    import { getFeaturesOfIdea } from "$lib/data_functions/get_functions";
     import IdeaCard from "./IdeaCard.svelte";
+    import LoadingNew from "./LoadingNew.svelte";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
+    import MagicalDots from "./magicalDots.svelte";
 
-    // Let's assume 'features' is the array of feature objects you receive from the database
     let featureExample = {
         title: "title",
         subtitle: "subtitle",
@@ -19,18 +22,28 @@
         pledgersImages: [],
     };
     /**
-     * @type {featureExample[]}
+     * @type {string}
      */
-    export let features = []; // This should come from your database or store
+    export let idea_id = ""; // This should come from your database or store
 </script>
 
-<div class="features-container">
-    {#each features as feature}
-        <div class="">
-            <IdeaCard featureExample={feature} />
+{#await getFeaturesOfIdea(idea_id)}
+    <div>
+        <MagicalDots />
+    </div>
+{:then data}
+    {#if data.length > 0}
+        <div class="features-container">
+            {#each data as feature}
+                <div class="">
+                    <IdeaCard {feature} />
+                </div>
+            {/each}
         </div>
-    {/each}
-</div>
+    {:else}
+        <p>No features added</p>
+    {/if}
+{/await}
 
 <style>
     .features-container {

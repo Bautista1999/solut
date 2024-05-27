@@ -1,9 +1,13 @@
 <script>
+    import { goto } from "$app/navigation";
     import Badges from "$lib/components/Badges.svelte";
     import BalanceChart from "$lib/components/BalanceChart.svelte";
     import CardScroller from "$lib/components/CardScroller.svelte";
     import CircledButtonDarkSmall from "$lib/components/CircledButtonDarkSmall.svelte";
+    import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import FlatButtonDarkSmall from "$lib/components/FlatButtonDarkSmall.svelte";
+    import LoadingNew from "$lib/components/LoadingNew.svelte";
+    import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsoluteSmall.svelte";
     import PageTabs from "$lib/components/PageTabs.svelte";
     import ProfilePictureEdit from "$lib/components/ProfilePictureEdit.svelte";
     import Reputation from "$lib/components/Reputation.svelte";
@@ -11,8 +15,18 @@
     import Wallet from "$lib/components/Wallet.svelte";
     import Loading from "$lib/components/loading.svelte";
     import ProfilePicture from "$lib/components/profilePicture.svelte";
-    import { isLoading } from "$lib/stores/other_stores";
+    import { getWalletAddress } from "$lib/data_functions/docu.functions";
+    import {
+        getUserBalance,
+        getUserTransactions_bySender,
+    } from "$lib/financial_functions/financial_functions";
+    import { Principal } from "@dfinity/principal";
+    import { authSubscribe, getDoc, initJuno, listDocs } from "@junobuild/core";
     import { onMount } from "svelte";
+
+    /** @type {import('./$types').PageData} */
+    export let data;
+    let userKey = data.params.user_key;
     let user_name = "erik_thebest";
     let description =
         "Used to build #Apps for corporations Now build #dApps for people  #ProductDesign & #Marketing Founder @SolutioApp";
@@ -23,62 +37,18 @@
     let insta_account = "@fairtail3";
     let linkedIn_account = "Erik Jung";
     let Github_account = "@Fairtale19";
+    let wallet_address = "";
     let x_account_edited = "";
     let insta_account_edited = "";
     let linkedIn_account_edited = "";
     let Github_account_edited = "";
-    let images = [
-        "https://cloudfront-us-east-2.images.arcpublishing.com/reuters/4CG5FU4IIJMHZCDXESLO7GEYDM.jpg",
-        "https://media.ambito.com/p/9c57bcc58b3be5c19ea3a38d32f54fca/adjuntos/239/imagenes/038/684/0038684219/1200x675/smart/ethereum-banco-centraljpg.jpg",
-        "https://s2-valor.glbimg.com/oXwS6x_i8WgCUl-XfqaLBdWpyRk=/0x0:3973x2649/888x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_63b422c2caee4269b8b34177e8876b93/internal_photos/bs/2023/V/1/0BYTKITrifXhSGhdSv5w/btc-e-eth-unsplash.jpg",
-    ];
-    let transaction = {
-        image: images[0], // Replace with your image path
-        transactionType: "Pledge",
-        description: "erik_thebest",
-        date: "17 July 2024",
-        currency: "ICP",
-        amount: "5.11",
-    };
-    let transaction2 = {
-        image: images[1], // Replace with your image path
-        transactionType: "Withdraw",
-        description: "eljuan_sito",
-        date: "17 July 2024",
-        currency: "ICP",
-        amount: "4.03",
-    };
-    let transaction3 = {
-        image: images[2], // Replace with your image path
-        transactionType: "Transfer",
-        description: "snassy.icp",
-        date: "17 July 2024",
-        currency: "ICP",
-        amount: "3.45",
-    };
-    let transaction4 = {
-        image: images[0], // Replace with your image path
-        transactionType: "Withdraw",
-        description: "sakimoto--icp",
-        date: "17 July 2024",
-        currency: "ICP",
-        amount: "11.45",
-    };
-    export let transactions = [
-        transaction,
-        transaction2,
-        transaction3,
-        transaction4,
-        transaction,
-        transaction2,
-        transaction3,
-        transaction4,
-        transaction2,
-        transaction3,
-    ];
+    let images = [];
 
     // State to control whether the input field is visible or not
     let isEditing = false;
+    let isLoading = false;
+    let error = false;
+    let errorMsg = "";
 
     // State to store the edited username
     // State to store the edited description
@@ -116,15 +86,95 @@
         toggleEditing(); // Exit editing mode
     }
 
-    onMount(() => {
-        isLoading.set(true);
-        setTimeout(() => {
-            isLoading.set(false);
-        }, 200);
+    onMount(async () => {
+        isLoading = true;
+        await initJuno({
+            satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
+        });
+        authSubscribe(async (user) => {
+            if (user == null) {
+                goto("/signin/");
+            } else {
+                userKey = user.key;
+                if (user.key != data.params.user_key) {
+                    error = true;
+                    errorMsg = "User key doesnt match params!";
+                } else {
+                    let userDoc = await getDoc({
+                        collection: "user",
+                        key: user.key,
+                    });
+                    if (userDoc === undefined) {
+                        error = true;
+                        errorMsg = "User not registered";
+                        goto("/createaccount/" + userKey);
+                    } else {
+                        let data = userDoc.data;
+                        user_name = data.username;
+                        profile = data.profilePicture;
+                        description = data.description;
+                        x_account = data.xAccount;
+                        insta_account = data.instaAccount;
+                        Github_account = data.GitHubAccount;
+                        linkedIn_account = data.linkedInAccount;
+                        wallet_address = await getWalletAddress(userKey);
+                    }
+                }
+
+                isLoading = false;
+            }
+        });
     });
+
+    async function getTransactions() {
+        /** @type {Array<import('$lib/data_objects/data_types').Transaction>} */
+        let transactions = await getUserTransactions_bySender(userKey);
+
+        let pledges = await listDocs({
+            collection: "pledges_active",
+            filter: {
+                matcher: {
+                    description: userKey,
+                },
+            },
+        });
+        console.log("plegdes: ", pledges);
+        if (Number(pledges.items_length) == 0) {
+            return transactions;
+        } else {
+            for (let i = 0; i < pledges.items_length; i++) {
+                /**
+                 * @type {[bigint]}
+                 */
+                let _number = [0n];
+                if (typeof pledges.items[i].created_at == "bigint") {
+                    let _number = [pledges.items[i].created_at];
+                }
+                /** @type {import('$lib/data_objects/data_types').Transaction} */
+                let newTransaction = {
+                    status: "Success",
+                    sender: Principal.fromText(userKey),
+                    target:
+                        pledges.items[i].data.feature_id ||
+                        pledges.items[i].data.idea_id,
+                    trans_type: "Pledge",
+                    message: "",
+                    project_id: pledges.items[i].data.idea_id,
+                    transaction_number: _number,
+                    created_at: _number[0],
+                    amount: pledges.items[i].data.amount,
+                };
+                transactions.push(newTransaction);
+                transactions = transactions;
+            }
+        }
+        transactions = transactions.sort(
+            (a, b) => Number(a.created_at) - Number(b.created_at),
+        );
+    }
 </script>
 
-{#if !$isLoading}
+{#if !isLoading && !error}
     <div class="container">
         <div class="UserInfo">
             <div class="VerticallyAligned HorizontallyAligned">
@@ -198,7 +248,16 @@
                         />
                     </div>
                     {#if !isEditing}
-                        X: {x_account}
+                        {#if x_account != ""}X:<a href={x_account}
+                                >See the account <span
+                                    class="material-symbols-outlined"
+                                >
+                                    touch_app
+                                </span>
+                            </a>
+                        {:else}
+                            <p>- No link added -</p>
+                        {/if}
                     {:else}
                         <input
                             type="text"
@@ -219,7 +278,18 @@
                     </div>
 
                     {#if !isEditing}
-                        Instagram: {insta_account}
+                        {#if insta_account != ""}Instagram:<a
+                                href={insta_account}
+                            >
+                                See the account <span
+                                    class="material-symbols-outlined"
+                                >
+                                    touch_app
+                                </span>
+                            </a>
+                        {:else}
+                            <p>- No link added -</p>
+                        {/if}
                     {:else}
                         <input
                             type="text"
@@ -240,7 +310,17 @@
                     </div>
 
                     {#if !isEditing}
-                        Github: {Github_account}
+                        {#if Github_account != ""}Github:<a
+                                href={Github_account}
+                                >See the account <span
+                                    class="material-symbols-outlined"
+                                >
+                                    touch_app
+                                </span></a
+                            >
+                        {:else}
+                            <p>- No link added -</p>
+                        {/if}
                     {:else}
                         <input
                             type="text"
@@ -261,7 +341,18 @@
                     </div>
 
                     {#if !isEditing}
-                        LinkedIn: {linkedIn_account}
+                        {#if linkedIn_account != ""}LinkedIn: <a
+                                href={linkedIn_account}
+                            >
+                                See the account <span
+                                    class="material-symbols-outlined"
+                                >
+                                    touch_app
+                                </span>
+                            </a>
+                        {:else}
+                            <p>- No link added -</p>
+                        {/if}
                     {:else}
                         <input
                             type="text"
@@ -274,10 +365,27 @@
         </div>
         <div class="FinancialInfo">
             Wallet
-            <Wallet />
+            <Wallet {wallet_address} {user_name} principal={userKey} />
             <div class="Balance">
                 Balance
-                <BalanceChart />
+                {#await getUserBalance(userKey)}
+                    <br />
+                    <br />
+                    <MagicalDotsAbsoluteSmall />
+                {:then data}
+                    <BalanceChart
+                        currencies={[
+                            {
+                                image: "https://cryptologos.cc/logos/internet-computer-icp-logo.png", // Replace with your image path
+                                name: "ICP",
+                                value: 12.98,
+                                balance: Number(data),
+                            },
+                        ]}
+                    />
+                {:catch error}
+                    <p>Error: {error.message}</p>
+                {/await}
             </div>
         </div>
 
@@ -286,14 +394,30 @@
         </div>
         <div class="Transactions">
             <div class="TransactionTitle">Transactions Timeline</div>
-            <div class="TransactionsDisplay">
-                <TransactionDisplay {transactions} />
-                <CardScroller />
-            </div>
+            {#await getTransactions()}
+                <br />
+                <br />
+                <MagicalDotsAbsoluteSmall />
+            {:then data}
+                <div class="TransactionsDisplay">
+                    <TransactionDisplay transactions={data} />
+                    <!-- <CardScroller /> -->
+                </div>
+            {:catch error}
+                <p>Error: {error.message}</p>
+            {/await}
         </div>
     </div>
+{:else if error}
+    <ErrorMessage
+        message={"Couldnt verify account"}
+        error={errorMsg}
+        someFunction={() => {
+            goto("/createaccount/" + userKey);
+        }}
+    />
 {:else}
-    <Loading width={30} />
+    <LoadingNew message={"Loading data..."} />
 {/if}
 
 <style>
@@ -452,10 +576,6 @@
         align-items: center;
         gap: 15px;
         margin: 10px;
-        cursor: pointer;
-    }
-    .SocialsListItem:hover {
-        color: var(--primary-color);
     }
 
     .FinancialInfo {

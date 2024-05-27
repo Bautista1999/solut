@@ -5,27 +5,31 @@
   import { onMount } from "svelte";
   import { basicInfo, info, initDB } from "$lib/stores/auth.state";
   import { beforeUpdate } from "svelte";
-  import { authSubscribe } from "@junobuild/core";
+  import { authSubscribe } from "@junobuild/core-peer";
   import SideMenu from "$lib/components/SideMenu.svelte";
   import HeaderV2 from "$lib/components/Header_v2.svelte";
   import Footer from "$lib/components/Footer.svelte";
+  import { initSatellite } from "@junobuild/core";
 
   // This variable ensures the initialization function runs only once
-  let hasInitialized = false;
+  // let hasInitialized = false;
 
-  // Initialization function
-  async function initialize() {
-    if (!hasInitialized) {
-      // Your one-time initialization code here
-      // Search for data in the database, set global variables, etc.
-      hasInitialized = true; // Mark as initialized
-    }
-  }
+  // // Initialization function
+  // async function initialize() {
+  //   if (!hasInitialized) {
+  //     // Your one-time initialization code here
+  //     // Search for data in the database, set global variables, etc.
+  //     hasInitialized = true; // Mark as initialized
+  //   }
+  // }
 
-  beforeUpdate(async () => {
-    await initialize();
+  // beforeUpdate(async () => {
+  //   await initialize();
+  // });
+
+  onMount(async () => {
+    await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
   });
-  onMount(async () => {});
 </script>
 
 <div class="body">

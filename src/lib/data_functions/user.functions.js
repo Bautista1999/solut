@@ -1,6 +1,6 @@
 import { basicInfo, signedIn } from "$lib/stores/auth.state";
 import { isLoading, loginedIn, signInSuccessful } from "$lib/stores/other_stores";
-import { getDoc, setDoc, signIn } from "@junobuild/core";
+import { getDoc, listDocs, setDoc, signIn } from "@junobuild/core";
 import { info } from "../stores/auth.state";
 import { createNotification, createUser } from "$lib/data_objects/data_objects";
 import { nanoid } from "nanoid";
@@ -88,22 +88,19 @@ PRE: Receives the string key derived from authSubscribe
 
 POST: Returns TRUE if the user is in Juno's database already, FALSE otherwise.
  * @param {string} key
+* 
  */
-async function isRegistered(key) {
-    let alreadyReg = false;
+export async function isRegistered(key) {
+
     const userEx = await getDoc({
-        collection: "users",
-        // @ts-ignore
+        collection: "user",
         key: key,
     });
-    if (!userEx) {
-        console.log("Not registered")
+    if (userEx==undefined) {
         return false;
-    }
-    console.log(userEx)
-    console.log("Registered!")
-    alreadyReg = true;
-    return alreadyReg;
+    }else{
+        return true;
+    };
 }
 
 /**
@@ -234,7 +231,7 @@ export async function followIdea(userKey, ideaKey, collectionName) {
             // @ts-ignore
             key: ideaKey,
             // @ts-ignore
-            updated_at: myDoc?.updated_at,
+            version: myDoc?.version,
             data: topicData,
         },
     });
@@ -254,7 +251,7 @@ export async function followIdea(userKey, ideaKey, collectionName) {
             // @ts-ignore
             key: userKey,
             // @ts-ignore
-            updated_at: myDoc2?.updated_at,
+            version: myDoc2?.version,
             data: userData,
         },
     });
@@ -305,7 +302,7 @@ export async function unfollowIdea(userKey, ideaKey, collectionName) {
             // @ts-ignore
             key: ideaKey,
             // @ts-ignore
-            updated_at: myDoc?.updated_at,
+            version: myDoc?.version,
             data: topicData,
         },
     });
@@ -324,9 +321,47 @@ export async function unfollowIdea(userKey, ideaKey, collectionName) {
             // @ts-ignore
             key: userKey,
             // @ts-ignore
-            updated_at: myDoc2?.updated_at,
+            version: myDoc2?.version,
             data: userData,
         },
     });
     return "Success";
+}
+
+
+/**
+* BRIEF DESCRIPTION: This function checks if a requested username for a user is already taken.
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno. 
+Receives a username. 
+
+* POST-CONDITIONS: True if taken, false otherwise
+
+* OUTSIDE FUNCTIONS: Juno --> listDocs()
+ * @param {string} username
+ * @param {string} userKey
+ */
+export async function usernameExists(username,userKey) {
+    let docs = await listDocs({
+        collection: "user",
+        filter: {
+            matcher: {
+                description: username /*+ "|" + parentIdeaKey*/,
+            },
+        },
+    });
+    let amount = docs.items_length;
+    let results = docs.items.filter((doc) => {
+    
+        
+            return (doc.key!=(userKey)&&doc.data.username==username);
+            
+        
+    });
+    if(results.length==0){
+        return false;
+    }else{
+
+        return true;
+    }
 }

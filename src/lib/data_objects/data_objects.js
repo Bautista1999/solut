@@ -237,7 +237,7 @@ let myDoc = {
     description: "",
     key: "",
     owner: "",
-    updated_at: 0,
+    version: 0,
 
 }
 export function createJunoTopic() {
@@ -249,7 +249,7 @@ let myDoc2 = {
     description: "",
     key: "",
     owner: "",
-    updated_at: 0,
+    version: 0,
 
 }
 export function createJunoSolution() {
@@ -273,4 +273,10 @@ let approvalResult = {
 };
 export function createTransferResult() {
     return approvalResult;
+}
+
+
+
+export function CreateIdea(){
+
 }

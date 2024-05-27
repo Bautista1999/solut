@@ -27,7 +27,7 @@
             class="progreso"
             style="width: {75}%; height:20px; font-size:small; color:var(--tertiary-color); font-weight:400;"
         >
-            Expected: {exp} USD
+            Expected: {exp} ICP
         </div>
         {#if window.innerWidth < 500}
             <div class="progreso2"></div>
@@ -43,13 +43,13 @@
             class="progreso"
             style="width: {75}%; color:var(--tertiary-color);"
         >
-            Expected: {exp} USD
+            Expected: {exp} ICP
         </div>
         {#if window.innerWidth < 500}
             <div class="progreso2"></div>
         {:else}
             <div class="progreso2">
-                Total: {tot} USD
+                Total: {tot} ICP
             </div>
         {/if}
     </div>

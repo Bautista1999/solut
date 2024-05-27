@@ -30,7 +30,7 @@
         fromICPtoUSD,
         searchBar,
     } from "$lib/data_functions/docu.functions";
-    import { initJuno, getDoc } from "@junobuild/core";
+    import { initJuno, getDoc } from "@junobuild/core-peer";
     import { onMount } from "svelte";
     import { nanoid } from "nanoid";
     import {
@@ -137,9 +137,7 @@
     let closestDeadline = "";
     onMount(async () => {
         isLoading = true;
-        await initJuno({
-            satelliteId: "vehbc-zaaaa-aaaal-acyba-cai",
-        });
+
         const myDoc = await getDoc({
             collection: "solutions",
             // @ts-ignore

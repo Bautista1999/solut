@@ -2,19 +2,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300&display=swap');
 
-@font-face {
+/* @font-face {
     font-family: 'JetBrainsMono';
     src: url('assets/fonts/JetBrains/JetBrainsMono-Regular.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
 }
 
-@font-face {
-    font-family: 'Barlow';
-    src: url('assets/fonts/Barlow/barlow-v12-latin-regular.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-}
+
 
 @font-face {
     font-family: 'Barlow';
@@ -23,12 +18,7 @@
     font-style: normal;
 }
 
-@font-face {
-    font-family: 'Barlow';
-    src: url('assets/fonts/Barlow/barlow-v12-latin-400.woff2') format('woff2');
-    font-weight: 500;
-    font-style: normal;
-}
+
 
 @font-face {
     font-family: 'Barlow';
@@ -37,19 +27,7 @@
     font-style: normal;
 }
 
-@font-face {
-    font-family: 'Barlow';
-    src: url('assets/fonts/Barlow/barlow-v12-latin-500.woff2') format('woff2');
-    font-weight: 500;
-    font-style: normal;
-}
 
-@font-face {
-    font-family: 'Barlow';
-    src: url('assets/fonts/Barlow/barlow-v12-latin-600.woff2') format('woff2');
-    font-weight: 600;
-    font-style: normal;
-}
 
 @font-face {
     font-family: 'Barlow';
@@ -63,7 +41,7 @@
     src: url('assets/fonts/Barlow/barlow-v12-latin-900.woff2') format('woff2');
     font-weight: 900;
     font-style: normal;
-}
+} */
 
 body {
     font-family: 'Barlow';
@@ -124,6 +102,7 @@ h4 {
     /*black*/
     --red-wine: #D42160;
     --sky-blue: #6bc9e1;
+    --green: rgb(55, 181, 55);
 }
 
 
@@ -150,12 +129,30 @@ body {
 
 }
 
+a {
+    text-decoration: none;
+    align-items: center;
+    color: var(--seventh-color);
+    cursor: pointer;
+    text-align: left;
+}
+
+a:hover {
+    color: var(--primary-color);
+}
+
 .TextContrast {
     color: white;
 }
 
 .InputErrorMessage {
     color: var(--red-wine);
+    font-style: italic;
+    font-size: small;
+}
+
+.InputSuccessMessage {
+    color: var(--green);
     font-style: italic;
     font-size: small;
 }

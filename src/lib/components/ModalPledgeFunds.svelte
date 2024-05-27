@@ -1,25 +1,40 @@
 <script>
     import Modal from "./modal.svelte";
-    import {
-        NotSignedInModal,
-        isLoading,
-        loginedIn,
-        pledgeModal,
-        success,
-        termsModal,
-    } from "$lib/stores/other_stores";
-    import {
-        fromUSDtoICP,
-        pledgeFunds,
-    } from "$lib/data_functions/docu.functions";
+    import { pledgeModal, termsModal } from "$lib/stores/other_stores";
     import Terms from "./terms.svelte";
-    import BasicButton from "./basicButton.svelte";
-    import BasicButtonSmall from "./BasicButton_Small.svelte";
+
     import BasicButtonDarkSmall from "./BasicButton_Dark_Small.svelte";
-    let amountUSD = 10;
-    export let documentID = "";
-    export let collectionName = "";
+    import {
+        CreatePledge,
+        getUserBalance,
+    } from "$lib/financial_functions/financial_functions";
+    import { onMount } from "svelte";
+    import { authSubscribe } from "@junobuild/core-peer";
+    import FlatButtonDarkSmall from "./FlatButtonDarkSmall.svelte";
+    import SuccessModalNew from "./SuccessModalNew.svelte";
+    import LoadingModalNew from "./LoadingModalNew.svelte";
+    import ErrorModalNew from "./ErrorModalNew.svelte";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
+    let amount = 0;
+    let max = 0;
+    let isLoading = false;
+    let success = false;
+    /**
+     * @param {string}idea_id
+     * @param {string}feature_id
+     */
+    export let idea_id, feature_id;
+    let error = false;
+    let errorMsg = "Some error occurred while pledging!";
+    export let userKey = "";
     let showModal6 = false;
+    onMount(async () => {
+        authSubscribe((user) => {
+            if (user != undefined) {
+                userKey = user?.key;
+            }
+        });
+    });
 </script>
 
 <Modal
@@ -29,112 +44,100 @@
     }}
 >
     <h2>Pledge funds</h2>
-    <p>
-        Right now, you have 12.159 ICP tokens in your wallet. If you wish to add
-        more, go to your <a
-            href="/profile"
-            style="color:blue; text-decoration:underline;">profile</a
-        >.
-    </p>
-    <br />
-    <p>
-        <input type="number" class="inputNumber" bind:value={amountUSD} />
-        ICP
-    </p>
-    <br />
-    <p>
-        <input type="checkbox" /> I accept the
-        <a
-            on:click={() => {
-                termsModal.set(true);
-            }}
-            style="color:blue; text-decoration:underline;"
-            >Terms and conditions.</a
-        >
-    </p>
-    <br />
-    <!-- <button
-        on:click={async () => {
-            if (!$loginedIn) {
-                NotSignedInModal.set(true);
-                return;
-            }
-            await pledgeFunds(
-                documentID,
-                fromUSDtoICP(amountUSD),
-                "e4204e024181e960a018a5cbdc51b8af834f33932bfe4d711909b492b16767eb",
-                "solutions",
-            );
-            pledgeModal.set(false);
-        }}
-        class="fundButton"
-        style="background-color: #ff6000; color:aliceblue; display: block; margin-left: auto; margin-right: auto;"
-        >Pledge</button
-    > -->
-    <!-- <BasicButton_Small msg={"Pledge"} /> -->
-    <div
-        style="display: flex; justify-content:center; align-items:center; width:100%;align-self:center;"
-    >
-        <BasicButtonDarkSmall
-            msg={"Pledge"}
-            someFunction={() => {
-                pledgeModal.set(false);
-                isLoading.set(true);
+    {#await getUserBalance(userKey)}
+        <MagicalDotsAbsoluteSmall />
+        <br />
+        <p style="text-align: center;">Loading wallet...</p>
+    {:then data}
+        <p>
+            Right now, you have {data} ICP tokens in your wallet. If you wish to
+            add more, go to your
+            <a href="/profile" style="color:blue; text-decoration:underline;"
+                >profile</a
+            >.
+        </p>
 
-                setTimeout(() => {
-                    isLoading.set(false);
-                    success.set(true);
-                    setTimeout(() => {
-                        success.set(false);
-                    }, 2500);
-                }, 2500);
-            }}
-        />
-    </div>
+        <br />
+        {#if !isLoading && !success && !error}
+            <div
+                class="VerticallyAligned HorizontallyAligned"
+                style="justify-content: left;"
+            >
+                <input
+                    type="number"
+                    class="InputTextSmall"
+                    bind:value={amount}
+                />
+                ICP <FlatButtonDarkSmall
+                    msg={"MAX"}
+                    someFunction={() => {
+                        amount = data;
+                    }}
+                />
+            </div>
 
-    <br />
-    <p>
-        Your pledge will be displayed along with the expected payout. Find out
-        more <a href="" style="color:blue; text-decoration:underline;">here</a>.
-    </p>
+            <br />
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
+            <p>
+                <input type="checkbox" /> I accept the
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <!-- svelte-ignore a11y-missing-attribute -->
+                <a
+                    on:click={() => {
+                        termsModal.set(true);
+                    }}
+                    style="color:blue; text-decoration:underline;"
+                    >Terms and conditions.</a
+                >
+            </p>
+            <br />
+            <div
+                style="display: flex; justify-content:center; align-items:center; width:100%;align-self:center;"
+            >
+                <BasicButtonDarkSmall
+                    msg={"Pledge"}
+                    someFunction={async () => {
+                        isLoading = true;
+                        try {
+                            let pledgeCreation = await CreatePledge(
+                                idea_id,
+                                feature_id,
+                                amount,
+                                userKey,
+                            );
+                            success = true;
+                        } catch (e) {
+                            isLoading = false;
+                            error = true;
+                            errorMsg = String(e);
+                        }
+                    }}
+                />
+            </div>
+        {:else if success}
+            <SuccessModalNew message={"Pledge created successfully!"} />
+        {:else if error}
+            <ErrorModalNew
+                error={errorMsg}
+                someFunction={() => {
+                    error = false;
+                    pledgeModal.set(false);
+                }}
+            />
+        {:else}
+            <LoadingModalNew message={"Uploading pledge"} />
+        {/if}
+
+        <br />
+        <p>
+            Your pledge will be displayed along with the expected payout. Find
+            out more <a href="" style="color:blue; text-decoration:underline;"
+                >here</a
+            >.
+        </p>
+    {/await}
 </Modal>
 <Terms />
 
 <style>
-    .fundButton {
-        width: 25%;
-        height: 50px;
-        /* background: linear-gradient(to right, rgb(255, 0, 0), orangered); */
-        background-color: rgb(221, 243, 255);
-        border-style: groove;
-        border-color: black;
-        border-width: 1px;
-        display: flex;
-        align-items: center; /* Vertical alignment */
-        justify-content: center; /* Horizontal alignment */
-        font-weight: 330;
-        box-shadow: 10px 10px 5px rgba(0, 0, 0, 0.2); /* horizontal, vertical, blur, color */
-        color: black;
-        transition:
-            transform 0.3s ease,
-            box-shadow 0.3s ease;
-    }
-    .fundButton:hover {
-        transform: scale(
-            1.08
-        ); /* scales the button to 105% of its original size on hover */
-    }
-    .fundButton:active {
-        transform: scale(
-            0.95
-        ); /* scales the button to 95% of its original size on click */
-        box-shadow: none; /* removes the shadow */
-    }
-
-    .inputNumber {
-        width: 25%;
-        border-color: black;
-        border-width: 1px;
-        padding: 5px;
-    }
 </style>

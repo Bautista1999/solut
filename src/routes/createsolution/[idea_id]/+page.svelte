@@ -6,24 +6,27 @@
     let imageScroller;
 
     import ProfilePicture from "$lib/components/profilePicture.svelte";
-    import { nanoid } from "nanoid";
     import Breadcrumbs from "$lib/components/breadcrumbs.svelte";
     import EditSubtitle from "$lib/components/EditSubtitle.svelte";
     import EditTitle from "$lib/components/EditTitle.svelte";
-    import BasicButtonSmall from "$lib/components/BasicButton_Small.svelte";
     import BasicButtonDarkSmall from "$lib/components/BasicButton_Dark_Small.svelte";
     import DescriptionEdit from "$lib/components/DescriptionEdit.svelte";
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
-    //import { success, isLoading } from "$lib/stores/other_stores";
-    import Loading from "$lib/components/loading.svelte";
-    import Success from "$lib/components/success.svelte";
+    import ErrorMessage from "$lib/components/ErrorMessage.svelte";
+    import LoadingNew from "$lib/components/LoadingNew.svelte";
+    import SuccessNew from "$lib/components/Success_New.svelte";
+
     import { goto } from "$app/navigation";
-    import { InlineCalendar } from "svelte-calendar";
-    import SearchBar from "$lib/components/SearchBar.svelte";
     import SearchBarLarger from "$lib/components/SearchBarLarger.svelte";
     import TagsDisplay from "$lib/components/TagsDisplay.svelte";
-    import Timeline from "$lib/components/Timeline.svelte";
     import TimelineEdit from "$lib/components/TimelineEdit.svelte";
+    import { onMount } from "svelte";
+    import { getDoc, initJuno } from "@junobuild/core";
+    import { setSolution } from "$lib/data_functions/create_functions";
+
+    /** @type {import('./$types').PageData} */
+    export let data;
+
     const theme = {
         calendar: {
             width: "100px",
@@ -35,45 +38,46 @@
         {
             id: 1,
             title: "Project Kick-off",
-            date: "2024-05-25",
-            icon: "rocket.svg",
+            date: new Date("2024-05-25").getTime(),
+            description: "Project kickoff day",
         },
         {
             id: 6,
             title: "Delivery Date",
-            date: "2024-05-25",
-            icon: "rocket.svg",
+            date: new Date("2024-05-25").getTime(),
+            description: "Delivery Date day",
         },
 
         // Add more milestones if needed
     ];
-    let ideaTitle = "Some idea that needs solution";
-    let ideas = [ideaTitle];
-    let key = "";
+    /**
+     * @type {any[]}
+     */
+    let ideas = [];
+
+    let error = false;
+    let errorMsg = "";
+    let parentIdeaKey = data.params.idea_id;
+    let parentIdeaTitle = "";
     /**
      * @type {string[]}
      */
     let images = [];
     $: title = "";
     let subtitle = "";
-    let description =
-        "This idea is a decentralized platform designed to transform how ideas are shared, developed, and funded. Users can submit ideas, crowdsource feature requests to address these ideas, and crowdfund resources to bring the best features to life. This platform leverages blockchain technology to ensure transparency and fairness, allowing contributors to earn bounties and users to pay only upon delivery. Solutio's innovative use of a reputation system enhances safety and trust without requiring KYC, supporting anonymous accounts for those prioritizing privacy.";
-    let user = "Johannes Jung";
-    let userPicture =
-        "https://i.pinimg.com/474x/05/c3/59/05c359cd010df3e7f1ea3cb6f6f54fad.jpg";
+    let desc = "";
+    let solutionKey = "";
+    let userPicture = "";
     let tabs = ["Pledge Timeline", "Comments", "About the project"];
     let activeTab = tabs[2]; // default active tab
-    // Function to change active tab
-    // /**
-    //  * @param {string} tab
-    //  */
-    // function setActiveTab(tab) {
-    //     activeTab = tab;
-    // }
+    let loadingMsg = "Uploading data...";
     let active = false;
     let subtitleActive = false;
-    let clickToEdit = "(click to edit)";
     let newImage = "";
+    /**
+     * @type {never[]}
+     */
+    let videos = [];
     function addImage() {
         imageScroller.addNewImage(newImage);
         if (newImage == "") {
@@ -114,36 +118,96 @@
     let success = false;
 
     async function onPost() {
+        loadingMsg = "Uploading data...";
         document.body.scrollIntoView({ behavior: "smooth" });
         isLoading = true;
 
-        setTimeout(() => {
+        let solutionPost = {
+            title: title,
+            subtitle: subtitle,
+            description: desc,
+            images: images,
+            videos: videos,
+            categories: tags,
+            features: ideas,
+            milestones: milestones,
+        };
+        isLoading = true;
+        try {
+            let creation = await setSolution(solutionPost, parentIdeaKey);
+            if (typeof creation === "string") {
+                error = true;
+                errorMsg = creation;
+            } else if (Array.isArray(creation) && creation.length > 0) {
+                solutionKey = creation[0].key;
+            } else {
+                solutionKey = "";
+            }
+            console.log("Your creation: ", creation);
+        } catch (e) {
             isLoading = false;
+            error = true;
+            console.log(e);
+            errorMsg = String(e); // Convert the error object to a string
+        }
+        isLoading = false;
+        if (!error) {
             success = true;
-        }, 2500);
+        }
     }
     /**
      * @param {string} tag
      */
     function deleteIdea(tag) {
-        let currentIndex = ideas.indexOf(tag);
+        let currentIndex = ideasTitle.indexOf(tag);
         ideas.splice(currentIndex, 1);
+        ideasTitle.splice(currentIndex, 1);
+        ideasTitle = [...ideasTitle];
         ideas = [...ideas];
     }
+
+    onMount(async () => {
+        isLoading = true;
+        loadingMsg = "Checking parent's idea existance...";
+        await initJuno({
+            satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
+        });
+
+        let parentDoc = await getDoc({
+            collection: "index_search",
+            key: "INDEX_" + data.params.idea_id,
+        });
+        isLoading = false;
+        if (typeof parentDoc == "undefined") {
+            error = true;
+            errorMsg = "Parent idea non-existent";
+        } else {
+            parentIdeaKey = data.params.idea_id;
+            parentIdeaTitle = parentDoc.data.title;
+        }
+    });
+
+    /**
+     * @type {string[]}
+     */
+    let ideasTitle = [];
 </script>
 
 <div class="body">
-    {#if !isLoading && !success}
+    {#if !isLoading && !success && !error}
         <div class="content">
             <div class="container">
                 <div class="Subtitle">
-                    <EditSubtitle title={subtitle} active={subtitleActive} />
+                    <EditSubtitle
+                        bind:title={subtitle}
+                        active={subtitleActive}
+                    />
                     <div style="height: 10px;"></div>
                 </div>
                 <!-- <InlineCalendar {theme} /> -->
 
                 <div class="Title">
-                    <EditTitle {active} {title} />
+                    <EditTitle {active} bind:title />
                     <div style="height: 10px;"></div>
                 </div>
                 <div class="Profile">
@@ -154,7 +218,10 @@
                     <Breadcrumbs
                         breadcrumbs={[
                             { title: "Home", link: "" },
-                            { title: ideaTitle, link: "/idea" },
+                            {
+                                title: parentIdeaTitle,
+                                link: "/idea/" + parentIdeaKey,
+                            },
                             { title: title, link: "/" },
                         ]}
                     />
@@ -196,7 +263,7 @@
                         {:else if activeTab === tabs[1]}
                             <!-- <CommentSection project_id={key} /> -->
                         {:else if activeTab === tabs[2]}
-                            <DescriptionEdit />
+                            <DescriptionEdit bind:description={desc} />
                         {/if}
                     </div>
                 </div>
@@ -240,10 +307,14 @@
                 {/each}
             </div>
             <h3>Which ideas/ features are you going to be solving ?</h3>
-            <SearchBarLarger />
-            <TagsDisplay tags={ideas} deleteFunction={deleteIdea} />
+            <SearchBarLarger
+                bind:ideas
+                {parentIdeaKey}
+                bind:ideasNames={ideasTitle}
+            />
+            <TagsDisplay bind:tags={ideasTitle} deleteFunction={deleteIdea} />
             <h3>Roadmap: set important milestones</h3>
-            <TimelineEdit {milestones} />
+            <TimelineEdit bind:milestones />
             <br />
             <div
                 style="display: flex; justify-content:center;align-items:center;"
@@ -258,19 +329,22 @@
             </div>
         </div>
     {:else if success}
-        <div
-            style="display: flex; justify-content:center; align-items:center; flex-direction:column"
-        >
-            <Success msg={"Idea created successfully"} />
-            <BasicButtonDark
-                msg={"See the new solution created"}
-                someFunction={() => {
-                    goto("/solution");
-                }}
-            />
-        </div>
+        <SuccessNew
+            message={"Solution created successfully"}
+            someFunction={() => {
+                goto("/solution/" + solutionKey);
+            }}
+        />
+    {:else if error}
+        <ErrorMessage
+            message={"The creation of the feature failed."}
+            error={errorMsg}
+            someFunction={() => {
+                error = false;
+            }}
+        />
     {:else}
-        <Loading msg={"Uploading data"} width={30} />
+        <LoadingNew message={loadingMsg} />
     {/if}
 </div>
 

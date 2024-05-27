@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import OpenAI from "openai";
-import { initJuno } from "@junobuild/core";
 
 //import OPENAI_API_KEY from "key.txt";
 let api = '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';

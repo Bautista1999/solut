@@ -92,9 +92,6 @@
      */
     let displayedIdeas = [];
     onMount(async () => {
-        await initJuno({
-            satelliteId: "vehbc-zaaaa-aaaal-acyba-cai",
-        });
         const myDoc = await getDoc({
             collection: "ideas",
             // @ts-ignore

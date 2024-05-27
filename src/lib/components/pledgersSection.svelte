@@ -3,16 +3,16 @@
 
     export let pledgersAmount = 100;
     /**
-     * @type {string[]}
+     * @type {Array<import("$lib/data_objects/data_types").UserProfilePic>}
      */
-    export let images = [];
+    export let users = [];
 </script>
 
 <div class="container">
     <div class="PledgersAmount" style="margin:0px;">
         <span class="material-symbols-outlined"> people </span> Pledgers: {pledgersAmount}
     </div>
-    <div class="PledgersPictures"><UsersOverview {images} /></div>
+    <div class="PledgersPictures"><UsersOverview {users} /></div>
 </div>
 
 <style>

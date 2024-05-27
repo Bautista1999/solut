@@ -1,8 +1,11 @@
 <script>
-    export let wallet_address = "0xa2f198Ee29826e6f9E3B9C028c828237017D9627";
-    export let principal =
-        "2dgol-6t7gr-wbceo-axkyn-3qinp-vxv32-zrqbv-oj6tr-ztuvk-el3ln-3ae";
-    export let user_name = "erik_thebest";
+    import { goto } from "$app/navigation";
+    import { getWalletAddress } from "$lib/data_functions/docu.functions";
+    import { authSubscribe, initJuno } from "@junobuild/core";
+    import { onMount } from "svelte";
+    export let wallet_address = "";
+    export let principal = "";
+    export let user_name = "";
     import { writable } from "svelte/store";
     let copied = writable(false);
 

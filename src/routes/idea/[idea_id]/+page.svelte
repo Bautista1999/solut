@@ -18,37 +18,48 @@
     import PageTabs from "$lib/components/PageTabs.svelte";
     import AboutProject from "$lib/components/AboutProject.svelte";
     import CommentSection from "$lib/components/CommentSection.svelte";
-    import { isLoading, pledgeModal, success } from "$lib/stores/other_stores";
+    import { pledgeModal, success } from "$lib/stores/other_stores";
     import ModalPledgeFunds from "$lib/components/ModalPledgeFunds.svelte";
     import { onMount } from "svelte";
-    import LoadingBadge from "$lib/components/loadingBadge.svelte";
-    import Loading from "$lib/components/loading.svelte";
-    import Success from "$lib/components/success.svelte";
     import { goto } from "$app/navigation";
+    import { getDoc, initSatellite } from "@junobuild/core-peer";
+    import NotFound from "$lib/components/NotFound.svelte";
+    import {
+        getTotalPledges,
+        getTransactions,
+    } from "$lib/financial_functions/financial_functions";
+    import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsoluteSmall.svelte";
+    import LoadingNew from "$lib/components/LoadingNew.svelte";
+    import {
+        SolutionLink,
+        getAmountPledgersAndImages,
+        getFeaturesOfIdea,
+        getTotalFollowers,
+        getUserImages,
+    } from "$lib/data_functions/get_functions";
+    import SuccessNew from "$lib/components/Success_New.svelte";
+    import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
+    import { getTransactions_byProject } from "$lib/testingInterface_logic/testing.interface.logic";
+    import MagicalDots from "$lib/components/magicalDots.svelte";
 
-    export let msg = "Label";
     /** @type {import('./$types').PageData} */
     // @ts-ignore
     export let data;
-    let key = "";
-    let images = [
-        "https://cloudfront-us-east-2.images.arcpublishing.com/reuters/4CG5FU4IIJMHZCDXESLO7GEYDM.jpg",
-        "https://media.ambito.com/p/9c57bcc58b3be5c19ea3a38d32f54fca/adjuntos/239/imagenes/038/684/0038684219/1200x675/smart/ethereum-banco-centraljpg.jpg",
-        "https://s2-valor.glbimg.com/oXwS6x_i8WgCUl-XfqaLBdWpyRk=/0x0:3973x2649/888x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_63b422c2caee4269b8b34177e8876b93/internal_photos/bs/2023/V/1/0BYTKITrifXhSGhdSv5w/btc-e-eth-unsplash.jpg",
-    ];
-    let title = "An example of an amazing idea! Heres an Example";
-    let subtitle =
-        "Empowering Innovation: Solutio's Decentralized Platform for Crowdsourcing and Collaborative Development. Located in Llyion, France. This app should try to go bananas on the features, should make ev";
-    let description =
-        "This idea is a decentralized platform designed to transform how ideas are shared, developed, and funded. Users can submit ideas, crowdsource feature requests to address these ideas, and crowdfund resources to bring the best features to life. This platform leverages blockchain technology to ensure transparency and fairness, allowing contributors to earn bounties and users to pay only upon delivery. Solutio's innovative use of a reputation system enhances safety and trust without requiring KYC, supporting anonymous accounts for those prioritizing privacy.";
-    let user = "Johannes Jung";
-    let userPicture =
-        "https://i.pinimg.com/474x/05/c3/59/05c359cd010df3e7f1ea3cb6f6f54fad.jpg";
+    let key = data.params.idea_id;
+    /**
+     * @type {any[]}
+     */
+    let images = [];
+    let title = "";
+    let subtitle = "";
+    let description = "";
+    let user = "";
+    let userPicture = "";
     let expected = 100000;
     let total = 120000;
     let totalFollowers = 14560;
     let amountPledgers = 100;
-    let createdAt = "17 August, 2023";
+    let createdAt = "";
     let pledgersImages = [
         "https://cdn.weasyl.com/static/media/88/89/98/8889989c353bd7d79a5a56daf9b118ed72a9b3f7f5c852f7c9daef6bbf105225.png",
         "https://avatarfiles.alphacoders.com/103/103875.png",
@@ -106,44 +117,12 @@
         // featureExample,
         // featureExample3,
     ];
-    let transaction = {
-        image: images[0], // Replace with your image path
-        transactionType: "Pledge",
-        description: "erik_thebest",
-        date: "17 July 2024",
-        currency: "ICP",
-        amount: "5.11",
-    };
-    let transaction2 = {
-        image: images[1], // Replace with your image path
-        transactionType: "Pledge",
-        description: "eljuan_sito",
-        date: "17 July 2024",
-        currency: "ICP",
-        amount: "4.03",
-    };
-    let transaction3 = {
-        image: images[2], // Replace with your image path
-        transactionType: "Pledge",
-        description: "snassy.icp",
-        date: "17 July 2024",
-        currency: "ICP",
-        amount: "3.45",
-    };
-    let transaction4 = {
-        image: images[0], // Replace with your image path
-        transactionType: "Pledge",
-        description: "sakimoto--icp",
-        date: "17 July 2024",
-        currency: "ICP",
-        amount: "11.45",
-    };
-    export let transactions = [
-        transaction,
-        transaction2,
-        transaction3,
-        transaction4,
-    ];
+    let isLoading = false;
+    let ideaNonExistent = false;
+    /**
+     * @type {never[]}
+     */
+    export let transactions = [];
     let tabs = ["Pledge Timeline", "Comments", "About the project"];
     let activeTab = tabs[0]; // default active tab
     // Function to change active tab
@@ -156,24 +135,49 @@
     function pledgeModalOpen() {
         pledgeModal.set(true);
     }
-    onMount(() => {
-        isLoading.set(true);
-        setTimeout(() => {
-            isLoading.set(false);
-        }, 2500);
+    onMount(async () => {
+        isLoading = true;
+        // await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
+        let doc = await getDoc({
+            collection: "idea",
+            key: key,
+        });
+        if (doc == undefined) {
+            isLoading = false;
+            ideaNonExistent = true;
+        } else {
+            let data = doc.data;
+            images = doc.data.images;
+            images = images;
+            title = doc.data.title;
+            subtitle = doc.data.subtitle;
+            description = doc.data.description;
+            user = doc.owner ? doc.owner : "";
+            userPicture = "";
+            expected = 100000;
+            total = 120000;
+            totalFollowers = 14560;
+            amountPledgers = 100;
+            createdAt = (doc.created_at ? doc.created_at : "").toString();
+        }
+        isLoading = false;
     });
 </script>
 
 <div class="body">
     <div class="content">
-        {#if !$isLoading && !$success}
+        {#if !isLoading && !$success && !ideaNonExistent}
             <div class="container">
                 <div class="Subtitle">{subtitle}</div>
                 <div class="Title" style="color: var(--secondary-color);">
                     <h1>{title}</h1>
                 </div>
                 <div class="Profile">
-                    <ProfilePicture src={userPicture} />
+                    {#await getUserImages([user])}
+                        <ProfilePicture src={""} />
+                    {:then data}
+                        <ProfilePicture src={data[0].image} userKey={user} />
+                    {/await}
                 </div>
                 <div class="Pictures">
                     <ImageScroller {images} />
@@ -183,33 +187,48 @@
                     <Breadcrumbs
                         breadcrumbs={[
                             { title: "Home", link: "/" },
-                            { title: title, link: "/idea" },
+                            { title: title, link: "/idea/" + key },
                         ]}
                     />
                 </div>
 
                 <div class="FundingSection">
-                    <div class="Funding-bar">
-                        <FundingBar {expected} {total} />
-                    </div>
-                    <div class="Funding-info">
-                        <p
-                            style="font-size:small; display:flex; justify-content:center;align-items:center;"
-                        >
-                            Prediction on past perfomance. No garantee of
-                            payment. <span
-                                style="text-decoration: underline;cursor:pointer;"
+                    {#await getTotalPledges(key, "IDEA")}
+                        <div class="Funding-bar">
+                            <MagicalDotsAbsoluteSmall />
+                        </div>
+                    {:then data}
+                        <div class="Funding-bar">
+                            <FundingBar
+                                expected={data.expected}
+                                total={data.pledges}
+                            />
+                        </div>
+                        <div class="Funding-info">
+                            <p
+                                style="font-size:small; display:flex; justify-content:center;align-items:center;"
                             >
-                                Read more</span
-                            >
-                        </p>
-                    </div>
+                                Prediction on past perfomance. No garantee of
+                                payment. <span
+                                    style="text-decoration: underline;cursor:pointer;"
+                                >
+                                    Read more</span
+                                >
+                            </p>
+                        </div>
+                    {/await}
                 </div>
                 <div class="PledgingSection">
                     <div class="PledgeButton">
                         <BasicButton
                             msg={"Pledge"}
-                            someFunction={pledgeModalOpen}
+                            someFunction={async () => {
+                                if (await CheckIfSignedIn()) {
+                                    pledgeModalOpen();
+                                } else {
+                                    goto("/signin/");
+                                }
+                            }}
                         />
                     </div>
                     <div class="PledgeInfo">
@@ -220,7 +239,12 @@
                             >
                         </p>
                     </div>
-                    <FollowersSection amount={totalFollowers} />
+                    {#await getTotalFollowers(key)}
+                        <MagicalDotsAbsoluteSmall />
+                    {:then data}
+                        <FollowersSection amount={data} />
+                    {/await}
+
                     <div
                         style="display: flex;
                 justify-content: center; 
@@ -231,22 +255,26 @@
                     >
                         <div class="ShareButton"><ShareButton /></div>
                         <div class="PledgersSection">
-                            <PledgersSection
-                                pledgersAmount={amountPledgers}
-                                images={pledgersImages}
-                            />
+                            {#await getAmountPledgersAndImages(key)}
+                                <MagicalDotsAbsoluteSmall />
+                            {:then data}
+                                <PledgersSection
+                                    pledgersAmount={data.amount}
+                                    users={data.users}
+                                />
+                            {/await}
                         </div>
                     </div>
                 </div>
 
                 <div class="FeaturesSection">
                     <div class="FeaturesTitle"><h3>Feature Requests</h3></div>
-                    <div class="Features">
-                        <IdeaCardContainer features={featuresExamples} />
+                    <div>
+                        <IdeaCardContainer idea_id={key} />
                     </div>
 
                     <div class="FeaturesScrollerSection">
-                        <div class="FeaturesScroller"><CardScroller /></div>
+                        <!-- <div class="FeaturesScroller"><CardScroller /></div> -->
                     </div>
                 </div>
 
@@ -254,19 +282,34 @@
                     <div class="ActivityTabs">
                         <div class="CommentsTab">
                             <div class="Add_Solution_Idea_Section">
-                                <BasicButtonDark
-                                    msg={"Propose a solution"}
-                                    icon={"cognition"}
-                                    someFunction={() => {
-                                        goto("/createsolution");
-                                    }}
-                                />
+                                {#await SolutionLink(key)}
+                                    <MagicalDotsAbsoluteSmall />
+                                {:then data}
+                                    {#if data != ""}
+                                        <BasicButton
+                                            msg={"Check out the solution!"}
+                                            icon={"cognition"}
+                                            someFunction={() => {
+                                                goto("/solution/" + data);
+                                            }}
+                                        />
+                                    {:else}
+                                        <BasicButtonDark
+                                            msg={"Propose a solution"}
+                                            icon={"cognition"}
+                                            someFunction={() => {
+                                                goto("/createsolution/" + key);
+                                            }}
+                                        />
+                                    {/if}
+                                {/await}
+
                                 <br />
                                 <BasicButtonDark
                                     msg={"Create feature-request"}
                                     icon={"emoji_objects"}
                                     someFunction={() => {
-                                        goto("/createfeature");
+                                        goto("/createfeature/" + key);
                                     }}
                                 />
                             </div>
@@ -277,7 +320,13 @@
 
                     <div class="ActivityContent">
                         {#if activeTab === tabs[0]}
-                            <TransactionDisplay {transactions} />
+                            {#await getTransactions(key)}
+                                <MagicalDotsAbsoluteSmall />
+                            {:then data}
+                                <TransactionDisplay
+                                    transactions={data ? data : []}
+                                />
+                            {/await}
                         {:else if activeTab === tabs[1]}
                             <CommentSection project_id={key} />
                         {:else if activeTab === tabs[2]}
@@ -285,12 +334,14 @@
                         {/if}
                     </div>
                 </div>
-                <ModalPledgeFunds />
+                <ModalPledgeFunds idea_id={key} feature_id={""} />
             </div>
         {:else if $success}
-            <Success msg={"Pledge successfully created"} />
+            <SuccessNew message={"Pledge successfully created"} />
+        {:else if ideaNonExistent}
+            <NotFound />
         {:else}
-            <Loading />
+            <LoadingNew message={"Loading data..."} />
         {/if}
         <br />
     </div>
@@ -508,8 +559,8 @@
 
     .FeaturesSection {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        grid-template-rows: 0fr 2.2fr 0.2fr;
+        grid-template-columns: 3fr 0fr 0fr;
+        grid-template-rows: 0fr 0fr 0fr;
         gap: 0px 0px;
         grid-auto-flow: row;
         grid-template-areas:

@@ -1,59 +1,88 @@
 <script>
+    import { getUsername } from "$lib/data_functions/get_functions";
+    import { Principal } from "@dfinity/principal";
+
     // You would populate this with data, possibly from a backend API call
-    export let transactions = [
-        {
-            image: "https://media.ambito.com/p/9c57bcc58b3be5c19ea3a38d32f54fca/adjuntos/239/imagenes/038/684/0038684219/1200x675/smart/ethereum-banco-centraljpg.jpg", // Replace with your image path
-            transactionType: "Pledge",
-            description: "user_name",
-            date: "17 July 2024",
-            currency: "ICP",
-            amount: "5.26",
-        },
-        {
-            image: "https://media.ambito.com/p/9c57bcc58b3be5c19ea3a38d32f54fca/adjuntos/239/imagenes/038/684/0038684219/1200x675/smart/ethereum-banco-centraljpg.jpg", // Replace with your image path
-            transactionType: "Pledge",
-            description: "user_name",
-            date: "17 July 2024",
-            currency: "ICP",
-            amount: "5.26",
-        },
-        {
-            image: "https://media.ambito.com/p/9c57bcc58b3be5c19ea3a38d32f54fca/adjuntos/239/imagenes/038/684/0038684219/1200x675/smart/ethereum-banco-centraljpg.jpg", // Replace with your image path
-            transactionType: "Pledge",
-            description: "user_name",
-            date: "17 July 2024",
-            currency: "ICP",
-            amount: "5.26",
-        },
-    ];
+    /**
+     * @type {Array<import('$lib/declarations/escrow_declarations').Transaction>}
+     */
+    export let transactions = [];
+    export let maxCharacters = 10;
 </script>
 
 <table class="transaction-table">
     <tr style="background-color: transparent; ">
-        <th></th>
-        <th>destination</th>
-        <th
-            ><form action="" method="get"></form>
-            from</th
-        >
-        <th>type</th>
+        {#if transactions.length > 0}
+            <th>destination</th>
+            <th
+                ><form action="" method="get"></form>
+                from</th
+            >
+            <th>type</th>
 
-        <th>date</th>
-        <th>time</th>
-        <th>currency</th>
-        <th>amount</th>
+            <th>date</th>
+            <th>time</th>
+            <th>currency</th>
+            <th>amount</th>
+        {:else}
+            <br />
+            <br />
+            <p style="text-align: center;">-- No Transactions made --</p>
+        {/if}
     </tr>
 
     {#each transactions as transaction}
         <tr class="rows">
-            <td><img src={transaction.image} alt="Transaction" /></td>
-            <td>{transaction.description}</td>
-            <td>{"Erik"}</td>
-            <td>{transaction.transactionType}</td>
+            <!-- <td><img src={transaction.image} alt="Transaction" /></td> -->
+            <td
+                >{transaction.target
+                    .toString()
+                    .substring(
+                        0,
+                        maxCharacters,
+                    )}{#if transaction.sender.toString().length > maxCharacters}...{/if}</td
+            >
+            {#await getUsername(transaction.sender.toString())}
+                <td
+                    >{transaction.sender
+                        .toString()
+                        .substring(
+                            0,
+                            maxCharacters,
+                        )}{#if transaction.sender.toString().length > maxCharacters}...{/if}</td
+                >
+            {:then data}
+                <td
+                    >{data
+                        .toString()
+                        .substring(
+                            0,
+                            maxCharacters,
+                        )}{#if data.toString().length > maxCharacters}...{/if}</td
+                >
+            {/await}
 
-            <td>{transaction.date}</td>
-            <td>17h 42m 34s</td>
-            <td>{transaction.currency}</td>
+            <td>{transaction.trans_type}</td>
+
+            <td
+                >{new Date(Number(transaction.created_at / 1000000n))
+                    .toISOString()
+                    .split("T")[0]}</td
+            >
+            <td
+                >{new Date(
+                    Number(transaction.created_at / 1000000n),
+                ).getHours() +
+                    ":" +
+                    new Date(
+                        Number(transaction.created_at / 1000000n),
+                    ).getMinutes() +
+                    ":" +
+                    new Date(
+                        Number(transaction.created_at / 1000000n),
+                    ).getSeconds()}</td
+            >
+            <td>ICP</td>
             <td>{transaction.amount}</td>
         </tr>
     {/each}

@@ -1,11 +1,37 @@
 <script>
+    let copy = false;
+    export async function copyLink() {
+        // Get the current webpage URL
+        const url = window.location.href;
+
+        // Create a temporary input element to hold the URL
+        const tempInput = document.createElement("input");
+        tempInput.value = url;
+        document.body.appendChild(tempInput);
+
+        // Select the URL text and copy it to the clipboard
+        tempInput.select();
+        document.execCommand("copy");
+
+        // Clean up by removing the temporary input element
+        document.body.removeChild(tempInput);
+        copy = true;
+        await setTimeout(() => {
+            copy = false;
+        }, 2000);
+    }
 </script>
 
 <div class="FollowersSection">
     <div class="Heart">
-        <span class="material-symbols-outlined"> share </span>
+        <span class="material-symbols-outlined" on:click={copyLink}>
+            share
+        </span>
     </div>
     <div class="Followers">Share</div>
+    {#if copy}
+        <span class="copied-message">Link copied!</span>
+    {/if}
 </div>
 
 <style>
@@ -52,5 +78,14 @@
             "GRAD" 0,
             "opsz" 48;
         color: var(--primary-color);
+    }
+
+    .copied-message {
+        position: absolute;
+        color: var(--primary-color);
+        border-radius: 4px;
+        transform: translateY(150%) translateX(10%);
+        z-index: 1000;
+        transition: opacity 0.3s ease-in-out;
     }
 </style>

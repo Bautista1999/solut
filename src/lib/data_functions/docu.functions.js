@@ -74,7 +74,7 @@ export async function updateData(docInfo, collectionName, key) {
             // @ts-ignore
             key: key,
             // @ts-ignore
-            updated_at: docInfo?.updated_at,
+            version: docInfo?.version,
             data: docInfo.data,
         },
     });
@@ -572,29 +572,7 @@ export async function post_final_update_notification(finalUpdate, elementKey, to
     await post_all_notifications(elementKey, notification, "solutions");
     await post_all_notifications(topicKey, notification, "ideas");
 }
-/**
-* BRIEF DESCRIPTION: This function checks if a requested username for a user is already taken.
 
-* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno. 
-Receives a username. 
-
-* POST-CONDITIONS: True if taken, false otherwise
-
-* OUTSIDE FUNCTIONS: Juno --> listDocs()
- * @param {string} username
- */
-export async function usernameExists(username) {
-    let myListDocs = await getListDocs("users");
-    let items = myListDocs.items;
-    for (let i = 0; i < items.length; i++) {
-        if (items[i].key != get(info).key) {
-            if (items[i].data.nickname == username) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
 
 /**
 * BRIEF DESCRIPTION: This function checks the ideas or solutions published given a certain category 
@@ -1125,7 +1103,7 @@ export async function pledgeFunds(documentID, amountICP, address, collectionName
             // @ts-ignore
             key: documentID,
             // @ts-ignore
-            updated_at: myDoc?.updated_at,
+            version: myDoc?.version,
             data: topicData,
         },
     });
@@ -1161,7 +1139,7 @@ export async function pledgeFunds(documentID, amountICP, address, collectionName
             // @ts-ignore
             key: get(info).key,
             // @ts-ignore
-            updated_at: myDoc2?.updated_at,
+            version: myDoc2?.version,
             data: userData,
         },
     });

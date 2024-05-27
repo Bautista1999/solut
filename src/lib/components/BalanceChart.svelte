@@ -1,30 +1,31 @@
 <script>
     // You would populate this with data, possibly from a backend API call
+    /**
+     * @type {string | any[]}
+     */
     export let currencies = [
-        {
-            image: "https://media.istockphoto.com/id/1139020309/vector/bitcoin-internet-money-icon-vector.jpg?s=612x612&w=0&k=20&c=vcRUEDzhndMOctdM7PN1qmipo5rY_aOByWFW0IkW8bs=",
-            name: "BTC",
-            value: 62307.9,
-            balance: 0,
-        },
-        {
-            image: "https://cryptologos.cc/logos/internet-computer-icp-logo.png", // Replace with your image path
-            name: "ICP",
-            value: 12.98,
-            balance: 17.1,
-        },
-        {
-            image: "https://download.logo.wine/logo/Ethereum/Ethereum-Logo.wine.png", // Replace with your image path
-            name: "ETH",
-            value: 3459.42,
-            balance: 0,
-        },
+        // {
+        //     image: "https://media.istockphoto.com/id/1139020309/vector/bitcoin-internet-money-icon-vector.jpg?s=612x612&w=0&k=20&c=vcRUEDzhndMOctdM7PN1qmipo5rY_aOByWFW0IkW8bs=",
+        //     name: "BTC",
+        //     value: 62307.9,
+        //     balance: 0,
+        // },
+        // {
+        //     image: "https://cryptologos.cc/logos/internet-computer-icp-logo.png", // Replace with your image path
+        //     name: "ICP",
+        //     value: 12.98,
+        //     balance: 17.1,
+        // },
+        // {
+        //     image: "https://download.logo.wine/logo/Ethereum/Ethereum-Logo.wine.png", // Replace with your image path
+        //     name: "ETH",
+        //     value: 3459.42,
+        //     balance: 0,
+        // },
     ];
     let total = 0;
     for (let i = 0; i < currencies.length; i++) {
-        total += roundToThreeDecimals(
-            currencies[i].balance * currencies[i].value,
-        );
+        total += roundToThreeDecimals(currencies[i].balance);
     }
 
     /**
@@ -38,7 +39,7 @@
 <div class="BalanceSection">
     <div class="Balance">
         <p>
-            {total + " USD"}
+            {total + " ICP"}
         </p>
         <p style="font-size: small; font-weight: 100;">
             From all accounts in total.
@@ -48,7 +49,7 @@
     <table class="transaction-table">
         <tr style="background-color: transparent; ">
             <th>Currency</th>
-            <th>Value</th>
+            <!-- <th>Value</th> -->
             <th>Balance</th>
         </tr>
 
@@ -59,8 +60,8 @@
                     ><img src={curr.image} alt="Transaction" />
                     {curr.name}</td
                 >
-                <td>{curr.value}</td>
-                <td>{curr.balance}</td>
+                <!-- <td>{curr.value}</td> -->
+                <td>{roundToThreeDecimals(curr.balance)}</td>
             </tr>
         {/each}
     </table>

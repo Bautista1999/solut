@@ -1,80 +1,97 @@
 <script>
     import { goto } from "$app/navigation";
+    import {
+        getAmountPledgersAndImages,
+        getTotalFollowers,
+        getUserImages,
+    } from "$lib/data_functions/get_functions";
+    import { key } from "$lib/data_objects/testing_objects";
+    import { getTotalPledges } from "$lib/financial_functions/financial_functions";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
     import FundingBar from "./fundingBar.svelte";
+    import MagicalDots from "./magicalDots.svelte";
     import PledgersSection from "./pledgersSection.svelte";
     import ProfilePicture from "./profilePicture.svelte";
     import UsersOverview from "./usersOverview.svelte";
 
     /**
-     * @type {string}
+     * @type {import("@junobuild/core").Doc<any>}
      */
-    export let image =
-        "https://media.ambito.com/p/9c57bcc58b3be5c19ea3a38d32f54fca/adjuntos/239/imagenes/038/684/0038684219/1200x675/smart/ethereum-banco-centraljpg.jpg";
-    export let featureExample = {
-        title: "title",
-        subtitle: "subtitle",
-        description: "description",
-        expected: 100,
-        total: 100,
-        image: image,
-        user: "user",
-        userPicture: image,
-        key: "",
-        createdAt: "17 August, 2023",
-        /**
-         * @type {string[]}
-         */
-        pledgersImages: [],
-    };
+    export let feature;
     export let padding = 7;
 </script>
 
-<div class="container" on:click={() => goto("feature")}>
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div
+    class="container"
+    on:click={() =>
+        goto("/feature/" + feature.key.substring(6, feature.key.length + 1))}
+>
     <div class="Image">
-        <img src={featureExample.image} alt="" />
+        <img src={feature.data.images[0]} alt="" />
     </div>
     <div class="ProfilePicture">
-        <ProfilePicture src={featureExample.userPicture} />
+        {#await getUserImages([feature.owner ? feature.owner : ""])}
+            <MagicalDotsAbsoluteSmall />
+        {:then data}
+            <ProfilePicture
+                src={data[0].image}
+                userKey={feature.owner ? feature.owner : ""}
+            />
+        {/await}
     </div>
 
     <div
         class="Title"
         style="font-size: medium; padding:{padding}px; text-align:start"
     >
-        {featureExample.title}
+        {feature.data.title}
     </div>
     <div
         class="FollowersSection"
         style="display: flex; justify-content:center; align-items:left; flex-direction:column; text-align:center;"
     >
-        <span class="material-symbols-outlined">favorite</span>
-        17.5 K
+        {#await getTotalFollowers(feature.key)}
+            <MagicalDotsAbsoluteSmall />
+        {:then data}
+            <span class="material-symbols-outlined">favorite</span>
+            {data}
+        {/await}
     </div>
     <div
         class="Subtitle"
         style="font-size:small; padding:{padding}px; text-align:left"
     >
-        {featureExample.subtitle}
+        {feature.data.subtitle}
     </div>
     <div class="FundingBar" style="padding:{padding}px; ">
-        <FundingBar
-            card={true}
-            expected={featureExample.expected}
-            total={featureExample.total}
-        />
+        {#await getTotalPledges(feature.key, "FEA")}
+            <MagicalDotsAbsoluteSmall />
+        {:then data}
+            <FundingBar
+                card={true}
+                expected={data.expected}
+                total={data.pledges}
+            />
+        {/await}
     </div>
-    <div
-        class="PledgersAmount"
-        style="padding-left:{padding}px;padding-bottom:{20}px; font-size:small; margin-top:{padding}px; "
-    >
-        Pledgers: {featureExample.pledgersImages.length}
-    </div>
-    <div
-        class="PledgersPictures"
-        style="padding-top:{padding}px; padding-left:0px; margin-left:0px; margin-top:{padding}px;"
-    >
-        <UsersOverview card={true} images={featureExample.pledgersImages} />
-    </div>
+    {#await getAmountPledgersAndImages(feature.key)}
+        <MagicalDotsAbsoluteSmall />
+    {:then data}
+        <div
+            class="PledgersAmount"
+            style="padding-left:{padding}px;padding-bottom:{20}px; font-size:small; margin-top:{padding}px; "
+        >
+            Pledgers: {data.amount}
+        </div>
+        <div
+            class="PledgersPictures"
+            style="padding-top:{padding}px; padding-left:0px; margin-left:0px; margin-top:{padding}px;"
+        >
+            <UsersOverview card={true} users={data.users} />
+        </div>
+    {/await}
 </div>
 
 <style>

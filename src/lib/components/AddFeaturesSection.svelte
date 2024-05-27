@@ -4,7 +4,7 @@
     import CircledButtonDarkSmall from "./CircledButtonDarkSmall.svelte";
 
     /**
-     * @type {any[]}
+     * @type {import("$lib/data_objects/data_types").feature[]}
      */
     export let ideas = [
         {
@@ -19,6 +19,9 @@
                 "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWd3t9xapdmxZPRDQ9y0emDyGrtKDoj5u-Aw&s",
                 "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScdDJERRPGgu_4oGpJM11OrIO37kCcStcrUg&s",
             ],
+            description: "",
+            videos: [],
+            categories: [],
         },
         {
             title: "Wolverine videogame",
@@ -31,6 +34,9 @@
                 "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSb_FiDCuw_phv7QoAAAO3P-Tem7QzNzTRBS917aL0aUqiFWB2IOzLVJS1XRB7766X2cU8&usqp=CAU",
                 "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8b2N5JwlRX4ySDR_YTR6eRkvh50FWu-3yfw&s",
             ],
+            description: "",
+            videos: [],
+            categories: [],
         },
     ];
     let newIdeaTitle = "";
@@ -47,6 +53,9 @@
                 title: newIdeaTitle,
                 subtitle: newIdeaSubtitle,
                 images: newIdeaImageUrls,
+                description: "",
+                videos: [],
+                categories: [],
             });
             ideas = ideas;
             newIdeaTitle = "";
@@ -140,6 +149,14 @@
     function removeEditImage(index) {
         editIdeaImages = editIdeaImages.filter((_, i) => i !== index);
         editIdeaImages = editIdeaImages;
+    }
+
+    /**
+     * @param {number} index
+     */
+    function removeIdea(index) {
+        ideas = ideas.filter((_, i) => i !== index);
+        ideas = ideas;
     }
 </script>
 
@@ -274,7 +291,10 @@
                                     msg="edit"
                                     someFunction={() => startEditing(index)}
                                 />
-                                <CircledButtonDarkSmall icon="delete" />
+                                <CircledButtonDarkSmall
+                                    icon="delete"
+                                    someFunction={() => removeIdea(index)}
+                                />
                             </div>
                         </div>
                     {:else}
@@ -286,7 +306,10 @@
                                     msg="edit"
                                     someFunction={() => startEditing(index)}
                                 />
-                                <CircledButtonDarkSmall icon="delete" />
+                                <CircledButtonDarkSmall
+                                    icon="delete"
+                                    someFunction={() => removeIdea(index)}
+                                />
                             </div>
                         </div>
                     {/if}

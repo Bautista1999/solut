@@ -10,30 +10,48 @@
         {
             id: 1,
             title: "Project Kick-off",
-            date: "2024-08-08",
-            icon: "delete",
+            date: new Date("2024-05-25").getTime(),
+            description: "delete",
         },
-        { id: 2, title: "Launch Date", date: "2024-08-08", icon: "delete" },
-        { id: 3, title: "Testing phase", date: "2024-08-08", icon: "delete" },
-        { id: 4, title: "Alpha launch", date: "2024-08-08", icon: "delete" },
-        { id: 5, title: "Beta", date: "2024-08-08", icon: "delete" },
+        {
+            id: 2,
+            title: "Launch Date",
+            date: new Date("2024-05-25").getTime(),
+            description: "delete",
+        },
+        {
+            id: 3,
+            title: "Testing phase",
+            date: new Date("2024-05-25").getTime(),
+            description: "delete",
+        },
+        {
+            id: 4,
+            title: "Alpha launch",
+            date: new Date("2024-05-25").getTime(),
+            description: "delete",
+        },
+        {
+            id: 5,
+            title: "Beta",
+            date: new Date("2024-05-25").getTime(),
+            description: "delete",
+        },
     ];
 
     let newMilestoneTitle = "";
     let newMilestoneDate = "";
 
     // Reactive statement to sort milestones by date
-    $: milestones = milestones.sort(
-        (a, b) => Date.parse(a.date) - Date.parse(b.date),
-    );
+    $: milestones = milestones.sort((a, b) => a.date - b.date);
 
     function addMilestone() {
         if (newMilestoneTitle.trim() && newMilestoneDate) {
             const newMilestone = {
                 id: milestones.length + 1,
                 title: newMilestoneTitle,
-                date: newMilestoneDate,
-                icon: "delete",
+                date: new Date(newMilestoneDate).getTime(),
+                description: "",
             };
             milestones = [...milestones, newMilestone];
             newMilestoneTitle = "";
@@ -61,12 +79,18 @@
     /**
      * @param {number} id
      * @param {string} newTitle
-     * @param {string} newDate
+     * @param {number} newDate
      */
     function saveEdits(id, newTitle, newDate) {
+        console.log("Date", newDate);
+
         const index = milestones.findIndex((m) => m.id === id);
         milestones[index].title = newTitle;
-        milestones[index].date = newDate;
+        console.log("Date", milestones[index].date);
+        milestones[index].date = new Date(newDate).getTime();
+
+        milestones = milestones.sort((a, b) => a.date - b.date);
+        milestones = milestones;
         editingId.set(null); // Stop editing
     }
 
@@ -118,7 +142,9 @@
                     someFunction={cancelEditing}
                 />
             {:else}
-                <div class="timeline-date">{milestone.date}</div>
+                <div class="timeline-date">
+                    {new Date(milestone.date).toLocaleDateString()}
+                </div>
                 <div class="timeline-content">
                     <div class="milestone-title">{milestone.title}</div>
                 </div>

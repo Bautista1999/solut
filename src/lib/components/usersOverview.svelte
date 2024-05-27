@@ -1,31 +1,31 @@
 <script>
     // Import the images or define their URLs
     /**
-     * @type {string[]}
+     * @type {Array<import("$lib/data_objects/data_types").UserProfilePic>}
      */
-    export let images = [];
+    export let users = [];
     export let card = false;
 </script>
 
 {#if card}
     <div class="image-scroller_card" style="">
-        {#each images as image, index (image)}
+        {#each users as user, index (user)}
             <div
                 class="image-container_card"
                 style="left: {index * 15}px; z-index: {100 - index}; "
             >
-                <img src={image} alt={`Image number ${index + 1}`} />
+                <img src={user.image} alt={`Image number ${index + 1}`} />
             </div>
         {/each}
     </div>
 {:else}
     <div class="image-scroller">
-        {#each images as image, index (image)}
+        {#each users as user, index (user)}
             <div
                 class="image-container"
                 style="left: {index * 25}px; z-index: {100 - index};"
             >
-                <img src={image} alt={`Image number ${index + 1}`} />
+                <img src={user.image} alt={`Image number ${index + 1}`} />
             </div>
         {/each}
     </div>

@@ -1,5 +1,6 @@
 import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
+import type { IDL } from '@dfinity/candid';
 
 export interface AssetEncodingNoContent {
     'modified': bigint,
@@ -20,6 +21,13 @@ export interface AssetNoContent {
     'encodings': Array<[string, AssetEncodingNoContent]>,
     'headers': Array<[string, string]>,
     'created_at': bigint,
+    'version': [] | [bigint],
+}
+export interface AuthenticationConfig {
+    'internet_identity': [] | [AuthenticationConfigInternetIdentity],
+}
+export interface AuthenticationConfigInternetIdentity {
+    'derivation_origin': [] | [string],
 }
 export interface CommitBatch {
     'batch_id': bigint,
@@ -39,9 +47,10 @@ export type ControllerScope = { 'Write': null } |
 export interface CustomDomain {
     'updated_at': bigint,
     'created_at': bigint,
+    'version': [] | [bigint],
     'bn_id': [] | [string],
 }
-export interface DelDoc { 'updated_at': [] | [bigint] }
+export interface DelDoc { 'version': [] | [bigint] }
 export interface DeleteControllersArgs { 'controllers': Array<Principal> }
 export interface DepositCyclesArgs {
     'cycles': bigint,
@@ -53,6 +62,7 @@ export interface Doc {
     'data': Uint8Array | number[],
     'description': [] | [string],
     'created_at': bigint,
+    'version': [] | [bigint],
 }
 export interface HttpRequest {
     'url': string,
@@ -116,11 +126,13 @@ export type Permission = { 'Controllers': null } |
 { 'Public': null } |
 { 'Managed': null };
 export interface Rule {
+    'max_capacity': [] | [number],
     'memory': [] | [Memory],
     'updated_at': bigint,
     'max_size': [] | [bigint],
     'read': Permission,
     'created_at': bigint,
+    'version': [] | [bigint],
     'mutable_permissions': [] | [boolean],
     'write': Permission,
 }
@@ -136,15 +148,16 @@ export interface SetControllersArgs {
     'controllers': Array<Principal>,
 }
 export interface SetDoc {
-    'updated_at': [] | [bigint],
     'data': Uint8Array | number[],
     'description': [] | [string],
+    'version': [] | [bigint],
 }
 export interface SetRule {
+    'max_capacity': [] | [number],
     'memory': [] | [Memory],
-    'updated_at': [] | [bigint],
     'max_size': [] | [bigint],
     'read': Permission,
+    'version': [] | [bigint],
     'mutable_permissions': [] | [boolean],
     'write': Permission,
 }
@@ -152,11 +165,14 @@ export interface StorageConfig {
     'iframe': [] | [StorageConfigIFrame],
     'rewrites': Array<[string, string]>,
     'headers': Array<[string, Array<[string, string]>]>,
+    'raw_access': [] | [StorageConfigRawAccess],
     'redirects': [] | [Array<[string, StorageConfigRedirect]>],
 }
 export type StorageConfigIFrame = { 'Deny': null } |
 { 'AllowAny': null } |
 { 'SameOrigin': null };
+export type StorageConfigRawAccess = { 'Deny': null } |
+{ 'Allow': null };
 export interface StorageConfigRedirect {
     'status_code': number,
     'location': string,
@@ -203,8 +219,14 @@ export interface _SERVICE {
     'del_many_docs': ActorMethod<[Array<[string, string, DelDoc]>], undefined>,
     'del_rule': ActorMethod<[RulesType, string, DelDoc], undefined>,
     'deposit_cycles': ActorMethod<[DepositCyclesArgs], undefined>,
+    'get_asset': ActorMethod<[string, string], [] | [AssetNoContent]>,
+    'get_auth_config': ActorMethod<[], [] | [AuthenticationConfig]>,
     'get_config': ActorMethod<[], Config>,
     'get_doc': ActorMethod<[string, string], [] | [Doc]>,
+    'get_many_assets': ActorMethod<
+        [Array<[string, string]>],
+        Array<[string, [] | [AssetNoContent]]>
+    >,
     'get_many_docs': ActorMethod<
         [Array<[string, string]>],
         Array<[string, [] | [Doc]]>
@@ -221,6 +243,7 @@ export interface _SERVICE {
     'list_docs': ActorMethod<[string, ListParams], ListResults_1>,
     'list_rules': ActorMethod<[RulesType], Array<[string, Rule]>>,
     'memory_size': ActorMethod<[], MemorySize>,
+    'set_auth_config': ActorMethod<[AuthenticationConfig], undefined>,
     'set_config': ActorMethod<[Config], undefined>,
     'set_controllers': ActorMethod<
         [SetControllersArgs],
@@ -236,3 +259,5 @@ export interface _SERVICE {
     'upload_asset_chunk': ActorMethod<[UploadChunk], UploadChunkResult>,
     'version': ActorMethod<[], string>,
 }
+export declare const idlFactory: IDL.InterfaceFactory;
+export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];

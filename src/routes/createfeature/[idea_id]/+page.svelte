@@ -6,41 +6,35 @@
     let imageScroller;
 
     import ProfilePicture from "$lib/components/profilePicture.svelte";
-    import { nanoid } from "nanoid";
     import Breadcrumbs from "$lib/components/breadcrumbs.svelte";
-    import PageTabs from "$lib/components/PageTabs.svelte";
-    import AboutProject from "$lib/components/AboutProject.svelte";
-    import CommentSection from "$lib/components/CommentSection.svelte";
-    import Footer from "$lib/components/Footer.svelte";
+    import SuccessNew from "$lib/components/Success_New.svelte";
+
     import EditSubtitle from "$lib/components/EditSubtitle.svelte";
     import EditTitle from "$lib/components/EditTitle.svelte";
-    import BasicButtonSmall from "$lib/components/BasicButton_Small.svelte";
     import BasicButtonDarkSmall from "$lib/components/BasicButton_Dark_Small.svelte";
     import DescriptionEdit from "$lib/components/DescriptionEdit.svelte";
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
-    //import { success, isLoading } from "$lib/stores/other_stores";
-    import Loading from "$lib/components/loading.svelte";
-    import Success from "$lib/components/success.svelte";
-    import { goto } from "$app/navigation";
-    import AddFeaturesSection from "$lib/components/AddFeaturesSection.svelte";
 
-    export let msg = "Label";
-    /** @type {import('./$types').PageData} */
-    // @ts-ignore
-    export let data;
+    import { goto } from "$app/navigation";
+    import { setFeatures } from "$lib/data_functions/create_functions";
+    import ErrorMessage from "$lib/components/ErrorMessage.svelte";
+    import LoadingNew from "$lib/components/LoadingNew.svelte";
+    import { onMount } from "svelte";
+    import { getDoc } from "@junobuild/core";
+
     let key = "";
     /**
      * @type {string[]}
      */
     let images = [];
     $: title = "";
-    let ideaTitle = "Parent Idea";
+    /** @type {import('./$types').PageData} */
+    export let data;
+    let parentIdeaTitle = "";
     let subtitle = "";
-    let description =
-        "This idea is a decentralized platform designed to transform how ideas are shared, developed, and funded. Users can submit ideas, crowdsource feature requests to address these ideas, and crowdfund resources to bring the best features to life. This platform leverages blockchain technology to ensure transparency and fairness, allowing contributors to earn bounties and users to pay only upon delivery. Solutio's innovative use of a reputation system enhances safety and trust without requiring KYC, supporting anonymous accounts for those prioritizing privacy.";
-    let user = "Johannes Jung";
-    let userPicture =
-        "https://i.pinimg.com/474x/05/c3/59/05c359cd010df3e7f1ea3cb6f6f54fad.jpg";
+    let desc = "";
+    let user = "";
+    let userPicture = "";
     let tabs = ["Pledge Timeline", "Comments", "About the project"];
     let activeTab = tabs[2]; // default active tab
     // Function to change active tab
@@ -63,6 +57,10 @@
         newImage = "";
     }
     let newTag = "";
+    /**
+     * @type {never[]}
+     */
+    let videos = [];
     /**
      * @type {string[]}
      */
@@ -92,15 +90,65 @@
     }
     let isLoading = false;
     let success = false;
+    let error = false;
+    let errorMsg = "";
+    let ideaKey = "";
+    let loadingMsg = "Uploading data...";
     async function onPost() {
+        loadingMsg = "Uploading data...";
         document.body.scrollIntoView({ behavior: "smooth" });
         isLoading = true;
 
-        setTimeout(() => {
+        let ideaPost = {
+            title: title,
+            subtitle: subtitle,
+            description: desc,
+            images: images,
+            videos: videos,
+            categories: tags,
+        };
+        isLoading = true;
+        try {
+            let creation = await setFeatures([ideaPost], parentIdeaKey);
+            if (typeof creation === "string") {
+                error = true;
+                errorMsg = creation;
+            } else if (Array.isArray(creation) && creation.length > 0) {
+                ideaKey = creation[0].key;
+            } else {
+                ideaKey = "";
+            }
+            console.log("Your creation: ", creation);
+        } catch (e) {
             isLoading = false;
+            error = true;
+            console.log(e);
+            errorMsg = String(e); // Convert the error object to a string
+        }
+        isLoading = false;
+        if (!error) {
             success = true;
-        }, 2500);
+        }
     }
+    let parentIdeaKey = "";
+    onMount(async () => {
+        console.log("Idea ID:", data.params.idea_id);
+        isLoading = true;
+        loadingMsg = "Checking parent's idea existance...";
+        let parentDoc = await getDoc({
+            collection: "index_search",
+            key: "INDEX_" + data.params.idea_id,
+        });
+        isLoading = false;
+        if (typeof parentDoc == "undefined") {
+            error = true;
+
+            errorMsg = "Parent idea non-existent";
+        } else {
+            parentIdeaKey = data.params.idea_id;
+            parentIdeaTitle = parentDoc.data.title;
+        }
+    });
     /**
      * @type {never[]}
      */
@@ -108,12 +156,12 @@
 </script>
 
 <div class="body">
-    {#if !isLoading && !success}
+    {#if !isLoading && !success && !error}
         <div class="content">
             <div class="container">
                 <div class="Subtitle">
                     <EditSubtitle
-                        title={subtitle}
+                        bind:title={subtitle}
                         active={subtitleActive}
                         messageSubtitle={"Here type the subtitle of the feature."}
                     />
@@ -123,7 +171,7 @@
                 <div class="Title">
                     <EditTitle
                         {active}
-                        {title}
+                        bind:title
                         messageTitle={"Here type the title of the feature."}
                     />
                     <div style="height: 10px;"></div>
@@ -136,7 +184,10 @@
                     <Breadcrumbs
                         breadcrumbs={[
                             { title: "Home", link: "" },
-                            { title: ideaTitle, link: "/idea" },
+                            {
+                                title: parentIdeaTitle,
+                                link: "/idea/" + parentIdeaKey,
+                            },
                             { title: title, link: "" },
                         ]}
                     />
@@ -181,6 +232,7 @@
                             <DescriptionEdit
                                 descriptionMessage={"Describe the feature or idea you are thinking."}
                                 popUpTitle={"Description of the feature"}
+                                bind:description={desc}
                             />
                         {/if}
                     </div>
@@ -237,19 +289,22 @@
             </div>
         </div>
     {:else if success}
-        <div
-            style="display: flex; justify-content:center; align-items:center; flex-direction:column"
-        >
-            <Success msg={"Feature-request added successfully"} />
-            <BasicButtonDark
-                msg={"See the new feature created"}
-                someFunction={() => {
-                    goto("/feature");
-                }}
-            />
-        </div>
+        <SuccessNew
+            message={"Idea created successfully"}
+            someFunction={() => {
+                goto("/feature/" + ideaKey);
+            }}
+        />
+    {:else if error}
+        <ErrorMessage
+            message={"The creation of the feature failed."}
+            error={errorMsg}
+            someFunction={() => {
+                error = false;
+            }}
+        />
     {:else}
-        <Loading msg={"Uploading data"} width={30} />
+        <LoadingNew message={loadingMsg} />
     {/if}
 </div>
 

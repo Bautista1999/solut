@@ -20,6 +20,7 @@
     import { onMount } from "svelte";
     import MagicalDots from "./magicalDots.svelte";
     import { FallingConfetti } from "svelte-canvas-confetti";
+    import SuccessModalNew from "./SuccessModalNew.svelte";
     let amountUSD = 10;
     export let documentID = "";
     export let collectionName = "";
@@ -78,7 +79,6 @@
     //   ],
     // },
     onMount(() => {
-        debugger;
         for (let i = 0; i < pledges.length; i++) {
             total = total + pledges[i].amount;
         }
@@ -211,13 +211,16 @@
             >
                 <p style="font-size: larger; ">Success!</p>
                 <br />
-                <p>You have successfully approved the delivered product!</p>
+                <p></p>
                 <FallingConfetti />
                 <FallingConfetti />
                 <FallingConfetti />
                 <FallingConfetti /><FallingConfetti /><FallingConfetti
                 /><FallingConfetti /><FallingConfetti />
             </div>
+            <!-- <SuccessModalNew
+                message={"You have successfully approved the delivered product!"}
+            /> -->
         {:else if deliveryStatus == "Loading"}
             <MagicalDots />
         {:else}
