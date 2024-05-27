@@ -32,9 +32,11 @@
     "@dfinity/nns": "^4.0.1",
     "@dfinity/principal": "^1.0.1",
     "@dfinity/utils": "^2.1.2",
-    "@junobuild/core": "^0.0.46",
+    "@junobuild/core": "^0.0.51",
+    "@junobuild/core-peer": "^0.0.16",
     "@junobuild/utils": "^0.0.19",
     "buffer": "^6.0.3",
+    "country-list": "^2.3.0",
     "openai": "^4.24.7",
     "p5": "^1.9.3",
     "svelte-canvas-confetti": "^0.6.0"
