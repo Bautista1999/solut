@@ -27,9 +27,9 @@
   //   await initialize();
   // });
 
-  onMount(async () => {
+  const init = async () => {
     await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
-  });
+  }
 </script>
 
 <div class="body">
@@ -41,7 +41,11 @@
     <div class="Sidebar"><SideMenu /></div>
     <div class="Header"><HeaderV2 /></div>
     <div class="Body-content">
-      <slot />
+      {#await init()}
+        <!-- TODO: a loading component. That said loading Juno module is fast -->
+      {:then _}
+        <slot />
+      {/await}
     </div>
     <div class="Footer"><Footer /></div>
   </div>
