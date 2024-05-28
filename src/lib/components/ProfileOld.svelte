@@ -21,7 +21,7 @@
     let userData = createUser();
     let changeUserName = false;
     /**
-     * @type {import("@junobuild/core").Doc<any> | null | undefined}
+     * @type {import("@junobuild/core-peer").Doc<any> | null | undefined}
      */
     let myUserDoc = null;
     let amountTokens = 0;

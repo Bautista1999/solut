@@ -111,7 +111,7 @@ export async function getUserImages(users_ids){
 
 /**
  * @param {string} idea_id
- * @return {Promise<Array<import("@junobuild/core").Doc<any>>>}
+ * @return {Promise<Array<import("@junobuild/core-peer").Doc<any>>>}
  */
 export async function getFeaturesOfIdea(idea_id){
     let docs = await listDocs({

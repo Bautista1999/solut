@@ -21,7 +21,7 @@
     import TagsDisplay from "$lib/components/TagsDisplay.svelte";
     import TimelineEdit from "$lib/components/TimelineEdit.svelte";
     import { onMount } from "svelte";
-    import { getDoc, initJuno } from "@junobuild/core";
+    import { getDoc, initJuno } from "@junobuild/core-peer";
     import { setSolution } from "$lib/data_functions/create_functions";
 
     /** @type {import('./$types').PageData} */

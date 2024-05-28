@@ -1,4 +1,4 @@
-import { authSubscribe, initJuno } from "@junobuild/core";
+import { authSubscribe, initJuno } from "@junobuild/core-peer";
 
 /** 
 * @return {Promise<boolean>}

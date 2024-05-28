@@ -1,4 +1,4 @@
-import { getDoc, listDocs, setDoc } from "@junobuild/core";
+import { getDoc, listDocs, setDoc } from "@junobuild/core-peer";
 
 let kickoffDeadline = {
     newDate: { day: 0, month: 0, year: 0 },

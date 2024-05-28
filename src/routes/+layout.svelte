@@ -9,7 +9,7 @@
   import SideMenu from "$lib/components/SideMenu.svelte";
   import HeaderV2 from "$lib/components/Header_v2.svelte";
   import Footer from "$lib/components/Footer.svelte";
-  import { initSatellite } from "@junobuild/core";
+  import { initSatellite } from "@junobuild/core-peer";
 
   // This variable ensures the initialization function runs only once
   // let hasInitialized = false;

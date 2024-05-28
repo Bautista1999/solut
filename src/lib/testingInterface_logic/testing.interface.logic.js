@@ -1,7 +1,7 @@
-import { setDoc, initJuno, getDoc,deleteDoc, setManyDocs as setManyDocs_juno } from "@junobuild/core";
+import { setDoc, initJuno, getDoc,deleteDoc, setManyDocs as setManyDocs_juno } from "@junobuild/core-peer";
 import { nanoid } from "nanoid";
 import { Actor, HttpAgent } from "@dfinity/agent";
-import { authSubscribe, unsafeIdentity } from "@junobuild/core";
+import { authSubscribe, unsafeIdentity } from "@junobuild/core-peer";
 import { Principal } from "@dfinity/principal";
 import { createAgent } from "@dfinity/utils";
 import {  IDL } from "@dfinity/candid";
