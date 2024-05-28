@@ -32,7 +32,6 @@
     "@dfinity/nns": "^4.0.1",
     "@dfinity/principal": "^1.0.1",
     "@dfinity/utils": "^2.1.2",
-    "@junobuild/core": "^0.0.51",
     "@junobuild/core-peer": "^0.0.16",
     "@junobuild/utils": "^0.0.19",
     "buffer": "^6.0.3",

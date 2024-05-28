@@ -5,7 +5,7 @@
     import BasicButtonDarkSmall from "$lib/components/BasicButton_Dark_Small.svelte";
     import BasicButton from "$lib/components/basicButton.svelte";
     import { page } from "$app/stores";
-    import { authSubscribe, initJuno, signIn } from "@junobuild/core";
+    import { authSubscribe, initJuno, signIn } from "@junobuild/core-peer";
     import { isRegistered } from "$lib/data_functions/user.functions";
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
 

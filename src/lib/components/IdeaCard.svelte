@@ -15,7 +15,7 @@
     import UsersOverview from "./usersOverview.svelte";
 
     /**
-     * @type {import("@junobuild/core").Doc<any>}
+     * @type {import("@junobuild/core-peer").Doc<any>}
      */
     export let feature;
     export let padding = 7;

@@ -14,7 +14,7 @@
         listDocs,
         deleteDoc,
         signIn,
-    } from "@junobuild/core";
+    } from "@junobuild/core-peer";
     import { onMount } from "svelte";
     import { nanoid } from "nanoid";
     import {

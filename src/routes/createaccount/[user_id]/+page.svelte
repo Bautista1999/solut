@@ -3,7 +3,7 @@
     import BasicButtonDarkLarger from "$lib/components/BasicButtonDarkLarger.svelte";
     import BasicButtonLarger from "$lib/components/BasicButtonLarger.svelte";
     import BasicButtonDarkSmall from "$lib/components/BasicButton_Dark_Small.svelte";
-    import { authSubscribe } from "@junobuild/core";
+    import { authSubscribe } from "@junobuild/core-peer";
     import { onMount } from "svelte";
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import { setUser } from "$lib/data_functions/create_functions";

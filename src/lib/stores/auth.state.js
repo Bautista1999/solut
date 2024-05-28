@@ -1,6 +1,6 @@
 import { get, writable } from "svelte/store";
-import { initJuno, listDocs } from "@junobuild/core";
-import { authSubscribe, unsafeIdentity } from "@junobuild/core";
+import { initJuno, listDocs } from "@junobuild/core-peer";
+import { authSubscribe, unsafeIdentity } from "@junobuild/core-peer";
 import { Principal } from "@dfinity/principal";
 import { idlFactory } from "$lib/declarations/icrc.declarations.did";
 import { loginedIn } from "./other_stores";

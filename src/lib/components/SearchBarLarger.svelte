@@ -1,6 +1,6 @@
 <script>
     import { description } from "$lib/data_objects/testing_objects";
-    import { listDocs } from "@junobuild/core";
+    import { listDocs } from "@junobuild/core-peer";
     import AddFeaturesSection from "./AddFeaturesSection.svelte";
     import MagicalDots from "./magicalDots.svelte";
     import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";

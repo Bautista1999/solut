@@ -1,5 +1,5 @@
 <script>
-    import { signIn } from "@junobuild/core";
+    import { signIn } from "@junobuild/core-peer";
     import Modal from "./modal.svelte";
     import { info } from "$lib/stores/auth.state";
     import { registerUser } from "$lib/data_functions/user.functions";

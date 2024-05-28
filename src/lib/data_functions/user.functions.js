@@ -1,6 +1,6 @@
 import { basicInfo, signedIn } from "$lib/stores/auth.state";
 import { isLoading, loginedIn, signInSuccessful } from "$lib/stores/other_stores";
-import { getDoc, listDocs, setDoc, signIn } from "@junobuild/core";
+import { getDoc, listDocs, setDoc, signIn } from "@junobuild/core-peer";
 import { info } from "../stores/auth.state";
 import { createNotification, createUser } from "$lib/data_objects/data_objects";
 import { nanoid } from "nanoid";

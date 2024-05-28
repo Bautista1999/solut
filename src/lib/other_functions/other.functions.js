@@ -3,7 +3,7 @@ import { createAdvancedDate, createPledgedElement, createSolution } from "$lib/d
 import { info, signedIn } from "$lib/stores/auth.state";
 import { pledgeModal } from "$lib/stores/other_stores";
 import { DateInTheFutureValidator } from "$lib/validators/create.validator";
-import { getDoc, setDoc } from "@junobuild/core";
+import { getDoc, setDoc } from "@junobuild/core-peer";
 import { get, writable } from "svelte/store";
 
 export const copied = writable(false);

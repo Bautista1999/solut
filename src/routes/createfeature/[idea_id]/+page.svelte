@@ -20,7 +20,7 @@
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import { onMount } from "svelte";
-    import { getDoc } from "@junobuild/core";
+    import { getDoc } from "@junobuild/core-peer";
 
     let key = "";
     /**

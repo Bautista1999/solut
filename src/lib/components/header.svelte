@@ -1,7 +1,7 @@
 <script>
     import { basicInfo, info, initDB, signedIn } from "$lib/stores/auth.state";
     import { afterUpdate, beforeUpdate, onDestroy, onMount } from "svelte";
-    import { signIn, signOut } from "@junobuild/core";
+    import { signIn, signOut } from "@junobuild/core-peer";
     import { amountNotis, loginedIn } from "$lib/stores/other_stores";
     import { createNotification } from "$lib/data_objects/data_objects";
     import { howLongAgo } from "$lib/other_functions/other.functions";

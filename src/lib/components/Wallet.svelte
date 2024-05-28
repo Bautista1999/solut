@@ -1,7 +1,7 @@
 <script>
     import { goto } from "$app/navigation";
     import { getWalletAddress } from "$lib/data_functions/docu.functions";
-    import { authSubscribe, initJuno } from "@junobuild/core";
+    import { authSubscribe, initJuno } from "@junobuild/core-peer";
     import { onMount } from "svelte";
     export let wallet_address = "";
     export let principal = "";

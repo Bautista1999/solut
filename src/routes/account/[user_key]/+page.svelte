@@ -21,7 +21,7 @@
         getUserTransactions_bySender,
     } from "$lib/financial_functions/financial_functions";
     import { Principal } from "@dfinity/principal";
-    import { authSubscribe, getDoc, initJuno, listDocs } from "@junobuild/core";
+    import { authSubscribe, getDoc, initJuno, listDocs } from "@junobuild/core-peer";
     import { onMount } from "svelte";
 
     /** @type {import('./$types').PageData} */

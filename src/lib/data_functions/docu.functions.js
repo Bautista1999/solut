@@ -6,7 +6,7 @@ import { orderByDate } from "$lib/other_functions/other.functions";
 //Svelte library
 import { get } from "svelte/store";
 //Juno library
-import { authSubscribe, getDoc, listDocs, setDoc, signIn, unsafeIdentity } from "@junobuild/core";
+import { authSubscribe, getDoc, listDocs, setDoc, signIn, unsafeIdentity } from "@junobuild/core-peer";
 //Dfinity libraries
 import { Principal } from "@dfinity/principal";
 import { createAgent } from "@dfinity/utils";
