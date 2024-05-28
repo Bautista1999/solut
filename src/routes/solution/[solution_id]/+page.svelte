@@ -37,6 +37,7 @@
         getUserImages,
     } from "$lib/data_functions/get_functions";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
+    import {junoInitialized} from "$lib/stores/app.state";
 
     let userKey = "";
     let ownerKey = "";
@@ -88,13 +89,17 @@
     function pledgeModalOpen() {
         pledgeModal.set(true);
     }
-    onMount(async () => {
+    const load = async () => {
+        if (!$junoInitialized) {
+            return;
+        }
+
         isLoading = true;
-        // await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
         let doc = await getDoc({
             collection: "solution",
             key: key,
         });
+
         if (doc == undefined) {
             isLoading = false;
             solutionNonExistent = true;
@@ -111,12 +116,14 @@
             }
         }
         isLoading = false;
-    });
+    };
+
+    $: $junoInitialized, (async () => await load())()
 </script>
 
 <div class="body">
     <div class="content">
-        {#if !isLoading && !success && !solutionNonExistent && !error}
+        {#if $junoInitialized && !isLoading && !success && !solutionNonExistent && !error}
             <div class="container">
                 <div class="Subtitle">{subtitle}</div>
                 <div class="Title" style="color: var(--secondary-color);">

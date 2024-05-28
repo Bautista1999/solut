@@ -10,6 +10,7 @@
   import HeaderV2 from "$lib/components/Header_v2.svelte";
   import Footer from "$lib/components/Footer.svelte";
   import { initSatellite } from "@junobuild/core-peer";
+  import {junoInitialized} from "$lib/stores/app.state";
 
   // This variable ensures the initialization function runs only once
   // let hasInitialized = false;
@@ -28,7 +29,12 @@
   // });
 
   onMount(async () => {
-    await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
+    try {
+      await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
+      junoInitialized.set(true);
+    } catch (error) {
+      // TODO: hande exception
+    }
   });
 </script>
 
