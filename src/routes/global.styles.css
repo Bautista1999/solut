@@ -134,6 +134,7 @@ a {
     align-items: center;
     color: var(--seventh-color);
     cursor: pointer;
+    text-decoration: underline;
     text-align: left;
 }
 
@@ -252,4 +253,34 @@ a:hover {
     width: 0%;
     height: 100%;
     border: 0.1px solid var(--seventh-color);
+}
+
+.featureFlag {
+    background-color: var(--green);
+    color: white;
+    border: 1px solid var(--tertiary-color);
+    box-shadow: 2px 2px 0px 0px var(--tertiary-color);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: normal;
+}
+
+.ideaFlag {
+    background-color: var(--primary-color);
+    border: 1px solid var(--tertiary-color);
+    box-shadow: 2px 2px 0px 0px var(--tertiary-color);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: normal;
+}
+
+.solutionFlag {
+    background-color: var(--sky-blue);
+    border: 1px solid var(--tertiary-color);
+    box-shadow: 2px 2px 0px 0px var(--tertiary-color);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: normal;
 }

@@ -28,6 +28,9 @@
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import SuccessNew from "$lib/components/Success_New.svelte";
     import { setIdea } from "$lib/data_functions/create_functions";
+    import { onMount } from "svelte";
+    import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
+    import { path } from "$lib/stores/redirect_store";
 
     export let msg = "Label";
     /** @type {import('./$types').PageData} */
@@ -157,6 +160,13 @@
     let error = false;
     let isLoading = false;
     let errorMsg = "";
+
+    onMount(async () => {
+        if (!(await CheckIfSignedIn())) {
+            path.set("/create");
+            goto("/signin/");
+        }
+    });
 </script>
 
 <div class="body">

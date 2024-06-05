@@ -12,7 +12,9 @@ export const idlFactory = ({ IDL }) => {
     'amount' : IDL.Nat,
   });
   const Transaction = IDL.Record({
+    'to' : IDL.Vec(IDL.Nat8),
     'status' : IDL.Text,
+    'from' : IDL.Vec(IDL.Nat8),
     'created_at' : IDL.Nat64,
     'sender' : IDL.Principal,
     'target' : IDL.Principal,
@@ -114,10 +116,12 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'updateSolutionStatus' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
-    'verifyAndStoreTransaction' : IDL.Func([IDL.Nat64], [IDL.Text], []),
+    'verifyAndStoreTransaction' : IDL.Func(
+        [IDL.Nat64, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Text],
+        [],
+      ),
   });
 };
 // @ts-ignore
 export const init = ({ IDL }) => { return []; };
-
-

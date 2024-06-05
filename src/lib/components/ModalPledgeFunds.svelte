@@ -121,7 +121,6 @@
                 error={errorMsg}
                 someFunction={() => {
                     error = false;
-                    pledgeModal.set(false);
                 }}
             />
         {:else}

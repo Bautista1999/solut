@@ -3,16 +3,17 @@
 
     export let error = "";
     export let someFunction = () => {};
+    export let width = "100";
 </script>
 
 <div
     class="under-construction"
-    style=" text-align:center; color: var(--seventh-color); "
+    style=" text-align:center; color: var(--seventh-color); max-width:{width}%;overflow: scroll;"
 >
     <span class="material-symbols-outlined"> error </span>
     <h1>Error!</h1>
     <p>Oops... Something went wrong!</p>
-    <p class="InputErrorMessage">{error}</p>
+    <p class="InputErrorMessage" style="width:{60}%">{error}</p>
     <br />
     <div class="VerticallyAligned">
         <BasicButtonDarkSmall

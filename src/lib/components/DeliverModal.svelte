@@ -25,18 +25,18 @@
     import { onDestroy } from "svelte";
     import MagicalDots from "./magicalDots.svelte";
     import { FallingConfetti } from "svelte-canvas-confetti";
-    let amountUSD = 10;
-    export let documentID = "";
-    export let collectionName = "";
+    import { deliverSolution } from "$lib/data_functions/create_functions";
+    import ErrorModalNew from "./ErrorModalNew.svelte";
+    export let solution_id = "";
     let error = "";
     let deliveryStatus = "";
-    let showModal6 = false;
     onDestroy(() => {
         TransactionsSuccess.set(false);
         TransactionsInProgress.set(false);
         PaymentModal.set(false);
     });
     let linkUrl = "";
+    let errorMsg = "";
     let termsAccepted = false;
 </script>
 
@@ -114,12 +114,17 @@
                 /><FallingConfetti /><FallingConfetti />
             </div>
         {:else if deliveryStatus == "Error"}
-            <p>Oops... something went wrong</p>
+            <ErrorModalNew
+                error={errorMsg}
+                someFunction={() => {
+                    deliveryStatus = "";
+                }}
+            />
         {:else}
             <div class="VerticallyAligned">
                 <BasicButtonDarkSmall
                     msg={"Deliver product"}
-                    someFunction={() => {
+                    someFunction={async () => {
                         if (linkUrl.length == 0) {
                             error = "NotLink";
                             setTimeout(() => {
@@ -135,9 +140,21 @@
                             return;
                         }
                         deliveryStatus = "Loading";
+                        try {
+                            let deliveryProcess = await deliverSolution(
+                                solution_id,
+                                linkUrl,
+                            );
+                        } catch (e) {
+                            errorMsg = String(e);
+                            deliveryStatus = "Error";
+                            return;
+                        }
+                        deliveryStatus = "Success";
                         setTimeout(() => {
-                            deliveryStatus = "Success";
-                        }, 3000);
+                            deliveryStatus = "";
+                            goto("/solution/" + solution_id);
+                        }, 5000);
                     }}
                 />
             </div>

@@ -1,50 +1,71 @@
 <script>
+    /**
+     * @type {any[]}
+     */
     export let milestones = [
-        {
-            id: 1,
-            title: "Project Kick-off",
-            date: "7/12/24",
-            icon: "rocket.svg",
-        },
-        { id: 2, title: "Launch Date", date: "7/1/25", icon: "rocket.svg" },
-        { id: 3, title: "Testing phase", date: "19/2/25", icon: "rocket.svg" },
-        { id: 4, title: "Alpha launch", date: "1/3/25", icon: "rocket.svg" },
-        { id: 5, title: "Beta", date: "25/5/25", icon: "rocket.svg" },
+        // {
+        //     id: 1,
+        //     title: "Project Kick-off",
+        //     date: 1716595200000,
+        //     icon: "rocket.svg",
+        // },
+        // {
+        //     id: 2,
+        //     title: "Launch Date",
+        //     date: 1716595200000,
+        //     icon: "rocket.svg",
+        // },
+        // {
+        //     id: 3,
+        //     title: "Testing phase",
+        //     date: 1716595200000,
+        //     icon: "rocket.svg",
+        // },
+        // {
+        //     id: 4,
+        //     title: "Alpha launch",
+        //     date: 1716595200000,
+        //     icon: "rocket.svg",
+        // },
+        // { id: 5, title: "Beta", date: 1716595200000, icon: "rocket.svg" },
         // Add more milestones if needed
     ];
 
+    /**
+     * @type {any[]}
+     */
     export let updates = [
-        {
-            id: 1,
-            content: "Hey there! Today we have the project launch. Ready?",
-            date: "12/19/2023",
-            milestoneId: 1,
-            type: "development",
-        },
-        {
-            id: 2,
-            content:
-                "After various months of development, today we have our testing launch phase. This is going to be huge! Hope you like it.",
-            date: "12/19/2024",
-            milestoneId: 2,
-            type: "design",
-        },
-        {
-            id: 3,
-            content:
-                "After receiving some feedback, certain bugs were fixed. Already deployed the new version...",
-            date: "12/19/2024",
-            milestoneId: 2,
-            type: "development",
-        },
-        {
-            id: 4,
-            content:
-                "Preparing for the alpha launch. Starting with the testing phase, crutial to ensure maximum user experience.",
-            date: "12/19/2024",
-            milestoneId: 3,
-            type: "development",
-        },
+        // {
+        //     id: 1,
+        //     content: "Hey there! Today we have the project launch. Ready?",
+        //     date: 1716595200000,
+        //     milestoneId: 1,
+        //     type: "development",
+        // },
+        // {
+        //     id: 2,
+        //     content:
+        //         "After various months of development, today we have our testing launch phase. This is going to be huge! Hope you like it.",
+        //     date: 1716595200000,
+        //     milestoneId: 2,
+        //     type: "design",
+        // },
+        // {
+        //     id: 3,
+        //     content:
+        //         "After receiving some feedback, certain bugs were fixed. Already deployed the new version...",
+        //     date: 1716595200000,
+        //     milestoneId: 2,
+        //     type: "development",
+        // },
+        // {
+        //     id: 4,
+        //     content:
+        //         "Preparing for the alpha launch. Starting with the testing phase, crutial to ensure maximum user experience.",
+        //     date: 1716595200000,
+        //     milestoneId: 3,
+        //     type: "development",
+        // },
         // Add more updates if needed
     ];
     // Function to determine the update type color
@@ -65,16 +86,48 @@
 </script>
 
 <div class="timeline">
-    <div class="timeline-line"></div>
-
-    {#each milestones as milestone (milestone.id)}
-        <div class="timeline-item">
-            <div class="milestone">
-                <div class="milestone-badge">{milestone.title}</div>
-                <div class="milestone-date">{milestone.date}</div>
+    {#if milestones.length > 0 && updates.length > 0}
+        <div class="timeline-line"></div>
+        {#each milestones as milestone (milestone.id)}
+            <div class="timeline-item">
+                <div class="milestone">
+                    <div class="milestone-badge">{milestone.title}</div>
+                    <div class="milestone-date">
+                        {new Date(milestone.date).toISOString().split("T")[0]}
+                    </div>
+                </div>
+                <div class="updates">
+                    {#each updates.filter((u) => u.milestoneId === milestone.id) as update (update.id)}
+                        <div
+                            class="display:flex; justify-content:center; align-items:center; gap:0px; flex-direction:row;"
+                        >
+                            <div
+                                style="width: 30px; height:1px; background-color:var(--seventh-color); transform: translateY(15px)  translateX(-10px);"
+                            ></div>
+                            <div class="update" style={``}>
+                                <p>
+                                    {update.content}
+                                    <span
+                                        style="font-size:small; font-weight:300; font-style:italic; "
+                                    ></span>
+                                </p>
+                                <div class="update-date">
+                                    {new Date(update.date)
+                                        .toISOString()
+                                        .split("T")[0]}
+                                </div>
+                            </div>
+                        </div>
+                    {/each}
+                </div>
             </div>
+        {/each}
+    {:else if milestones.length == 0 && updates.length > 0}
+        <div class="timeline-line"></div>
+        <div class="timeline-item">
+            <div class="milestone"></div>
             <div class="updates">
-                {#each updates.filter((u) => u.milestoneId === milestone.id) as update (update.id)}
+                {#each updates as update (update.id)}
                     <div
                         class="display:flex; justify-content:center; align-items:center; gap:0px; flex-direction:row;"
                     >
@@ -88,13 +141,35 @@
                                     style="font-size:small; font-weight:300; font-style:italic; "
                                 ></span>
                             </p>
-                            <div class="update-date">{update.date}</div>
+                            <div class="update-date">
+                                {new Date(update.date)
+                                    .toISOString()
+                                    .split("T")[0]}
+                            </div>
                         </div>
                     </div>
                 {/each}
             </div>
         </div>
-    {/each}
+    {:else if milestones.length > 0 && updates.length == 0}
+        {#each milestones as milestone (milestone.id)}
+            <div
+                class="timeline-item"
+                style="display:flex;flex-direction:column;align-items: center; justify-content:center;"
+            >
+                <div class="timeline-line" style="left: 40%;;"></div>
+
+                <div class="milestone" style="gap:30px;">
+                    <div class="milestone-badge">{milestone.title}</div>
+                    <div class="milestone-date" style="z-index:1; right: 110%;">
+                        {new Date(milestone.date).toISOString().split("T")[0]}
+                    </div>
+                </div>
+            </div>
+        {/each}
+    {:else if milestones.length == 0 && updates.length == 0}
+        <p>No updates nor milestones to show</p>
+    {/if}
 </div>
 
 <style>
@@ -137,6 +212,7 @@
         padding: 5px 20px;
         border-radius: 2px; /* Less rounded than 50% */
         display: inline-block;
+        min-width: fit-content;
         border: 1px solid var(--seventh-color);
         box-shadow: 2px 2px 0px 0px var(--seventh-color);
         margin-right: 20px; /* Distance from the line */

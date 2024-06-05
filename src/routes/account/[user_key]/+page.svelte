@@ -13,16 +13,26 @@
     import Reputation from "$lib/components/Reputation.svelte";
     import TransactionDisplay from "$lib/components/TransactionDisplay.svelte";
     import Wallet from "$lib/components/Wallet.svelte";
+    import WithdrawSection from "$lib/components/WithdrawSection.svelte";
     import Loading from "$lib/components/loading.svelte";
     import ProfilePicture from "$lib/components/profilePicture.svelte";
     import { getWalletAddress } from "$lib/data_functions/docu.functions";
+    import { usernameExists } from "$lib/data_functions/get_functions.js";
+    import { updateUser } from "$lib/data_functions/update_functions";
     import {
         getUserBalance,
         getUserTransactions_bySender,
     } from "$lib/financial_functions/financial_functions";
+    import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { Principal } from "@dfinity/principal";
-    import { authSubscribe, getDoc, initJuno, listDocs } from "@junobuild/core-peer";
+    import {
+        authSubscribe,
+        getDoc,
+        initJuno,
+        listDocs,
+    } from "@junobuild/core-peer";
     import { onMount } from "svelte";
+    import { writable } from "svelte/store";
 
     /** @type {import('./$types').PageData} */
     export let data;
@@ -54,6 +64,23 @@
     // State to store the edited description
     let editedDescription = "";
     let editedUserName = "";
+    let copied = writable(false);
+
+    const handleCopy = () => {
+        const textToCopy = `${location.origin}/signin/${userKey}`;
+        navigator.clipboard.writeText(textToCopy);
+        copied.set(true);
+        setTimeout(() => {
+            copied.set(false);
+        }, 3000);
+    };
+    /**
+     * @type {import("@junobuild/core-peer").Doc.<any>}
+     */
+    let userData = {
+        key: "",
+        data: {},
+    };
     function toggleEditing() {
         isEditing = !isEditing;
         if (!isEditing) {
@@ -74,26 +101,59 @@
             Github_account_edited = Github_account;
         }
     }
-
+    let usernameExistance = false;
     // Function to handle saving the edited username
-    function save() {
+    async function save() {
         user_name = editedUserName; // Update the user_name
         description = editedDescription; // Update the user_name
         x_account = x_account_edited;
         insta_account = insta_account_edited;
         linkedIn_account = linkedIn_account_edited;
         Github_account = Github_account_edited;
+
+        /**
+         * @type {import("$lib/data_objects/data_types").user}
+         */
+        let user = {
+            username: user_name,
+            profilePicture: profile,
+            // @ts-ignore
+            images: userData.images,
+            // @ts-ignore
+            videos: userData.videos,
+            // @ts-ignore
+            sex: userData.sex,
+            // @ts-ignore
+            country: userData.country,
+
+            description: description,
+            // @ts-ignore
+            categories: userData.categories,
+            xAccount: x_account,
+            instaAccount: insta_account,
+            GitHubAccount: Github_account,
+            linkedInAccount: linkedIn_account,
+            linkPage: "",
+            otherlinks: [],
+        };
+        if (await usernameExists(user_name, data.params.user_key)) {
+            usernameExistance = true;
+            setTimeout(() => {
+                usernameExistance = false;
+            }, 3000);
+            return;
+        }
+        updateUser(user, data.params.user_key);
         toggleEditing(); // Exit editing mode
     }
 
     onMount(async () => {
         isLoading = true;
-        await initJuno({
-            satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
-        });
+        if (!(await CheckIfSignedIn())) {
+            goto("/signin/");
+        }
         authSubscribe(async (user) => {
             if (user == null) {
-                goto("/signin/");
             } else {
                 userKey = user.key;
                 if (user.key != data.params.user_key) {
@@ -109,6 +169,7 @@
                         errorMsg = "User not registered";
                         goto("/createaccount/" + userKey);
                     } else {
+                        userData = userDoc.data;
                         let data = userDoc.data;
                         user_name = data.username;
                         profile = data.profilePicture;
@@ -127,7 +188,7 @@
     });
 
     async function getTransactions() {
-        /** @type {Array<import('$lib/data_objects/data_types').Transaction>} */
+        /** @type {Array<import("$lib/declarations/escrow_declarations").Transaction>} */
         let transactions = await getUserTransactions_bySender(userKey);
 
         let pledges = await listDocs({
@@ -148,9 +209,10 @@
                  */
                 let _number = [0n];
                 if (typeof pledges.items[i].created_at == "bigint") {
-                    let _number = [pledges.items[i].created_at];
+                    // @ts-ignore
+                    _number = [pledges.items[i].created_at];
                 }
-                /** @type {import('$lib/data_objects/data_types').Transaction} */
+                /** @type {import("$lib/declarations/escrow_declarations").Transaction} */
                 let newTransaction = {
                     status: "Success",
                     sender: Principal.fromText(userKey),
@@ -158,6 +220,8 @@
                         pledges.items[i].data.feature_id ||
                         pledges.items[i].data.idea_id,
                     trans_type: "Pledge",
+                    to: [],
+                    from: [],
                     message: "",
                     project_id: pledges.items[i].data.idea_id,
                     transaction_number: _number,
@@ -171,6 +235,7 @@
         transactions = transactions.sort(
             (a, b) => Number(a.created_at) - Number(b.created_at),
         );
+        return transactions;
     }
 </script>
 
@@ -181,6 +246,7 @@
                 <br /><br /><br />
                 {#if !isEditing}
                     <span>@{user_name}</span>
+
                     <FlatButtonDarkSmall
                         someFunction={toggleEditing}
                         msg={"Edit profile"}
@@ -191,11 +257,19 @@
                         bind:value={editedUserName}
                         class="InputTextSmall"
                     />
-                    <br />
+                    {#if usernameExistance}
+                        <p
+                            style="position:absolute; transform: translateY(180%);
+                        left: 120px;
+                        z-index: 1000; color:red"
+                        >
+                            This username already exists!
+                        </p>
+                    {/if}
 
                     <div
                         class="VerticallyAligned"
-                        style="position: absolute; transform:translateX(170%) translateY(0%)"
+                        style="position: absolute; transform:translateX(170%) translateY(0%); "
                     >
                         <CircledButtonDarkSmall
                             someFunction={save}
@@ -208,9 +282,11 @@
                     </div>
                 {/if}
             </div>
+
             <div class="Profile">
                 <ProfilePictureEdit src={profile} />
             </div>
+
             <br />
             <br />
 
@@ -361,6 +437,27 @@
                         />
                     {/if}
                 </div>
+                <div class="SocialsTitle">Invite link</div>
+                <div
+                    class=" HorizontallyAligned"
+                    style="display: flex;
+                align-items: center;
+                flex-direction: row;"
+                >
+                    <p style="text-align: left;">
+                        Click here to copy your invite link for other users.
+                    </p>
+                    <div>
+                        <span
+                            class="material-symbols-outlined"
+                            on:click={handleCopy}
+                        >
+                            content_copy
+                        </span>
+                        {#if $copied}
+                            <span class="copied-message">Copied!</span>{/if}
+                    </div>
+                </div>
             </div>
         </div>
         <div class="FinancialInfo">
@@ -386,6 +483,7 @@
                 {:catch error}
                     <p>Error: {error.message}</p>
                 {/await}
+                <WithdrawSection />
             </div>
         </div>
 
@@ -603,5 +701,21 @@
     .Reputation {
         align-self: center;
         grid-area: 2 / 1 / 3 / 2;
+    }
+    .copied-message {
+        position: absolute;
+        color: var(--primary-color);
+        border-radius: 4px;
+        transform: translateY(10%) translateX(10%);
+        z-index: 1000;
+        transition: opacity 0.3s ease-in-out;
+    }
+    .material-symbols-outlined {
+        font-variation-settings: "FILL" 0;
+        cursor: pointer;
+    }
+    .material-symbols-outlined:hover {
+        font-variation-settings: "FILL" 1;
+        cursor: pointer;
     }
 </style>

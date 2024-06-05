@@ -14,6 +14,7 @@
     });
 
     let done = false;
+    export let percentage = 0;
     let count = 0;
     /**
      * @type {string | number | NodeJS.Timeout | undefined}
@@ -21,7 +22,7 @@
     let intervalId;
 
     function updateProgress() {
-        count += 10;
+        count = percentage;
         if (count > 100) {
             done = true;
             clearInterval(intervalId);

@@ -18,29 +18,45 @@
     import PageTabs from "$lib/components/PageTabs.svelte";
     import AboutProject from "$lib/components/AboutProject.svelte";
     import CommentSection from "$lib/components/CommentSection.svelte";
-    import { isLoading, pledgeModal, success } from "$lib/stores/other_stores";
+    import { pledgeModal } from "$lib/stores/other_stores";
     import { onMount } from "svelte";
     import ModalPledgeFunds from "$lib/components/ModalPledgeFunds.svelte";
     import Loading from "$lib/components/loading.svelte";
     import Success from "$lib/components/success.svelte";
     import { goto } from "$app/navigation";
+    import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsoluteSmall.svelte";
+    import {
+        CheckIfFeatureIsImplemented,
+        SolutionLink,
+        getAmountPledgersAndImages,
+        getIdeaIdByFeature,
+        getProjectTitleFromKey,
+        getTotalFollowers,
+        getUserImages,
+    } from "$lib/data_functions/get_functions";
+    import {
+        getTotalPledges,
+        getTransactionsAndPledges,
+    } from "$lib/financial_functions/financial_functions";
+    import { getDoc } from "@junobuild/core-peer";
+    import NotFound from "$lib/components/NotFound.svelte";
+    import LoadingNew from "$lib/components/LoadingNew.svelte";
+    import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
+    import { path } from "$lib/stores/redirect_store";
 
-    export let msg = "Label";
     /** @type {import('./$types').PageData} */
     // @ts-ignore
     export let data;
-    let key = "";
+    let key = data.params.feature_id;
+    let idea_id = "";
     let images = [
         "https://cloudfront-us-east-2.images.arcpublishing.com/reuters/4CG5FU4IIJMHZCDXESLO7GEYDM.jpg",
         "https://media.ambito.com/p/9c57bcc58b3be5c19ea3a38d32f54fca/adjuntos/239/imagenes/038/684/0038684219/1200x675/smart/ethereum-banco-centraljpg.jpg",
         "https://s2-valor.glbimg.com/oXwS6x_i8WgCUl-XfqaLBdWpyRk=/0x0:3973x2649/888x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_63b422c2caee4269b8b34177e8876b93/internal_photos/bs/2023/V/1/0BYTKITrifXhSGhdSv5w/btc-e-eth-unsplash.jpg",
     ];
     let title = "Feature for that amazing idea";
-    export let ideaTitle = title;
-    let subtitle =
-        "Empowering Innovation: Solutio's Decentralized Platform for Crowdsourcing and Collaborative Development. Located in Llyion, France. This app should try to go bananas on the features, should make ev";
-    let description =
-        "This idea is a decentralized platform designed to transform how ideas are shared, developed, and funded. Users can submit ideas, crowdsource feature requests to address these ideas, and crowdfund resources to bring the best features to life. This platform leverages blockchain technology to ensure transparency and fairness, allowing contributors to earn bounties and users to pay only upon delivery. Solutio's innovative use of a reputation system enhances safety and trust without requiring KYC, supporting anonymous accounts for those prioritizing privacy.";
+    let subtitle = "";
+    let description = "";
     let user = "Johannes Jung";
     let userPicture =
         "https://i.pinimg.com/474x/05/c3/59/05c359cd010df3e7f1ea3cb6f6f54fad.jpg";
@@ -49,101 +65,13 @@
     let totalFollowers = 14560;
     let amountPledgers = 100;
     let createdAt = "17 August, 2023";
-    let pledgersImages = [
-        "https://cdn.weasyl.com/static/media/88/89/98/8889989c353bd7d79a5a56daf9b118ed72a9b3f7f5c852f7c9daef6bbf105225.png",
-        "https://avatarfiles.alphacoders.com/103/103875.png",
-        "https://i.pinimg.com/236x/63/dd/c2/63ddc24b5f730d8fe4134708fbcc93df.jpg",
-        "https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg",
-        "https://i.pinimg.com/474x/05/c3/59/05c359cd010df3e7f1ea3cb6f6f54fad.jpg",
-    ];
-    let featureExample = {
-        title: title,
-        subtitle: subtitle,
-        description: description,
-        expected: expected,
-        total: total,
-        image: images[0],
-        key: nanoid(),
-        user: user,
-        userPicture: userPicture,
-        createdAt: createdAt,
-        pledgersImages: pledgersImages,
-    };
-    let featureExample2 = {
-        title: title,
-        subtitle: subtitle,
-        description: description,
-        expected: 500,
-        total: 800,
-        image: images[1],
-        key: nanoid(),
-        user: user,
-        userPicture: pledgersImages[3],
-        createdAt: createdAt,
-        pledgersImages: pledgersImages.slice(0, 4),
-    };
-    let featureExample3 = {
-        title: title,
-        subtitle: subtitle,
-        description: description,
-        expected: 1700,
-        total: 1750,
-        image: images[2],
-        key: nanoid(),
-        user: user,
-        userPicture: pledgersImages[2],
-        createdAt: createdAt,
-        pledgersImages: pledgersImages.slice(1, 4),
-    };
-    let featuresExamples = [
-        featureExample,
-        featureExample2,
-        featureExample3,
-        featureExample,
-        // featureExample,
-        // featureExample2,
-        // featureExample,
-        // featureExample,
-        // featureExample3,
-    ];
-    let transaction = {
-        image: images[0], // Replace with your image path
-        transactionType: "Pledge",
-        description: "erik_thebest",
-        date: "17 July 2024",
-        currency: "ICP",
-        amount: "5.11",
-    };
-    let transaction2 = {
-        image: images[1], // Replace with your image path
-        transactionType: "Pledge",
-        description: "eljuan_sito",
-        date: "17 July 2024",
-        currency: "ICP",
-        amount: "4.03",
-    };
-    let transaction3 = {
-        image: images[2], // Replace with your image path
-        transactionType: "Pledge",
-        description: "snassy.icp",
-        date: "17 July 2024",
-        currency: "ICP",
-        amount: "3.45",
-    };
-    let transaction4 = {
-        image: images[0], // Replace with your image path
-        transactionType: "Pledge",
-        description: "sakimoto--icp",
-        date: "17 July 2024",
-        currency: "ICP",
-        amount: "11.45",
-    };
-    export let transactions = [
-        transaction,
-        transaction2,
-        transaction3,
-        transaction4,
-    ];
+    let isLoading = false;
+    let ideaNonExistent = false;
+
+    /**
+     * @type {never[]}
+     */
+    export let transactions = [];
     let tabs = ["Pledge Timeline", "Comments", "About the feature"];
     let activeTab = tabs[0]; // default active tab
     // Function to change active tab
@@ -157,70 +85,141 @@
         pledgeModal.set(true);
     }
 
-    onMount(() => {
-        isLoading.set(true);
-        setTimeout(() => {
-            isLoading.set(false);
-        }, 2500);
+    onMount(async () => {
+        isLoading = true;
+        // await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
+        let doc = await getDoc({
+            collection: "feature",
+            key: key,
+        });
+        if (doc == undefined) {
+            isLoading = false;
+            ideaNonExistent = true;
+        } else {
+            images = doc.data.images;
+            images = images;
+            title = doc.data.title;
+            subtitle = doc.data.subtitle;
+            description = doc.data.description;
+            user = doc.owner ? doc.owner : "";
+            userPicture = "";
+            expected = 100000;
+            total = 120000;
+            totalFollowers = 14560;
+            amountPledgers = 100;
+            createdAt = (doc.created_at ? doc.created_at : "").toString();
+            idea_id = await getIdeaIdByFeature(key);
+        }
+        isLoading = false;
     });
 </script>
 
 <div class="body">
     <div class="content">
-        {#if !$isLoading && !$success}
+        {#if !isLoading}
             <div class="container">
                 <div class="Subtitle">{subtitle}</div>
                 <div class="Title" style="color: var(--secondary-color);">
                     <h1>{title}</h1>
                 </div>
                 <div class="Profile">
-                    <ProfilePicture src={userPicture} />
+                    {#await getUserImages([user])}
+                        <ProfilePicture src={""} />
+                    {:then data}
+                        <ProfilePicture src={data[0].image} userKey={user} />
+                    {/await}
                 </div>
                 <div class="Pictures">
                     <ImageScroller {images} />
                 </div>
 
                 <div class="Breadcrumbs">
-                    <Breadcrumbs
-                        breadcrumbs={[
-                            {
-                                title: "Home",
-                                link: "/",
-                            },
-                            {
-                                title: "An example of an amazing idea! Heres an Example",
-                                link: "/idea",
-                            },
-                            {
-                                title: title,
-                                link: "/feature",
-                            },
-                        ]}
-                    />
+                    {#await getProjectTitleFromKey(idea_id)}
+                        <Breadcrumbs
+                            breadcrumbs={[
+                                {
+                                    title: "Home",
+                                    link: "/",
+                                },
+                                {
+                                    title: title,
+                                    link: "/solution/" + key,
+                                },
+                            ]}
+                        />
+                    {:then data}
+                        {#if data == ""}
+                            <Breadcrumbs
+                                breadcrumbs={[
+                                    {
+                                        title: "Home",
+                                        link: "/",
+                                    },
+                                    {
+                                        title: title,
+                                        link: "/solution/" + key,
+                                    },
+                                ]}
+                            />
+                        {:else}
+                            <Breadcrumbs
+                                breadcrumbs={[
+                                    {
+                                        title: "Home",
+                                        link: "/",
+                                    },
+                                    {
+                                        title: data,
+                                        link: "/idea/" + idea_id,
+                                    },
+                                    {
+                                        title: title,
+                                        link: "/solution/" + key,
+                                    },
+                                ]}
+                            />
+                        {/if}
+                    {/await}
                 </div>
 
                 <div class="FundingSection">
-                    <div class="Funding-bar">
-                        <FundingBar {expected} {total} />
-                    </div>
-                    <div class="Funding-info">
-                        <p
-                            style="font-size:small; display:flex; justify-content:center;align-items:center;"
-                        >
-                            Prediction on past perfomance. No garantee of
-                            payment. <span
-                                style="text-decoration: underline;cursor:pointer;"
+                    {#await getTotalPledges(key, "FEA")}
+                        <div class="Funding-bar">
+                            <MagicalDotsAbsoluteSmall />
+                        </div>
+                    {:then data}
+                        <div class="Funding-bar">
+                            <FundingBar
+                                expected={data.expected}
+                                total={data.pledges}
+                            />
+                        </div>
+                        <div class="Funding-info">
+                            <p
+                                style="font-size:small; display:flex; justify-content:center;align-items:center;"
                             >
-                                Read more</span
-                            >
-                        </p>
-                    </div>
+                                Prediction on past perfomance. No garantee of
+                                payment. <span
+                                    style="text-decoration: underline;cursor:pointer;"
+                                >
+                                    Read more</span
+                                >
+                            </p>
+                        </div>
+                    {/await}
                 </div>
                 <div class="PledgingSection">
                     <div class="PledgeButton">
                         <BasicButton
                             msg={"Pledge"}
-                            someFunction={pledgeModalOpen}
+                            someFunction={async () => {
+                                if (await CheckIfSignedIn()) {
+                                    pledgeModalOpen();
+                                } else {
+                                    path.set("/feature/" + key);
+                                    goto("/signin/");
+                                }
+                            }}
                         />
                     </div>
                     <div class="PledgeInfo">
@@ -231,7 +230,15 @@
                             >
                         </p>
                     </div>
-                    <FollowersSection amount={totalFollowers} />
+                    {#await getTotalFollowers(key)}
+                        <MagicalDotsAbsoluteSmall />
+                    {:then data}
+                        <FollowersSection
+                            amount={data}
+                            element_key={key}
+                            type={"feature"}
+                        />
+                    {/await}
                     <div
                         style="display: flex;
                 justify-content: center; 
@@ -242,10 +249,14 @@
                     >
                         <div class="ShareButton"><ShareButton /></div>
                         <div class="PledgersSection">
-                            <PledgersSection
-                                pledgersAmount={amountPledgers}
-                                images={pledgersImages}
-                            />
+                            {#await getAmountPledgersAndImages(key)}
+                                <MagicalDotsAbsoluteSmall />
+                            {:then data}
+                                <PledgersSection
+                                    pledgersAmount={data.amount}
+                                    users={data.users}
+                                />
+                            {/await}
                         </div>
                     </div>
                 </div>
@@ -254,13 +265,47 @@
                     <div class="ActivityTabs" style="">
                         <div class="CommentsTab">
                             <div class="Add_Solution_Idea_Section">
-                                <BasicButtonDark
-                                    msg={"Propose a solution"}
-                                    icon={"cognition"}
-                                    someFunction={() => {
-                                        goto("/createsolution");
-                                    }}
-                                />
+                                {#await SolutionLink(idea_id)}
+                                    <MagicalDotsAbsoluteSmall />
+                                {:then data}
+                                    {#if data != ""}
+                                        {#await CheckIfFeatureIsImplemented(data, key)}
+                                            <MagicalDotsAbsoluteSmall />
+                                        {:then isImplemented}
+                                            {#if isImplemented}
+                                                <BasicButton
+                                                    msg={"Check out the solution!"}
+                                                    icon={"cognition"}
+                                                    someFunction={() => {
+                                                        goto(
+                                                            "/solution/" + data,
+                                                        );
+                                                    }}
+                                                />
+                                            {:else}
+                                                <p>
+                                                    A solution was implemented,
+                                                    but this feature was not
+                                                    included. Check it out <a
+                                                        href="/solution/{data}"
+                                                        >here</a
+                                                    >.
+                                                </p>
+                                            {/if}
+                                        {/await}
+                                    {:else}
+                                        <BasicButtonDark
+                                            msg={"Propose a solution"}
+                                            icon={"cognition"}
+                                            someFunction={() => {
+                                                goto(
+                                                    "/createsolution/" +
+                                                        idea_id,
+                                                );
+                                            }}
+                                        />
+                                    {/if}
+                                {/await}
                                 <br />
                             </div>
                         </div>
@@ -270,7 +315,13 @@
 
                     <div class="ActivityContent">
                         {#if activeTab === tabs[0]}
-                            <TransactionDisplay {transactions} />
+                            {#await getTransactionsAndPledges(key)}
+                                <MagicalDotsAbsoluteSmall />
+                            {:then data}
+                                <TransactionDisplay
+                                    transactions={data ? data : []}
+                                />
+                            {/await}
                         {:else if activeTab === tabs[1]}
                             <CommentSection project_id={key} />
                         {:else if activeTab === tabs[2]}
@@ -278,12 +329,12 @@
                         {/if}
                     </div>
                 </div>
-                <ModalPledgeFunds />
+                <ModalPledgeFunds {idea_id} feature_id={key} />
             </div>
-        {:else if $success}
-            <Success msg={"Pledge successfully created"} />
+        {:else if ideaNonExistent}
+            <NotFound />
         {:else}
-            <Loading />
+            <LoadingNew message={"Loading data..."} />
         {/if}
         <br />
     </div>

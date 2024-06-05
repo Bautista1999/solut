@@ -107,3 +107,8 @@ export const ApprovalModal =  writable(false);
 export const RejectModal =  writable(false);
 
 
+export const IsSignedIn = writable(false);
+
+export const UserKey = writable("");
+
+

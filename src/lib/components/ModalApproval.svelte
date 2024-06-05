@@ -21,9 +21,20 @@
     import MagicalDots from "./magicalDots.svelte";
     import { FallingConfetti } from "svelte-canvas-confetti";
     import SuccessModalNew from "./SuccessModalNew.svelte";
-    let amountUSD = 10;
-    export let documentID = "";
-    export let collectionName = "";
+    import {
+        approveProject,
+        getPledgesOfSignedInUserInProject,
+        getUserBalance,
+    } from "$lib/financial_functions/financial_functions";
+    import { get } from "svelte/store";
+    import { authSubscribe } from "@junobuild/core-peer";
+    import { goto } from "$app/navigation";
+    import { getUserKey } from "$lib/data_functions/get_functions";
+    import LoadingModalNew from "./LoadingModalNew.svelte";
+    import Error from "../../routes/+error.svelte";
+    import ErrorModalNew from "./ErrorModalNew.svelte";
+    import { Principal } from "@dfinity/principal";
+    export let solution_id = "";
     export let solutionOwnerPrincipal = "3f6pv-baaaa-aaaab-qacoq-cai";
     export let ideaOwnerPrincipal = "4j8ko-haaaa-aaaab-koedo-hei";
     let dots = ".....................";
@@ -46,9 +57,11 @@
     let solutionKey = "Solution Example";
     let SolutioPrincipal = "SolutioPrincipalId";
     /**
-     * @type {pledge3[]}
+     * @type {Array<import("$lib/declarations/admin.declarations").Pledge>}
      */
-    let pledges = [pledge1, pledge2, pledge3];
+    export let pledges = [];
+    let errorFlag = false;
+    let errorMsg = "";
     let solutionItem = {
         category: "Solution creator (80%)",
         details: [
@@ -69,29 +82,23 @@
         { category: "Features creators (14%)", details: [] },
     ];
     $: total = 0.0;
-
-    // {
-    //   category: "Features creators (14%)",
-    //   details: [
-    //     { name: "Feature1 (8%)", percentage: "10.9" },
-    //     { name: "Feature2 (4%)", percentage: "5.45" },
-    //     { name: "Feature3 (2%)", percentage: "2.7" },
-    //   ],
-    // },
-    onMount(() => {
+    let totalPledged = 0.0;
+    async function getPledgesProject() {
+        pledges = await getPledgesOfSignedInUserInProject(solution_id);
         for (let i = 0; i < pledges.length; i++) {
-            total = total + pledges[i].amount;
+            total = total + Number(pledges[i].amount);
+            totalPledged = total;
         }
         for (let i = 0; i < pledges.length; i++) {
-            let newPercentage = ((pledges[i].amount * 100) / total) * 0.14;
+            let newPercentage = (Number(pledges[i].amount) / total) * 0.14;
             let listItem = {
                 name:
-                    pledges[i].feature +
+                    pledges[i].feature_id +
                     " (" +
                     roundAmount(newPercentage) +
                     "%)",
                 percentage: newPercentage,
-                owner: pledges[i].ownerPrincipal,
+                owner: pledges[i].user,
             };
             approvalDetails[1].details.push(listItem);
             approvalDetails[1].details = approvalDetails[1].details;
@@ -121,7 +128,19 @@
         };
         approvalDetails.push(ideaItem);
         approvalDetails = approvalDetails;
-    });
+    }
+    let balance = 0;
+    async function getInformation() {
+        authSubscribe(async (user) => {
+            if (user == undefined) {
+                goto("/signin/");
+            } else {
+                balance = await getUserBalance(user.key);
+                await getPledgesProject();
+            }
+        });
+    }
+    onMount(() => {});
     let deliveryStatus = "";
     let isChecked = false;
     let error = "";
@@ -137,125 +156,192 @@
 >
     <h2>Approve project</h2>
     <div class="SmallSeparator">
-        <p>
-            You have previously pledged {roundAmount(total)} amount of ICP tokens
-            into this project.
-        </p>
-        <p>
-            Right now, you have 12.159 ICP tokens in your wallet. If you wish to
-            add more, go to your <a
-                href="/profile"
-                style="color:blue; text-decoration:underline;">profile</a
-            >.
-        </p>
-        <p style="font-weight: 450;">Choose the amount you wish to approve</p>
-        <p>
-            <input type="number" class="inputNumber" bind:value={total} />
-            ICP
-        </p>
-        {#if error == "Amount0"}
-            <p class="InputErrorMessage">
-                ERROR: You have to approve something greater than 0.
-            </p>
-        {/if}
-        <p>
-            <input type="checkbox" bind:checked={isChecked} /> I accept the
-            <a
-                on:click={() => {
-                    termsModal.set(true);
-                }}
-                style="color:blue; text-decoration:underline;"
-                >Terms and conditions.</a
-            >
-        </p>
-        {#if error == "NotChecked"}
-            <p class="InputErrorMessage">
-                ERROR: You have to accept the terms and conditions.
-            </p>
-        {/if}
-        <p style="font-weight: 450;">Distribution of approval</p>
-        <div class="PaymentDetails">
-            <div class="approval-distribution SmallSeparator">
-                {#each approvalDetails as detail}
-                    <div>
-                        <strong>{detail.category}</strong>
+        {#if !errorFlag}
+            {#await getInformation()}
+                <LoadingModalNew message={"Getting previous pledges..."} />
+            {:then}
+                <p>
+                    You have previously pledged {roundAmount(totalPledged)} amount
+                    of ICP tokens into this project.
+                </p>
+                <p>
+                    Right now, you have {balance} ICP tokens in your wallet. If you
+                    wish to add more, go to your
+                    <a
+                        href="/account.{getUserKey()}"
+                        style="color:blue; text-decoration:underline;"
+                        >profile</a
+                    >.
+                </p>
+                <p style="font-weight: 450;">
+                    Choose the amount you wish to approve
+                </p>
+                <p>
+                    <input
+                        type="number"
+                        class="inputNumber"
+                        bind:value={total}
+                    />
+                    ICP
+                </p>
+                {#if error == "Amount0"}
+                    <p class="InputErrorMessage">
+                        ERROR: You have to approve something greater than 0.
+                    </p>
+                {/if}
+                <p>
+                    <input type="checkbox" bind:checked={isChecked} /> I accept
+                    the
+                    <a
+                        on:click={() => {
+                            termsModal.set(true);
+                        }}
+                        style="color:blue; text-decoration:underline;"
+                        >Terms and conditions.</a
+                    >
+                </p>
+                {#if error == "NotChecked"}
+                    <p class="InputErrorMessage">
+                        ERROR: You have to accept the terms and conditions.
+                    </p>
+                {/if}
+                <p style="font-weight: 450;">Distribution of approval</p>
+                <div class="PaymentDetails">
+                    <div class="approval-distribution SmallSeparator">
+                        {#each approvalDetails as detail}
+                            <div>
+                                <strong>{detail.category}</strong>
+                                <div>
+                                    {#each detail.details as user}
+                                        <p>
+                                            {user.name}
+                                            {dots}
+                                            {roundAmount(
+                                                (user.percentage * total) / 100,
+                                            )}
+                                        </p>
+                                    {/each}
+                                </div>
+                            </div>
+                        {/each}
+                        <div class="HorizontalLine"></div>
                         <div>
-                            {#each detail.details as user}
+                            <strong>Total</strong>
+                            <div>
                                 <p>
-                                    {user.name}
+                                    {"Payment total"}
                                     {dots}
-                                    {roundAmount(
-                                        (user.percentage * total) / 100,
-                                    )}
+                                    {roundAmount(total)}
                                 </p>
-                            {/each}
+                            </div>
                         </div>
                     </div>
-                {/each}
-                <div class="HorizontalLine"></div>
-                <div>
-                    <strong>Total</strong>
-                    <div>
-                        <p>
-                            {"Payment total"}
-                            {dots}
-                            {roundAmount(total)}
-                        </p>
-                    </div>
                 </div>
-            </div>
-        </div>
-        {#if deliveryStatus == "Success"}
-            <div
-                style=" text-align:center; color: var(--tertiary-color);  background:linear-gradient(to right, var(--primary-color), var(--red-wine)); padding:15px;"
-            >
-                <p style="font-size: larger; ">Success!</p>
-                <br />
-                <p></p>
-                <FallingConfetti />
-                <FallingConfetti />
-                <FallingConfetti />
-                <FallingConfetti /><FallingConfetti /><FallingConfetti
-                /><FallingConfetti /><FallingConfetti />
-            </div>
-            <!-- <SuccessModalNew
+                {#if deliveryStatus == "Success"}
+                    <div
+                        style=" text-align:center; color: var(--tertiary-color);  background:linear-gradient(to right, var(--primary-color), var(--red-wine)); padding:15px;"
+                    >
+                        <p style="font-size: larger; ">Success!</p>
+                        <br />
+                        <p></p>
+                        <FallingConfetti />
+                        <FallingConfetti />
+                        <FallingConfetti />
+                        <FallingConfetti /><FallingConfetti /><FallingConfetti
+                        /><FallingConfetti /><FallingConfetti />
+                    </div>
+                    <!-- <SuccessModalNew
                 message={"You have successfully approved the delivered product!"}
             /> -->
-        {:else if deliveryStatus == "Loading"}
-            <MagicalDots />
-        {:else}
-            <div
-                style="display: flex; justify-content:center; align-items:center; width:100%;align-self:center;"
-            >
-                <BasicButtonDarkSmall
-                    msg={"Approve"}
-                    icon={"verified_user"}
-                    someFunction={() => {
-                        if (!isChecked) {
-                            error = "NotChecked";
-                            return;
-                        }
-                        if (total <= 0) {
-                            error = "Amount0";
-                            return;
-                        }
-                        error = "";
-                        deliveryStatus = "Loading";
+                {:else if deliveryStatus == "Loading"}
+                    <MagicalDots />
+                {:else}
+                    <div
+                        style="display: flex; justify-content:center; align-items:center; width:100%;align-self:center;"
+                    >
+                        <BasicButtonDarkSmall
+                            msg={"Approve"}
+                            icon={"verified_user"}
+                            someFunction={async () => {
+                                if (!isChecked) {
+                                    errorFlag = true;
+                                    errorMsg =
+                                        "You must accept terms and conditions in order to approve";
+                                    return;
+                                }
+                                if (total <= 0) {
+                                    errorFlag = true;
+                                    errorMsg = "Amount cant be 0";
+                                    return;
+                                }
+                                error = "";
+                                deliveryStatus = "Loading";
+                                try {
+                                    /**
+                                     * @type {Array<import("../declarations/escrow_declarations").Approval>}
+                                     */
+                                    let approvals = [];
+                                    for (
+                                        let i = 0;
+                                        i < approvalDetails.length;
+                                        i++
+                                    ) {
+                                        let details =
+                                            approvalDetails[i].details;
+                                        for (
+                                            let j = 0;
+                                            j < details.length;
+                                            j++
+                                        ) {
+                                            /**
+                                             * @type {import("../declarations/escrow_declarations").Approval}
+                                             */
+                                            let newApproval = {
+                                                approval_transaction_number: 0n,
+                                                sender: Principal.fromText(
+                                                    await getUserKey(),
+                                                ),
+                                                target: details[j].owner,
+                                                amount: BigInt(
+                                                    (details[j].percentage *
+                                                        total) /
+                                                        100,
+                                                ),
+                                            };
+                                            approvals.push(newApproval);
+                                            approvals = approvals;
+                                        }
+                                    }
+                                    await approveProject(
+                                        total,
+                                        solution_id,
+                                        approvals,
+                                    );
+                                } catch (e) {
+                                    errorFlag = true;
+                                    errorMsg = String(e);
+                                }
+                                deliveryStatus = "Success";
+                            }}
+                        />
+                    </div>
+                {/if}
 
-                        setTimeout(() => {
-                            deliveryStatus = "Success";
-                        }, 2500);
-                    }}
-                />
-            </div>
+                <p>
+                    You can see your all of your approvals <a
+                        href="/profile"
+                        style="color:blue; text-decoration:underline;">here</a
+                    >.
+                </p>
+            {/await}
+        {:else if errorFlag}
+            <ErrorModalNew
+                error={errorMsg}
+                someFunction={() => {
+                    errorFlag = false;
+                }}
+            />
         {/if}
-
-        <p>
-            You can see your all of your approvals <a
-                href="/profile"
-                style="color:blue; text-decoration:underline;">here</a
-            >.
-        </p>
     </div>
 </Modal>
 <Terms />

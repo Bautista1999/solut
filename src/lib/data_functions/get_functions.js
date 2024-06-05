@@ -1,4 +1,5 @@
-import { getDoc,getManyDocs ,initJuno, listDocs } from "@junobuild/core-peer";
+import { UserKey } from "$lib/stores/other_stores";
+import { authSubscribe, getDoc,getManyDocs ,initJuno, listDocs } from "@junobuild/core-peer";
 
 /**
  * @param {string} element_id
@@ -10,10 +11,18 @@ export async function getTotalFollowers(element_id) {
         collection: "followers",
         key: "FOLL_"+element_id,
     });
+    let docs = await listDocs({
+        collection:"follow",
+        filter:{
+            matcher:{
+                key:"_"+element_id
+            }
+        }
+    })
     if(doc==undefined){
         return 0;
     }else{
-        return doc.data.followers;
+        return Number(docs.items_length);
     }
 }
 
@@ -132,6 +141,32 @@ export async function getFeaturesOfIdea(idea_id){
     return results;
 };
 
+
+/**
+ * @param {string} solution_id
+ * @param {string} idea_id
+ * @return {Promise<Array<import("@junobuild/core-peer").Doc<any>>>}
+ */
+export async function getFeaturesOfSolution(idea_id,solution_id){
+    let featuresList = await getImplementedFeaturesOfSolution(solution_id);
+    let docs = await listDocs({
+        collection:"index_search",
+        filter:{
+            matcher:{
+                description: idea_id,
+            }
+        }
+    })
+    let results = docs.items.filter((doc) => {
+        if (doc.description == undefined) {
+        } else {
+            return !doc.key.includes(idea_id)&&!doc.description.includes("type:"+"solution")&&featuresList.includes(doc.key.substring(6,doc.key.length));
+        }
+    });
+    results = results;
+    return results;
+};
+
 /**
  * @param {string} userKey
  * @return {Promise<string>}
@@ -203,6 +238,490 @@ export async function getProjectTitleFromKey(project_id){
     }
 }
 
+/**
+ * @param {string} project_id
+ * @return {Promise<string>}
+ */
+export async function getSolutionStatus(project_id){
+    let solStatusDoc = await getDoc({
+        collection: "solution_status",
+        key: "SOL_STAT_"+project_id
+    })
+    if(solStatusDoc==undefined){
+        return "Not defined";
+    }else{
+        if(solStatusDoc.description==undefined){
+            return "Not defined";
+        }else{
+            return ExtractStatus(solStatusDoc.description);
+        }
+    }
+}
 
 
 
+/**
+ * Extracts the status from a given string.
+ * @param {string} str - The input string in the format "status:STATUS,owner:OWNER_KEY" or "status:STATUS".
+ * @return {string} - The extracted status.
+ */
+function ExtractStatus(str) {
+    const statusMatch = str.match(/status:\s*([^,]+)/);
+    if (statusMatch && statusMatch[1]) {
+        return statusMatch[1].trim().toLowerCase();
+    } else {
+        throw new Error("Status not found in the input string");
+    }
+}
+
+/**
+ * @param {string} project_id
+ * @return {Promise<string>}
+ */
+export async function getDeliveryLink(project_id){
+    let solDeliveryDoc = await getDoc({
+        collection: "solution_delivery",
+        key: "DEL_"+project_id
+    })
+    if(solDeliveryDoc==undefined){
+        throw new Error ("Solution delivery doc not found!");
+    }else{
+        return  solDeliveryDoc.data.link;
+    }
+}
+
+/**
+ * @param {string} solution_id
+ * @return {Promise<Array<string>>}
+ */
+
+export async function getImplementedFeaturesOfSolution(solution_id){
+    let solutionDoc = await getDoc({
+        collection: "solution",
+        key:solution_id,
+    });
+    if(solutionDoc==undefined){
+        return [];
+    }else{
+        /**
+        * @type {Array<string>} 
+        */
+        return solutionDoc.data.features;
+    }
+}
+
+ /**
+* @return {Promise<string>} 
+ */
+export function getUserKey(){
+    return new Promise((resolve) => 
+    {authSubscribe((user)=>{
+        if(user==undefined){
+            resolve("");
+        }else{
+            UserKey.set(user.key)
+            resolve(user.key);
+        }
+    })})
+}
+
+/**
+ * @param {string} solution_id
+ * @return {Promise<string>}
+ */
+export async function getIdeaIdBySolution(solution_id){
+    let solutionDoc = await getDoc({
+        collection:"solution",
+        key:solution_id,
+    });
+    if(solutionDoc==undefined){
+        throw new Error("Solution document not found");
+    }else{
+        if(solutionDoc.description==undefined){
+            throw new Error("Description missing");
+        }else{
+            if(ExtractIdeaFromDescription(solutionDoc.description)==""){
+                throw new Error("Idea_id couldnt be exctracted from solution"); 
+            }else{
+                return ExtractIdeaFromDescription(solutionDoc.description);
+            }
+            
+        }
+    }
+}
+
+/**
+ * @param {string} description
+ */
+function ExtractIdeaFromDescription(description){
+    const match = description.match(/idea_id:(\S+)/);
+    return match ? match[1] : "";
+}
+
+/**
+ * @param {string} feature_id
+ * @return {Promise<string>}
+ */
+export async function getIdeaIdByFeature(feature_id){
+    let featureDoc = await getDoc({
+        collection:"feature",
+        key:feature_id,
+    });
+    if(featureDoc==undefined){
+        throw new Error("Solution document not found");
+    }else{
+        if(featureDoc.description==undefined){
+            throw new Error("Description missing");
+        }else{
+            if(ExtractIdeaFromDescription(featureDoc.description)==""){
+                throw new Error("Idea_id couldnt be exctracted from solution"); 
+            }else{
+                return ExtractIdeaFromDescription(featureDoc.description);
+            }
+            
+        }
+    }
+}
+/**
+ * @param {string} solution_id
+ * @param {string} feature_id
+ * @return {Promise<boolean>}
+ */
+export async function CheckIfFeatureIsImplemented(solution_id,feature_id){
+    let solutionDoc = await getDoc({
+        collection: "solution",
+        key:solution_id,
+    });
+    if(solutionDoc==undefined){
+        throw new Error("Solution doc not found")
+    }else{
+        /**
+        * @type {Array<string>} 
+        */
+        return solutionDoc.data.features.includes(feature_id);
+    }
+}
+
+/**
+ * @param {number} amount
+ * @return {Promise<Array<{key:string,data:import("$lib/data_objects/data_types").IndexDataReturn}>>}
+ */
+export async function getMostFollowedIdeas(amount){
+    let userKey = await getUserKey();
+    let followedIdeas = await listDocs({
+        collection:"follow",
+        filter:{
+            paginate:{
+                limit:amount
+            },
+            matcher:{
+                description:"idea",
+            },
+            owner: userKey,
+            order:{
+                desc:true,
+                field: 'created_at',
+            }
+        }
+    })
+
+    if(followedIdeas.items.length==0){
+        return [];
+    }else{
+        /**
+     * @type {any[]}
+     */
+    let docs = [];
+    for(let i = 0; i<followedIdeas.items.length;i++){
+        let doc = {
+            collection:"index_search",
+            key:"INDEX_"+extractSubstring(followedIdeas.items[i].key),
+        };
+        docs.push(doc);
+        docs=docs;
+    }
+    let ideasDocs = await getManyDocs({
+        docs:docs,
+    });
+    /**
+    * @type {Array<{key:string,data:import("$lib/data_objects/data_types").IndexDataReturn}>}
+    */
+    let ideasInformation = [];
+    for(let i=0; i<ideasDocs.length;i++){
+        if(ideasDocs[i]!=undefined){
+            let newIdeaIndexInfo = {
+                key:ideasDocs[i]?.key.substring(6),
+                data:ideasDocs[i]?.data,
+            }
+            // @ts-ignore
+            ideasInformation.push(newIdeaIndexInfo)
+            ideasInformation=ideasInformation;
+        }
+    };
+    return ideasInformation;
+
+
+    }
+}
+
+/**
+ * Extracts the substring after the first "_" character, including any subsequent underscores.
+ * @param {string} input - The input string.
+ * @return {string} - The extracted substring.
+ */
+function extractSubstring(input) {
+    const parts = input.split('_');
+    if (parts.length > 1) {
+        return parts.slice(1).join('_');
+    }
+    return ''; // Return an empty string if "_" is not found
+}
+
+/**
+ * @param {Array<string>} keywords
+ * @param {{start:string,limit:number}} pages
+ * @return {Promise<Array<{key:string,data:import("$lib/data_objects/data_types").IndexDataReturn}>>}
+ */
+export async function getIdeasByKeyWords(keywords,pages){
+    let regexInput = createOrRegexInput(keywords);
+    let searchedIdeas = (await listDocs({
+        collection:"index_search",
+        filter:{
+            matcher:{
+                description:regexInput.length == 0 ? undefined : regexInput,
+            },
+            paginate:{
+                startAfter: pages.start==""?undefined:pages.start,
+                limit: pages.limit,
+            },
+            order:{
+                desc:true,
+                field: 'created_at',
+            }
+        }
+    })).items;
+    if(searchedIdeas.length==0){
+        return [];
+    }else{
+        /**
+         * @type {Array<{key:string,data:import("$lib/data_objects/data_types").IndexDataReturn}>}
+         */
+        let returnedIdeas = [];
+        for(let i=0; i<searchedIdeas.length;i++){
+            /**
+             * @type {{key:string,data:import("$lib/data_objects/data_types").IndexDataReturn}}
+             */
+            let thisIdea = {
+                key: searchedIdeas[i].key.substring(6),
+                data: {
+                    title:searchedIdeas[i].data.title,
+                    subtitle:searchedIdeas[i].data.subtitle,
+                    images:searchedIdeas[i].data.images,
+                    videos:searchedIdeas[i].data.videos,
+                    // @ts-ignore
+                    type: extractType(searchedIdeas[i].description),
+                    // @ts-ignore
+                    owner: searchedIdeas[i].owner, 
+                }
+            };
+            returnedIdeas.push(thisIdea);
+            returnedIdeas=returnedIdeas;
+        };
+        return returnedIdeas;
+    };
+   
+
+}
+
+
+/**
+ * @param {Array<string>} keywords
+ * @return {string}
+ */
+export function createOrRegexInput(keywords){
+    let regexInput = "";
+    for(let i  = 0; i<keywords.length;i++){
+        if(i!=keywords.length-1){
+            regexInput+= keywords[i] + '|';
+        }else{
+            regexInput+= keywords[i];
+        };
+    };
+    return regexInput;
+    
+}
+
+
+/**
+ * @param {string} url
+ */
+export async function getImageUrl(url) {
+    try {
+        const response = await fetch(url);
+        if (response.ok) {
+            return url; // Image is available
+        } else {
+            return "https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg"; // Image is not available, return default image
+        }
+    } catch (error) {
+        console.error('Error fetching the image:', error);
+        return "https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg"; // Error occurred, return default image
+    }
+}
+
+
+/**
+ * @param {string} input
+ */
+function extractType(input) {
+    const typeMatch = input.match(/type:([^\s]*)/);
+    return typeMatch ? typeMatch[1].trim() : null;
+}
+
+/**
+* BRIEF DESCRIPTION: This function checks if a requested username for a user is already taken.
+
+* PRE-CONDITIONS: For using this function the user needs to be signed in into Juno. 
+Receives a username. 
+
+* POST-CONDITIONS: True if taken, false otherwise
+
+* OUTSIDE FUNCTIONS: Juno --> listDocs()
+ * @param {string} username
+ * @param {string} userKey
+ */
+export async function usernameExists(username,userKey) {
+    let docs = await listDocs({
+        collection: "user",
+        filter: {
+            matcher: {
+                description: username,
+            },
+        },
+    });
+    let amount = docs.items_length;
+    let results = docs.items.filter((doc) => {
+    
+        
+            return (doc.key!=(userKey)&&doc.data.username==username);
+            
+        
+    });
+    if(results.length==0){
+        return false;
+    }else{
+
+        return true;
+    }
+};
+
+
+/**
+ * @param {string} userKey
+ * @return {Promise<boolean>}
+ */
+export async function CheckUserExistance(userKey){
+    let userDoc = await getDoc({
+        collection:"user",
+        key:userKey,
+    });
+    if(userDoc==undefined){
+        return false;
+    }else{
+        return true;
+    };
+}
+
+/**
+ * @param {string} inviterkey
+ * @return {Promise<boolean>}
+ */
+export async function CheckInviteExistance(inviterkey){
+    let userKey = await getUserKey();
+    let inviteDoc = await getDoc({
+        collection:"invites",
+        key:userKey+"_"+inviterkey,
+    });
+    if(inviteDoc==undefined){
+        return false;
+    }else{
+        return true;
+    }
+}
+
+/**
+ * @return {Promise <Array<import("@junobuild/core-peer").Doc<any>>>}
+ */
+export async function getUserNotifications(){
+    debugger;
+    let userKey = await getUserKey();
+    /**
+     * @type {Array<string>}
+     */
+    let followedElements = await getFollowedElements(userKey);
+    let regexInput = createOrRegexInput([userKey,...followedElements])
+    let notifications = await listDocs({
+        collection:"notification",
+        filter:{
+            matcher:{
+               description: regexInput, 
+            },
+            order:{
+                desc:true,
+                field:'created_at'
+            },
+            
+        },
+        
+    });
+    return notifications.items;
+
+}
+/**
+ * @return {Promise<Array<string>>}
+ * @param {string} userKey
+ */
+export async function getFollowedElements(userKey){
+    let followDocuments = await listDocs({
+        collection:"follow",
+        filter:{
+            matcher:{
+                key:userKey+"_"
+            },
+            order:{
+                desc:true,
+                field:'created_at'
+            }
+        }
+    })
+    if(followDocuments.items.length==0){
+        return [];
+    }else{
+        /**
+         * @type {string[]}
+         */
+        let followedItems = [];
+        for(let i = 0 ; i<followDocuments.items.length;i++){
+            if(followDocuments.items[i].description!="user"){
+                let elementKey = getFollowedKey(followDocuments.items[i].key);
+                followedItems.push(elementKey);
+                followedItems=followedItems;
+            }
+        }
+        return followedItems;
+    }
+};
+
+/**
+ * Extracts the followed key from an ID formatted as followerKey_followedKey.
+ * @param {string} id - The ID string containing both keys separated by an underscore.
+ * @return {string} - The followed key.
+ */
+function getFollowedKey(id) {
+    const underscoreIndex = id.indexOf('_');
+    if (underscoreIndex !== -1) {
+        return id.substring(underscoreIndex + 1);
+    } else {
+        throw new Error('Invalid ID format');
+    }
+}
