@@ -62,7 +62,7 @@ export type Paginate = [] | [
 export interface Pledge {
     'feature_id': string,
     'expected_amount': bigint,
-    'user': Principal,
+    'user': string,
     'idea_id': string,
     'amount': bigint,
     'doc_key': string,
@@ -74,7 +74,7 @@ export interface User {
     'amount_paid': bigint,
 }
 export interface _SERVICE {
-    'createNotification': ActorMethod<[], string>,
+    'createNotification': ActorMethod<[string], string>,
     'createPersonalNotification': ActorMethod<
         [string, string, string, string, string],
         string

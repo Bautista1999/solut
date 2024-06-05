@@ -12,12 +12,22 @@
         { name: "Bitcoin", active: false },
         { name: "Ethereum", active: false },
     ];
-
+    /**
+     * @type {string[]}
+     */
+    export let keywords = [];
     /**
      * @param {number} index
      */
     function toggleTag(index) {
         tags[index].active = !tags[index].active;
+        if (tags[index].active == true) {
+            keywords.push(tags[index].name);
+            keywords = keywords;
+        } else {
+            keywords = keywords.filter((key) => key != tags[index].name);
+            keywords = keywords;
+        }
     }
 </script>
 

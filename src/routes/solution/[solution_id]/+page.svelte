@@ -33,10 +33,29 @@
     import NotFound from "$lib/components/NotFound.svelte";
     import {
         extractIdeaIdFromString,
+        getAmountPledgersAndImages,
+        getDeliveryLink,
         getProjectTitleFromKey,
+        getSolutionStatus,
+        getTotalFollowers,
         getUserImages,
+        getUserKey,
     } from "$lib/data_functions/get_functions";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
+    import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
+    import { goto } from "$app/navigation";
+    import {
+        getPledgesOfSignedInUserInProject,
+        getTotalPledges,
+        getTotalPledgesOfSolution,
+        getTransactions,
+        getTransactionsAndPledges,
+    } from "$lib/financial_functions/financial_functions";
+    import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsoluteSmall.svelte";
+    import { path } from "$lib/stores/redirect_store";
+    import MagicalDots from "$lib/components/magicalDots.svelte";
+    import LoadingModalNew from "$lib/components/LoadingModalNew.svelte";
+    import IdeaCardContainer from "$lib/components/IdeaCard_container.svelte";
 
     let userKey = "";
     let ownerKey = "";
@@ -71,12 +90,12 @@
     let solutionNonExistent = false;
     let errorMsg = "Something went wrong!";
 
+    let tabs = ["Pledge Timeline", "Comments", "About the project"];
+    let activeTab = tabs[0]; // default active tab
     /**
      * @type {never[]}
      */
-    export let transactions = [];
-    let tabs = ["Pledge Timeline", "Comments", "About the project"];
-    let activeTab = tabs[0]; // default active tab
+    let milestones = [];
     // Function to change active tab
     /**
      * @param {string} tab
@@ -104,11 +123,13 @@
             title = doc.data.title;
             subtitle = doc.data.subtitle;
             description = doc.data.description;
-            user = doc.owner ? doc.owner : "";
+            ownerKey = doc.owner ? doc.owner : "";
             createdAt = (doc.created_at ? doc.created_at : "").toString();
             if (doc.description != undefined) {
                 idea_id = extractIdeaIdFromString(doc.description);
             }
+            milestones = doc.data.milestones;
+            userKey = await getUserKey();
         }
         isLoading = false;
     });
@@ -123,10 +144,13 @@
                     <h1>{title}</h1>
                 </div>
                 <div class="Profile">
-                    {#await getUserImages([user])}
-                        <ProfilePicture src={""} userKey={user} />
+                    {#await getUserImages([ownerKey])}
+                        <ProfilePicture src={""} userKey={ownerKey} />
                     {:then data}
-                        <ProfilePicture src={data[0].image} userKey={user} />
+                        <ProfilePicture
+                            src={data[0].image}
+                            userKey={ownerKey}
+                        />
                     {/await}
                 </div>
                 <div class="Pictures">
@@ -183,38 +207,62 @@
                 </div>
 
                 <div class="FundingSection">
-                    <div class="Funding-bar">
-                        <FundingBar {expected} {total} />
-                    </div>
-                    <div class="Funding-info">
-                        <p
-                            style="font-size:small; display:flex; justify-content:center;align-items:center;"
-                        >
-                            Prediction on past perfomance. No garantee of
-                            payment. <span
-                                style="text-decoration: underline;cursor:pointer;"
+                    {#await getTotalPledgesOfSolution(key)}
+                        <div class="Funding-bar">
+                            <MagicalDotsAbsoluteSmall />
+                        </div>
+                    {:then data}
+                        <div class="Funding-bar">
+                            <FundingBar
+                                expected={data.expected}
+                                total={data.pledges}
+                            />
+                        </div>
+                        <div class="Funding-info">
+                            <p
+                                style="font-size:small; display:flex; justify-content:center;align-items:center;"
                             >
-                                Read more</span
-                            >
-                        </p>
-                    </div>
+                                Prediction on past perfomance. No garantee of
+                                payment. <span
+                                    style="text-decoration: underline;cursor:pointer;"
+                                >
+                                    Read more</span
+                                >
+                            </p>
+                        </div>
+                    {/await}
                 </div>
                 <div class="PledgingSection">
                     <div class="PledgeButton">
-                        <BasicButton
+                        <!-- <BasicButton
                             msg={"Pledge"}
-                            someFunction={pledgeModalOpen}
-                        />
+                            someFunction={async () => {
+                                if (await CheckIfSignedIn()) {
+                                    pledgeModalOpen();
+                                } else {
+                                    path.set("/solution/" + key);
+                                    goto("/signin/");
+                                }
+                            }}
+                        /> -->
                     </div>
                     <div class="PledgeInfo">
-                        <p style="margin:0px; font-size:small;">
+                        <!-- <p style="margin:0px; font-size:small;">
                             Fully refundable until second confirmation. <span
                                 style="text-decoration: underline;cursor:pointer;"
                                 >Read more</span
                             >
-                        </p>
+                        </p> -->
                     </div>
-                    <FollowersSection amount={totalFollowers} />
+                    {#await getTotalFollowers(key)}
+                        <MagicalDotsAbsoluteSmall />
+                    {:then data}
+                        <FollowersSection
+                            amount={data}
+                            element_key={key}
+                            type={"solution"}
+                        />
+                    {/await}
                     <div
                         style="display: flex;
                 justify-content: center; 
@@ -225,44 +273,71 @@
                     >
                         <div class="ShareButton"><ShareButton /></div>
                         <div class="PledgersSection">
-                            <PledgersSection
-                                pledgersAmount={amountPledgers}
-                                users={[]}
-                            />
+                            {#await getAmountPledgersAndImages(idea_id)}
+                                <MagicalDotsAbsoluteSmall />
+                            {:then data}
+                                <PledgersSection
+                                    pledgersAmount={data.amount}
+                                    users={data.users}
+                                />
+                            {/await}
                         </div>
                     </div>
                 </div>
+                <div class="FeaturesSection">
+                    <div class="FeaturesTitle">
+                        <h3>Implemented ideas by this solution</h3>
+                    </div>
+                    <div>
+                        <IdeaCardContainer
+                            {idea_id}
+                            solution_id={key}
+                            type={"solution"}
+                        />
+                    </div>
 
+                    <div class="FeaturesScrollerSection">
+                        <!-- <div class="FeaturesScroller"><CardScroller /></div> -->
+                    </div>
+                </div>
                 <div class="ActivitySection">
                     <div class="ActivityTabs">
-                        {#if status == "DELIVERED"}
-                            <div class="approval-stats">
-                                <div class="stat">
-                                    <span class="stat-value"
-                                        >{approved} ICP</span
-                                    >
-                                    <span class="stat-label"
-                                        >Total ICP Approved</span
-                                    >
-                                </div>
+                        {#await getSolutionStatus(key) then status}
+                            {#if status == "DELIVERED"}
+                                <div class="approval-stats">
+                                    <div class="stat">
+                                        <span class="stat-value"
+                                            >{approved} ICP</span
+                                        >
+                                        <span class="stat-label"
+                                            >Total ICP Approved</span
+                                        >
+                                    </div>
 
-                                <div class="stat">
-                                    <span class="stat-value"
-                                        >{amountApprovals}</span
-                                    >
-                                    <span class="stat-label"
-                                        >Users Approved</span
-                                    >
+                                    <div class="stat">
+                                        <span class="stat-value"
+                                            >{amountApprovals}</span
+                                        >
+                                        <span class="stat-label"
+                                            >Users Approved</span
+                                        >
+                                    </div>
                                 </div>
-                            </div>
-                        {/if}
+                            {/if}
+                        {/await}
                         <div class="PledgersTab"></div>
                         <PageTabs {tabs} {activeTab} setActive={setActiveTab} />
                     </div>
 
                     <div class="ActivityContent">
                         {#if activeTab === tabs[0]}
-                            <TransactionDisplay {transactions} />
+                            {#await getTransactionsAndPledges(idea_id)}
+                                <MagicalDotsAbsoluteSmall />
+                            {:then data}
+                                <TransactionDisplay
+                                    transactions={data ? data : []}
+                                />
+                            {/await}
                         {:else if activeTab === tabs[1]}
                             <CommentSection project_id={key} />
                         {:else if activeTab === tabs[2]}
@@ -271,7 +346,8 @@
                     </div>
                     <br />
                     <h3>Roadmap and deadlines</h3>
-                    <Timeline />
+
+                    <Timeline {milestones} />
                     <br />
                     <div
                         style="display: flex;
@@ -283,72 +359,136 @@
             gap:10px;
             "
                     >
-                        {#if userKey == ownerKey}
-                            {#if status != "DELIVERED" && status != "COMPLETED"}
-                                <h1 style="color: var(--tertiary-color);">
-                                    Ready to deliver your solution?
-                                </h1>
-                                <BasicButtonDark
-                                    msg={"Deliver product"}
-                                    icon={"real_estate_agent"}
-                                    someFunction={() => {
-                                        DeliveryModal.set(true);
-                                    }}
-                                />
-                            {:else if status == "DELIVERED"}
-                                <h1 style="color: var(--tertiary-color);">
-                                    Solution completed?
-                                </h1>
-                                <BasicButtonDark
-                                    msg={"Complete solution and accept payment"}
-                                    icon={"payments"}
-                                    someFunction={() => {
-                                        PaymentModal.set(true);
-                                    }}
-                                />
+                        {#await getSolutionStatus(key)}
+                            <LoadingModalNew
+                                message={"Getting status..."}
+                                color={"var(--tertiary-color)"}
+                            />
+                        {:then status}
+                            {#if userKey == ownerKey}
+                                {#if status != "delivered" && status != "completed"}
+                                    <h1 style="color: var(--tertiary-color);">
+                                        Ready to deliver your solution?
+                                    </h1>
+                                    <BasicButtonDark
+                                        msg={"Deliver product"}
+                                        icon={"real_estate_agent"}
+                                        someFunction={() => {
+                                            DeliveryModal.set(true);
+                                        }}
+                                    />
+                                {:else if status == "delivered"}
+                                    <h1 style="color: var(--tertiary-color);">
+                                        Solution completed?
+                                    </h1>
+                                    <BasicButtonDark
+                                        msg={"Complete solution and accept payment"}
+                                        icon={"payments"}
+                                        someFunction={() => {
+                                            PaymentModal.set(true);
+                                        }}
+                                    />
+                                {/if}
+                            {:else if status == "delivered"}
+                                {#await getDeliveryLink(key)}
+                                    <LoadingModalNew
+                                        message={"Getting delivery link..."}
+                                        color={"var(--tertiary-color)"}
+                                    />
+                                {:then link}
+                                    <h1 style="color: var(--tertiary-color);">
+                                        Project delivered!
+                                    </h1>
+                                    <div
+                                        class="SmallSeparator HorizontallyAligned"
+                                        style="text-align: center;"
+                                    >
+                                        <p
+                                            style="color: var(--tertiary-color);"
+                                        >
+                                            This project has already been
+                                            delivered.
+                                        </p>
+                                        <p
+                                            style="color: var(--tertiary-color);"
+                                        >
+                                            You can see the product <a
+                                                href={link}
+                                                style="color:var(--sky-blue)"
+                                                >here</a
+                                            >.
+                                        </p>
+                                        <div class="HorizontallyAligned">
+                                            {#await getPledgesOfSignedInUserInProject(key)}
+                                                <MagicalDots />
+                                            {:then data}
+                                                {#if data.length == 0}
+                                                    <p
+                                                        style="color: var(--tertiary-color); font-style:italic;"
+                                                    >
+                                                        NOTE: You havent pledged
+                                                        any money to approve or
+                                                        disapprove this project.
+                                                    </p>
+                                                {:else}
+                                                    <BasicButtonDark
+                                                        msg={"Approve"}
+                                                        icon={"verified_user"}
+                                                        someFunction={async () => {
+                                                            if (
+                                                                await CheckIfSignedIn()
+                                                            ) {
+                                                                ApprovalModal.set(
+                                                                    true,
+                                                                );
+                                                            } else {
+                                                                path.set(
+                                                                    "/solution/" +
+                                                                        key,
+                                                                );
+                                                                goto(
+                                                                    "/signin/",
+                                                                );
+                                                                return;
+                                                            }
+                                                        }}
+                                                    />
+                                                    <BasicButtonDark
+                                                        msg={"Reject"}
+                                                        icon={"cancel"}
+                                                        someFunction={async () => {
+                                                            if (
+                                                                await CheckIfSignedIn()
+                                                            ) {
+                                                                RejectModal.set(
+                                                                    true,
+                                                                );
+                                                            } else {
+                                                                path.set(
+                                                                    "/solution/" +
+                                                                        key,
+                                                                );
+                                                                goto(
+                                                                    "/signin/",
+                                                                );
+                                                                return;
+                                                            }
+                                                        }}
+                                                    />
+                                                {/if}
+                                            {/await}
+                                        </div>
+                                    </div>
+                                {/await}
                             {/if}
-                        {:else if status == "DELIVERED"}
-                            <h1 style="color: var(--tertiary-color);">
-                                Project delivered!
-                            </h1>
-                            <div
-                                class="SmallSeparator HorizontallyAligned"
-                                style="text-align: center;"
-                            >
-                                <p style="color: var(--tertiary-color);">
-                                    This project has already been delivered. You
-                                    can either approve or dissapprove it.
-                                </p>
-                                <p style="color: var(--tertiary-color);">
-                                    You can see the product <a
-                                        href={productLink}>here</a
-                                    >.
-                                </p>
-                                <div class="HorizontallyAligned">
-                                    <BasicButtonDark
-                                        msg={"Approve"}
-                                        icon={"verified_user"}
-                                        someFunction={() => {
-                                            ApprovalModal.set(true);
-                                        }}
-                                    />
-                                    <BasicButtonDark
-                                        msg={"Reject"}
-                                        icon={"cancel"}
-                                        someFunction={() => {
-                                            RejectModal.set(true);
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        {/if}
+                        {/await}
                     </div>
                 </div>
                 <ModalPledgeFunds {idea_id} {userKey} feature_id={""} />
-                <PaymentsModal />
-                <DeliverModal />
-                <ModalApproval />
-                <ModalReject />
+                <PaymentsModal solution_id={key} {idea_id} />
+                <DeliverModal solution_id={key} />
+                <ModalApproval solution_id={key} />
+                <ModalReject solution_id={key} />
             </div>
         {:else if success}
             <SuccessNew message={"Pledge successfully created"} />
@@ -357,7 +497,7 @@
         {:else if solutionNonExistent}
             <NotFound />
         {:else}
-            <LoadingNew />
+            <LoadingNew message={"Loading data..."} />
         {/if}
     </div>
 </div>
@@ -397,7 +537,22 @@
             "FeaturesSection FeaturesSection FeaturesSection"
             "ActivitySection ActivitySection ActivitySection";
     }
+    .FeaturesSection {
+        display: grid;
+        grid-template-columns: 3fr 0fr 0fr;
+        grid-template-rows: 0fr 0fr 0fr;
+        gap: 0px 0px;
+        grid-auto-flow: row;
+        grid-template-areas:
+            "FeaturesTitle FeaturesTitle FeaturesTitle"
+            "Features Features Features"
+            "FeaturesScrollerSection FeaturesScrollerSection FeaturesScrollerSection";
+        grid-area: FeaturesSection;
+    }
 
+    .FeaturesTitle {
+        grid-area: FeaturesTitle;
+    }
     .Subtitle {
         grid-area: Subtitle;
     }

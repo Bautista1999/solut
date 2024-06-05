@@ -21,6 +21,8 @@
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import { onMount } from "svelte";
     import { getDoc } from "@junobuild/core-peer";
+    import { path } from "$lib/stores/redirect_store";
+    import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
 
     let key = "";
     /**
@@ -132,6 +134,10 @@
     }
     let parentIdeaKey = "";
     onMount(async () => {
+        if (!(await CheckIfSignedIn())) {
+            path.set("/createfeature/" + data.params.idea_id);
+            goto("/signin/");
+        }
         console.log("Idea ID:", data.params.idea_id);
         isLoading = true;
         loadingMsg = "Checking parent's idea existance...";

@@ -10,7 +10,7 @@
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import SuccessNew from "$lib/components/Success_New.svelte";
     import { getNames } from "country-list";
-    import { usernameExists } from "$lib/data_functions/user.functions";
+    import { usernameExists } from "$lib/data_functions/get_functions";
 
     const countries = getNames();
 

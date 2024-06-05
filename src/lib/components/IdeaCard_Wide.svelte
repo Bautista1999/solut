@@ -1,57 +1,68 @@
 <script>
     import { goto } from "$app/navigation";
+    import {
+        getAmountPledgersAndImages,
+        getImageUrl,
+        getTotalFollowers,
+        getUserImages,
+    } from "$lib/data_functions/get_functions";
+    import { getTotalPledges } from "$lib/financial_functions/financial_functions";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
     import FundingBar from "./fundingBar.svelte";
     import PledgersSection from "./pledgersSection.svelte";
     import ProfilePicture from "./profilePicture.svelte";
     import UsersOverview from "./usersOverview.svelte";
 
     /**
-     * @type {string}
+     * @type {{
+    key: string;
+    data: import("$lib/data_objects/data_types").IndexDataReturn;
+}}
      */
-    export let image =
-        "https://media.ambito.com/p/9c57bcc58b3be5c19ea3a38d32f54fca/adjuntos/239/imagenes/038/684/0038684219/1200x675/smart/ethereum-banco-centraljpg.jpg";
-    export let featureExample = {
-        title: "title",
-        subtitle: "subtitle",
-        description: "description",
-        expected: 100,
-        total: 100,
-        image: image,
-        user: "user",
-        userPicture: image,
-        key: "",
-        createdAt: "17 August, 2023",
-        /**
-         * @type {string[]}
-         */
-        pledgersImages: [],
-        amountFollowers: 0,
-    };
+    export let idea;
     export let padding = 7;
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="container" on:click={() => goto("feature")}>
+<div
+    class="container"
+    on:click={() => goto("/" + idea.data.type + "/" + idea.key)}
+>
     <div class="Image">
-        <img src={featureExample.image} alt="" />
+        <img
+            src={idea.data.images[0]
+                ? idea.data.images[0]
+                : "https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg"}
+            alt=""
+        />
     </div>
     <div class="ProfilePicture">
-        <ProfilePicture src={featureExample.userPicture} />
+        <div class="Profile">
+            {#await getUserImages([idea.data.owner])}
+                <ProfilePicture src={""} />
+            {:then data}
+                <ProfilePicture src={data[0].image} userKey={idea.data.owner} />
+            {/await}
+        </div>
     </div>
 
     <div
         class="Title"
-        style="font-size: medium; padding:{padding}px; text-align:start"
+        style="font-size: medium; padding:{padding}px; text-align:start; height:50px;"
     >
-        {featureExample.title}
+        {idea.data.title}
     </div>
     <div
         class="FollowersSection"
         style="display: flex; justify-content:center; align-items:left; flex-direction:column; text-align:center;"
     >
-        <span class="material-symbols-outlined">favorite</span>
-        {featureExample.amountFollowers} K
+        {#await getTotalFollowers(idea.key)}
+            <MagicalDotsAbsoluteSmall />
+        {:then data}
+            <span class="material-symbols-outlined">favorite</span>
+            {data}
+        {/await}
     </div>
     <!-- <div
         class="Subtitle"
@@ -60,23 +71,41 @@
         {featureExample.subtitle}
     </div> -->
     <div class="FundingBar" style="padding:{padding}px; ">
-        <FundingBar
-            card={true}
-            expected={featureExample.expected}
-            total={featureExample.total}
-        />
+        {#await getTotalPledges(idea.key, idea.data.type.toUpperCase())}
+            <MagicalDotsAbsoluteSmall />
+        {:then data}
+            <FundingBar
+                card={true}
+                expected={data.expected}
+                total={data.pledges}
+            />
+        {/await}
     </div>
-    <div
-        class="PledgersAmount"
-        style="text-align:left;padding-left:{padding}px;padding-bottom:{20}px; font-size:medium;  "
-    >
-        Pledgers: {featureExample.pledgersImages.length}
-    </div>
+    {#await getAmountPledgersAndImages(idea.key)}
+        <MagicalDotsAbsoluteSmall />
+    {:then data}
+        <div
+            class="PledgersAmount"
+            style="padding-left:{padding}px;padding-bottom:{20}px; font-size:small; margin-top:{padding}px; "
+        >
+            Pledgers: {data.amount}
+        </div>
+
+        <div class="featureFlag" style="position: absolute; margin:10px;">
+            {idea.data.type}
+        </div>
+        <div
+            class="PledgersPictures"
+            style="padding-top:{padding}px; padding-left:0px; margin-left:0px; margin-top:{padding}px;"
+        >
+            <UsersOverview card={true} users={data.users} />
+        </div>
+    {/await}
     <div
         class="PledgersPictures"
         style="padding-top:{padding}px; padding-left:0px; margin-left:0px; "
     >
-        <UsersOverview card={true} images={featureExample.pledgersImages} />
+        <UsersOverview card={true} />
     </div>
 </div>
 

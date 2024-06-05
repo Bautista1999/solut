@@ -5,7 +5,6 @@
         getTotalFollowers,
         getUserImages,
     } from "$lib/data_functions/get_functions";
-    import { key } from "$lib/data_objects/testing_objects";
     import { getTotalPledges } from "$lib/financial_functions/financial_functions";
     import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
     import FundingBar from "./fundingBar.svelte";
@@ -19,15 +18,12 @@
      */
     export let feature;
     export let padding = 7;
+    let key = feature.key.substring(6, feature.key.length + 1);
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div
-    class="container"
-    on:click={() =>
-        goto("/feature/" + feature.key.substring(6, feature.key.length + 1))}
->
+<div class="container" on:click={() => goto("/feature/" + key)}>
     <div class="Image">
         <img src={feature.data.images[0]} alt="" />
     </div>
@@ -52,7 +48,7 @@
         class="FollowersSection"
         style="display: flex; justify-content:center; align-items:left; flex-direction:column; text-align:center;"
     >
-        {#await getTotalFollowers(feature.key)}
+        {#await getTotalFollowers(key)}
             <MagicalDotsAbsoluteSmall />
         {:then data}
             <span class="material-symbols-outlined">favorite</span>
@@ -61,12 +57,12 @@
     </div>
     <div
         class="Subtitle"
-        style="font-size:small; padding:{padding}px; text-align:left"
+        style="font-size:small; padding:{padding}px; text-align:left; height:50px;"
     >
         {feature.data.subtitle}
     </div>
     <div class="FundingBar" style="padding:{padding}px; ">
-        {#await getTotalPledges(feature.key, "FEA")}
+        {#await getTotalPledges(key, "FEA")}
             <MagicalDotsAbsoluteSmall />
         {:then data}
             <FundingBar
@@ -76,7 +72,7 @@
             />
         {/await}
     </div>
-    {#await getAmountPledgersAndImages(feature.key)}
+    {#await getAmountPledgersAndImages(key)}
         <MagicalDotsAbsoluteSmall />
     {:then data}
         <div

@@ -1,5 +1,21 @@
 <script>
-    export let amount = 10000;
+    import { goto } from "$app/navigation";
+    import {
+        CheckIfFollow,
+        followElement,
+        unFollowElement,
+    } from "$lib/data_functions/create_functions";
+    import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
+    import { path } from "$lib/stores/redirect_store";
+    import { onMount } from "svelte";
+
+    /**
+     * @param {number} num
+     */
+    export let amount = 0;
+    export let element_key = "";
+    export let type = "";
+    let follows = false;
     let amount_sub = formatNumber(amount);
     /**
      * @param {number} num
@@ -13,12 +29,59 @@
             return (num / 1000000).toFixed(num % 1000000 !== 0 ? 1 : 0) + "M";
         }
     }
+
+    async function IncreaseFollowers() {
+        if (!(await CheckIfSignedIn())) {
+            path.set("/solution/" + element_key);
+            goto("/signin/");
+            return;
+        }
+        // @ts-ignore
+        amount_sub++;
+        follows = true;
+        console.log("Follow: ", await followElement(element_key, type));
+    }
+    async function DecreaseFollowers() {
+        if (!(await CheckIfSignedIn())) {
+            path.set("/solution/" + element_key);
+            goto("/signin/");
+            return;
+        }
+        // @ts-ignore
+        amount_sub--;
+        follows = false;
+        console.log("Unfollow: ", await unFollowElement(element_key, type));
+    }
+    onMount(async () => {
+        follows = await CheckIfFollow(element_key);
+    });
 </script>
 
 <div class="FollowersSection">
     <div class="Heart">
-        <span class="material-symbols-outlined"> favorite </span>
+        {#if follows}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
+            <span
+                class="material-symbols-outlined"
+                style="font-variation-settings: 'FILL'1;"
+                on:click={() => DecreaseFollowers()}
+            >
+                favorite
+            </span>
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
+        {:else}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
+            <span
+                class="material-symbols-outlined"
+                on:click={() => IncreaseFollowers()}
+            >
+                favorite
+            </span>
+        {/if}
     </div>
+
     <div class="Followers">Followers: {amount_sub}</div>
 </div>
 

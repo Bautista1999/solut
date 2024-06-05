@@ -1,8 +1,10 @@
-import { getDoc, initJuno, setDoc, setManyDocs, unsafeIdentity } from "@junobuild/core-peer";
+import { authSubscribe, deleteDoc, getDoc, setDoc, setManyDocs, unsafeIdentity } from "@junobuild/core-peer";
 import { nanoid } from "nanoid";
 import {idlFactory as canisterIdl}  from "$lib/declarations/admin.declarations.did.js";
 import { Actor, HttpAgent } from "@dfinity/agent";
 import { admin_canister_id } from "./canisters";
+import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
+import { getUserKey } from "./get_functions";
 
 
 /**
@@ -10,7 +12,7 @@ import { admin_canister_id } from "./canisters";
  * @param {Array<import("$lib/data_objects/data_types").feature>} features
  */
 export async function setIdea(idea,features){
-    let versionGen = [3n];
+    let versionGen = [0n];
     if(idea.description.length>1000 || idea.title.length>70 || idea.subtitle.length>200){
         return "ERROR: Fields in idea does not fulfill length requirements";
     };
@@ -224,7 +226,7 @@ export async function setSolution(solution,parentIdea_id){
     if(solution.description.length>1000 || solution.title.length>70 || solution.subtitle.length>200){
         return "ERROR: Fields in solution does not fulfill length requirements";
     };
-    if(solution.description.length==0 || solution.title.length==0 || solution.subtitle.length==0){
+    if(solution.description.length==0 || solution.title.length==0 || solution.subtitle.length==0 || solution.features.length==0){
         let errorDetail = "";
         switch (true) {
             case solution.description.length === 0:
@@ -237,9 +239,20 @@ export async function setSolution(solution,parentIdea_id){
             case solution.subtitle.length === 0:
                 errorDetail= "Subtitle is required.";
                 break;
+            case solution.features.length === 0:
+                errorDetail= "At least one feature needs to be implemented";
+                break;
         }
         return "ERROR: Is required for all fields to be completed. The field " + errorDetail;
     };
+
+    let ideaDoc = await getDoc({
+        collection:"idea",
+        key:parentIdea_id
+    });
+    if(ideaDoc==undefined){
+        return "The idea doesnt exist!";
+    }
 
     let sol_id = nanoid();
     let solutionDoc = {
@@ -253,7 +266,6 @@ export async function setSolution(solution,parentIdea_id){
     let SolPledkey = ("SOL_PL_" + parentIdea_id);
     let descriptionSolPled = "SOL_ID:"+sol_id;
     let solutionPledgeDoc = await updateDocDescription(SolPledkey,descriptionSolPled,"pledges_solution");
-    
 
     let indexSearchDoc = {
         collection:"index_search",
@@ -286,7 +298,7 @@ export async function setSolution(solution,parentIdea_id){
             data:await toArray("")
         }];
     let solutionStatusDoc = [
-        "solution_status","SOL_APPR_"+sol_id,
+        "solution_status","SOL_STAT_"+sol_id,
         {
             description:["status:"+"PROPOSAL"],version:versionGen,
             data:await toArray("")
@@ -300,6 +312,20 @@ export async function setSolution(solution,parentIdea_id){
     const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
     const result = await canister.setManyDocs(arrayDocsAdmin);
     let solutionCounter = await updateCounter("solutions_counter",1);
+    /**
+    * @type {import("$lib/data_objects/data_types").Notification}
+    */
+    let newNotification={
+        title: "Solution proposed!",
+        subtitle: "A solution was already delivered for the idea "+ ideaDoc.data.title +". You can check it out!",
+        imageURL: solution.images[0],
+        linkURL: "/solution/"+sol_id,
+        sender: await getUserKey(),
+        description: "",
+        typeOf: "solution proposal"
+    };
+    let description = parentIdea_id;
+    createNotification(newNotification,description);
     return newDocs;
 };
 /**
@@ -464,3 +490,223 @@ export const toArray = async (/** @type {any} */ data) => {
     });
     return new Uint8Array(await blob.arrayBuffer());
   };
+
+
+/**
+ * @param {string} element_id
+ * @return {Promise<string>}
+ * @param {string} type
+ */
+export async function followElement(element_id,type){
+    if(!(await CheckIfSignedIn())){
+        return "Following fail";
+    }
+    authSubscribe(async(user)=>{
+            let doc =  setDoc({
+                collection:"follow",
+                doc:{
+                    key:user?.key+"_"+element_id,
+                    description:type,
+                    data:[]
+                }
+                
+            })
+            
+            let identity = await unsafeIdentity();
+            const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
+            const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
+            let adminFollowerCounterUpdate = canister.followerCounter(element_id,true,type);
+            console.log("doc",adminFollowerCounterUpdate)
+    })
+    return "Success";
+    
+}
+/**
+ * @param {string} element_id
+ * @return {Promise<string>}
+ * @param {string} type
+ */
+export async function unFollowElement(element_id,type){
+    if(!(await CheckIfSignedIn())){
+        return "Unfollowing fail";
+    }
+    authSubscribe(async(user)=>{
+        let DocToDelete = await getDoc({
+            collection:"follow",
+            key:user?.key+"_"+element_id,
+        });
+        if(DocToDelete==undefined){
+            return "Unfollowing fail";
+        }else{
+            let doc = deleteDoc({
+                collection:"follow",
+                doc:{
+                    key:user?.key+"_"+element_id,
+                    description:type,
+                    version:DocToDelete.version,
+                    updated_at:DocToDelete.updated_at,
+                    data:[]
+                }
+            })
+            let identity = await unsafeIdentity();
+            const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
+            const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
+            let adminFollowerCounterUpdate = canister.followerCounter(element_id,false,type);
+        }           
+    })
+    return "Success";
+}
+
+/**
+ * @param {string} element_id
+ * @return {Promise<boolean>}
+ */
+export async function CheckIfFollow(element_id){
+    if(!(await CheckIfSignedIn())){
+        return false;
+    }
+    return new Promise((resolve) => {
+        authSubscribe(async (user) => {
+            let followerDoc = await getDoc({
+                collection: "follow",
+                key: user?.key + "_" + element_id,
+            });
+            if (followerDoc == undefined) {
+                resolve(false);
+            } else {
+                resolve(true);
+            }
+        });
+    });
+}
+
+/**
+ * @param {string} solution_id
+ * @return {Promise<string>}
+ * @param {string} link
+ */
+export async function deliverSolution(solution_id, link){
+    if(link==""|| link==" " ){
+        throw new Error("You must provide a working link");
+    }
+    if(!isValidURL(link)){
+        throw new Error("You must provide a working link");
+    }
+    return new Promise((resolve,reject)=>{
+        authSubscribe(async (user) => {
+            let solDoc = await getDoc({
+                collection: "solution",
+                key: solution_id,
+            });
+            if (solDoc == undefined) {
+                return reject(new Error("Solution doesnt exist"));
+            } else {
+                if(solDoc.owner!=user?.key){
+                    return reject(new Error("Signed in user not the owner of the solution!"));
+                };
+                let identity = await unsafeIdentity();
+                const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
+                const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
+                try{
+                    let statusUpdate = canister.updateSolutionStatus(solution_id,"DELIVERED");
+                    console.log("Solution Status update result: ", statusUpdate)
+
+                    /**
+                    * @type {import("$lib/data_objects/data_types").SolutionDelivery} 
+                    */
+                    let dataDoc = {
+                        link:link,
+                        type:"link",
+                        image:solDoc.data.images[0]?solDoc.data.images[0]:"",
+                        video:solDoc.data.videos[0]?solDoc.data.videos[0]:"",
+                    };
+                    let setDeliveryDoc = await setDoc({
+                        collection:"solution_delivery",
+                        doc:{
+                            key:"DEL_"+solution_id,
+                            data: dataDoc,
+                            version:0n,
+                        }
+                    });
+                    /**
+                     * @type {import("$lib/data_objects/data_types").Notification}
+                     */
+                    let newNotification={
+                        title: "Solution delivered!",
+                        subtitle: solDoc.data.title +" was already delivered. You can check it out!",
+                        imageURL: solDoc.data.images[0],
+                        linkURL: "/solution/"+solution_id,
+                        sender: solDoc.data.owner,
+                        description: "",
+                        typeOf: "delivery"
+                    };
+                    let description = solution_id;
+                    createNotification(newNotification,description);
+                    resolve("Success");
+                }
+            catch(e){
+                return reject( new Error (String(e)));
+            }
+            
+            
+            }
+        });
+    });
+};
+
+/**
+ * @param {string | URL} string
+ */
+function isValidURL(string) {
+    try {
+        new URL(string);
+        return true;
+    } catch (_) {
+        return false;
+    }
+}
+
+/**
+ * @param {string} inviterKey
+ */
+export async function setInvitationDocument(inviterKey){
+    let userKey =  await getUserKey();
+    let key = userKey + "_" + inviterKey;
+    let data = {
+        inviter : inviterKey,
+        user: userKey,
+    }
+    let createDoc = await setDoc({
+        collection: "invites",
+        doc: {
+            key:key,
+            data:data,
+            version:0n,
+        }
+    });
+}
+
+/**
+ * @param {import("$lib/data_objects/data_types").Notification} notification
+ * @param {string} description
+ */
+export async function createNotification(notification,description){
+    let key = nanoid();
+    let input = [
+        "notification",
+        key,
+        {
+            version: [0n],  // Optional field syntax with BigInt
+            description: [description],
+            data: await toArray(notification)
+        }
+    ];
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
+    const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
+    await canister.setManyDocs([input]);
+}
+
+export async function createMultipleNotifications(){
+    
+}

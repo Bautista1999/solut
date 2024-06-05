@@ -5,4 +5,3 @@ export async function load({ params }) {
     };
   }
   
-  export const prerender = false;

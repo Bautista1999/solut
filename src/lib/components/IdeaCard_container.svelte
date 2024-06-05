@@ -1,10 +1,13 @@
 <script>
-    import { getFeaturesOfIdea } from "$lib/data_functions/get_functions";
+    import {
+        getFeaturesOfIdea,
+        getFeaturesOfSolution,
+    } from "$lib/data_functions/get_functions";
     import IdeaCard from "./IdeaCard.svelte";
     import LoadingNew from "./LoadingNew.svelte";
     import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
     import MagicalDots from "./magicalDots.svelte";
-
+    export let type = "idea";
     let featureExample = {
         title: "title",
         subtitle: "subtitle",
@@ -25,9 +28,10 @@
      * @type {string}
      */
     export let idea_id = ""; // This should come from your database or store
+    export let solution_id = "";
 </script>
 
-{#await getFeaturesOfIdea(idea_id)}
+{#await type == "idea" ? getFeaturesOfIdea(idea_id) : getFeaturesOfSolution(idea_id, solution_id)}
     <div>
         <MagicalDots />
     </div>

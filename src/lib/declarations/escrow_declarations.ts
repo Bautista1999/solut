@@ -14,7 +14,9 @@ export interface Reputation {
     'number': bigint,
 }
 export interface Transaction {
+    'to': Uint8Array | number[],
     'status': string,
+    'from': Uint8Array | number[],
     'created_at': bigint,
     'sender': Principal,
     'target': Principal,
@@ -81,7 +83,10 @@ export interface _SERVICE {
     'storeFakeTransactions': ActorMethod<[string], string>,
     'updateReputation': ActorMethod<[Principal, bigint, bigint], string>,
     'updateSolutionStatus': ActorMethod<[string, string], string>,
-    'verifyAndStoreTransaction': ActorMethod<[bigint], string>,
+    'verifyAndStoreTransaction': ActorMethod<
+        [bigint, string, string, string],
+        string
+    >,
 }
 export declare const idlFactory: IDL.InterfaceFactory;
 export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];

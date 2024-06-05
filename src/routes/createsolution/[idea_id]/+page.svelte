@@ -23,6 +23,8 @@
     import { onMount } from "svelte";
     import { getDoc, initJuno } from "@junobuild/core-peer";
     import { setSolution } from "$lib/data_functions/create_functions";
+    import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
+    import { path } from "$lib/stores/redirect_store";
 
     /** @type {import('./$types').PageData} */
     export let data;
@@ -167,6 +169,10 @@
     }
 
     onMount(async () => {
+        if (!(await CheckIfSignedIn())) {
+            path.set("/createsolution/" + data.params.idea_id);
+            goto("/signin/");
+        }
         isLoading = true;
         loadingMsg = "Checking parent's idea existance...";
         await initJuno({

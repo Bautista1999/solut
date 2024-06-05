@@ -3,6 +3,18 @@
     import ProfilePictureSmall from "./ProfilePicture_Small.svelte";
     import BasicButtonSmall from "./BasicButton_Small.svelte";
     import { goto } from "$app/navigation";
+    import {
+        CheckIfSignedIn,
+        CheckIfSignedInHeader,
+    } from "$lib/signin_functions/user_signin_functions";
+    import { signOut } from "@junobuild/core-peer";
+    import { IsSignedIn, UserKey } from "$lib/stores/other_stores";
+    import {
+        getUserImages,
+        getUserKey,
+    } from "$lib/data_functions/get_functions";
+    import ProfilePicture from "./profilePicture.svelte";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
 
     let lastScrollY = window.scrollY;
     let isExpanded = true; // Header is expanded by default
@@ -44,30 +56,56 @@
 <div class="header-container">
     <header class={isExpanded ? "expanded" : "shrink"}>
         <div class="container">
-            <div class="leftHeader">
-                <!-- Left-aligned content here -->
-            </div>
-            <div class="mainHeaderContent">
-                <nav class="navigation">
-                    <a href="/">Home</a>
-                    <a href="https://home.solutio.one/">About</a>
-                    <!-- <a href="/contact">Contact</a> -->
-                    <a href="/signin" class="tab-button">Sign In</a>
-                </nav>
-            </div>
-            <div class="rightHeader">
-                <!-- Right-aligned content here -->
-                <BasicButtonSmall
-                    msg={"Create New"}
-                    icon={"add_circle"}
-                    someFunction={() => {
-                        goto("/create");
-                    }}
-                />
-                <ProfilePictureSmall
-                    src={"https://pics.craiyon.com/2023-12-04/ISH99-XlQSyzrqzjzpoDhQ.webp"}
-                />
-            </div>
+            {#await CheckIfSignedIn() then SignedIn}
+                <div class="leftHeader">
+                    <!-- Left-aligned content here -->
+                </div>
+                <div class="mainHeaderContent">
+                    <nav class="navigation">
+                        <a href="/">Home</a>
+                        <a href="https://home.solutio.one/">About</a>
+                        <!-- <a href="/contact">Contact</a> -->
+                        {#if !$IsSignedIn}
+                            <a href="/signin" class="tab-button">Sign In</a>
+                        {:else}
+                            <a
+                                class="tab-button"
+                                href="/signin"
+                                style="cursor: pointer;"
+                                on:click={async () => {
+                                    await signOut();
+                                    location.reload();
+                                }}
+                            >
+                                Sign out
+                            </a>
+                        {/if}
+                    </nav>
+                </div>
+                <div class="rightHeader">
+                    <!-- Right-aligned content here -->
+                    <BasicButtonSmall
+                        msg={"Create New"}
+                        icon={"add_circle"}
+                        someFunction={() => {
+                            goto("/create");
+                        }}
+                    />
+
+                    {#await getUserKey()}
+                        <MagicalDotsAbsoluteSmall />
+                    {:then key}
+                        {#await getUserImages([$UserKey])}
+                            <!-- <ProfilePictureSmall src={""} userKey={""} /> -->
+                        {:then data}
+                            <ProfilePictureSmall
+                                src={data[0].image}
+                                userKey={data[0].key}
+                            />
+                        {/await}
+                    {/await}
+                </div>
+            {/await}
         </div>
     </header>
 </div>

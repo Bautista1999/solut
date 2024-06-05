@@ -32,6 +32,13 @@ type link = {
     link: string,
 }
 
+export type SolutionDelivery = {
+    link: string,
+    type: string,
+    image: string,
+    video: string,
+}
+
 export type user = {
     username: string,
     profilePicture: string,
@@ -58,7 +65,17 @@ export type UserProfilePic = {
     image: string,
 }
 
+export type IndexDataReturn = { title: string, subtitle: string, images: string, videos: string, owner: string, type: string };
 
+export type Notification = {
+    title: string;
+    subtitle: string;
+    imageURL: string;
+    linkURL: string;
+    sender: string;
+    description: string;
+    typeOf: string;
+};
 
 
 //Juno
@@ -93,3 +110,4 @@ export interface Transaction {
     'transaction_number': [] | [bigint],
     'amount': bigint,
 }
+

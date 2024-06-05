@@ -1,38 +1,38 @@
 <script>
+    import { getIdeasByKeyWords } from "$lib/data_functions/get_functions";
+    import { key } from "$lib/data_objects/testing_objects";
     import IdeaCard from "./IdeaCard.svelte";
     import IdeaCardWide from "./IdeaCard_Wide.svelte";
-
-    // Let's assume 'features' is the array of feature objects you receive from the database
-    let featureExample = {
-        title: "title",
-        subtitle: "subtitle",
-        description: "description",
-        expected: 100,
-        total: 100,
-        image: "",
-        user: "user",
-        userPicture: "",
-        createdAt: "17 August, 2023",
-        key: "",
-        /**
-         * @type {string[]}
-         */
-        pledgersImages: [],
-        amountFollowers: 0,
-    };
+    import LoadingNew from "./LoadingNew.svelte";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
     /**
-     * @type {featureExample[]}
+     * @type {string[]}
      */
-    export let features = []; // This should come from your database or store
+    export let keywords = [];
+
+    let ideasPromise; // Initialize the promise
+
+    // Reactive statement to refresh the await block
+    $: ideasPromise = getIdeasByKeyWords(keywords, { start: "", limit: 12 });
 </script>
 
-<div class="features-container">
-    {#each features as feature}
-        <div class="">
-            <IdeaCardWide featureExample={feature} padding={10} />
-        </div>
-    {/each}
-</div>
+{#await ideasPromise}
+    <div
+        class="VerticallyAligned HorizontallyAligned"
+        style="display: flex; flex-direction:row; justify-content:center;
+            align-items:center; margin:auto;"
+    >
+        <MagicalDotsAbsoluteSmall />
+    </div>
+{:then ideas}
+    <div class="features-container">
+        {#each ideas as idea}
+            <div class="">
+                <IdeaCardWide {idea} padding={10} />
+            </div>
+        {/each}
+    </div>
+{/await}
 
 <style>
     .features-container {

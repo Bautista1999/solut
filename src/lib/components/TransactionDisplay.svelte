@@ -1,4 +1,5 @@
 <script>
+    import { goto } from "$app/navigation";
     import { getUsername } from "$lib/data_functions/get_functions";
     import { Principal } from "@dfinity/principal";
 
@@ -8,6 +9,16 @@
      */
     export let transactions = [];
     export let maxCharacters = 10;
+    /**
+     *
+     * @param {number} number
+     */
+    function checkTransaction(number) {
+        window.open(
+            "https://dashboard.internetcomputer.org/transaction/" +
+                number.toString(),
+        );
+    }
 </script>
 
 <table class="transaction-table">
@@ -32,7 +43,14 @@
     </tr>
 
     {#each transactions as transaction}
-        <tr class="rows">
+        <tr
+            class="rows"
+            on:click={() => {
+                if (transaction.trans_type != "Pledge") {
+                    checkTransaction(transaction.transaction_number[0]);
+                }
+            }}
+        >
             <!-- <td><img src={transaction.image} alt="Transaction" /></td> -->
             <td
                 >{transaction.target
@@ -115,10 +133,15 @@
         border: 1px solid var(--secondary-color);
         margin-top: 15px;
         background-color: var(--tertiary-color);
+        cursor: pointer;
     }
 
     .transaction-table th {
         font-weight: 400;
+    }
+
+    .rows:hover {
+        background-color: var(--forth-color);
     }
 
     .transaction-table img {

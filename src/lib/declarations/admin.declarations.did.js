@@ -8,7 +8,7 @@ export const idlFactory = ({ IDL }) => {
   const Pledge = IDL.Record({
     'feature_id' : IDL.Text,
     'expected_amount' : IDL.Nat64,
-    'user' : IDL.Principal,
+    'user' : IDL.Text,
     'idea_id' : IDL.Text,
     'amount' : IDL.Nat64,
     'doc_key' : IDL.Text,
@@ -82,7 +82,7 @@ export const idlFactory = ({ IDL }) => {
     'docInput' : DocInput,
   });
   return IDL.Service({
-    'createNotification' : IDL.Func([], [IDL.Text], []),
+    'createNotification' : IDL.Func([IDL.Text], [IDL.Text], []),
     'createPersonalNotification' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
         [IDL.Text],

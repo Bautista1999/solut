@@ -1,5 +1,7 @@
 <script>
-    let searchText = ""; // To hold the search input text
+    export let searchText = ""; // To hold the search input text
+
+    export let someFunction = () => {};
 </script>
 
 <div class="search-container">
@@ -11,9 +13,14 @@
             placeholder="Search for a topic or idea..."
             bind:value={searchText}
             style="font-family: 'Barlow';"
+            on:keydown={(event) => {
+                if (event.key == "Enter") {
+                    someFunction();
+                }
+            }}
         />
     </div>
-    <button class="search-button">
+    <button class="search-button" on:click={someFunction}>
         <span class="material-symbols-outlined">search</span>
     </button>
 </div>

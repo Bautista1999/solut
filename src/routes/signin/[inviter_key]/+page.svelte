@@ -1,42 +1,67 @@
 <script>
-    import { goto } from "$app/navigation";
-    import BasicButtonDarkLarger from "$lib/components/BasicButtonDarkLarger.svelte";
     import BasicButtonLarger from "$lib/components/BasicButtonLarger.svelte";
-    import BasicButtonDarkSmall from "$lib/components/BasicButton_Dark_Small.svelte";
-    import BasicButton from "$lib/components/basicButton.svelte";
-    import { page } from "$app/stores";
-    import { authSubscribe, initJuno, signIn } from "@junobuild/core-peer";
-    import { isRegistered } from "$lib/data_functions/user.functions";
+    import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
+    import { onMount } from "svelte";
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
+    import { authSubscribe, signIn } from "@junobuild/core-peer";
+    import { isRegistered } from "$lib/data_functions/user.functions";
     import { GoToPath } from "$lib/stores/redirect_store";
+    import { goto } from "$app/navigation";
+    import {
+        CheckInviteExistance,
+        CheckUserExistance,
+        getUserImages,
+        getUsername,
+    } from "$lib/data_functions/get_functions";
+    import LoadingNew from "$lib/components/LoadingNew.svelte";
+    import SuccessNew from "$lib/components/Success_New.svelte";
+    import ProfilePicture from "$lib/components/profilePicture.svelte";
+    import ProfilePictureSmall from "$lib/components/ProfilePicture_Small.svelte";
+    import { setInvitationDocument } from "$lib/data_functions/create_functions";
 
-    // Accessing the parameter
-    let inviteCode;
-    $: inviteCode = $page.url.searchParams.get("invite");
     /** @type {import('./$types').PageData} */
     // @ts-ignore
     export let data;
-    let code = "";
+    let inviterKey = data.params.inviter_key;
     let error = false;
-    let errorMsg = "Error: Sign in failed. Refresh to try again.";
+    let errorMsg = "";
+    let success = false;
+    let notFound = false;
+    let isLoading = false;
+
+    onMount(async () => {
+        isLoading = true;
+        if (await CheckIfSignedIn()) {
+            error = true;
+            errorMsg = "You are already signed in.";
+        }
+        if (!(await CheckUserExistance(inviterKey))) {
+            error = true;
+            errorMsg = "Inviter key not found!";
+        }
+        isLoading = false;
+    });
     async function logIn() {
         try {
             await signIn();
-            await authSubscribe(async (user) => {
+            authSubscribe(async (user) => {
                 if (user == null) {
                     error = true;
                 } else {
                     let isReg = await isRegistered(user.key);
                     switch (isReg) {
                         case true:
-                            console.log("User key: ", user.key);
                             GoToPath();
-                            // location.reload();
                             break;
                         case false:
-                            console.log("User key: ", user.key);
+                            if (user.key != inviterKey) {
+                                try {
+                                    await setInvitationDocument(inviterKey);
+                                } catch (e) {
+                                    console.log(e);
+                                }
+                            }
                             goto("/createaccount/" + user.key);
-                            // location.reload();
                             break;
                     }
                 }
@@ -48,7 +73,7 @@
     }
 </script>
 
-{#if !error}
+{#if !error && !success && !isLoading}
     <div class="body">
         <div class="container">
             <h1 style="font-size: 2.5em;">Sign in</h1>
@@ -61,6 +86,21 @@
                     await logIn();
                 }}
             />
+            <br />
+            {#await getUsername(inviterKey)}
+                <p>You have been invited by the user with key {inviterKey}</p>
+            {:then data}
+                <p>You have been invited by the user {data}</p>
+                <br />
+                {#await getUserImages([inviterKey])}
+                    <ProfilePictureSmall src={""} userKey={inviterKey} />
+                {:then data}
+                    <ProfilePictureSmall
+                        src={data[0].image}
+                        userKey={inviterKey}
+                    />
+                {/await}
+            {/await}
         </div>
     </div>
 {:else if error}
@@ -68,9 +108,13 @@
         message={"Sign in failed"}
         error={errorMsg}
         someFunction={() => {
-            error = false;
+            goto("/");
         }}
     />
+{:else if success}
+    <SuccessNew />
+{:else}
+    <LoadingNew message={"Checking inviter..."} />
 {/if}
 
 <style>

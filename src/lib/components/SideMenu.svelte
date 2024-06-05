@@ -3,6 +3,10 @@
     import AboutProject from "./AboutProject.svelte";
     import Badges from "./Badges.svelte";
     import { goto } from "$app/navigation";
+    import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
+    import { IsSignedIn, UserKey } from "$lib/stores/other_stores";
+    import { getMostFollowedIdeas } from "$lib/data_functions/get_functions";
+    import { path } from "$lib/stores/redirect_store";
     let isOpen = false;
 
     function toggleSidebar() {
@@ -27,61 +31,63 @@
 </script>
 
 <div class="SideBar {isOpen ? 'open' : ''}">
-    <div class="SideBarHead">
-        <div class="SideBarElement" style="padding-left: 19px;">
-            <img
-                src="/assets/LogoSol3.png"
-                alt="Solutio Logo"
-                on:click={() => goto("/")}
-            />
-            {#if isOpen}
-                <span
-                    class="label"
-                    style="overflow-x: hidden; position:absolute; "
-                    in:fade={{ duration: seconds * 1000 }}
-                    out:fade={{ duration: seconds * 1000 }}
+    {#await CheckIfSignedIn() then data}
+        <div class="SideBarHead">
+            <div class="SideBarElement" style="padding-left: 19px;">
+                <img
+                    src="/assets/LogoSol3.png"
+                    alt="Solutio Logo"
                     on:click={() => goto("/")}
-                >
-                    <h2>
-                        SOLUTIO<span style="color: var(--primary-color);"
-                            >N</span
-                        >.
-                    </h2>
-                </span>
-            {/if}
-        </div>
-    </div>
-    <div class="SideBarBody">
-        <div class="SideBarContent">
-            <div class="SideBarElement">
-                <span
-                    class="material-symbols-outlined"
-                    on:click={() => goto("/")}
-                >
-                    home
-                </span>
+                />
                 {#if isOpen}
                     <span
                         class="label"
+                        style="overflow-x: hidden; position:absolute; "
                         in:fade={{ duration: seconds * 1000 }}
                         out:fade={{ duration: seconds * 1000 }}
-                        style="overflow-x: hidden; position:absolute;"
-                        on:click={() => goto("/")}>Home</span
+                        on:click={() => goto("/")}
                     >
+                        <h2>
+                            SOLUTIO<span style="color: var(--primary-color);"
+                                >N</span
+                            >.
+                        </h2>
+                    </span>
                 {/if}
             </div>
-            <div class="SideBarElement">
-                <span
-                    class="material-symbols-outlined"
-                    on:click={() => goto("/notifications")}
-                >
-                    notifications
-                </span>
-                {#if isOpen}<span
-                        class="label"
-                        in:fade={{ duration: seconds * 1000 }}
-                        out:fade={{ duration: seconds * 1000 }}
-                        style="
+        </div>
+        <div class="SideBarBody">
+            <div class="SideBarContent">
+                <div class="SideBarElement">
+                    <span
+                        class="material-symbols-outlined"
+                        on:click={() => goto("/")}
+                    >
+                        home
+                    </span>
+                    {#if isOpen}
+                        <span
+                            class="label"
+                            in:fade={{ duration: seconds * 1000 }}
+                            out:fade={{ duration: seconds * 1000 }}
+                            style="overflow-x: hidden; position:absolute;"
+                            on:click={() => goto("/")}>Home</span
+                        >
+                    {/if}
+                </div>
+                {#if $IsSignedIn}
+                    <div class="SideBarElement">
+                        <span
+                            class="material-symbols-outlined"
+                            on:click={() => goto("/notifications")}
+                        >
+                            notifications
+                        </span>
+                        {#if isOpen}<span
+                                class="label"
+                                in:fade={{ duration: seconds * 1000 }}
+                                out:fade={{ duration: seconds * 1000 }}
+                                style="
 
                         display: flex;
                         align-items:center;
@@ -92,57 +98,62 @@
                         position:absolute;
                         overflow: hidden;
                         max-width: 100%;"
-                        on:click={() => goto("/notifications")}
-                        >Notifications <span
-                            style="display:flex; align-items:center; justify-content:center; align-self:center;
+                                on:click={() =>
+                                    goto("/notifications/" + $UserKey)}
+                                >Notifications
+                                <!-- <span
+                                    style="display:flex; align-items:center; justify-content:center; align-self:center;
                              background-color:var(--primary-color); color: var(--tertiary-color); width: fit-content;
                              padding-inline:10px;
                              height: 18px;
                              flex-shrink: 0;"
-                            on:click={() => goto("/notifications")}
+                                    on:click={() => goto("/notifications")}
+                                >
+                                    15
+                                </span> -->
+                            </span>
+                        {/if}
+                    </div>
+                    <div class="SideBarElement">
+                        <span
+                            class="material-symbols-outlined"
+                            on:click={() => goto("/myideas")}
                         >
-                            15
-                        </span></span
-                    >
+                            emoji_objects
+                        </span>
+                        {#if isOpen}<span
+                                class="label"
+                                in:fade={{ duration: seconds * 1000 }}
+                                out:fade={{ duration: seconds * 1000 }}
+                                style="white-space: nowrap;  text-overflow: ellipsis; 
+                        display: block; 
+                        max-width: 100%; position:absolute;
+                        overflow: hidden; "
+                                on:click={() => goto("/myideas")}>My ideas</span
+                            >{/if}
+                    </div>
+
+                    <div class="SideBarElement">
+                        <span
+                            class="material-symbols-outlined"
+                            on:click={() => goto("/feed")}
+                        >
+                            batch_prediction
+                        </span>
+                        {#if isOpen}<span
+                                class="label"
+                                in:fade={{ duration: seconds * 1000 }}
+                                out:fade={{ duration: seconds * 1000 }}
+                                style="white-space: nowrap;  text-overflow: ellipsis; 
+                        display: block; 
+                        max-width: 100%; position:absolute;
+                        overflow: hidden; "
+                                on:click={() => goto("/feed")}
+                                >Followed ideas</span
+                            >{/if}
+                    </div>
                 {/if}
-            </div>
-            <div class="SideBarElement">
-                <span
-                    class="material-symbols-outlined"
-                    on:click={() => goto("/myideas")}
-                >
-                    emoji_objects
-                </span>
-                {#if isOpen}<span
-                        class="label"
-                        in:fade={{ duration: seconds * 1000 }}
-                        out:fade={{ duration: seconds * 1000 }}
-                        style="white-space: nowrap;  text-overflow: ellipsis; 
-                        display: block; 
-                        max-width: 100%; position:absolute;
-                        overflow: hidden; "
-                        on:click={() => goto("/myideas")}>My ideas</span
-                    >{/if}
-            </div>
-            <div class="SideBarElement">
-                <span
-                    class="material-symbols-outlined"
-                    on:click={() => goto("/feed")}
-                >
-                    batch_prediction
-                </span>
-                {#if isOpen}<span
-                        class="label"
-                        in:fade={{ duration: seconds * 1000 }}
-                        out:fade={{ duration: seconds * 1000 }}
-                        style="white-space: nowrap;  text-overflow: ellipsis; 
-                        display: block; 
-                        max-width: 100%; position:absolute;
-                        overflow: hidden; "
-                        on:click={() => goto("/feed")}>Followed ideas</span
-                    >{/if}
-            </div>
-            <!-- <div class="SideBarElement">
+                <!-- <div class="SideBarElement">
                 <span class="material-symbols-outlined"> account_circle </span>
                 {#if isOpen}<span
                         class="label"
@@ -152,101 +163,128 @@
                         >Account</span
                     >{/if}
             </div> -->
+                <div class="SideBarElement">
+                    <span
+                        class="material-symbols-outlined"
+                        on:click={() =>
+                            goto("https://forum.solutio.one/categories")}
+                    >
+                        contact_support
+                    </span>
+                    {#if isOpen}<span
+                            class="label"
+                            in:fade={{ duration: seconds * 1000 }}
+                            out:fade={{ duration: seconds * 1000 }}
+                            style="overflow-x: hidden; position:absolute;"
+                            on:click={() =>
+                                goto("https://forum.solutio.one/categories")}
+                            >Forum</span
+                        >{/if}
+                </div>
+                {#if $IsSignedIn}
+                    <div class="SideBarElement" style="margin-top:25px;">
+                        <span class="material-symbols-outlined"> </span>
+                        {#if isOpen}
+                            <span
+                                class="label"
+                                in:fade={{ duration: seconds * 1000 }}
+                                out:fade={{ duration: seconds * 1000 }}
+                                style="white-space: nowrap;  text-overflow: ellipsis; 
+                                display: block; 
+                                max-width: 100%; position:absolute;
+                                overflow: hidden; 
+                                font-size: 12px;
+                                font-style: normal;
+                                font-weight: 500;
+                                line-height: 16px;
+                                color: var(--ffffff-transparent, rgba(255, 255, 255, 0.75));
+                                ">Recent ideas</span
+                            >
+                        {/if}
+                    </div>
+                    {#await getMostFollowedIdeas(3) then ideas}
+                        {#each ideas as idea}
+                            <!-- svelte-ignore a11y-click-events-have-key-events -->
+                            <!-- svelte-ignore a11y-no-static-element-interactions -->
+                            <div
+                                class="SideBarElement"
+                                style="padding-left: 22px;"
+                                on:click={() => {
+                                    goto("idea/" + idea.key);
+                                }}
+                            >
+                                <img
+                                    src={idea.data.images[0]
+                                        ? idea.data.images[0]
+                                        : ""}
+                                    alt="Solutio Logo"
+                                    style="width: 25px; height:25px; object-fit:cover; 
+                        "
+                                />
+                                {#if isOpen}
+                                    <span
+                                        class="label"
+                                        in:fade={{ duration: seconds * 1000 }}
+                                        out:fade={{ duration: seconds * 1000 }}
+                                        style="white-space: nowrap;  text-overflow: ellipsis; 
+                                            display: block; 
+                                            max-width: 100%; position:absolute;
+                                            overflow: hidden; "
+                                        >{#if idea.data.title.length > maxChars}{idea.data.title.substring(
+                                                0,
+                                                maxChars,
+                                            )}...{:else}{idea.data
+                                                .title}{/if}</span
+                                    >
+                                {/if}
+                            </div>
+                        {/each}
+                    {/await}
+                {/if}
+                <span
+                    class="material-symbols-outlined"
+                    style="bottom:0px; padding: 7.5px 170px 6.5px 27px;"
+                    on:click={() => {
+                        toggleSidebar();
+                    }}
+                >
+                    {#if isOpen}arrow_circle_left{:else}arrow_circle_right{/if}
+                </span>
+            </div>
+        </div>
+        <div class="SideBarFooter">
             <div class="SideBarElement">
                 <span
                     class="material-symbols-outlined"
-                    on:click={() =>
-                        goto("https://forum.solutio.one/categories")}
+                    on:click={async () => {
+                        if (!(await CheckIfSignedIn())) {
+                            path.set(window.location.href);
+                            goto("/signin");
+
+                            return;
+                        }
+                        goto("/account/" + $UserKey);
+                    }}
                 >
-                    contact_support
+                    account_circle
                 </span>
                 {#if isOpen}<span
                         class="label"
                         in:fade={{ duration: seconds * 1000 }}
                         out:fade={{ duration: seconds * 1000 }}
                         style="overflow-x: hidden; position:absolute;"
-                        on:click={() =>
-                            goto("https://forum.solutio.one/categories")}
-                        >Forum</span
+                        on:click={async () => {
+                            if (!(await CheckIfSignedIn())) {
+                                path.set(window.location.href);
+                                goto("/signin");
+                                return;
+                            }
+                            goto("/account/" + $UserKey);
+                        }}>Account</span
                     >{/if}
             </div>
-
-            <div class="SideBarElement" style="margin-top:25px;">
-                <span class="material-symbols-outlined"> </span>
-                {#if isOpen}
-                    <span
-                        class="label"
-                        in:fade={{ duration: seconds * 1000 }}
-                        out:fade={{ duration: seconds * 1000 }}
-                        style="white-space: nowrap;  text-overflow: ellipsis; 
-                display: block; 
-                max-width: 100%; position:absolute;
-                overflow: hidden; 
-                font-size: 12px;
-font-style: normal;
-font-weight: 500;
-line-height: 16px;
-color: var(--ffffff-transparent, rgba(255, 255, 255, 0.75));
-">Recent ideas</span
-                    >
-                {/if}
-            </div>
-            {#each ideas as idea}
-                <div class="SideBarElement" style="padding-left: 22px;">
-                    <img
-                        src={idea.image}
-                        alt="Solutio Logo"
-                        style="width: 25px; height:25px; object-fit:cover; 
-                        "
-                    />
-                    {#if isOpen}
-                        <span
-                            class="label"
-                            in:fade={{ duration: seconds * 1000 }}
-                            out:fade={{ duration: seconds * 1000 }}
-                            style="white-space: nowrap;  text-overflow: ellipsis; 
-                display: block; 
-                max-width: 100%; position:absolute;
-                overflow: hidden; 
-
-"
-                            >{#if idea.title.length > maxChars}{idea.title.substring(
-                                    0,
-                                    maxChars,
-                                )}...{:else}{idea.title}{/if}</span
-                        >
-                    {/if}
-                </div>
-            {/each}
-
-            <span
-                class="material-symbols-outlined"
-                style="bottom:0px; padding: 7.5px 170px 6.5px 27px;"
-                on:click={() => {
-                    toggleSidebar();
-                }}
-            >
-                {#if isOpen}arrow_circle_left{:else}arrow_circle_right{/if}
-            </span>
         </div>
-    </div>
-    <div class="SideBarFooter">
-        <div class="SideBarElement">
-            <span
-                class="material-symbols-outlined"
-                on:click={() => goto("/account")}
-            >
-                account_circle
-            </span>
-            {#if isOpen}<span
-                    class="label"
-                    in:fade={{ duration: seconds * 1000 }}
-                    out:fade={{ duration: seconds * 1000 }}
-                    style="overflow-x: hidden; position:absolute;"
-                    on:click={() => goto("/account")}>Account</span
-                >{/if}
-        </div>
-    </div>
+    {/await}
 </div>
 
 <style>

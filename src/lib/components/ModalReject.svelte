@@ -21,106 +21,85 @@
     import { onMount } from "svelte";
     import MagicalDots from "./magicalDots.svelte";
     import { FallingConfetti } from "svelte-canvas-confetti";
+    import ErrorModalNew from "./ErrorModalNew.svelte";
+    import { rejectProject } from "$lib/financial_functions/financial_functions";
     let amountUSD = 10;
-    export let documentID = "";
-    export let collectionName = "";
-    export let solutionOwnerPrincipal = "3f6pv-baaaa-aaaab-qacoq-cai";
-    export let ideaOwnerPrincipal = "4j8ko-haaaa-aaaab-koedo-hei";
-    let dots = ".....................";
-    let pledge1 = {
-        amount: 2.4,
-        feature: "Feature 1",
-        ownerPrincipal: "SomePrincipalId",
-    };
-    let pledge2 = {
-        amount: 0.3,
-        feature: "Feature 2",
-        ownerPrincipal: "SomePrincipalId",
-    };
-    let pledge3 = {
-        amount: 0.4,
-        feature: "Feature 3",
-        ownerPrincipal: "SomePrincipalId",
-    };
+    // export let documentID = "";
+    // export let collectionName = "";
+    // export let solutionOwnerPrincipal = "3f6pv-baaaa-aaaab-qacoq-cai";
+    // export let ideaOwnerPrincipal = "4j8ko-haaaa-aaaab-koedo-hei";
+
     let ideaKey = "Idea Example";
+    export let solution_id = "";
     let solutionKey = "Solution Example";
     let SolutioPrincipal = "SolutioPrincipalId";
-    /**
-     * @type {pledge3[]}
-     */
-    let pledges = [pledge1, pledge2, pledge3];
-    let solutionItem = {
-        category: "Solution creator (80%)",
-        details: [
-            {
-                name: solutionKey,
-                percentage: 80,
-                owner: solutionOwnerPrincipal,
-            },
-        ],
-    };
+
+    let pledges = [];
+    // let solutionItem = {
+    //     category: "Solution creator (80%)",
+    //     details: [
+    //         {
+    //             name: solutionKey,
+    //             percentage: 80,
+    //             owner: solutionOwnerPrincipal,
+    //         },
+    //     ],
+    // };
 
     // we need to know how much percentage has each approval of the total approval.
-    /**
-     * @type {any[]}
-     */
-    let approvalDetails = [
-        solutionItem,
-        { category: "Features creators (14%)", details: [] },
-    ];
+    // /**
+    //  * @type {any[]}
+    //  */
+    // let approvalDetails = [
+    //     solutionItem,
+    //     { category: "Features creators (14%)", details: [] },
+    // ];
     $: total = 0.0;
 
-    // {
-    //   category: "Features creators (14%)",
-    //   details: [
-    //     { name: "Feature1 (8%)", percentage: "10.9" },
-    //     { name: "Feature2 (4%)", percentage: "5.45" },
-    //     { name: "Feature3 (2%)", percentage: "2.7" },
-    //   ],
-    // },
+    let errorFlag = false;
+    let errorMsg = "";
     onMount(() => {
-        for (let i = 0; i < pledges.length; i++) {
-            total = total + pledges[i].amount;
-        }
-        for (let i = 0; i < pledges.length; i++) {
-            let newPercentage = ((pledges[i].amount * 100) / total) * 0.14;
-            let listItem = {
-                name:
-                    pledges[i].feature +
-                    " (" +
-                    roundAmount(newPercentage) +
-                    "%)",
-                percentage: newPercentage,
-                owner: pledges[i].ownerPrincipal,
-            };
-            approvalDetails[1].details.push(listItem);
-            approvalDetails[1].details = approvalDetails[1].details;
-        }
-
-        let solutio5percent = {
-            category: "Platform's fee (5%)",
-            details: [
-                {
-                    name: "Solutio",
-                    percentage: 5,
-                    owner: solutionOwnerPrincipal,
-                },
-            ],
-        };
-        approvalDetails.push(solutio5percent);
-        approvalDetails = approvalDetails;
-        let ideaItem = {
-            category: "Idea creator (1%)",
-            details: [
-                {
-                    name: ideaKey,
-                    percentage: 1,
-                    owner: ideaOwnerPrincipal,
-                },
-            ],
-        };
-        approvalDetails.push(ideaItem);
-        approvalDetails = approvalDetails;
+        // for (let i = 0; i < pledges.length; i++) {
+        //     total = total + pledges[i].amount;
+        // }
+        // for (let i = 0; i < pledges.length; i++) {
+        //     let newPercentage = ((pledges[i].amount * 100) / total) * 0.14;
+        //     let listItem = {
+        //         name:
+        //             pledges[i].feature +
+        //             " (" +
+        //             roundAmount(newPercentage) +
+        //             "%)",
+        //         percentage: newPercentage,
+        //         owner: pledges[i].ownerPrincipal,
+        //     };
+        //     approvalDetails[1].details.push(listItem);
+        //     approvalDetails[1].details = approvalDetails[1].details;
+        // }
+        // let solutio5percent = {
+        //     category: "Platform's fee (5%)",
+        //     details: [
+        //         {
+        //             name: "Solutio",
+        //             percentage: 5,
+        //             owner: solutionOwnerPrincipal,
+        //         },
+        //     ],
+        // };
+        // approvalDetails.push(solutio5percent);
+        // approvalDetails = approvalDetails;
+        // let ideaItem = {
+        //     category: "Idea creator (1%)",
+        //     details: [
+        //         {
+        //             name: ideaKey,
+        //             percentage: 1,
+        //             owner: ideaOwnerPrincipal,
+        //         },
+        //     ],
+        // };
+        // approvalDetails.push(ideaItem);
+        // approvalDetails = approvalDetails;
     });
     let deliveryStatus = "";
     let isChecked = false;
@@ -137,77 +116,91 @@
 >
     <h2>Reject project</h2>
     <div class="SmallSeparator">
-        <p>
-            You are about to reject this project. Rejecting a project that you
-            have previously pledged will affect your reputation as a user.
-        </p>
-        <p>
-            <input type="checkbox" bind:checked={isChecked} /> I accept the
-            <a
-                on:click={() => {
-                    termsModal.set(true);
-                }}
-                style="color:blue; text-decoration:underline;"
-                >Terms and conditions.</a
-            >
-        </p>
-        {#if error == "NotChecked"}
-            <p class="InputErrorMessage">
-                ERROR: You have to accept the terms and conditions.
+        {#if !errorFlag}
+            <p>
+                You are about to reject this project. Rejecting a project that
+                you have previously pledged will affect your reputation as a
+                user.
             </p>
-        {/if}
-        {#if deliveryStatus == "Success"}
-            <div
-                style=" text-align:center; color: var(--tertiary-color);  background:linear-gradient(to right, var(--primary-color), var(--red-wine)); padding:15px;"
-            >
-                <p style="font-size: larger; ">Project rejected!</p>
-                <br />
-                <p>You have successfully rejected the delivered product!</p>
-                <FallingConfetti />
-                <FallingConfetti />
-                <FallingConfetti />
-                <FallingConfetti /><FallingConfetti /><FallingConfetti
-                /><FallingConfetti /><FallingConfetti />
-            </div>
-        {:else if deliveryStatus == "Loading"}
-            <MagicalDots />
-        {:else}
-            <p style="font-weight: 450; text-align:center;">
-                Are you sure you want to reject the project?
+            <p>
+                <input type="checkbox" bind:checked={isChecked} /> I accept the
+                <a
+                    on:click={() => {
+                        termsModal.set(true);
+                    }}
+                    style="color:blue; text-decoration:underline;"
+                    >Terms and conditions.</a
+                >
             </p>
-            <div class="VerticallyAligned HorizontallyAligned">
-                <BasicButtonDarkSmall
-                    msg={"Yes, reject"}
-                    icon={"check_circle"}
-                    someFunction={() => {
-                        if (!isChecked) {
-                            error = "NotChecked";
-                            return;
-                        }
-                        error = "";
-                        deliveryStatus = "Loading";
-
-                        setTimeout(() => {
+            {#if error == "NotChecked"}
+                <p class="InputErrorMessage">
+                    ERROR: You have to accept the terms and conditions.
+                </p>
+            {/if}
+            {#if deliveryStatus == "Success"}
+                <div
+                    style=" text-align:center; color: var(--tertiary-color);  background:linear-gradient(to right, var(--primary-color), var(--red-wine)); padding:15px;"
+                >
+                    <p style="font-size: larger; ">Project rejected!</p>
+                    <br />
+                    <p>You have successfully rejected the delivered product!</p>
+                    <FallingConfetti />
+                    <FallingConfetti />
+                    <FallingConfetti />
+                    <FallingConfetti /><FallingConfetti /><FallingConfetti
+                    /><FallingConfetti /><FallingConfetti />
+                </div>
+            {:else if deliveryStatus == "Loading"}
+                <MagicalDots />
+            {:else}
+                <p style="font-weight: 450; text-align:center;">
+                    Are you sure you want to reject the project?
+                </p>
+                <div class="VerticallyAligned HorizontallyAligned">
+                    <BasicButtonDarkSmall
+                        msg={"Yes, reject"}
+                        icon={"check_circle"}
+                        someFunction={async () => {
+                            if (!isChecked) {
+                                errorFlag = true;
+                                errorMsg = "NotChecked";
+                                return;
+                            }
+                            error = "";
+                            deliveryStatus = "Loading";
+                            try {
+                                await rejectProject(solution_id);
+                            } catch (e) {
+                                errorFlag = true;
+                                errorMsg = String(e);
+                            }
                             deliveryStatus = "Success";
-                        }, 2500);
-                    }}
-                />
-                <BasicButtonDarkSmall
-                    msg={"No, cancel"}
-                    icon={"cancel"}
-                    someFunction={() => {
-                        RejectModal.set(false);
-                    }}
-                />
-            </div>
-        {/if}
+                        }}
+                    />
+                    <BasicButtonDarkSmall
+                        msg={"No, cancel"}
+                        icon={"cancel"}
+                        someFunction={() => {
+                            RejectModal.set(false);
+                        }}
+                    />
+                </div>
+            {/if}
 
-        <p>
-            You can see your all of your previous pledges <a
-                href="/profile"
-                style="color:blue; text-decoration:underline;">here</a
-            >.
-        </p>
+            <p>
+                You can see your all of your previous pledges <a
+                    href="/profile"
+                    style="color:blue; text-decoration:underline;">here</a
+                >.
+            </p>
+        {:else if errorFlag}
+            <ErrorModalNew
+                error={errorMsg}
+                someFunction={() => {
+                    errorFlag = false;
+                }}
+            />
+        {/if}
     </div>
 </Modal>
 <Terms />

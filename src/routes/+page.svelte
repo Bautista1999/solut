@@ -15,27 +15,27 @@
         { label: "Projects Completed", count: 85, icon: "check_circle" },
         { label: "Total Revenue", count: "150K", icon: "monetization_on" },
     ];
+    $: searchText = "";
+    /**
+     * @type {Array<string>}
+     */
+    $: categories = [];
+    /**
+     * @type {Array<string>}
+     */
+    $: keywords = [];
+    /**
+     * @type {string[]}
+     */
+    $: searchTextArray = [];
 
-    let featuredIdeas = [
-        {
-            id: 1,
-            title: "Smart City Solutions",
-            description: "Integrating IoT with urban management.",
-            image: "https://media.licdn.com/dms/image/D4D12AQHXTdow25R9Rg/article-cover_image-shrink_720_1280/0/1706025049577?e=2147483647&v=beta&t=YrJGWbavKDAMn7x9jhokLQmqQuF_RvBWm4lBu9KHnR4",
-        },
-        {
-            id: 2,
-            title: "Eco-Friendly Packaging",
-            description: "Biodegradable solutions to reduce waste.",
-            image: "https://skipper.org/cdn/shop/articles/eco_friendly_120cd6de-0473-47d2-bbf4-45f526c82391.png?v=1659684410",
-        },
-        {
-            id: 3,
-            title: "Automated Gardening System",
-            description: "Gardening made easy with automation.",
-            image: "https://www.mdfx.co.uk/wp-content/uploads/2020/06/Farmer-hold-a-smartphone-on-a-background-of-a-pepper-plantation.-Agricultural-startup.-Automation-and-crop-scaled.jpeg",
-        },
-    ];
+    /**
+     * @param {string} word
+     */
+    function addWordToKeywords(word) {
+        //keywords = [...searchTextArray];
+        searchTextArray = [searchText];
+    }
 </script>
 
 <main>
@@ -47,18 +47,27 @@
             ><br />Welcome to Solutio.
         </h1>
         <div style="display: flex; justify-content:center; align-items:center;">
-            <SearchBar />
+            <SearchBar
+                someFunction={() => {
+                    addWordToKeywords(searchText);
+                }}
+                bind:searchText
+            />
         </div>
-        <div class="tagContainer"><TagContainer /></div>
+        <div class="tagContainer">
+            <TagContainer bind:keywords />
+        </div>
     </section>
 
     <section class="featured-ideas">
-        <h2>Featured Ideas</h2>
+        <h2>Featured topics</h2>
         <div class="cards">
-            <IdeaCardContainerWide features={featuresExamples} />
+            <IdeaCardContainerWide
+                keywords={[...keywords, ...searchTextArray]}
+            />
         </div>
     </section>
-    <div
+    <!-- <div
         style="display: flex; align-items:center; justify-content:center; color: var(--tertiary-color);background-color: var(--primary-color); margin-top:15px;"
     >
         <h2>Our progress</h2>
@@ -68,7 +77,7 @@
         {#each stats as stat}
             <StatsItem label={stat.label} count={stat.count} icon={stat.icon} />
         {/each}
-    </section>
+    </section> -->
 
     <section class="slogan-section" style="padding-top: 10px;">
         <AnimatedBackground />

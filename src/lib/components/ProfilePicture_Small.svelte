@@ -2,7 +2,9 @@
     import { goto } from "$app/navigation";
 
     // You can pass the image source as a prop if it needs to be dynamic
-    export let src =
+    export let src = "";
+    export let userKey = "";
+    const defaultSrc =
         "https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/no-profile-picture-icon.png";
     /**
      * @param {{ stopPropagation: () => void; }} event
@@ -10,16 +12,17 @@
     function handleProfileClick(event) {
         // Stop the click event from bubbling up to parent elements
         event.stopPropagation();
-        goto("/profile");
+
         // Your logic for when the profile picture is clicked
-        console.log("Profile picture clicked!");
+        goto("/profile/" + userKey);
     }
+    $: displaySrc = src || defaultSrc;
 </script>
 
 <div class="profile-pic-container">
     <img
         class="profile-pic"
-        {src}
+        src={displaySrc}
         alt="Profile Picture"
         on:click={handleProfileClick}
     />

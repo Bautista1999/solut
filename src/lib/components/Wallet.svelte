@@ -84,7 +84,6 @@
         flex-direction: row;
         text-align: left;
         gap: 10px;
-        cursor: pointer;
     }
     .material-symbols-outlined:hover {
         font-variation-settings:
@@ -92,6 +91,7 @@
             "wght" 400,
             "GRAD" 0,
             "opsz" 48;
+        cursor: pointer;
     }
     .copied-message {
         position: absolute;

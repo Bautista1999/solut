@@ -9,10 +9,20 @@
     import MagicalDots from "$lib/components/magicalDots.svelte";
     import { basicInfo } from "$lib/stores/auth.state";
     import Loading from "$lib/components/loading.svelte";
+    import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
+    import { goto } from "$app/navigation";
+    import { path } from "$lib/stores/redirect_store";
+    import {
+        getUserKey,
+        getUserNotifications,
+    } from "$lib/data_functions/get_functions";
+    import LoadingNew from "$lib/components/LoadingNew.svelte";
+    import { subtitle } from "$lib/data_objects/testing_objects";
 
     /** @type {import('./$types').PageData} */
     // @ts-ignore
     export let data;
+    let key = data.params.user_id;
     let newNotis = 1;
     let notisLoading = false;
     let backgroundcolor = "transparent";
@@ -53,28 +63,22 @@
     ];
 
     onMount(async () => {
-        // @ts-ignore
-        // await basicInfo();
-        // check_new_notifications();
-        // await loadNotifications();
-    });
-    async function loadNotifications() {
-        if (userNotifications.length == 0) {
-            notisLoading = true;
+        if (!(await CheckIfSignedIn())) {
+            path.set("/notifications/" + data.params.user_id);
+            goto("/signin");
         }
-        userNotifications = await get_user_notifications();
-        notisLoading = false;
-    }
+        if (!((await getUserKey()) != data.params.user_id)) {
+            key = await getUserKey();
+        }
+    });
 </script>
 
 <br />
 <div class="notificationBlock">
     <div class="notification-dropdown">
-        {#if notisLoading}
-            <div style="margin-bottom: 30px;">
-                <Loading />
-            </div>
-        {:else}
+        {#await getUserNotifications()}
+            <LoadingNew message={"Checking notifications..."} />
+        {:then userNotifications}
             {#if userNotifications.length == 0}
                 <p
                     style="display: flex; justify-content:center; align-items:center; font-size:large;"
@@ -86,40 +90,44 @@
                     <button
                         class="notification"
                         on:click={() => {
-                            window.location.href =
-                                "https://svftd-daaaa-aaaal-adr3a-cai.icp0.io/";
+                            window.location.href = notification.data.linkURL;
                         }}
                     >
                         <div>
                             <div class="notiColumns">
                                 <div class="profilePicture">
-                                    <img src={notification.picture} alt="" />
+                                    <img
+                                        src={notification.data.imageURL}
+                                        alt=""
+                                    />
                                 </div>
 
                                 <div style="width: 100%;">
                                     <p style="font-weight:700;">
-                                        {notification.elementName}
+                                        {notification.data.title}
                                     </p>
-                                    <p>
-                                        {notification.subject}
-                                    </p>
-                                    {#if notification.body != ""}
-                                        <p style="font-style: italic;">
-                                            "{notification.body.substring(
+
+                                    {#if notification.data.subtitle != ""}
+                                        <p style="">
+                                            {notification.data.subtitle.substring(
                                                 0,
-                                                80,
-                                            )}...""
+                                                200,
+                                            )}{#if notification.data.subtitle.length > 200}...{/if}
                                         </p>
                                     {/if}
                                 </div>
                             </div>
                             <p style="color: orangered;">
-                                {howLongAgo(
-                                    notification.date,
-                                ).amount.toString() +
-                                    " " +
-                                    howLongAgo(notification.date).timeframe}
-                                ago
+                                {new Date(
+                                    Number(
+                                        (notification.created_at == undefined
+                                            ? 0n
+                                            : notification.created_at) /
+                                            1000000n,
+                                    ),
+                                )
+                                    .toISOString()
+                                    .split("T")[0]}
                             </p>
                         </div>
                     </button>
@@ -129,7 +137,7 @@
             <div
                 style="display: flex; align-items:center; justify-content:center;"
             />
-        {/if}
+        {/await}
     </div>
 </div>
 

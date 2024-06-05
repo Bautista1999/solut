@@ -27,6 +27,7 @@
     import {
         getTotalPledges,
         getTransactions,
+        getTransactionsAndPledges,
     } from "$lib/financial_functions/financial_functions";
     import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsoluteSmall.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
@@ -60,63 +61,6 @@
     let totalFollowers = 14560;
     let amountPledgers = 100;
     let createdAt = "";
-    let pledgersImages = [
-        "https://cdn.weasyl.com/static/media/88/89/98/8889989c353bd7d79a5a56daf9b118ed72a9b3f7f5c852f7c9daef6bbf105225.png",
-        "https://avatarfiles.alphacoders.com/103/103875.png",
-        "https://i.pinimg.com/236x/63/dd/c2/63ddc24b5f730d8fe4134708fbcc93df.jpg",
-        "https://img.freepik.com/free-psd/3d-illustration-person-with-sunglasses_23-2149436188.jpg",
-        "https://i.pinimg.com/474x/05/c3/59/05c359cd010df3e7f1ea3cb6f6f54fad.jpg",
-    ];
-    let featureExample = {
-        title: title,
-        subtitle: subtitle,
-        description: description,
-        expected: expected,
-        total: total,
-        image: images[0],
-        key: nanoid(),
-        user: user,
-        userPicture: userPicture,
-        createdAt: createdAt,
-        pledgersImages: pledgersImages,
-    };
-    let featureExample2 = {
-        title: title,
-        subtitle: subtitle,
-        description: description,
-        expected: 500,
-        total: 800,
-        image: images[1],
-        key: nanoid(),
-        user: user,
-        userPicture: pledgersImages[3],
-        createdAt: createdAt,
-        pledgersImages: pledgersImages.slice(0, 4),
-    };
-    let featureExample3 = {
-        title: title,
-        subtitle: subtitle,
-        description: description,
-        expected: 1700,
-        total: 1750,
-        image: images[2],
-        key: nanoid(),
-        user: user,
-        userPicture: pledgersImages[2],
-        createdAt: createdAt,
-        pledgersImages: pledgersImages.slice(1, 4),
-    };
-    let featuresExamples = [
-        featureExample,
-        featureExample2,
-        featureExample3,
-        //featureExample,
-        // featureExample,
-        // featureExample2,
-        // featureExample,
-        // featureExample,
-        // featureExample3,
-    ];
     let isLoading = false;
     let ideaNonExistent = false;
     /**
@@ -220,7 +164,7 @@
                 </div>
                 <div class="PledgingSection">
                     <div class="PledgeButton">
-                        <BasicButton
+                        <!-- <BasicButton
                             msg={"Pledge"}
                             someFunction={async () => {
                                 if (await CheckIfSignedIn()) {
@@ -229,20 +173,24 @@
                                     goto("/signin/");
                                 }
                             }}
-                        />
+                        /> -->
                     </div>
                     <div class="PledgeInfo">
-                        <p style="margin:0px; font-size:small;">
+                        <!-- <p style="margin:0px; font-size:small;">
                             Fully refundable until second confirmation. <span
                                 style="text-decoration: underline;cursor:pointer;"
                                 >Read more</span
                             >
-                        </p>
+                        </p> -->
                     </div>
                     {#await getTotalFollowers(key)}
                         <MagicalDotsAbsoluteSmall />
                     {:then data}
-                        <FollowersSection amount={data} />
+                        <FollowersSection
+                            amount={data}
+                            element_key={key}
+                            type={"idea"}
+                        />
                     {/await}
 
                     <div
@@ -320,7 +268,7 @@
 
                     <div class="ActivityContent">
                         {#if activeTab === tabs[0]}
-                            {#await getTransactions(key)}
+                            {#await getTransactionsAndPledges(key)}
                                 <MagicalDotsAbsoluteSmall />
                             {:then data}
                                 <TransactionDisplay
