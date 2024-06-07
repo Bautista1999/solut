@@ -23,6 +23,11 @@
     import { getDoc } from "@junobuild/core-peer";
     import { path } from "$lib/stores/redirect_store";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
+    import {
+        getUserImages,
+        getUserKey,
+    } from "$lib/data_functions/get_functions";
+    import { UserKey } from "$lib/stores/other_stores";
 
     let key = "";
     /**
@@ -72,7 +77,27 @@
         if (newTag == "") {
             return;
         }
-        if (tags.length > 9) {
+        if (newTag == "") {
+            newTag = "";
+            return;
+        }
+        if (newTag == ",") {
+            newTag = "";
+            return;
+        }
+        if (newTag == ".") {
+            newTag = "";
+            return;
+        }
+        if (newTag.includes(",") || newTag.includes(".")) {
+            newTag = "";
+            return;
+        }
+        if (tags.includes(newTag)) {
+            newTag = "";
+            return;
+        }
+        if (tags.length > 5) {
             tagsTooLong = true;
             setTimeout(() => {
                 tagsTooLong = false;
@@ -139,6 +164,7 @@
             goto("/signin/");
         }
         console.log("Idea ID:", data.params.idea_id);
+        user = await getUserKey();
         isLoading = true;
         loadingMsg = "Checking parent's idea existance...";
         let parentDoc = await getDoc({
@@ -174,16 +200,18 @@
                     <div style="height: 10px;"></div>
                 </div>
 
-                <div class="Title">
-                    <EditTitle
-                        {active}
-                        bind:title
-                        messageTitle={"Here type the title of the feature."}
-                    />
-                    <div style="height: 10px;"></div>
-                </div>
                 <div class="Profile">
-                    <ProfilePicture src={userPicture} />
+                    {#await getUserImages([$UserKey])}
+                        <ProfilePicture src={""} />
+                    {:then data}
+                        <ProfilePicture src={data[0].image} userKey={user} />
+                    {/await}
+                </div>
+                <div class="Title">
+                    <br />
+                    <br />
+                    <EditTitle {active} bind:title />
+                    <div style="height: 80px;"></div>
                 </div>
 
                 <div class="Breadcrumbs">
@@ -255,13 +283,19 @@
                         if (event.key == "Enter") {
                             addTag();
                         }
+                        if (event.key == ",") {
+                            addTag();
+                        }
+                        if (event.key == ".") {
+                            addTag();
+                        }
                     }}
                 />
                 <BasicButtonDarkSmall msg={"Add tag"} someFunction={addTag} />
             </div>
             {#if tagsTooLong}
                 <p class="InputErrorMessage">
-                    You can't have more than 10 tags.
+                    You can't have more than 5 tags.
                 </p>
             {/if}
             <div class="tags">
@@ -378,7 +412,7 @@
     .container {
         display: grid;
         grid-template-columns: 0.3fr 1.8fr 0.9fr;
-        grid-template-rows: 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr;
+        grid-template-rows: auto;
         gap: 4px 0px;
         grid-auto-flow: row;
         grid-template-areas:
@@ -394,20 +428,22 @@
             "ActivitySection ActivitySection ActivitySection";
     }
 
-    .Subtitle {
-        grid-area: Subtitle;
+    .Profile {
+        grid-area: Profile;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .Title {
         grid-area: Title;
+        display: flex;
+        align-items: center; /* Aligns the content vertically */
+        padding-left: 10px; /* Optional: Adds some padding to the left */
     }
 
-    .Profile {
-        grid-area: Profile;
-        border-radius: 0%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    .Subtitle {
+        grid-area: Subtitle;
     }
 
     .Pictures {

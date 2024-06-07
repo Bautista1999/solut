@@ -10,6 +10,7 @@ export const idlFactory = ({ IDL }) => {
     'expected_amount' : IDL.Nat64,
     'user' : IDL.Text,
     'idea_id' : IDL.Text,
+    'target' : IDL.Text,
     'amount' : IDL.Nat64,
     'doc_key' : IDL.Text,
   });

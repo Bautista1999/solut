@@ -20,6 +20,7 @@
     on:click={() => {
         active = true;
     }}
+    style="width:100%;"
 >
     {#if !active}
         {#if title == ""}

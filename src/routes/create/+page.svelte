@@ -6,21 +6,17 @@
     let imageScroller;
 
     import ProfilePicture from "$lib/components/profilePicture.svelte";
-    import { nanoid } from "nanoid";
     import Breadcrumbs from "$lib/components/breadcrumbs.svelte";
-    import PageTabs from "$lib/components/PageTabs.svelte";
-    import AboutProject from "$lib/components/AboutProject.svelte";
-    import CommentSection from "$lib/components/CommentSection.svelte";
-    import Footer from "$lib/components/Footer.svelte";
+    import { UserKey } from "$lib/stores/other_stores";
+    import {
+        getUserImages,
+        getUserKey,
+    } from "$lib/data_functions/get_functions";
     import EditSubtitle from "$lib/components/EditSubtitle.svelte";
     import EditTitle from "$lib/components/EditTitle.svelte";
-    import BasicButtonSmall from "$lib/components/BasicButton_Small.svelte";
     import BasicButtonDarkSmall from "$lib/components/BasicButton_Dark_Small.svelte";
     import DescriptionEdit from "$lib/components/DescriptionEdit.svelte";
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
-    //import { success, isLoading } from "$lib/stores/other_stores";
-    import Loading from "$lib/components/loading.svelte";
-    import Success from "$lib/components/success.svelte";
     import { goto } from "$app/navigation";
     import AddFeaturesSection from "$lib/components/AddFeaturesSection.svelte";
     import Error from "../+error.svelte";
@@ -77,7 +73,27 @@
         if (newTag == "") {
             return;
         }
-        if (tags.length > 9) {
+        if (newTag == "") {
+            newTag = "";
+            return;
+        }
+        if (newTag == ",") {
+            newTag = "";
+            return;
+        }
+        if (newTag == ".") {
+            newTag = "";
+            return;
+        }
+        if (newTag.includes(",") || newTag.includes(".")) {
+            newTag = "";
+            return;
+        }
+        if (tags.includes(newTag)) {
+            newTag = "";
+            return;
+        }
+        if (tags.length > 5) {
             tagsTooLong = true;
             setTimeout(() => {
                 tagsTooLong = false;
@@ -166,6 +182,7 @@
             path.set("/create");
             goto("/signin/");
         }
+        user = await getUserKey();
     });
 </script>
 
@@ -180,13 +197,18 @@
                     />
                     <div style="height: 10px;"></div>
                 </div>
-
-                <div class="Title">
-                    <EditTitle {active} bind:title />
-                    <div style="height: 10px;"></div>
-                </div>
                 <div class="Profile">
-                    <ProfilePicture src={userPicture} />
+                    {#await getUserImages([$UserKey])}
+                        <ProfilePicture src={""} />
+                    {:then data}
+                        <ProfilePicture src={data[0].image} userKey={user} />
+                    {/await}
+                </div>
+                <div class="Title">
+                    <br />
+                    <br />
+                    <EditTitle {active} bind:title />
+                    <div style="height: 80px;"></div>
                 </div>
 
                 <div class="Breadcrumbs">
@@ -250,13 +272,19 @@
                         if (event.key == "Enter") {
                             addTag();
                         }
+                        if (event.key == ",") {
+                            addTag();
+                        }
+                        if (event.key == ".") {
+                            addTag();
+                        }
                     }}
                 />
                 <BasicButtonDarkSmall msg={"Add tag"} someFunction={addTag} />
             </div>
             {#if tagsTooLong}
                 <p class="InputErrorMessage">
-                    You can't have more than 10 tags.
+                    You can't have more than 5 tags.
                 </p>
             {/if}
             <div class="tags">
@@ -356,18 +384,17 @@
     .body {
         display: flex;
         justify-content: center;
-        align-items: flex-start; /* aligns items at the top */
+        align-items: flex-start;
         width: 100%;
-
         min-height: 100vh;
         z-index: 0;
     }
+
     .content {
         width: 80%;
         max-width: 800px;
-        text-align: left; /* aligns the text to the left */
-
-        margin: 30px auto 40px auto; /* top margin creates space from the top */
+        text-align: left;
+        margin: 30px auto 40px auto;
         background-color: var(--tertiary-color);
         padding-inline: 40px;
         padding-block: 20px;
@@ -377,7 +404,7 @@
     .container {
         display: grid;
         grid-template-columns: 0.3fr 1.8fr 0.9fr;
-        grid-template-rows: 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr;
+        grid-template-rows: auto;
         gap: 4px 0px;
         grid-auto-flow: row;
         grid-template-areas:
@@ -393,20 +420,22 @@
             "ActivitySection ActivitySection ActivitySection";
     }
 
-    .Subtitle {
-        grid-area: Subtitle;
+    .Profile {
+        grid-area: Profile;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .Title {
         grid-area: Title;
+        display: flex;
+        align-items: center; /* Aligns the content vertically */
+        padding-left: 10px; /* Optional: Adds some padding to the left */
     }
 
-    .Profile {
-        grid-area: Profile;
-        border-radius: 0%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    .Subtitle {
+        grid-area: Subtitle;
     }
 
     .Pictures {

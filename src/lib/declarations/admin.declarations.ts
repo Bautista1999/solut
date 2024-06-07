@@ -64,6 +64,7 @@ export interface Pledge {
     'expected_amount': bigint,
     'user': string,
     'idea_id': string,
+    'target': string,
     'amount': bigint,
     'doc_key': string,
 }

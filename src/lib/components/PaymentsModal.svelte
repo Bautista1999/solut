@@ -36,6 +36,7 @@
     let ownerAmount = 0;
     let total = 0;
     let error = false;
+    let NoTokens = false;
     $: percentage = 0;
     let errorMsg = "";
     /**
@@ -51,6 +52,10 @@
     async function getInformation() {
         try {
             total = await getTotalAmountApprovedByProject(solution_id);
+            if (total == 0) {
+                NoTokens = true;
+                return;
+            }
             ownerAmount =
                 await getTotalAmountApprovedForSignedInUser(solution_id);
             approvals = await getApprovalsByProject(solution_id);
@@ -101,7 +106,7 @@
     {#await getInformation()}
         <LoadingModalNew message={"Getting approvals so far..."} />
     {:then}
-        {#if !error}
+        {#if !error && !NoTokens}
             <p>
                 As soon as you hit the button, all approvals will begin to
                 transfer to your Solutio wallter. You can see your balance in
@@ -165,6 +170,10 @@
                     error = false;
                 }}
             />
+        {:else if NoTokens}
+            <p style="text-align: center;">
+                -- No tokens approved yet for this project--
+            </p>
         {/if}
     {/await}
 </Modal>

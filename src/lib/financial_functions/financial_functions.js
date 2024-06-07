@@ -445,6 +445,32 @@ export async function getApprovalsByProject(project_id){
     console.log("Approvals: ", result);
     return result;
 };
+/**
+ * @param {string} project_id
+ * @return {Promise<number>}
+ */
+export async function getAmountOfUsersThatApproved(project_id){
+    let approvals = await getApprovalsByProject(project_id);
+    if (approvals.length==0){
+        return 0;
+    }else{
+        let amount = 0;
+        /**
+         * @type {Array<string>}
+         */
+        let usersThatApproved = [];
+        
+        for(let approval of approvals){
+            let senderText = approval.sender;
+            if(!usersThatApproved.includes((approval.sender).toString())){
+            amount++;
+            usersThatApproved.push((approval.sender).toString());
+            usersThatApproved=usersThatApproved;
+            }
+        }
+        return amount;
+    };
+}
 
 /**
  * @param {string} project_id
@@ -671,4 +697,33 @@ export async function getTransactionHash(index){
     } catch(e) {
         throw new Error(String(e))
     }
+}
+
+/**
+ * 
+ * @returns {Promise<bigint>}
+ */
+export async function getLedgerFee() {
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({
+        identity: identity,
+        host: "https://ic0.app",
+    }); // Use the correct network host
+    const canister = await LedgerCanister.create({
+        // @ts-ignore
+        agent: agent,
+        canisterId: Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai"),
+    });
+    let fee = await canister.transactionFee();
+    return fee;
+}
+
+
+/**
+ * Rounds up a number to three decimal places.
+ * @param {number} num - The number to round up.
+ * @return {number} - The rounded number.
+ */
+export function roundUpToThreeDecimalPlaces(num) {
+    return Math.ceil(num * 1000) / 1000;
 }

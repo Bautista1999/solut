@@ -15,6 +15,7 @@
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import SuccessNew from "$lib/components/Success_New.svelte";
+    import { UserKey } from "$lib/stores/other_stores";
 
     import { goto } from "$app/navigation";
     import SearchBarLarger from "$lib/components/SearchBarLarger.svelte";
@@ -25,6 +26,10 @@
     import { setSolution } from "$lib/data_functions/create_functions";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { path } from "$lib/stores/redirect_store";
+    import {
+        getUserImages,
+        getUserKey,
+    } from "$lib/data_functions/get_functions";
 
     /** @type {import('./$types').PageData} */
     export let data;
@@ -96,9 +101,26 @@
     let tagsTooLong = false;
     function addTag() {
         if (newTag == "") {
+            newTag = "";
             return;
         }
-        if (tags.length > 9) {
+        if (newTag == ",") {
+            newTag = "";
+            return;
+        }
+        if (newTag == ".") {
+            newTag = "";
+            return;
+        }
+        if (newTag.includes(",") || newTag.includes(".")) {
+            newTag = "";
+            return;
+        }
+        if (tags.includes(newTag)) {
+            newTag = "";
+            return;
+        }
+        if (tags.length > 5) {
             tagsTooLong = true;
             setTimeout(() => {
                 tagsTooLong = false;
@@ -167,7 +189,7 @@
         ideasTitle = [...ideasTitle];
         ideas = [...ideas];
     }
-
+    let user = "";
     onMount(async () => {
         if (!(await CheckIfSignedIn())) {
             path.set("/createsolution/" + data.params.idea_id);
@@ -175,14 +197,12 @@
         }
         isLoading = true;
         loadingMsg = "Checking parent's idea existance...";
-        await initJuno({
-            satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
-        });
 
         let parentDoc = await getDoc({
             collection: "index_search",
             key: "INDEX_" + data.params.idea_id,
         });
+        user = await getUserKey();
         isLoading = false;
         if (typeof parentDoc == "undefined") {
             error = true;
@@ -212,12 +232,18 @@
                 </div>
                 <!-- <InlineCalendar {theme} /> -->
 
-                <div class="Title">
-                    <EditTitle {active} bind:title />
-                    <div style="height: 10px;"></div>
-                </div>
                 <div class="Profile">
-                    <ProfilePicture src={userPicture} />
+                    {#await getUserImages([$UserKey])}
+                        <ProfilePicture src={""} />
+                    {:then data}
+                        <ProfilePicture src={data[0].image} userKey={user} />
+                    {/await}
+                </div>
+                <div class="Title">
+                    <br />
+                    <br />
+                    <EditTitle {active} bind:title />
+                    <div style="height: 80px;"></div>
                 </div>
 
                 <div class="Breadcrumbs">
@@ -284,6 +310,12 @@
                         if (event.key == "Enter") {
                             addTag();
                         }
+                        if (event.key == ",") {
+                            addTag();
+                        }
+                        if (event.key == ".") {
+                            addTag();
+                        }
                     }}
                     class="InputText"
                 />
@@ -291,7 +323,7 @@
             </div>
             {#if tagsTooLong}
                 <p class="InputErrorMessage">
-                    You can't have more than 10 tags.
+                    You can't have more than 5 tags.
                 </p>
             {/if}
             <div class="tags">
@@ -418,7 +450,7 @@
     .container {
         display: grid;
         grid-template-columns: 0.3fr 1.8fr 0.9fr;
-        grid-template-rows: 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr;
+        grid-template-rows: auto;
         gap: 4px 0px;
         grid-auto-flow: row;
         grid-template-areas:
@@ -434,20 +466,22 @@
             "ActivitySection ActivitySection ActivitySection";
     }
 
-    .Subtitle {
-        grid-area: Subtitle;
+    .Profile {
+        grid-area: Profile;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .Title {
         grid-area: Title;
+        display: flex;
+        align-items: center; /* Aligns the content vertically */
+        padding-left: 10px; /* Optional: Adds some padding to the left */
     }
 
-    .Profile {
-        grid-area: Profile;
-        border-radius: 0%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    .Subtitle {
+        grid-area: Subtitle;
     }
 
     .Pictures {

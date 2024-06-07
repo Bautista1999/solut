@@ -45,11 +45,16 @@
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { goto } from "$app/navigation";
     import {
+        ICPtoDecimal,
+        getAmountOfUsersThatApproved,
+        getApprovalsByProject,
         getPledgesOfSignedInUserInProject,
+        getTotalAmountApprovedByProject,
         getTotalPledges,
         getTotalPledgesOfSolution,
         getTransactions,
         getTransactionsAndPledges,
+        roundUpToThreeDecimalPlaces,
     } from "$lib/financial_functions/financial_functions";
     import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsoluteSmall.svelte";
     import { path } from "$lib/stores/redirect_store";
@@ -79,7 +84,7 @@
     let amountPledgers = 0;
     let approved = 0;
     let amountApprovals = 0;
-    let idea_id = "";
+    $: idea_id = "";
 
     let createdAt = "";
 
@@ -109,7 +114,6 @@
     }
     onMount(async () => {
         isLoading = true;
-        // await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
         let doc = await getDoc({
             collection: "solution",
             key: key,
@@ -123,7 +127,8 @@
             title = doc.data.title;
             subtitle = doc.data.subtitle;
             description = doc.data.description;
-            ownerKey = doc.owner ? doc.owner : "";
+            // ownerKey = doc.owner ? doc.owner : "";
+            ownerKey = "kkk";
             createdAt = (doc.created_at ? doc.created_at : "").toString();
             if (doc.description != undefined) {
                 idea_id = extractIdeaIdFromString(doc.description);
@@ -133,6 +138,15 @@
         }
         isLoading = false;
     });
+
+    async function getApprovalsNumbers() {
+        let total = await getTotalAmountApprovedByProject(key);
+        let approvals = await getAmountOfUsersThatApproved(key);
+        return {
+            approved: roundUpToThreeDecimalPlaces(ICPtoDecimal(BigInt(total))),
+            amountApprovals: approvals,
+        };
+    }
 </script>
 
 <div class="body">
@@ -300,28 +314,47 @@
                         <!-- <div class="FeaturesScroller"><CardScroller /></div> -->
                     </div>
                 </div>
+
                 <div class="ActivitySection">
                     <div class="ActivityTabs">
                         {#await getSolutionStatus(key) then status}
-                            {#if status == "DELIVERED"}
+                            {#if status == "delivered"}
                                 <div class="approval-stats">
-                                    <div class="stat">
-                                        <span class="stat-value"
-                                            >{approved} ICP</span
-                                        >
-                                        <span class="stat-label"
-                                            >Total ICP Approved</span
-                                        >
-                                    </div>
+                                    {#await getApprovalsNumbers()}
+                                        <div class="stat">
+                                            <MagicalDotsAbsoluteSmall />
+                                            <br />
+                                            <span class="stat-label"
+                                                >Total ICP Approved</span
+                                            >
+                                        </div>
 
-                                    <div class="stat">
-                                        <span class="stat-value"
-                                            >{amountApprovals}</span
-                                        >
-                                        <span class="stat-label"
-                                            >Users Approved</span
-                                        >
-                                    </div>
+                                        <div class="stat">
+                                            <MagicalDotsAbsoluteSmall />
+                                            <br />
+                                            <span class="stat-label"
+                                                >Users Approved</span
+                                            >
+                                        </div>
+                                    {:then data}
+                                        <div class="stat">
+                                            <span class="stat-value"
+                                                >{data.approved} ICP</span
+                                            >
+                                            <span class="stat-label"
+                                                >Total ICP Approved</span
+                                            >
+                                        </div>
+
+                                        <div class="stat">
+                                            <span class="stat-value"
+                                                >{data.amountApprovals}</span
+                                            >
+                                            <span class="stat-label"
+                                                >Users Approved</span
+                                            >
+                                        </div>
+                                    {/await}
                                 </div>
                             {/if}
                         {/await}
@@ -487,7 +520,7 @@
                 <ModalPledgeFunds {idea_id} {userKey} feature_id={""} />
                 <PaymentsModal solution_id={key} {idea_id} />
                 <DeliverModal solution_id={key} />
-                <ModalApproval solution_id={key} />
+                <ModalApproval solution_id={key} {idea_id} />
                 <ModalReject solution_id={key} />
             </div>
         {:else if success}
@@ -587,6 +620,7 @@
         display: flex;
         justify-content: space-evenly;
         padding: 10px;
+        margin-block: 10px;
         background-color: #f4f4f4; /* Light grey background */
         border: 1px solid var(--primary-color);
     }

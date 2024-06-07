@@ -725,3 +725,117 @@ function getFollowedKey(id) {
         throw new Error('Invalid ID format');
     }
 }
+
+/**
+ * @param {string} solution_id
+ * @return {Promise<string>}
+ */
+export async function getSolutionOwner(solution_id){
+    let solDoc = await getDoc({
+        collection:"solution",
+        key: solution_id
+    });
+    if(solDoc==undefined){
+        throw new Error("Solution doesnt exist.")
+    }else{
+        // @ts-ignore
+        return solDoc.owner;
+    }
+}
+
+/**
+ * @param {string} idea_id
+ * @return {Promise<string>}
+ */
+export async function getIdeaOwner(idea_id){
+    let ideaDoc = await getDoc({
+        collection:"idea",
+        key: idea_id
+    });
+    if(ideaDoc==undefined){
+        throw new Error("Idea doesnt exist.")
+    }else{
+        // @ts-ignore
+        return ideaDoc.owner;
+    }
+};
+
+/**
+ * @param {string} idea_id
+ * @return {Promise<string>}
+ */
+export async function getFeatureOwner(idea_id){
+    let ideaDoc = await getDoc({
+        collection:"feature",
+        key: idea_id
+    });
+    if(ideaDoc==undefined){
+        throw new Error("Feature doesnt exist.")
+    }else{
+        // @ts-ignore
+        return ideaDoc.owner;
+    }
+};
+
+/**
+ * @param {Array<string>} features
+ * @return {Promise<Array<{key:string,owner:string}>>}
+ */
+export async function getManyFeaturesOwner(features){
+    /**
+     * @type {any[]}
+     */
+    let docs = [];
+    for(let i=0;i<features.length;i++){
+        let newInputItem = {
+            collection: "feature",
+            key:features[i]
+        }
+        docs.push(newInputItem);
+        docs = docs;
+    }
+
+    let featuresDocs = await getManyDocs({
+        docs:docs
+    });
+    if(featuresDocs.length==0){
+        throw new Error("No feature was found")
+    }else{
+        /**
+         * @type {Array<{key:string,owner:string}>}
+         */
+        let listReturn = [];
+        for(let item of featuresDocs){
+            if(item!=undefined){
+                listReturn.push({
+                    key:item.key,
+                    // @ts-ignore
+                    owner:item.owner,
+                });
+                listReturn=listReturn;
+            };
+        }
+        return listReturn;
+    }
+};
+
+
+/**
+ * @param {string} element_id
+ * @return {Promise<string>}
+ */
+export async function getElementTitleGivenKey(element_id){
+
+    let indexDoc = await getDoc({
+        collection:"INDEX_"+element_id,
+        key:element_id
+    });
+    if(indexDoc==undefined){
+        throw new Error ("Element non existant.")
+    }else{
+        return indexDoc.data.title;
+    }
+
+}
+
+

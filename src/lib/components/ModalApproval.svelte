@@ -3,6 +3,7 @@
     import {
         ApprovalModal,
         NotSignedInModal,
+        UserKey,
         isLoading,
         loginedIn,
         pledgeModal,
@@ -17,80 +18,80 @@
     import BasicButton from "./basicButton.svelte";
     import BasicButtonSmall from "./BasicButton_Small.svelte";
     import BasicButtonDarkSmall from "./BasicButton_Dark_Small.svelte";
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
     import MagicalDots from "./magicalDots.svelte";
     import { FallingConfetti } from "svelte-canvas-confetti";
     import SuccessModalNew from "./SuccessModalNew.svelte";
     import {
+        ICPtoDecimal,
         approveProject,
+        getLedgerFee,
         getPledgesOfSignedInUserInProject,
         getUserBalance,
     } from "$lib/financial_functions/financial_functions";
     import { get } from "svelte/store";
     import { authSubscribe } from "@junobuild/core-peer";
     import { goto } from "$app/navigation";
-    import { getUserKey } from "$lib/data_functions/get_functions";
+    import {
+        getIdeaOwner,
+        getSolutionOwner,
+        getUserKey,
+    } from "$lib/data_functions/get_functions";
     import LoadingModalNew from "./LoadingModalNew.svelte";
     import Error from "../../routes/+error.svelte";
     import ErrorModalNew from "./ErrorModalNew.svelte";
     import { Principal } from "@dfinity/principal";
+    import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
+    import { escrow_canister_id } from "$lib/data_functions/canisters";
     export let solution_id = "";
-    export let solutionOwnerPrincipal = "3f6pv-baaaa-aaaab-qacoq-cai";
-    export let ideaOwnerPrincipal = "4j8ko-haaaa-aaaab-koedo-hei";
-    let dots = ".....................";
-    let pledge1 = {
-        amount: 2.4,
-        feature: "Feature 1",
-        ownerPrincipal: "SomePrincipalId",
-    };
-    let pledge2 = {
-        amount: 0.3,
-        feature: "Feature 2",
-        ownerPrincipal: "SomePrincipalId",
-    };
-    let pledge3 = {
-        amount: 0.4,
-        feature: "Feature 3",
-        ownerPrincipal: "SomePrincipalId",
-    };
+    export let idea_id = "";
+    $: solutionOwnerPrincipal = "3f6pv-baaaa-aaaab-qacoq-cai";
+    $: ideaOwnerPrincipal = "4j8ko-haaaa-aaaab-koedo-hei";
+    let dots = "............";
     let ideaKey = "Idea Example";
     let solutionKey = "Solution Example";
-    let SolutioPrincipal = "SolutioPrincipalId";
     /**
      * @type {Array<import("$lib/declarations/admin.declarations").Pledge>}
      */
     export let pledges = [];
     let errorFlag = false;
     let errorMsg = "";
-    let solutionItem = {
-        category: "Solution creator (80%)",
-        details: [
-            {
-                name: solutionKey,
-                percentage: 80,
-                owner: solutionOwnerPrincipal,
-            },
-        ],
-    };
 
-    // we need to know how much percentage has each approval of the total approval.
     /**
      * @type {any[]}
      */
-    let approvalDetails = [
-        solutionItem,
-        { category: "Features creators (14%)", details: [] },
-    ];
+    let approvalDetails = [];
+
     $: total = 0.0;
     let totalPledged = 0.0;
+    let fee = BigInt(0);
     async function getPledgesProject() {
+        let solutionItem = {
+            category: "Solution creator (80%)",
+            details: [
+                {
+                    name: solutionKey,
+                    percentage: 80,
+                    owner: solutionOwnerPrincipal,
+                },
+            ],
+        };
+        approvalDetails = [];
+        approvalDetails = [
+            solutionItem,
+            { category: "Features creators (14%)", details: [] },
+        ];
+        total = 0.0;
+        totalPledged = 0.0;
         pledges = await getPledgesOfSignedInUserInProject(solution_id);
         for (let i = 0; i < pledges.length; i++) {
-            total = total + Number(pledges[i].amount);
+            total = total + ICPtoDecimal(pledges[i].amount);
             totalPledged = total;
         }
         for (let i = 0; i < pledges.length; i++) {
-            let newPercentage = (Number(pledges[i].amount) / total) * 0.14;
+            let newPercentage =
+                (Number(pledges[i].amount) / 1e8 / total) * 0.14 * 100;
+            newPercentage = Math.round(newPercentage * 1e8) / 1e8;
             let listItem = {
                 name:
                     pledges[i].feature_id +
@@ -98,7 +99,7 @@
                     roundAmount(newPercentage) +
                     "%)",
                 percentage: newPercentage,
-                owner: pledges[i].user,
+                owner: pledges[i].target,
             };
             approvalDetails[1].details.push(listItem);
             approvalDetails[1].details = approvalDetails[1].details;
@@ -110,7 +111,7 @@
                 {
                     name: "Solutio",
                     percentage: 5,
-                    owner: solutionOwnerPrincipal,
+                    owner: escrow_canister_id,
                 },
             ],
         };
@@ -131,21 +132,22 @@
     }
     let balance = 0;
     async function getInformation() {
-        authSubscribe(async (user) => {
-            if (user == undefined) {
-                goto("/signin/");
-            } else {
-                balance = await getUserBalance(user.key);
-                await getPledgesProject();
-            }
-        });
+        if (!(await CheckIfSignedIn())) {
+            goto("/signin/");
+        } else {
+            balance = await getUserBalance($UserKey);
+            fee = await getLedgerFee();
+            solutionOwnerPrincipal = await getSolutionOwner(solution_id);
+            ideaOwnerPrincipal = await getIdeaOwner(idea_id);
+            await getPledgesProject();
+        }
     }
     onMount(() => {});
     let deliveryStatus = "";
     let isChecked = false;
     let error = "";
     const roundAmount = (/** @type {number} */ amount) =>
-        Math.round(amount * 100) / 100;
+        Math.round(amount * 10000) / 10000;
 </script>
 
 <Modal
@@ -160,6 +162,7 @@
             {#await getInformation()}
                 <LoadingModalNew message={"Getting previous pledges..."} />
             {:then}
+                <!-- {#await getPledgesProject} -->
                 <p>
                     You have previously pledged {roundAmount(totalPledged)} amount
                     of ICP tokens into this project.
@@ -217,8 +220,15 @@
                                             {user.name}
                                             {dots}
                                             {roundAmount(
-                                                (user.percentage * total) / 100,
+                                                (user.percentage * total) /
+                                                    100 -
+                                                    ICPtoDecimal(fee),
                                             )}
+                                        </p>
+                                        <p>
+                                            {"Transfer fee"}
+                                            {dots}
+                                            {ICPtoDecimal(fee)}
                                         </p>
                                     {/each}
                                 </div>
@@ -274,6 +284,7 @@
                                     errorMsg = "Amount cant be 0";
                                     return;
                                 }
+                                let bigTotal = Number(Math.round(total * 1e8));
                                 error = "";
                                 deliveryStatus = "Loading";
                                 try {
@@ -293,19 +304,26 @@
                                             j < details.length;
                                             j++
                                         ) {
+                                            debugger;
                                             /**
                                              * @type {import("../declarations/escrow_declarations").Approval}
                                              */
                                             let newApproval = {
                                                 approval_transaction_number: 0n,
                                                 sender: Principal.fromText(
-                                                    await getUserKey(),
+                                                    $UserKey,
                                                 ),
-                                                target: details[j].owner,
+                                                target: Principal.fromText(
+                                                    details[j].owner,
+                                                ),
                                                 amount: BigInt(
-                                                    (details[j].percentage *
-                                                        total) /
-                                                        100,
+                                                    Math.round(
+                                                        Number(
+                                                            details[j]
+                                                                .percentage *
+                                                                bigTotal,
+                                                        ) / 100,
+                                                    ),
                                                 ),
                                             };
                                             approvals.push(newApproval);
@@ -313,15 +331,20 @@
                                         }
                                     }
                                     await approveProject(
-                                        total,
+                                        bigTotal,
                                         solution_id,
                                         approvals,
                                     );
                                 } catch (e) {
                                     errorFlag = true;
                                     errorMsg = String(e);
+                                    deliveryStatus = "";
+                                    return;
                                 }
                                 deliveryStatus = "Success";
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 3000);
                             }}
                         />
                     </div>
