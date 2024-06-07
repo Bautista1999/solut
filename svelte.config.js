@@ -4,7 +4,7 @@ import adapter from "@sveltejs/adapter-static";
 const config = {
   kit: {
     adapter: adapter({
-      fallback: '+page.svelte', // Specify the fallback page
+      fallback: 'index.html', // Specify the fallback page
     }),
     prerender: {
       entries: [
