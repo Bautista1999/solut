@@ -173,6 +173,8 @@
                             } catch (e) {
                                 errorFlag = true;
                                 errorMsg = String(e);
+                                deliveryStatus = "";
+                                return;
                             }
                             deliveryStatus = "Success";
                         }}
