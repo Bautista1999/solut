@@ -127,8 +127,8 @@
             title = doc.data.title;
             subtitle = doc.data.subtitle;
             description = doc.data.description;
-            // ownerKey = doc.owner ? doc.owner : "";
-            ownerKey = "kkk";
+            ownerKey = doc.owner ? doc.owner : "";
+            // ownerKey = "kkk";
             createdAt = (doc.created_at ? doc.created_at : "").toString();
             if (doc.description != undefined) {
                 idea_id = extractIdeaIdFromString(doc.description);
