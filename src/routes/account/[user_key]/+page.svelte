@@ -242,8 +242,10 @@
 {#if !isLoading && !error}
     <div class="container">
         <div class="UserInfo">
+            <div class="VerticallyAligned HorizontallyAligned"></div>
+
             <div class="VerticallyAligned HorizontallyAligned">
-                <br /><br /><br />
+                <ProfilePictureEdit src={profile} />
                 {#if !isEditing}
                     <span>@{user_name}</span>
 
@@ -256,20 +258,12 @@
                         type="text"
                         bind:value={editedUserName}
                         class="InputTextSmall"
+                        style="width: 40%;"
                     />
-                    {#if usernameExistance}
-                        <p
-                            style="position:absolute; transform: translateY(180%);
-                        left: 120px;
-                        z-index: 1000; color:red"
-                        >
-                            This username already exists!
-                        </p>
-                    {/if}
 
                     <div
                         class="VerticallyAligned"
-                        style="position: absolute; transform:translateX(170%) translateY(0%); "
+                        style="position: relative;  "
                     >
                         <CircledButtonDarkSmall
                             someFunction={save}
@@ -282,13 +276,11 @@
                     </div>
                 {/if}
             </div>
-
-            <div class="Profile">
-                <ProfilePictureEdit src={profile} />
-            </div>
-
-            <br />
-            <br />
+            {#if usernameExistance}
+                <p style="position:relative; color:red">
+                    This username already exists!
+                </p>
+            {/if}
 
             {#if !isEditing}
                 <div class="Description">{description}</div>
@@ -303,163 +295,167 @@
                     resize: none; /* Disable resizing */"
                 />
             {/if}
-        </div>
-        <div class="Badges">
-            <div class="BudgesTitle">Badges</div>
-            <div class="BadgesSection">
-                <Badges />
+            <div class="Reputation">
+                <Reputation {reputation} />
             </div>
-        </div>
-        <div class="Social-Section">
-            <div class="SocialsTitle">Socials</div>
-            <div class="SocialsList">
-                <div class="SocialsListItem">
-                    <div class="iconWrapper">
-                        <img
-                            src="/assets/11244080_x_twitter_elon musk_twitter new logo_icon.png"
-                            alt="Twitter Logo"
-                            style="width: 20px; 
-            height: 20px;
-            object-fit: contain;"
-                        />
-                    </div>
-                    {#if !isEditing}
-                        {#if x_account != ""}X:<a href={x_account}
-                                >See the account <span
-                                    class="material-symbols-outlined"
-                                >
-                                    touch_app
-                                </span>
-                            </a>
-                        {:else}
-                            <p>- No link added -</p>
-                        {/if}
-                    {:else}
-                        <input
-                            type="text"
-                            bind:value={x_account_edited}
-                            class="InputTextSmall"
-                        />
-                    {/if}
-                </div>
-                <div class="SocialsListItem">
-                    <div class="iconWrapper">
-                        <img
-                            src="/assets/1161953_instagram_icon.png"
-                            alt="Twitter Logo"
-                            style="width: 20px; 
-            height: 20px;
-            object-fit: contain;"
-                        />
-                    </div>
-
-                    {#if !isEditing}
-                        {#if insta_account != ""}Instagram:<a
-                                href={insta_account}
-                            >
-                                See the account <span
-                                    class="material-symbols-outlined"
-                                >
-                                    touch_app
-                                </span>
-                            </a>
-                        {:else}
-                            <p>- No link added -</p>
-                        {/if}
-                    {:else}
-                        <input
-                            type="text"
-                            bind:value={insta_account_edited}
-                            class="InputTextSmall"
-                        />
-                    {/if}
-                </div>
-                <div class="SocialsListItem">
-                    <div class="iconWrapper">
-                        <img
-                            src="/assets/394187_github_icon.png"
-                            alt="Twitter Logo"
-                            style="width: 20px; 
-            height: 20px;
-            object-fit: contain;"
-                        />
-                    </div>
-
-                    {#if !isEditing}
-                        {#if Github_account != ""}Github:<a
-                                href={Github_account}
-                                >See the account <span
-                                    class="material-symbols-outlined"
-                                >
-                                    touch_app
-                                </span></a
-                            >
-                        {:else}
-                            <p>- No link added -</p>
-                        {/if}
-                    {:else}
-                        <input
-                            type="text"
-                            bind:value={Github_account_edited}
-                            class="InputTextSmall"
-                        />
-                    {/if}
-                </div>
-                <div class="SocialsListItem">
-                    <div class="iconWrapper">
-                        <img
-                            src="/assets/104493_linkedin_icon.png"
-                            alt="Twitter Logo"
-                            style="width: 20px; 
-            height: 20px;
-            object-fit: contain;"
-                        />
-                    </div>
-
-                    {#if !isEditing}
-                        {#if linkedIn_account != ""}LinkedIn: <a
-                                href={linkedIn_account}
-                            >
-                                See the account <span
-                                    class="material-symbols-outlined"
-                                >
-                                    touch_app
-                                </span>
-                            </a>
-                        {:else}
-                            <p>- No link added -</p>
-                        {/if}
-                    {:else}
-                        <input
-                            type="text"
-                            bind:value={linkedIn_account_edited}
-                            class="InputTextSmall"
-                        />
-                    {/if}
-                </div>
-                <div class="SocialsTitle">Invite link</div>
-                <div
-                    class=" HorizontallyAligned"
-                    style="display: flex;
-                align-items: center;
-                flex-direction: row;"
-                >
-                    <p style="text-align: left;">
-                        Click here to copy your invite link for other users.
-                    </p>
-                    <div>
-                        <span
-                            class="material-symbols-outlined"
-                            on:click={handleCopy}
-                        >
-                            content_copy
-                        </span>
-                        {#if $copied}
-                            <span class="copied-message">Copied!</span>{/if}
-                    </div>
+            <div class="Badges">
+                <div class="BudgesTitle">Badges</div>
+                <div class="BadgesSection">
+                    <Badges />
                 </div>
             </div>
+            <div class="Social-Section">
+                <div class="SocialsTitle">Socials</div>
+                <div class="SocialsList">
+                    <div class="SocialsListItem">
+                        <div class="iconWrapper">
+                            <img
+                                src="/assets/11244080_x_twitter_elon musk_twitter new logo_icon.png"
+                                alt="Twitter Logo"
+                                style="width: 20px; 
+                height: 20px;
+                object-fit: contain;"
+                            />
+                        </div>
+                        {#if !isEditing}
+                            {#if x_account != ""}X:<a href={x_account}
+                                    >See the account <span
+                                        class="material-symbols-outlined"
+                                    >
+                                        touch_app
+                                    </span>
+                                </a>
+                            {:else}
+                                <p>- No link added -</p>
+                            {/if}
+                        {:else}
+                            <input
+                                type="text"
+                                bind:value={x_account_edited}
+                                class="InputTextSmall"
+                            />
+                        {/if}
+                    </div>
+                    <div class="SocialsListItem">
+                        <div class="iconWrapper">
+                            <img
+                                src="/assets/1161953_instagram_icon.png"
+                                alt="Twitter Logo"
+                                style="width: 20px; 
+                height: 20px;
+                object-fit: contain;"
+                            />
+                        </div>
+
+                        {#if !isEditing}
+                            {#if insta_account != ""}Instagram:<a
+                                    href={insta_account}
+                                >
+                                    See the account <span
+                                        class="material-symbols-outlined"
+                                    >
+                                        touch_app
+                                    </span>
+                                </a>
+                            {:else}
+                                <p>- No link added -</p>
+                            {/if}
+                        {:else}
+                            <input
+                                type="text"
+                                bind:value={insta_account_edited}
+                                class="InputTextSmall"
+                            />
+                        {/if}
+                    </div>
+                    <div class="SocialsListItem">
+                        <div class="iconWrapper">
+                            <img
+                                src="/assets/394187_github_icon.png"
+                                alt="Twitter Logo"
+                                style="width: 20px; 
+                height: 20px;
+                object-fit: contain;"
+                            />
+                        </div>
+
+                        {#if !isEditing}
+                            {#if Github_account != ""}Github:<a
+                                    href={Github_account}
+                                    >See the account <span
+                                        class="material-symbols-outlined"
+                                    >
+                                        touch_app
+                                    </span></a
+                                >
+                            {:else}
+                                <p>- No link added -</p>
+                            {/if}
+                        {:else}
+                            <input
+                                type="text"
+                                bind:value={Github_account_edited}
+                                class="InputTextSmall"
+                            />
+                        {/if}
+                    </div>
+                    <div class="SocialsListItem">
+                        <div class="iconWrapper">
+                            <img
+                                src="/assets/104493_linkedin_icon.png"
+                                alt="Twitter Logo"
+                                style="width: 20px; 
+                height: 20px;
+                object-fit: contain;"
+                            />
+                        </div>
+
+                        {#if !isEditing}
+                            {#if linkedIn_account != ""}LinkedIn: <a
+                                    href={linkedIn_account}
+                                >
+                                    See the account <span
+                                        class="material-symbols-outlined"
+                                    >
+                                        touch_app
+                                    </span>
+                                </a>
+                            {:else}
+                                <p>- No link added -</p>
+                            {/if}
+                        {:else}
+                            <input
+                                type="text"
+                                bind:value={linkedIn_account_edited}
+                                class="InputTextSmall"
+                            />
+                        {/if}
+                    </div>
+                    <div class="SocialsTitle">Invite link</div>
+                    <div
+                        class=" HorizontallyAligned"
+                        style="display: flex;
+                    align-items: center;
+                    flex-direction: row;"
+                    >
+                        <p style="text-align: left;">
+                            Click here to copy your invite link for other users.
+                        </p>
+                        <div>
+                            <span
+                                class="material-symbols-outlined"
+                                on:click={handleCopy}
+                            >
+                                content_copy
+                            </span>
+                            {#if $copied}
+                                <span class="copied-message">Copied!</span>{/if}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
         <div class="FinancialInfo">
             Wallet
             <Wallet {wallet_address} {user_name} principal={userKey} />
@@ -487,9 +483,6 @@
             </div>
         </div>
 
-        <div class="Reputation">
-            <Reputation {reputation} />
-        </div>
         <div class="Transactions">
             <div class="TransactionTitle">Transactions Timeline</div>
             {#await getTransactions()}
@@ -519,18 +512,6 @@
 {/if}
 
 <style>
-    .container {
-        display: grid;
-        grid-template-columns: 0.7fr 1.6fr 0.6fr;
-        grid-template-rows: 0.3fr 0fr 0fr 0.7fr;
-        gap: 0px 10px;
-        padding: 20px;
-        grid-template-areas:
-            "UserInfo Transactions Wallet"
-            "Reputation Transactions Wallet"
-            "Badges Transactions Balance"
-            "Social-Section Transactions Balance";
-    }
     .iconWrapper {
         background-color: white;
         width: fit-content;
@@ -552,15 +533,6 @@
             "TransactionsDisplay TransactionsDisplay TransactionsDisplay";
         grid-area: Transactions;
     }
-    .TransactionTitle {
-        grid-area: TransactionTitle;
-        text-align: center;
-        margin-block: 15px;
-        font-size: larger;
-    }
-    .TransactionsDisplay {
-        grid-area: TransactionsDisplay;
-    }
 
     .UserInfo {
         display: grid;
@@ -576,6 +548,11 @@
         grid-area: 1 / 1 / 2 / 2;
         height: fit-content;
         padding: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start; /* Align items to the start of the column */
+        grid-area: UserInfo;
+        padding: 8px;
     }
 
     .Profile {
@@ -583,34 +560,6 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 5px;
-    }
-
-    .UserName {
-        grid-area: UserName;
-        text-align: center;
-        display: flex;
-        justify-content: left;
-        align-items: center;
-        padding: 7px;
-        gap: 5px;
-    }
-    .EditButton {
-        background-color: transparent;
-        border: 0px;
-        text-decoration: underline;
-        color: var(--primary-color);
-        cursor: pointer;
-    }
-    .EditButton:hover {
-        background-color: transparent;
-        border: 0px;
-        text-decoration: underline;
-        color: var(--sedondary-color);
-    }
-
-    .Description {
-        grid-area: Description;
         padding: 5px;
     }
 
@@ -629,6 +578,7 @@
         justify-content: center;
         align-items: center;
         flex-direction: column;
+        width: 100%;
     }
 
     .BudgesTitle {
@@ -657,6 +607,9 @@
             "SocialsList SocialsList SocialsList"
             "SocialsList SocialsList SocialsList";
         grid-area: 4 / 1 / 5 / 2;
+        display: flex;
+        flex-direction: column;
+        grid-area: Social-Section;
     }
 
     .SocialsTitle {
@@ -676,8 +629,60 @@
         margin: 10px;
     }
 
+    /********/
+    .container {
+        display: grid;
+        grid-template-columns: 0.7fr 1.6fr 0.6fr;
+        grid-template-rows: auto; /* Make the rows auto to accommodate content naturally */
+        gap: 0px 10px;
+        padding: 20px;
+        grid-template-areas:
+            "UserInfo Transactions Wallet"
+            "UserInfo Transactions Wallet"
+            "UserInfo Transactions Balance"
+            "UserInfo Transactions Balance";
+    }
+
+    .Description {
+        grid-area: Description;
+        padding: 5px;
+    }
+
+    .Badges {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        grid-area: Badges;
+    }
+
+    .Reputation {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        grid-area: Reputation;
+        align-self: center;
+        grid-area: 2 / 1 / 3 / 2;
+    }
+
+    .Transactions {
+        display: flex;
+        flex-direction: column;
+        grid-area: Transactions;
+    }
+
+    .TransactionTitle {
+        text-align: center;
+        margin-block: 15px;
+        font-size: larger;
+    }
+
+    .TransactionsDisplay {
+        display: flex;
+        flex-direction: column;
+    }
+
     .FinancialInfo {
-        grid-area: 1 / 3 / 3 / 4;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -685,10 +690,10 @@
         font-size: larger;
         padding-top: 15px;
         height: fit-content;
+        grid-area: Wallet;
     }
 
     .Balance {
-        grid-area: 3 / 3 / 5 / 4;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -696,12 +701,10 @@
         width: 100%;
         font-size: large;
         margin-block: 20px;
+        grid-area: Balance;
     }
 
-    .Reputation {
-        align-self: center;
-        grid-area: 2 / 1 / 3 / 2;
-    }
+    /********/
     .copied-message {
         position: absolute;
         color: var(--primary-color);
