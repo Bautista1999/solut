@@ -727,3 +727,23 @@ export async function getLedgerFee() {
 export function roundUpToThreeDecimalPlaces(num) {
     return Math.ceil(num * 1000) / 1000;
 }
+
+/**
+ * @param {string} element_id
+ * @param {number} amount
+ */
+export async function updateRevenueCounter(element_id,amount){
+    debugger;
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+    const escrow = Actor.createActor(Escrow, {
+        agent,
+        canisterId:escrow_canister_id,
+    });
+    try{
+        let result = await escrow.ideaRevenueCounter(element_id,BigInt(amount));
+        console.log(result);
+    }catch(e){
+        throw new Error(String(e))
+    }
+}
