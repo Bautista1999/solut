@@ -35,6 +35,7 @@
             <th>time</th>
             <th>currency</th>
             <th>amount</th>
+            <th>status</th>
         {:else}
             <br />
             <br />
@@ -102,6 +103,7 @@
             >
             <td>ICP</td>
             <td>{transaction.amount}</td>
+            <td>{transaction.status}</td>
         </tr>
     {/each}
 </table>
