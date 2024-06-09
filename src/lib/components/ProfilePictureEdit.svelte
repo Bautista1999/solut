@@ -81,7 +81,7 @@
     .profile-pic-container {
         width: 60px; /* width and height should be the same */
         height: 60px; /* width and height should be the same */
-        position: absolute;
+        position: relative;
         border-radius: 50%; /* Makes the container circular */
         overflow: hidden; /* Ensures the content doesn't spill outside the border */
         display: flex; /* Utilizes Flexbox for centering content */
