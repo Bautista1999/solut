@@ -825,13 +825,12 @@ export async function getManyFeaturesOwner(features){
  * @return {Promise<string>}
  */
 export async function getElementTitleGivenKey(element_id){
-
     let indexDoc = await getDoc({
-        collection:"INDEX_"+element_id,
-        key:element_id
+        collection:"index_search",
+        key:"INDEX_"+element_id
     });
     if(indexDoc==undefined){
-        throw new Error ("Element non existant.")
+        return element_id;
     }else{
         return indexDoc.data.title;
     }
