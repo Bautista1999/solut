@@ -33,6 +33,7 @@
     import { authSubscribe } from "@junobuild/core-peer";
     import { goto } from "$app/navigation";
     import {
+        getElementTitleGivenKey,
         getIdeaOwner,
         getSolutionOwner,
         getUserKey,
@@ -70,9 +71,10 @@
             category: "Solution creator (80%)",
             details: [
                 {
-                    name: solutionKey,
+                    name: solution_id,
                     percentage: 80,
                     owner: solutionOwnerPrincipal,
+                    key: solution_id,
                 },
             ],
         };
@@ -100,6 +102,7 @@
                     "%)",
                 percentage: newPercentage,
                 owner: pledges[i].target,
+                key: pledges[i].feature_id,
             };
             approvalDetails[1].details.push(listItem);
             approvalDetails[1].details = approvalDetails[1].details;
@@ -112,6 +115,7 @@
                     name: "Solutio",
                     percentage: 5,
                     owner: escrow_canister_id,
+                    key: "Solutio",
                 },
             ],
         };
@@ -121,9 +125,10 @@
             category: "Idea creator (1%)",
             details: [
                 {
-                    name: ideaKey,
+                    name: idea_id,
                     percentage: 1,
                     owner: ideaOwnerPrincipal,
+                    key: idea_id,
                 },
             ],
         };
@@ -217,7 +222,12 @@
                                 <div>
                                     {#each detail.details as user}
                                         <p>
-                                            {user.name}
+                                            {#await getElementTitleGivenKey(user.key)}
+                                                {user.key}
+                                            {:then title}
+                                                {title}
+                                            {/await}
+
                                             {dots}
                                             {roundAmount(
                                                 (user.percentage * total) /
