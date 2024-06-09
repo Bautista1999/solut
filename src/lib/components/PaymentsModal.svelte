@@ -24,11 +24,14 @@
     import { onDestroy } from "svelte";
     import LoadingModalNew from "./LoadingModalNew.svelte";
     import {
+        ICPtoDecimal,
         completeSolution,
         getApprovalsByProject,
         getTotalAmountApprovedByProject,
         getTotalAmountApprovedForSignedInUser,
         getTransactions,
+        roundUpToThreeDecimalPlaces,
+        updateRevenueCounter,
     } from "$lib/financial_functions/financial_functions";
     import ErrorModalNew from "./ErrorModalNew.svelte";
     export let solution_id = "";
@@ -66,6 +69,7 @@
     }
 
     async function completeProject() {
+        debugger;
         let promise = completeSolution(solution_id, idea_id);
         let isPending = true;
         let interval = setInterval(async () => {
@@ -74,19 +78,18 @@
                 // Execute your function here
                 let transactionsAmount = (await getTransactions(solution_id))
                     .length;
-                percentage = transactionsAmount / approvals.length;
+                percentage = (transactionsAmount / approvals.length) * 100;
             }
         }, 1000); // Polling interval in milliseconds
-
         try {
             await promise;
             isPending = false;
             console.log("Project completed successfully");
-        } catch (error) {
+        } catch (e) {
             isPending = false;
             error = true;
-            errorMsg = String(error);
-            console.error("Project completion rejected with error:", error);
+            errorMsg = String(e);
+            console.error("Project completion rejected with error:", String(e));
         } finally {
             clearInterval(interval);
         }
@@ -116,9 +119,13 @@
                 >.
             </p>
             <br />
-            <p>{total} ICP tokens were approved in this project.</p>
             <p>
-                {ownerAmount} ICP tokens were approved to transfer to your wallet.
+                {roundUpToThreeDecimalPlaces(ICPtoDecimal(BigInt(total)))} ICP tokens
+                were approved in this project.
+            </p>
+            <p>
+                {roundUpToThreeDecimalPlaces(ICPtoDecimal(BigInt(ownerAmount)))}
+                ICP tokens were approved to transfer to your wallet.
             </p>
             <br />
             <p>
@@ -142,6 +149,7 @@
                         someFunction={async () => {
                             TransactionsInProgress.set(true);
                             await completeProject();
+                            // await updateRevenueCounter(idea_id, 10);
                         }}
                     />
                 {:else if $TransactionsSuccess}
