@@ -8,6 +8,7 @@
     let open = false;
     export let src =
         "https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/no-profile-picture-icon.png";
+    $: editUrl = src;
     /**
      * @param {{ stopPropagation: () => void; }} event
      */
@@ -15,11 +16,11 @@
         event.stopPropagation();
         open = true;
     }
-
-    $: editUrl = src;
+    export let someFunction = () => {};
 
     function onSave() {
         src = editUrl;
+        someFunction();
         open = false;
     }
 
