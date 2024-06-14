@@ -2,10 +2,6 @@
   // import "../app.postcss";
 
   import "./global.styles.css";
-  import { onMount } from "svelte";
-  import { basicInfo, info, initDB } from "$lib/stores/auth.state";
-  import { beforeUpdate } from "svelte";
-  import { authSubscribe } from "@junobuild/core-peer";
   import SideMenu from "$lib/components/SideMenu.svelte";
   import HeaderV2 from "$lib/components/Header_v2.svelte";
   import Footer from "$lib/components/Footer.svelte";
@@ -29,7 +25,7 @@
 
   const init = async () => {
     await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
-  }
+  };
 </script>
 
 <div class="body">
