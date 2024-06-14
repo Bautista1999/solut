@@ -40,7 +40,7 @@
 
     <div
         class="Title"
-        style="font-size: medium; padding:{padding}px; text-align:start"
+        style="font-size: medium; padding:{padding}px; text-align:start; min-height:50px;"
     >
         {feature.data.title}
     </div>
