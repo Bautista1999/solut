@@ -1,4 +1,6 @@
 <script>
+    import { roundToFiveDecimals } from "$lib/financial_functions/financial_functions";
+
     // You would populate this with data, possibly from a backend API call
     /**
      * @type {string | any[]}
@@ -61,7 +63,7 @@
                     {curr.name}</td
                 >
                 <!-- <td>{curr.value}</td> -->
-                <td>{roundToThreeDecimals(curr.balance)}</td>
+                <td>{roundToFiveDecimals(curr.balance)}</td>
             </tr>
         {/each}
     </table>
