@@ -5,18 +5,13 @@
     export let images = []; // Array of image URLs passed in as a prop
     let currentImageIndex = 0;
 
-    /**
-     * @param {number} direction
-     */
-    function scroll(direction) {
-        currentImageIndex =
-            (currentImageIndex + direction + images.length) % images.length;
-    }
+    export let backFunction = () => {};
+    export let forwardFunction = () => {};
 </script>
 
 <div class="ButtonSection">
     <div class="buttons">
-        <button>
+        <button on:click={backFunction}>
             <link
                 rel="stylesheet"
                 href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
@@ -24,7 +19,7 @@
             <span class="material-symbols-outlined"> arrow_back </span>
         </button>
         <img src="/assets/LogoSol3.png" alt="Solutio Logo" />
-        <button>
+        <button on:click={forwardFunction}>
             <span class="material-symbols-outlined">
                 arrow_forward
             </span></button
