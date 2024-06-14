@@ -1,6 +1,7 @@
 <script>
     import { getIdeasByKeyWords } from "$lib/data_functions/get_functions";
     import { key } from "$lib/data_objects/testing_objects";
+    import CardScroller from "./CardScroller.svelte";
     import IdeaCard from "./IdeaCard.svelte";
     import IdeaCardWide from "./IdeaCard_Wide.svelte";
     import LoadingNew from "./LoadingNew.svelte";
@@ -9,11 +10,44 @@
      * @type {string[]}
      */
     export let keywords = [];
+    export let amountDisplayed = 12;
 
+    /**
+     * @type {Promise<{ key: string; data: import("../data_objects/data_types").IndexDataReturn; }[]>}
+     */
     let ideasPromise; // Initialize the promise
 
     // Reactive statement to refresh the await block
     $: ideasPromise = getIdeasByKeyWords(keywords, { start: "", limit: 12 });
+    /**
+     * @type {string[]}
+     */
+    export let firstKeys = [""];
+
+    /**
+     * @param {any} lastKey
+     */
+    function forwardPage(lastKey) {
+        firstKeys.push("INDEX_" + lastKey);
+        firstKeys = firstKeys;
+        ideasPromise = getIdeasByKeyWords(keywords, {
+            start: "INDEX_" + lastKey,
+            limit: amountDisplayed,
+        });
+    }
+
+    function backwardsPage() {
+        if (firstKeys.length <= 1) {
+            return;
+        }
+        console.log("Index: ", firstKeys[firstKeys.length - 2]);
+        ideasPromise = getIdeasByKeyWords(keywords, {
+            start: firstKeys[firstKeys.length - 2],
+            limit: amountDisplayed,
+        });
+        firstKeys.pop();
+        firstKeys = firstKeys;
+    }
 </script>
 
 {#await ideasPromise}
@@ -32,6 +66,23 @@
             </div>
         {/each}
     </div>
+
+    <div class="" style="margin:auto;margin-top:20px;">
+        <CardScroller
+            forwardFunction={() => {
+                if (ideas.length == 0) {
+                    return;
+                }
+                if (ideas.length < amountDisplayed) {
+                    return;
+                }
+                forwardPage(ideas[ideas.length - 1].key);
+            }}
+            backFunction={() => {
+                backwardsPage();
+            }}
+        />
+    </div>
 {/await}
 
 <style>
@@ -42,13 +93,5 @@
         padding: 0rem; /* Add some padding around the grid if needed */
         margin: 0; /* Center the grid container */
         max-width: 1200px; /* Max width of the grid to avoid very wide cards */
-    }
-
-    .feature-card {
-        /* Styles for your card */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        overflow: hidden;
-        /* Add any other styles you need for your card */
     }
 </style>
