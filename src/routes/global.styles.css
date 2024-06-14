@@ -284,3 +284,46 @@ a:hover {
     border-radius: 4px;
     font-weight: normal;
 }
+
+.successStatusFlag {
+    background-color: var(--green);
+    color: white;
+    border: 0px solid var(--tertiary-color);
+    border-radius: 4px;
+    font-weight: normal;
+    height: fit-content;
+    text-align: center;
+}
+
+.failureStatusFlag {
+    background-color: var(--red-wine);
+    color: white;
+    border: 0px solid var(--tertiary-color);
+    border-radius: 4px;
+    font-weight: normal;
+    height: fit-content;
+    text-align: center;
+}
+
+.hover-message {
+    visibility: hidden;
+    width: 200px;
+    position: absolute;
+    background-color: var(--fifth-color);
+    color: var(--seventh-color);
+    border: 1px solid var(--seventh-color);
+    box-shadow: 4px 4px 0px 0px var(--seventh-color);
+    transform: translateX(-100px) translateY(-50px);
+    text-align: left;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    opacity: 0;
+    /* Use opacity for fade-in effect */
+    transition: opacity 0.3s;
+}
+
+.hover-container:hover .hover-message {
+    visibility: visible;
+    opacity: 1;
+}
