@@ -113,6 +113,7 @@ export async function setIdea(idea,features){
     const result = await canister.setManyDocs(arrayDocsAdmin);
 
     let featuresDocs = await setFeatures(features,idea_id);
+    followElement(idea_id,"idea");
     if (typeof featuresDocs === "string") {
         return featuresDocs;
     }else {
@@ -152,6 +153,7 @@ export async function setFeatures(features, parentIdea_id){
             }
             return "ERROR: Is required for all fields to be completed in feature: " + idea.title + ". The field " + errorDetail;
         };
+        followElement(idea_id,"feature");
     // Collection we need to update:
     // feature: feature, idea_feature_pledge, index_search, idea_revenue_counter, solutio_numbers (update idea_counter), followers
         let ideaDoc = {
@@ -372,7 +374,7 @@ export async function setUser(user, userKey){
     let reputationDoc = [
         "reputation", "REP_"+userKey,
         {
-            description:[(0).toString()],version:versionGen,
+            description:[(50).toString()],version:versionGen,
             data: await toArray({ 
                 amount_paid: 0 ,
                 amount_promised: 0 
@@ -586,6 +588,7 @@ export async function CheckIfFollow(element_id){
  * @param {string} link
  */
 export async function deliverSolution(solution_id, link){
+    debugger;
     if(link==""|| link==" " ){
         throw new Error("You must provide a working link");
     }
@@ -709,4 +712,24 @@ export async function createNotification(notification,description){
 
 export async function createMultipleNotifications(){
     
+}
+
+
+/**
+ * @param {string} sol_id
+ * @param {string} status
+ */
+export async function updateSolutionStatus (sol_id,status){
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
+    const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
+    try{
+        let statusUpdate = canister.updateSolutionStatus(sol_id,status);
+        console.log("Solution Status update result: ", statusUpdate)
+
+        return ("Success");
+    }
+catch(e){
+    throw new Error (String(e));
+}
 }
