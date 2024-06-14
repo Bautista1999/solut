@@ -1,6 +1,11 @@
 <script>
     import { goto } from "$app/navigation";
     import { getUsername } from "$lib/data_functions/get_functions";
+    import {
+        ICPtoDecimal,
+        roundToFiveDecimals,
+        roundUpToThreeDecimalPlaces,
+    } from "$lib/financial_functions/financial_functions";
     import { Principal } from "@dfinity/principal";
 
     // You would populate this with data, possibly from a backend API call
@@ -45,7 +50,7 @@
 
     {#each transactions as transaction}
         <tr
-            class="rows"
+            class="rows hover-container"
             on:click={() => {
                 if (transaction.trans_type != "Pledge") {
                     checkTransaction(transaction.transaction_number[0]);
@@ -102,8 +107,25 @@
                     ).getSeconds()}</td
             >
             <td>ICP</td>
-            <td>{transaction.amount}</td>
-            <td>{transaction.status}</td>
+            <td>{roundToFiveDecimals(ICPtoDecimal(transaction.amount))}</td>
+            {#if transaction.status == "Success"}
+                <div class="successStatusFlag" style="margin-inline:5px;">
+                    <td
+                        style="text-align:center;"
+                        class="VerticallyAligned HorizontallyAligned"
+                        >{transaction.status}</td
+                    >
+                </div>
+            {:else}
+                <div class="failureStatusFlag" style="margin-inline:5px;">
+                    <td
+                        style="text-align:center;"
+                        class="VerticallyAligned HorizontallyAligned"
+                        >{transaction.status}</td
+                    >
+                </div>
+            {/if}
+            <div class="hover-message">message: {transaction.message}</div>
         </tr>
     {/each}
 </table>

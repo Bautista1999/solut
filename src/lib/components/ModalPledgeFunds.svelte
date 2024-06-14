@@ -1,6 +1,6 @@
 <script>
     import Modal from "./modal.svelte";
-    import { pledgeModal, termsModal } from "$lib/stores/other_stores";
+    import { UserKey, pledgeModal, termsModal } from "$lib/stores/other_stores";
     import Terms from "./terms.svelte";
 
     import BasicButtonDarkSmall from "./BasicButton_Dark_Small.svelte";
@@ -52,8 +52,9 @@
         <p>
             Right now, you have {data} ICP tokens in your wallet. If you wish to
             add more, go to your
-            <a href="/profile" style="color:blue; text-decoration:underline;"
-                >profile</a
+            <a
+                href="/account/{$UserKey}"
+                style="color:blue; text-decoration:underline;">profile</a
             >.
         </p>
 
@@ -80,12 +81,8 @@
             <!-- svelte-ignore a11y-no-static-element-interactions -->
             <p>
                 <input type="checkbox" /> I accept the
-                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <!-- svelte-ignore a11y-missing-attribute -->
                 <a
-                    on:click={() => {
-                        termsModal.set(true);
-                    }}
+                    href="https://forum.solutio.one/-205/terms-and-conditions"
                     style="color:blue; text-decoration:underline;"
                     >Terms and conditions.</a
                 >
@@ -106,6 +103,9 @@
                                 userKey,
                             );
                             success = true;
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 3000);
                         } catch (e) {
                             isLoading = false;
                             error = true;
@@ -124,7 +124,7 @@
                 }}
             />
         {:else}
-            <LoadingModalNew message={"Uploading pledge"} />
+            <LoadingModalNew message={"Executing pledge"} />
         {/if}
 
         <br />

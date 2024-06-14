@@ -125,9 +125,7 @@
             <p>
                 <input type="checkbox" bind:checked={isChecked} /> I accept the
                 <a
-                    on:click={() => {
-                        termsModal.set(true);
-                    }}
+                    href="https://forum.solutio.one/-205/terms-and-conditions"
                     style="color:blue; text-decoration:underline;"
                     >Terms and conditions.</a
                 >

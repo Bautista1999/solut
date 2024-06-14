@@ -5,6 +5,7 @@
         PaymentModal,
         TransactionsInProgress,
         TransactionsSuccess,
+        UserKey,
         isLoading,
         loginedIn,
         pledgeModal,
@@ -34,6 +35,7 @@
         updateRevenueCounter,
     } from "$lib/financial_functions/financial_functions";
     import ErrorModalNew from "./ErrorModalNew.svelte";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
     export let solution_id = "";
     export let idea_id = "";
     let ownerAmount = 0;
@@ -69,7 +71,6 @@
     }
 
     async function completeProject() {
-        debugger;
         let promise = completeSolution(solution_id, idea_id);
         let isPending = true;
         let interval = setInterval(async () => {
@@ -78,13 +79,16 @@
                 // Execute your function here
                 let transactionsAmount = (await getTransactions(solution_id))
                     .length;
-                percentage = (transactionsAmount / approvals.length) * 100;
+                percentage = roundUpToThreeDecimalPlaces(
+                    (transactionsAmount / approvals.length) * 100,
+                );
             }
         }, 1000); // Polling interval in milliseconds
         try {
             await promise;
             isPending = false;
             console.log("Project completed successfully");
+            TransactionsSuccess.set(true);
         } catch (e) {
             isPending = false;
             error = true;
@@ -114,8 +118,9 @@
                 As soon as you hit the button, all approvals will begin to
                 transfer to your Solutio wallter. You can see your balance in
                 your <a
-                    href="/profile"
-                    style="color:blue; text-decoration:underline;">profile</a
+                    href="/account/{$UserKey}"
+                    style="color:blue; text-decoration:underline;"
+                    >profile dashboard.</a
                 >.
             </p>
             <br />
@@ -131,9 +136,7 @@
             <p>
                 <input type="checkbox" /> I accept the
                 <a
-                    on:click={() => {
-                        termsModal.set(true);
-                    }}
+                    href="https://forum.solutio.one/-205/terms-and-conditions"
                     style="color:blue; text-decoration:underline;"
                     >Terms and conditions.</a
                 >
@@ -156,11 +159,12 @@
                     <BasicButtonDarkSmall
                         msg={"Audit transactions"}
                         someFunction={() => {
-                            goto("/profile");
+                            goto("/account/" + $UserKey);
                         }}
                     />
                 {:else}
                     <p style="font-style: italic;">Executing transactions...</p>
+                    <MagicalDotsAbsoluteSmall />
                 {/if}
             </div>
 
