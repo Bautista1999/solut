@@ -213,7 +213,7 @@ export async function SolutionLink(idea_id){
  * @return {string}
  */
 export function extractIdeaIdFromString(input) {
-    const match = input.match(/idea_id:(\w+)/);
+    const match = input.match(/idea_id:([\w-]+)/);
     return match ? match[1] : "";
 }
 
@@ -653,7 +653,6 @@ export async function CheckInviteExistance(inviterkey){
  * @return {Promise <Array<import("@junobuild/core-peer").Doc<any>>>}
  */
 export async function getUserNotifications(){
-    debugger;
     let userKey = await getUserKey();
     /**
      * @type {Array<string>}
