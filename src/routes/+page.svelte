@@ -10,6 +10,7 @@
     import BasicButton from "$lib/components/basicButton.svelte";
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
     import { goto } from "$app/navigation";
+    $: firstKeys = [""];
     let stats = [
         { label: "Ideas Created", count: 320, icon: "lightbulb" },
         { label: "Projects Completed", count: 85, icon: "check_circle" },
@@ -28,13 +29,13 @@
      * @type {string[]}
      */
     $: searchTextArray = [];
-
     /**
      * @param {string} word
      */
     function addWordToKeywords(word) {
         //keywords = [...searchTextArray];
         searchTextArray = [searchText];
+        firstKeys = [""];
     }
 </script>
 
@@ -55,7 +56,7 @@
             />
         </div>
         <div class="tagContainer">
-            <TagContainer bind:keywords />
+            <TagContainer bind:keywords bind:firstKeys />
         </div>
     </section>
 
@@ -64,6 +65,7 @@
         <div class="cards">
             <IdeaCardContainerWide
                 keywords={[...keywords, ...searchTextArray]}
+                bind:firstKeys
             />
         </div>
     </section>
@@ -184,7 +186,9 @@
     }
     .cards {
         display: flex;
+        flex-direction: column;
         justify-content: space-around;
+        align-items: center;
         flex-wrap: wrap;
     }
     .card {
