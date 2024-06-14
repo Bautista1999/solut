@@ -11,14 +11,14 @@ import { AccountIdentifier, LedgerCanister } from "@dfinity/ledger-icp";
 import { admin_canister_id, escrow_canister_id } from "../data_functions/canisters";
 import  {idlFactory as Escrow} from "$lib/declarations/escrow.declarations.did";
 import { getIdeaIdBySolution, getImplementedFeaturesOfSolution, getUserKey } from "$lib/data_functions/get_functions";
-import { createNotification } from "$lib/data_functions/create_functions";
+import { createNotification, followElement, updateSolutionStatus } from "$lib/data_functions/create_functions";
 
 // import("../declarations/juno.declarations.did.js")._SERVICE.set_doc;
 /**
  * @param {string} userKey
  */
 export async function getUserBalance(userKey){
-   
+   debugger;
     let ledgerID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
     let identity = await unsafeIdentity();
     const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
@@ -33,9 +33,29 @@ export async function getUserBalance(userKey){
             principal: Principal.fromText(userKey),
         })
     });
-    console.log("Raw balance: ",userBalance)
     return ICPtoDecimal(userBalance);
 };
+
+/**
+ * @param {string} userKey
+ */
+export async function getUserRawBalance(userKey){
+    let ledgerID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+    const { accountBalance } =  LedgerCanister.create({
+        // @ts-ignore
+        agent: agent,
+        canisterId: Principal.fromText(ledgerID),
+    });
+    let userBalance = await accountBalance({
+        accountIdentifier: AccountIdentifier.fromPrincipal({
+            // @ts-ignore
+            principal: Principal.fromText(userKey),
+        })
+    });
+    return userBalance;
+}
 
 /**
  * @param {bigint} icpValue - The decimal number to convert.
@@ -104,7 +124,6 @@ export async function getUserTransactions_byProject(project_id){
  * @return {Promise<import("$lib/data_objects/data_types").TotalPledge>}
  */
 export async function getTotalPledges(idea_id,type) {
-
     let doc = await getDoc({
         collection: "idea_feature_pledge",
         key: "PLG_"+type+"_"+idea_id,
@@ -180,7 +199,6 @@ export async function getTotalPledgesOfSolution(solution_id) {
  * @param {string } [userPrincipalText]
  */
 export async function CreatePledge(idea_id, feature_id, amount, userPrincipalText) {
-    //debugger;
     if (!idea_id) {
         throw  Error("idea_id is required");
     }
@@ -210,6 +228,7 @@ export async function CreatePledge(idea_id, feature_id, amount, userPrincipalTex
     */
     // @ts-ignore
     let result = await admin.pledgeCreate(docKey, idea_id, feature_id, AmountInNat64, accountIdentifierInBlob);
+    followElement(idea_id,"IDEA");
     
     console.log("Result: ", result);
 }
@@ -219,7 +238,6 @@ export async function CreatePledge(idea_id, feature_id, amount, userPrincipalTex
  * @param {string} project_id
  */
 export async function getTransactionsAndPledges(project_id){
-    //debugger;
     /** @type {Array<import("$lib/declarations/escrow_declarations").Transaction>} */
     let transactions = await getUserTransactions_byProject(project_id);
 
@@ -275,6 +293,13 @@ export async function getTransactionsAndPledges(project_id){
  */
 function roundToThreeDecimals(num) {
     return parseFloat(num.toFixed(3));
+}
+/**
+ * @param {number} num
+ */
+
+export function roundToFiveDecimals(num) {
+    return parseFloat(num.toFixed(11));
 }
 
 
@@ -349,13 +374,37 @@ export async function approveProject(amount,project_id, approvals){
     if(approvals.length==0){
         throw new Error("User must approve some feature.") 
     }
+    if(approvals[approvals.length-1].amount<=10000n){
+        throw new Error("User must approve something larger than 0.01. Otherwise the original ideator cant get paid!") 
+    }
 
     //******************** get idea id ********************
     let idea_id = await getIdeaIdBySolution(project_id);
 
 
     //******************** icrc_2.approve(escrow_canister_id, ) ********************
-    let nat64Value = BigInt(amount * 1e8);
+    let nat64Value = BigInt(Math.floor(amount));
+    let userKey = await getUserKey();
+    let fee = await getLedgerFee()
+    let balance = await getUserRawBalance(userKey);
+    if(nat64Value+fee>(balance)){
+        throw new Error("You dont have enough balance to make this transaction");
+    };
+    let allowance = await getAllowance();
+    
+    if(allowance>BigInt(0.0001 * 1e8 * 4 )){
+        let number = (Number(allowance))/1e8;
+        // let identity = await unsafeIdentity();
+        // const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
+        // let ledgerID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
+        // const { approve } = IcrcLedgerCanister.create({
+        //     agent,
+        //     canisterId: Principal.fromText(ledgerID),
+        // });
+        // const currentTime = Date.now(); // Get current time in milliseconds
+        // let approvalResult = await approve({spender:{owner: Principal.fromText(escrow_canister_id),subaccount:[]},amount:0n});
+        throw new Error("You have an approval open. The total allowance is "+number.toString()+". You cant make more approvals while you already have one opened!");
+    };
     let identity = await unsafeIdentity();
     const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
     let ledgerID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
@@ -364,6 +413,7 @@ export async function approveProject(amount,project_id, approvals){
         canisterId: Principal.fromText(ledgerID),
     });
     const currentTime = Date.now(); // Get current time in milliseconds
+    
     
     try{
         let approvalResult = await approve({spender:{owner: Principal.fromText(escrow_canister_id),subaccount:[]},amount:nat64Value});
@@ -377,7 +427,7 @@ export async function approveProject(amount,project_id, approvals){
         let result = await admin.pledgeApprovedVerify(project_id,idea_id,nat64Value, approvalResult);
         console.log("Verification of approval: ", result);
 
-
+        
         //******************** store approvals ********************
         // before storing the approvals, we need to update the transaction number of each approval
         /**
@@ -392,7 +442,7 @@ export async function approveProject(amount,project_id, approvals){
                 approval_transaction_number: approvalResult,
                 sender: approvals[i].sender,
                 target: approvals[i].target,
-                amount: approvals[i].amount,
+                amount: approvals[i].amount - fee,
             };
             newListApprovals.push(newApproval);
             newListApprovals = newListApprovals;
@@ -550,6 +600,7 @@ export async function completeSolution(project_id,idea_id){
         collection:"solution",
         key:project_id,
     });
+    updateSolutionStatus(project_id,"COMPLETED");
     if(solDoc!= undefined){
         /**
         * @type {import("$lib/data_objects/data_types").Notification}
@@ -593,7 +644,6 @@ export async function getTransactions(project_id){
  * @param {string} destination
  */
 export async function WithDrawTokens(amount, destination){
-    debugger;
     let roundedAmount = BigInt(Math.round(amount * 1e8));
     let userKey = await getUserKey();
     try{
@@ -681,7 +731,6 @@ function hexToPrincipal(hexString) {
  * @param {bigint} index
  */
 export async function getTransactionHash(index){
-    debugger;
     let identity = await unsafeIdentity();
     const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
     const canister = await LedgerCanister.create({
@@ -733,7 +782,6 @@ export function roundUpToThreeDecimalPlaces(num) {
  * @param {number} amount
  */
 export async function updateRevenueCounter(element_id,amount){
-    debugger;
     let identity = await unsafeIdentity();
     const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
     const escrow = Actor.createActor(Escrow, {
@@ -746,4 +794,20 @@ export async function updateRevenueCounter(element_id,amount){
     }catch(e){
         throw new Error(String(e))
     }
+}
+
+/**
+ * @return {Promise<bigint>}
+ */
+export async function getAllowance(){
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
+    let ledgerID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
+    const { allowance } = IcrcLedgerCanister.create({
+        agent,
+        canisterId: Principal.fromText(ledgerID),
+    });
+    let userKey = await getUserKey();
+    let allowanceResult = await allowance({spender:{owner: Principal.fromText(escrow_canister_id),subaccount:[]},account:{owner: Principal.fromText(userKey),subaccount:[]}});
+    return allowanceResult.allowance;
 }
