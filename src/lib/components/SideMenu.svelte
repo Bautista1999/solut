@@ -79,7 +79,7 @@
                     <div class="SideBarElement">
                         <span
                             class="material-symbols-outlined"
-                            on:click={() => goto("/notifications")}
+                            on:click={() => goto("/notifications/" + $UserKey)}
                         >
                             notifications
                         </span>
