@@ -201,9 +201,7 @@
                     <input type="checkbox" bind:checked={isChecked} /> I accept
                     the
                     <a
-                        on:click={() => {
-                            termsModal.set(true);
-                        }}
+                        href="https://forum.solutio.one/-205/terms-and-conditions"
                         style="color:blue; text-decoration:underline;"
                         >Terms and conditions.</a
                     >
@@ -294,7 +292,10 @@
                                     errorMsg = "Amount cant be 0";
                                     return;
                                 }
-                                let bigTotal = Number(Math.round(total * 1e8));
+                                let bigTotal =
+                                    Number(total * 1e8) -
+                                    Number(await getLedgerFee());
+                                let copyBigTotal = bigTotal;
                                 error = "";
                                 deliveryStatus = "Loading";
                                 try {
@@ -314,7 +315,6 @@
                                             j < details.length;
                                             j++
                                         ) {
-                                            debugger;
                                             /**
                                              * @type {import("../declarations/escrow_declarations").Approval}
                                              */
@@ -327,12 +327,13 @@
                                                     details[j].owner,
                                                 ),
                                                 amount: BigInt(
-                                                    Math.round(
+                                                    Math.floor(
                                                         Number(
-                                                            details[j]
+                                                            (details[j]
                                                                 .percentage *
-                                                                bigTotal,
-                                                        ) / 100,
+                                                                bigTotal) /
+                                                                100,
+                                                        ),
                                                     ),
                                                 ),
                                             };
