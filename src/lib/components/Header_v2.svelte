@@ -15,6 +15,7 @@
     } from "$lib/data_functions/get_functions";
     import ProfilePicture from "./profilePicture.svelte";
     import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
+    import ProfilePictureHeader from "./ProfilePicture_Header.svelte";
 
     let lastScrollY = window.scrollY;
     let isExpanded = true; // Header is expanded by default
@@ -98,7 +99,7 @@
                         {#await getUserImages([$UserKey])}
                             <!-- <ProfilePictureSmall src={""} userKey={""} /> -->
                         {:then data}
-                            <ProfilePictureSmall
+                            <ProfilePictureHeader
                                 src={data[0].image}
                                 userKey={data[0].key}
                             />
