@@ -40,7 +40,7 @@
     let user_name = "erik_thebest";
     let description =
         "Used to build #Apps for corporations Now build #dApps for people  #ProductDesign & #Marketing Founder @SolutioApp";
-    let profile =
+    $: profile =
         "https://png.pngtree.com/thumb_back/fh260/background/20230612/pngtree-in-the-style-of-2d-game-art-image_2884743.jpg";
     let reputation = 50;
     let x_account = "@fairtail3";
@@ -104,12 +104,19 @@
     let usernameExistance = false;
     // Function to handle saving the edited username
     async function save() {
-        user_name = editedUserName; // Update the user_name
-        description = editedDescription; // Update the user_name
-        x_account = x_account_edited;
-        insta_account = insta_account_edited;
-        linkedIn_account = linkedIn_account_edited;
-        Github_account = Github_account_edited;
+        user_name = editedUserName == "" ? user_name : editedUserName; // Update the user_name
+        description = editedDescription == "" ? description : editedDescription; // Update the user_name
+        x_account = x_account_edited == "" ? x_account : x_account_edited;
+        insta_account =
+            insta_account_edited == "" ? insta_account : insta_account_edited;
+        linkedIn_account =
+            linkedIn_account_edited == ""
+                ? linkedIn_account
+                : linkedIn_account_edited;
+        Github_account =
+            Github_account_edited == ""
+                ? Github_account
+                : Github_account_edited;
 
         /**
          * @type {import("$lib/data_objects/data_types").user}
@@ -144,7 +151,8 @@
             return;
         }
         updateUser(user, data.params.user_key);
-        toggleEditing(); // Exit editing mode
+        isEditing = false;
+        //toggleEditing(); // Exit editing mode
     }
 
     onMount(async () => {
@@ -242,12 +250,24 @@
 {#if !isLoading && !error}
     <div class="container">
         <div class="UserInfo">
-            <div class="VerticallyAligned HorizontallyAligned"></div>
-
             <div class="VerticallyAligned HorizontallyAligned">
-                <ProfilePictureEdit src={profile} />
+                <ProfilePictureEdit
+                    bind:src={profile}
+                    someFunction={() => {
+                        save();
+                    }}
+                />
+            </div>
+            <div class="VerticallyAligned HorizontallyAligned">
                 {#if !isEditing}
-                    <span>@{user_name}</span>
+                    <div
+                        style="width: 100%; display:flex; flex-direction:column; gap:5px;"
+                    >
+                        <span>@{user_name}</span>
+                        <p style="font-size: x-small; color: grey;">
+                            {userKey}
+                        </p>
+                    </div>
 
                     <FlatButtonDarkSmall
                         someFunction={toggleEditing}
@@ -289,6 +309,7 @@
                     bind:value={editedDescription}
                     class="Description InputTextSmall"
                     style="width: 95%;
+                    padding:5px;
                     height:100px;
                     overflow: hidden;
                     min-height: 40px; /* Minimum height */
@@ -547,12 +568,10 @@
             "Description Description Description Description";
         grid-area: 1 / 1 / 2 / 2;
         height: fit-content;
-        padding: 8px;
         display: flex;
         flex-direction: column;
         align-items: flex-start; /* Align items to the start of the column */
         grid-area: UserInfo;
-        padding: 8px;
     }
 
     .Profile {
@@ -627,12 +646,13 @@
         align-items: center;
         gap: 15px;
         margin: 10px;
+        margin-right: 0px;
     }
 
     /********/
     .container {
         display: grid;
-        grid-template-columns: 0.7fr 1.6fr 0.6fr;
+        grid-template-columns: 0.6fr 1.6fr 0.6fr;
         grid-template-rows: auto; /* Make the rows auto to accommodate content naturally */
         gap: 0px 10px;
         padding: 20px;
@@ -645,7 +665,7 @@
 
     .Description {
         grid-area: Description;
-        padding: 5px;
+        padding: 0px;
     }
 
     .Badges {
