@@ -9,7 +9,7 @@
     export let descriptionMessage =
         "In the 'about the project' field, you should describe the essence of the challenge you are trying to solve.";
     export let popUpTitle = "About the project";
-    let maxLength = 500;
+    let maxLength = 1000;
 
     /**
      * @param {{ target: any; }} event
