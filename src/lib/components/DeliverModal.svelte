@@ -154,16 +154,14 @@
                         setTimeout(() => {
                             deliveryStatus = "";
                             goto("/solution/" + solution_id);
-                        }, 5000);
+                        }, 3000);
                     }}
                 />
             </div>
         {/if}
         <p>
-            Each approval made is available for audit. You can see them <a
-                href=""
-                style="color:blue; text-decoration:underline;">here</a
-            >.
+            Each approval made is available for audit. You can see them in the
+            page of the solution.
         </p>
     </div>
 </Modal>
