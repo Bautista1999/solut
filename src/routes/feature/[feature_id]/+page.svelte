@@ -199,10 +199,10 @@
                                 style="font-size:small; display:flex; justify-content:center;align-items:center;"
                             >
                                 Prediction on past perfomance. No garantee of
-                                payment. <span
-                                    style="text-decoration: underline;cursor:pointer;"
-                                >
-                                    Read more</span
+                                payment. <a
+                                    href="https://forum.solutio.one/-205/terms-and-conditions"
+                                    style="color:blue; text-decoration:underline;"
+                                    >Read more.</a
                                 >
                             </p>
                         </div>
@@ -224,9 +224,10 @@
                     </div>
                     <div class="PledgeInfo">
                         <p style="margin:0px; font-size:small;">
-                            Fully refundable until second confirmation. <span
-                                style="text-decoration: underline;cursor:pointer;"
-                                >Read more</span
+                            Fully refundable until second confirmation. <a
+                                href="https://forum.solutio.one/-205/terms-and-conditions"
+                                style="color:blue; text-decoration:underline;"
+                                >Read more.</a
                             >
                         </p>
                     </div>
@@ -295,7 +296,7 @@
                                         {/await}
                                     {:else}
                                         <BasicButtonDark
-                                            msg={"Propose a solution"}
+                                            msg={"Build a solution"}
                                             icon={"cognition"}
                                             someFunction={() => {
                                                 goto(

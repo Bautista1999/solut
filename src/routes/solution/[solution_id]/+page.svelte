@@ -237,10 +237,10 @@
                                 style="font-size:small; display:flex; justify-content:center;align-items:center;"
                             >
                                 Prediction on past perfomance. No garantee of
-                                payment. <span
-                                    style="text-decoration: underline;cursor:pointer;"
-                                >
-                                    Read more</span
+                                payment. <a
+                                    href="https://forum.solutio.one/-205/terms-and-conditions"
+                                    style="color:blue; text-decoration:underline;"
+                                    >Read more.</a
                                 >
                             </p>
                         </div>

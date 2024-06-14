@@ -44,7 +44,6 @@
     import MagicalDots from "$lib/components/magicalDots.svelte";
 
     /** @type {import('./$types').PageData} */
-    // @ts-ignore
     export let data;
     let key = data.params.idea_id;
     /**
@@ -153,10 +152,10 @@
                                 style="font-size:small; display:flex; justify-content:center;align-items:center;"
                             >
                                 Prediction on past perfomance. No garantee of
-                                payment. <span
-                                    style="text-decoration: underline;cursor:pointer;"
-                                >
-                                    Read more</span
+                                payment. <a
+                                    href="https://forum.solutio.one/-205/terms-and-conditions"
+                                    style="color:blue; text-decoration:underline;"
+                                    >Read more.</a
                                 >
                             </p>
                         </div>
@@ -243,7 +242,7 @@
                                         />
                                     {:else}
                                         <BasicButtonDark
-                                            msg={"Propose a solution"}
+                                            msg={"Build a solution"}
                                             icon={"cognition"}
                                             someFunction={() => {
                                                 goto("/createsolution/" + key);
@@ -254,7 +253,7 @@
 
                                 <br />
                                 <BasicButtonDark
-                                    msg={"Create feature-request"}
+                                    msg={"Add feature-request"}
                                     icon={"emoji_objects"}
                                     someFunction={() => {
                                         goto("/createfeature/" + key);
@@ -294,6 +293,22 @@
         <br />
     </div>
 </div>
+
+<svelte:head>
+    <meta name="twitter:card" content="summary" />
+    <meta charset="utf-8" />
+    <title>{title}</title>
+    <meta name="description" content={subtitle} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={subtitle} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={window.location.toString()} />
+    <meta property="og:image" content={images[0]} />
+
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={subtitle} />
+    <meta name="twitter:image" content={images[0]} />
+</svelte:head>
 
 <style>
     .body {

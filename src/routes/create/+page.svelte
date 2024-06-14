@@ -93,7 +93,7 @@
             newTag = "";
             return;
         }
-        if (tags.length > 5) {
+        if (tags.length >= 5) {
             tagsTooLong = true;
             setTimeout(() => {
                 tagsTooLong = false;

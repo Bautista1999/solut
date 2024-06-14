@@ -268,7 +268,7 @@
     <SuccessNew
         message={"Account updated successfully"}
         someFunction={() => {
-            goto("/profile/" + userKey);
+            goto("/account/" + userKey);
         }}
     />
 {:else}
