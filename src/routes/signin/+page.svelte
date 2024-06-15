@@ -5,7 +5,12 @@
     import BasicButtonDarkSmall from "$lib/components/BasicButton_Dark_Small.svelte";
     import BasicButton from "$lib/components/basicButton.svelte";
     import { page } from "$app/stores";
-    import { authSubscribe, initJuno, signIn } from "@junobuild/core-peer";
+    import {
+        authSubscribe,
+        initJuno,
+        signIn,
+        InternetIdentityProvider,
+    } from "@junobuild/core-peer";
     import { isRegistered } from "$lib/data_functions/user.functions";
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import { GoToPath } from "$lib/stores/redirect_store";
@@ -21,7 +26,11 @@
     let errorMsg = "Error: Sign in failed. Refresh to try again.";
     async function logIn() {
         try {
-            await signIn();
+            await signIn({
+                provider: new InternetIdentityProvider({
+                    domain: "ic0.app",
+                }),
+            });
             await authSubscribe(async (user) => {
                 if (user == null) {
                     error = true;
