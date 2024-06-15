@@ -69,7 +69,7 @@
                                     console.log(e);
                                 }
                             }
-                            goto("/createaccount/" + user.key);
+                            goto(`/createaccount/${user.key}`);
                             break;
                     }
                 }

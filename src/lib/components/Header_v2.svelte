@@ -67,11 +67,11 @@
                         <a href="https://home.solutio.one/">About</a>
                         <!-- <a href="/contact">Contact</a> -->
                         {#if !$IsSignedIn}
-                            <a href="/signin" class="tab-button">Sign In</a>
+                            <a href={`/signin`} class="tab-button">Sign In</a>
                         {:else}
                             <a
                                 class="tab-button"
-                                href="/signin"
+                                href={`/signin`}
                                 style="cursor: pointer;"
                                 on:click={async () => {
                                     await signOut();
