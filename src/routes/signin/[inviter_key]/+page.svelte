@@ -3,7 +3,11 @@
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { onMount } from "svelte";
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
-    import { authSubscribe, signIn } from "@junobuild/core-peer";
+    import {
+        InternetIdentityProvider,
+        authSubscribe,
+        signIn,
+    } from "@junobuild/core-peer";
     import { isRegistered } from "$lib/data_functions/user.functions";
     import { GoToPath } from "$lib/stores/redirect_store";
     import { goto } from "$app/navigation";
@@ -43,7 +47,11 @@
     });
     async function logIn() {
         try {
-            await signIn();
+            await signIn({
+                provider: new InternetIdentityProvider({
+                    domain: "ic0.app",
+                }),
+            });
             authSubscribe(async (user) => {
                 if (user == null) {
                     error = true;
