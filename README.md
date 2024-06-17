@@ -128,7 +128,7 @@ The main source code directory where most of the project logic resides.
 
 ## Solutio's software architecture overview
 
-<img src="static/assets/Solutio_Architecture_19_12_2023.jpg" alt="Alt Text" width="700">
+<img src="(https://github.com/Bautista1999/solutio_admin/raw/main/Solutio_architecture_overview.jpg)" alt="Alt Text" width="700">
 
 ## Decentralization and Blockchain Integration
 Canister Hosting: Solutio is hosted on Juno's canister, relying on the ICP network for decentralization.
