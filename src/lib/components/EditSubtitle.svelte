@@ -83,7 +83,7 @@ line-height: 1.5;
             </p>
         {:else if title.length > 150}
             <p class="InputWarningMessage">
-                Cant exceed {maxLength} characters. Charecters left: {maxLength -
+                Cant exceed {maxLength} characters. Characters left: {maxLength -
                     title.length}
             </p>
         {/if}

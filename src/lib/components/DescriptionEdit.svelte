@@ -106,7 +106,7 @@ line-height: 1.5;
                 </p>
             {:else if description.length > 150}
                 <p class="InputWarningMessage">
-                    Cant exceed {maxLength} characters. Charecters left: {maxLength -
+                    Cant exceed {maxLength} characters. Characters left: {maxLength -
                         description.length}
                 </p>
             {/if}

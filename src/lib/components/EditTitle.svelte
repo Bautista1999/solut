@@ -91,7 +91,7 @@
             </p>
         {:else if title.length > 40}
             <p class="InputWarningMessage">
-                Cant exceed 70 characters. Charecters left: {70 - title.length}
+                Cant exceed 70 characters. Characters left: {70 - title.length}
             </p>
         {/if}
     {/if}
