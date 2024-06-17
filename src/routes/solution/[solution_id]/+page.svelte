@@ -96,7 +96,7 @@
     let errorMsg = "Something went wrong!";
 
     let tabs = ["Pledge Timeline", "Comments", "About the project"];
-    let activeTab = tabs[0]; // default active tab
+    let activeTab = tabs[2]; // default active tab
     /**
      * @type {never[]}
      */
@@ -534,6 +534,21 @@
         {/if}
     </div>
 </div>
+<svelte:head>
+    <meta name="twitter:card" content="summary" />
+    <meta charset="utf-8" />
+    <title>{title}</title>
+    <meta name="description" content={subtitle} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={subtitle} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={window.location.toString()} />
+    <meta property="og:image" content={images[0]} />
+
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={subtitle} />
+    <meta name="twitter:image" content={images[0]} />
+</svelte:head>
 
 <style>
     .body {
@@ -746,9 +761,7 @@
     .ActivityContent {
         grid-area: ActivityContent;
         min-height: 300px;
-        border-bottom: 1px solid var(--secondary-color);
         width: 100%;
-        height: fit-content;
     }
     .Add_Solution_Idea_Section {
         display: flex;
