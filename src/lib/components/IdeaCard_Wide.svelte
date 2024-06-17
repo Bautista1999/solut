@@ -5,8 +5,10 @@
         getImageUrl,
         getTotalFollowers,
         getUserImages,
+        validateImageUrl,
     } from "$lib/data_functions/get_functions";
     import { getTotalPledges } from "$lib/financial_functions/financial_functions";
+    import { onMount } from "svelte";
     import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
     import FundingBar from "./fundingBar.svelte";
     import PledgersSection from "./pledgersSection.svelte";
@@ -21,6 +23,19 @@
      */
     export let idea;
     export let padding = 7;
+    $: displaySrc = idea.data.images[0];
+    onMount(async () => {
+        if (displaySrc != "" && displaySrc != undefined) {
+            console.log(displaySrc);
+            displaySrc = await validateImageUrl(
+                displaySrc,
+                "https://resource.rentcafe.com/image/upload/q_auto,f_auto,c_limit,w_576,h_500/s3/2/50552/image%20not%20available(12).jpg",
+            );
+        } else {
+            displaySrc =
+                "https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg";
+        }
+    });
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -30,12 +45,7 @@
     on:click={() => goto("/" + idea.data.type + "/" + idea.key)}
 >
     <div class="Image">
-        <img
-            src={idea.data.images[0]
-                ? idea.data.images[0]
-                : "https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg"}
-            alt=""
-        />
+        <img src={displaySrc} alt="" />
     </div>
     <div class="ProfilePicture">
         <div class="Profile">
@@ -71,15 +81,27 @@
         {featureExample.subtitle}
     </div> -->
     <div class="FundingBar" style="padding:{padding}px; ">
-        {#await getTotalPledges(idea.key, idea.data.type.toUpperCase())}
-            <MagicalDotsAbsoluteSmall />
-        {:then data}
-            <FundingBar
-                card={true}
-                expected={data.expected}
-                total={data.pledges}
-            />
-        {/await}
+        {#if idea.data.type == "feature"}
+            {#await getTotalPledges(idea.key, "FEA")}
+                <MagicalDotsAbsoluteSmall />
+            {:then data}
+                <FundingBar
+                    card={true}
+                    expected={data.expected}
+                    total={data.pledges}
+                />
+            {/await}
+        {:else}
+            {#await getTotalPledges(idea.key, idea.data.type.toUpperCase())}
+                <MagicalDotsAbsoluteSmall />
+            {:then data}
+                <FundingBar
+                    card={true}
+                    expected={data.expected}
+                    total={data.pledges}
+                />
+            {/await}
+        {/if}
     </div>
     {#await getAmountPledgersAndImages(idea.key)}
         <MagicalDotsAbsoluteSmall />
@@ -126,7 +148,7 @@
             "FundingBar FundingBar FundingBar"
             "PledgersAmount PledgersPictures PledgersPictures";
         background-color: var(--tertiary-color);
-        border: 1px solid var(--seventh-color);
+        border: 2px solid var(--seventh-color);
         box-shadow: 6px 6px 0px 0px var(--seventh-color);
         cursor: pointer;
         transition:

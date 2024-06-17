@@ -1,5 +1,7 @@
 <script>
     import { goto } from "$app/navigation";
+    import { validateImageUrl } from "$lib/data_functions/get_functions";
+    import { onMount } from "svelte";
 
     // You can pass the image source as a prop if it needs to be dynamic
     export let src = "";
@@ -17,6 +19,9 @@
         goto("/profile/" + userKey);
     }
     $: displaySrc = src || defaultSrc;
+    onMount(async () => {
+        displaySrc = await validateImageUrl(displaySrc, defaultSrc);
+    });
 </script>
 
 <div class="profile-pic-container">

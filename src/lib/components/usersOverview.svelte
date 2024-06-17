@@ -1,4 +1,7 @@
 <script>
+    import { onMount } from "svelte";
+    import PledgerProfilePicture from "./PledgerProfilePicture.svelte";
+
     // Import the images or define their URLs
     /**
      * @type {Array<import("$lib/data_objects/data_types").UserProfilePic>}
@@ -14,7 +17,7 @@
                 class="image-container_card"
                 style="left: {index * 15}px; z-index: {100 - index}; "
             >
-                <img src={user.image} alt={`Image number ${index + 1}`} />
+                <PledgerProfilePicture image={user.image} {index} />
             </div>
         {/each}
     </div>
@@ -25,7 +28,7 @@
                 class="image-container"
                 style="left: {index * 25}px; z-index: {100 - index};"
             >
-                <img src={user.image} alt={`Image number ${index + 1}`} />
+                <PledgerProfilePicture image={user.image} {index} />
             </div>
         {/each}
     </div>

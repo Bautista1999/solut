@@ -4,12 +4,13 @@
         getAmountPledgersAndImages,
         getTotalFollowers,
         getUserImages,
+        validateImageUrl,
     } from "$lib/data_functions/get_functions";
     import { getTotalPledges } from "$lib/financial_functions/financial_functions";
+    import { onMount } from "svelte";
     import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
     import FundingBar from "./fundingBar.svelte";
-    import MagicalDots from "./magicalDots.svelte";
-    import PledgersSection from "./pledgersSection.svelte";
+
     import ProfilePicture from "./profilePicture.svelte";
     import UsersOverview from "./usersOverview.svelte";
 
@@ -18,14 +19,28 @@
      */
     export let feature;
     export let padding = 7;
+
     let key = feature.key.substring(6, feature.key.length + 1);
+    $: displaySrc = feature.data.images[0];
+    onMount(async () => {
+        if (displaySrc != "" && displaySrc != undefined) {
+            console.log(displaySrc);
+            displaySrc = await validateImageUrl(
+                displaySrc,
+                "https://resource.rentcafe.com/image/upload/q_auto,f_auto,c_limit,w_576,h_500/s3/2/50552/image%20not%20available(12).jpg",
+            );
+        } else {
+            displaySrc =
+                "https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg";
+        }
+    });
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="container" on:click={() => goto("/feature/" + key)}>
     <div class="Image">
-        <img src={feature.data.images[0]} alt="" />
+        <img src={displaySrc} alt="" />
     </div>
     <div class="ProfilePicture">
         {#await getUserImages([feature.owner ? feature.owner : ""])}
@@ -40,7 +55,7 @@
 
     <div
         class="Title"
-        style="font-size: medium; padding:{padding}px; text-align:start; min-height:50px;"
+        style="font-size: medium; padding:{padding}px; text-align:start; min-height:fit-content; "
     >
         {feature.data.title}
     </div>
@@ -57,9 +72,12 @@
     </div>
     <div
         class="Subtitle"
-        style="font-size:small; padding:{padding}px; text-align:left; height:50px;"
+        style="font-size:small; padding:{padding}px; text-align:left; min-height:75px; "
     >
-        {feature.data.subtitle}
+        {feature.data.subtitle.substring(
+            0,
+            200,
+        )}{#if feature.data.subtitle.length > 200}...{/if}
     </div>
     <div class="FundingBar" style="padding:{padding}px; ">
         {#await getTotalPledges(key, "FEA")}
@@ -109,6 +127,7 @@
         background-color: var(--tertiary-color);
         border: 2px solid var(--secondary-color);
         box-shadow: 6px 6px 0px 0px var(--secondary-color);
+        height: 390px;
         cursor: pointer;
         transition:
             border 0.3s ease,

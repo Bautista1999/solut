@@ -1,5 +1,6 @@
 <script>
     import CircledButtonDarkSmall from "./CircledButtonDarkSmall.svelte";
+    import ImageUrl from "./ImageUrl.svelte";
 
     /**
      * @type {string[]}
@@ -45,7 +46,8 @@
                 </span>
             </button>
         </div>
-        <img alt="Scroller Image" src={images[currentImageIndex]} />
+        <!-- <img alt="Scroller Image" src={images[currentImageIndex]} /> -->
+        <ImageUrl src={images[currentImageIndex]} />
     {:else}
         <div
             style="display: flex; justify-content:center ;align-items:center; margin:auto;height:100%; background-color:black;color:var(--tertiary-color)"

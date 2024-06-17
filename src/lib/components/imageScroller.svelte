@@ -1,4 +1,6 @@
 <script>
+    import ImageUrl from "./ImageUrl.svelte";
+
     /**
      * @type {string | any[]}
      */
@@ -16,7 +18,7 @@
 
 <div id="image-scroller">
     {#if images.length > 0}
-        <img alt="Scroller Image" src={images[currentImageIndex]} />
+        <ImageUrl src={images[currentImageIndex]} />
     {:else}
         <div
             style="display: flex; justify-content:center ;align-items:center; margin:auto;height:100%; background-color:black;color:var(--tertiary-color)"
