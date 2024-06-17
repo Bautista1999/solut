@@ -836,4 +836,22 @@ export async function getElementTitleGivenKey(element_id){
 
 }
 
+/**
+ * Checks if an image URL is valid.
+ * @param {string} userUrl - The user-provided URL of the image.
+ * @param {string} defaultUrl - The fallback URL of the image.
+ * @returns {Promise<string>} - Returns a promise that resolves to the valid image URL.
+ */
+export async function validateImageUrl(userUrl, defaultUrl) {
+    // if(userUrl =""){
+    //     return defaultUrl;
+    // }
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = userUrl;
+      img.onload = () => resolve(userUrl);
+      img.onerror = () => resolve(defaultUrl);
+    });
+  }
+
 
