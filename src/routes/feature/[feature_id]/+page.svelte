@@ -49,17 +49,15 @@
     export let data;
     let key = data.params.feature_id;
     let idea_id = "";
-    let images = [
-        "https://cloudfront-us-east-2.images.arcpublishing.com/reuters/4CG5FU4IIJMHZCDXESLO7GEYDM.jpg",
-        "https://media.ambito.com/p/9c57bcc58b3be5c19ea3a38d32f54fca/adjuntos/239/imagenes/038/684/0038684219/1200x675/smart/ethereum-banco-centraljpg.jpg",
-        "https://s2-valor.glbimg.com/oXwS6x_i8WgCUl-XfqaLBdWpyRk=/0x0:3973x2649/888x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_63b422c2caee4269b8b34177e8876b93/internal_photos/bs/2023/V/1/0BYTKITrifXhSGhdSv5w/btc-e-eth-unsplash.jpg",
-    ];
-    let title = "Feature for that amazing idea";
+    /**
+     * @type {string[]}
+     */
+    let images = [];
+    let title = "";
     let subtitle = "";
     let description = "";
-    let user = "Johannes Jung";
-    let userPicture =
-        "https://i.pinimg.com/474x/05/c3/59/05c359cd010df3e7f1ea3cb6f6f54fad.jpg";
+    let user = "";
+    let userPicture = "";
     let expected = 100000;
     let total = 120000;
     let totalFollowers = 14560;
@@ -73,7 +71,7 @@
      */
     export let transactions = [];
     let tabs = ["Pledge Timeline", "Comments", "About the feature"];
-    let activeTab = tabs[0]; // default active tab
+    let activeTab = tabs[2]; // default active tab
     // Function to change active tab
     /**
      * @param {string} tab
@@ -103,10 +101,10 @@
             description = doc.data.description;
             user = doc.owner ? doc.owner : "";
             userPicture = "";
-            expected = 100000;
-            total = 120000;
-            totalFollowers = 14560;
-            amountPledgers = 100;
+            expected = 0;
+            total = 0;
+            totalFollowers = 0;
+            amountPledgers = 0;
             createdAt = (doc.created_at ? doc.created_at : "").toString();
             idea_id = await getIdeaIdByFeature(key);
         }
@@ -340,6 +338,21 @@
         <br />
     </div>
 </div>
+<svelte:head>
+    <meta name="twitter:card" content="summary" />
+    <meta charset="utf-8" />
+    <title>{title}</title>
+    <meta name="description" content={subtitle} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={subtitle} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={window.location.toString()} />
+    <meta property="og:image" content={images[0]} />
+
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={subtitle} />
+    <meta name="twitter:image" content={images[0]} />
+</svelte:head>
 
 <style>
     .body {
@@ -630,9 +643,9 @@
 
     .ActivityContent {
         grid-area: ActivityContent;
+
         min-height: 300px;
         width: 100%;
-        height: fit-content;
     }
     .Add_Solution_Idea_Section {
         display: flex;

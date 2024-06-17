@@ -340,6 +340,11 @@
         <LoadingNew message={"Uploading data..."} />
     {/if}
 </div>
+<svelte:head>
+    <meta name="twitter:card" content="summary" />
+    <meta charset="utf-8" />
+    <title>Create Idea</title>
+</svelte:head>
 
 <style>
     .material-symbols-outlined {

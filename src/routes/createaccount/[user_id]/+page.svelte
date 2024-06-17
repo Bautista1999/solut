@@ -275,6 +275,11 @@
     <!-- <Loading msg={"Uploading data"} width={30} /> -->
     <LoadingNew message={"Uploading data..."} />
 {/if}
+<svelte:head>
+    <meta name="twitter:card" content="summary" />
+    <meta charset="utf-8" />
+    <title>Create Account</title>
+</svelte:head>
 
 <style>
     .field {

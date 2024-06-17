@@ -37,16 +37,14 @@
     /** @type {import('./$types').PageData} */
     export let data;
     let userKey = data.params.user_key;
-    let user_name = "erik_thebest";
-    let description =
-        "Used to build #Apps for corporations Now build #dApps for people  #ProductDesign & #Marketing Founder @SolutioApp";
-    $: profile =
-        "https://png.pngtree.com/thumb_back/fh260/background/20230612/pngtree-in-the-style-of-2d-game-art-image_2884743.jpg";
+    let user_name = "";
+    let description = "";
+    $: profile = "";
     let reputation = 50;
-    let x_account = "@fairtail3";
-    let insta_account = "@fairtail3";
-    let linkedIn_account = "Erik Jung";
-    let Github_account = "@Fairtale19";
+    let x_account = "";
+    let insta_account = "";
+    let linkedIn_account = "";
+    let Github_account = "";
     let wallet_address = "";
     let x_account_edited = "";
     let insta_account_edited = "";
@@ -531,6 +529,11 @@
 {:else}
     <LoadingNew message={"Loading data..."} />
 {/if}
+<svelte:head>
+    <meta name="twitter:card" content="summary" />
+    <meta charset="utf-8" />
+    <title>{user_name}</title>
+</svelte:head>
 
 <style>
     .iconWrapper {

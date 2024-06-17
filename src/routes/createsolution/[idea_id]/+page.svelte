@@ -385,6 +385,11 @@
         <LoadingNew message={loadingMsg} />
     {/if}
 </div>
+<svelte:head>
+    <meta name="twitter:card" content="summary" />
+    <meta charset="utf-8" />
+    <title>Build Solution</title>
+</svelte:head>
 
 <style>
     .material-symbols-outlined {
