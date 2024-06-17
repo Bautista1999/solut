@@ -67,7 +67,7 @@
      */
     export let transactions = [];
     let tabs = ["Pledge Timeline", "Comments", "About the project"];
-    let activeTab = tabs[0]; // default active tab
+    let activeTab = tabs[2]; // default active tab
     // Function to change active tab
     /**
      * @param {string} tab
@@ -570,7 +570,7 @@
     .ActivitySection {
         display: grid;
         grid-template-columns: 1fr;
-        grid-template-rows: 0fr 0fr;
+        grid-template-rows: 0fr 1fr;
         gap: 0px 0px;
         grid-auto-flow: row;
         grid-template-areas:
@@ -601,7 +601,6 @@
         grid-area: ActivityContent;
         min-height: 300px;
         width: 100%;
-        height: fit-content;
     }
     .Add_Solution_Idea_Section {
         display: flex;
