@@ -19,15 +19,31 @@
             return (num / 1000000).toFixed(num % 1000000 !== 0 ? 1 : 0) + "M";
         }
     }
+    let percentage = 75;
+    let defaultMin = card === true ? 40 : 20;
+    let defaultMax = 80;
+    function getBarPercentage() {
+        if (total == 0) {
+            return 50;
+        }
+        let perc = (expected / total) * 100;
+        if (perc < 20) {
+            return defaultMin;
+        } else if (perc > 80) {
+            return defaultMax;
+        } else {
+            return perc;
+        }
+    }
 </script>
 
 {#if card}
     <div class="barra" style="width: 95%;">
         <div
             class="progreso"
-            style="width: {75}%; height:20px; font-size:small; color:var(--tertiary-color); font-weight:400;"
+            style="width: {getBarPercentage()}%; height:20px; font-size:small; color:var(--tertiary-color); font-weight:400;"
         >
-            Expected: {exp} ICP
+            EXP: {exp} ICP
         </div>
         {#if window.innerWidth < 500}
             <div class="progreso2"></div>
@@ -41,7 +57,7 @@
     <div class="barra">
         <div
             class="progreso"
-            style="width: {75}%; color:var(--tertiary-color);"
+            style="width: {getBarPercentage()}%; color:var(--tertiary-color);"
         >
             Expected: {exp} ICP
         </div>
