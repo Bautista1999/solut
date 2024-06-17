@@ -588,7 +588,6 @@ export async function CheckIfFollow(element_id){
  * @param {string} link
  */
 export async function deliverSolution(solution_id, link){
-    debugger;
     if(link==""|| link==" " ){
         throw new Error("You must provide a working link");
     }
