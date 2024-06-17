@@ -124,6 +124,11 @@
 {:else}
     <LoadingNew message={"Checking inviter..."} />
 {/if}
+<svelte:head>
+    <meta name="twitter:card" content="summary" />
+    <meta charset="utf-8" />
+    <title>Sign in</title>
+</svelte:head>
 
 <style>
     .body {
