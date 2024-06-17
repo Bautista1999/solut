@@ -18,7 +18,6 @@ import { createNotification, followElement, updateSolutionStatus } from "$lib/da
  * @param {string} userKey
  */
 export async function getUserBalance(userKey){
-   debugger;
     let ledgerID = "ryjl3-tyaaa-aaaaa-aaaba-cai";
     let identity = await unsafeIdentity();
     const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
