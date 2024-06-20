@@ -41,10 +41,9 @@
 
 <main>
     <section class="slogan-section">
-        <AnimatedBackground />
         <h1 class="slogan">
-            Get rich shaping the <span style="color: var(--primary-color);"
-                >future.</span
+            A genius idea can come from <span
+                style="color: var(--primary-color);">anywhere.</span
             ><br />Welcome to Solutio.
         </h1>
         <div style="display: flex; justify-content:center; align-items:center;">
@@ -82,7 +81,6 @@
     </section> -->
 
     <section class="slogan-section" style="padding-top: 10px;">
-        <AnimatedBackground />
         <h2 style="margin-bottom: 0em; font-size: 2em;">
             Just had an <span style="color: var(--primary-color);"> idea?</span>
         </h2>
@@ -153,7 +151,7 @@
         bottom: 0;
         background: radial-gradient(
             circle,
-            var(--seventh-color),
+            var(--secondary-color),
             var(--seventh-color)
         );
         opacity: 1; /* Set the desired opacity here */
