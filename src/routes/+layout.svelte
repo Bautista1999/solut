@@ -6,26 +6,44 @@
   import HeaderV2 from "$lib/components/Header_v2.svelte";
   import Footer from "$lib/components/Footer.svelte";
   import { initSatellite } from "@junobuild/core-peer";
-
-  // This variable ensures the initialization function runs only once
-  // let hasInitialized = false;
-
-  // // Initialization function
-  // async function initialize() {
-  //   if (!hasInitialized) {
-  //     // Your one-time initialization code here
-  //     // Search for data in the database, set global variables, etc.
-  //     hasInitialized = true; // Mark as initialized
-  //   }
-  // }
-
-  // beforeUpdate(async () => {
-  //   await initialize();
-  // });
+  import { onMount, onDestroy } from "svelte";
+  import { updateNotificationCount } from "$lib/stores/notifications";
 
   const init = async () => {
     await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
   };
+
+  function addGlobalEventListeners() {
+    const events = ["click", "keypress"];
+
+    const updateNotifications = () => {
+      updateNotificationCount();
+    };
+
+    events.forEach((event) => {
+      window.addEventListener(event, updateNotifications);
+    });
+
+    // Cleanup function to remove event listeners
+    return () => {
+      events.forEach((event) => {
+        window.removeEventListener(event, updateNotifications);
+      });
+    };
+  }
+
+  onMount(async () => {
+    await init();
+    await updateNotificationCount();
+    const removeEventListeners = addGlobalEventListeners();
+
+    // Remove event listeners when component is destroyed
+    onDestroy(() => {
+      removeEventListeners();
+    });
+
+    // Initial notification count update
+  });
 </script>
 
 <div class="body">
