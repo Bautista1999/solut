@@ -236,7 +236,7 @@
                             <p
                                 style="font-size:small; display:flex; justify-content:center;align-items:center;"
                             >
-                                Prediction on past perfomance. No garantee of
+                                Prediction on past perfomance. No guarantee of
                                 payment. <a
                                     href="https://forum.solutio.one/-205/terms-and-conditions"
                                     style="color:blue; text-decoration:underline;"
