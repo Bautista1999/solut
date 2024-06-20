@@ -1,5 +1,6 @@
 import { UserKey } from "$lib/stores/other_stores";
 import { authSubscribe, getDoc,getManyDocs ,initJuno, listDocs } from "@junobuild/core-peer";
+import { setLastNotificationRead } from "./notifications";
 
 /**
  * @param {string} element_id
@@ -673,6 +674,10 @@ export async function getUserNotifications(){
         },
         
     });
+    if(notifications.items.length>0){
+        let lastNotificationKey = notifications.items[0].key;
+        setLastNotificationRead(lastNotificationKey);
+    }
     return notifications.items;
 
 }
