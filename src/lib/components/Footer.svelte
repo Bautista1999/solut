@@ -10,7 +10,7 @@
     <div class="footer-content">
         <div class="footer-section about">
             <h2 style="color: var(--primary-color);">SOLUTIO</h2>
-            <ul>
+            <ul class="VerticallyAligned HorizontallyAligned">
                 <li on:click={() => goto("https://home.solutio.one/")}>
                     About
                 </li>
@@ -37,7 +37,7 @@
             </ul>
         </div>
 
-        <div class="footer-section subscribe">
+        <!-- <div class="footer-section subscribe">
             <h3>SUBSCRIBE</h3>
             <p class="TextContrast">
                 Sign up to receive Solutio news and to try our alpha version!
@@ -49,8 +49,8 @@
             <br />
             <p class="TextContrast">
                 &copy; 2024 Solutio. All Rights Reserved.
-            </p>
-        </div>
+            </p> 
+        </div> -->
     </div>
 
     <div class="footer-bottom"></div>
@@ -77,10 +77,16 @@
         padding-inline: 10%;
     }
 
-    .footer-section {
+    /* .footer-section {
         display: flex;
         flex-direction: column;
         color: var(--tertiary-color);
+    } */
+    .footer-section {
+        display: flex;
+        flex-direction: row;
+        color: var(--tertiary-color);
+        gap: 15%;
     }
 
     .about ul {
@@ -89,7 +95,7 @@
     }
 
     .about li {
-        margin-bottom: 0.5rem;
+        margin-bottom: 0rem;
         cursor: pointer;
     }
     .about li:hover {
