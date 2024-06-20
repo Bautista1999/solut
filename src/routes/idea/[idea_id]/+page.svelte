@@ -6,14 +6,10 @@
     import ImageScroller from "$lib/components/imageScroller.svelte";
     import PledgersSection from "$lib/components/pledgersSection.svelte";
     import ProfilePicture from "$lib/components/profilePicture.svelte";
-    import { nanoid } from "nanoid";
     import ShareButton from "$lib/components/shareButton.svelte";
     import IdeaCardContainer from "$lib/components/IdeaCard_container.svelte";
-    import CardScroller from "$lib/components/CardScroller.svelte";
     import TransactionDisplay from "$lib/components/TransactionDisplay.svelte";
-    import FinishProject from "$lib/components/finishProject.svelte";
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
-    import { space } from "postcss/lib/list";
     import Breadcrumbs from "$lib/components/breadcrumbs.svelte";
     import PageTabs from "$lib/components/PageTabs.svelte";
     import AboutProject from "$lib/components/AboutProject.svelte";
@@ -22,11 +18,10 @@
     import ModalPledgeFunds from "$lib/components/ModalPledgeFunds.svelte";
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
-    import { getDoc, initSatellite } from "@junobuild/core-peer";
+    import { getDoc } from "@junobuild/core-peer";
     import NotFound from "$lib/components/NotFound.svelte";
     import {
         getTotalPledges,
-        getTransactions,
         getTransactionsAndPledges,
     } from "$lib/financial_functions/financial_functions";
     import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsoluteSmall.svelte";
@@ -39,9 +34,6 @@
         getUserImages,
     } from "$lib/data_functions/get_functions";
     import SuccessNew from "$lib/components/Success_New.svelte";
-    import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
-    import { getTransactions_byProject } from "$lib/testingInterface_logic/testing.interface.logic";
-    import MagicalDots from "$lib/components/magicalDots.svelte";
 
     /** @type {import('./$types').PageData} */
     export let data;
@@ -151,7 +143,7 @@
                             <p
                                 style="font-size:small; display:flex; justify-content:center;align-items:center;"
                             >
-                                Prediction on past perfomance. No garantee of
+                                Prediction on past perfomance. No guarantee of
                                 payment. <a
                                     href="https://forum.solutio.one/-205/terms-and-conditions"
                                     style="color:blue; text-decoration:underline;"
@@ -294,7 +286,7 @@
     </div>
 </div>
 
-<svelte:head>
+<head>
     <meta name="twitter:card" content="summary" />
     <meta charset="utf-8" />
     <title>{title}</title>
@@ -308,7 +300,7 @@
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={subtitle} />
     <meta name="twitter:image" content={images[0]} />
-</svelte:head>
+</head>
 
 <style>
     .body {
