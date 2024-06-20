@@ -7,6 +7,8 @@
     import { IsSignedIn, UserKey } from "$lib/stores/other_stores";
     import { getMostFollowedIdeas } from "$lib/data_functions/get_functions";
     import { path } from "$lib/stores/redirect_store";
+    import { GetAmountNewNotifications } from "$lib/data_functions/notifications";
+    import { notificationCount } from "$lib/stores/notifications";
     let isOpen = false;
 
     function toggleSidebar() {
@@ -76,13 +78,22 @@
                     {/if}
                 </div>
                 {#if $IsSignedIn}
+                    <!-- svelte-ignore a11y-no-static-element-interactions -->
                     <div class="SideBarElement">
+                        <!-- svelte-ignore a11y-click-events-have-key-events -->
                         <span
                             class="material-symbols-outlined"
                             on:click={() => goto("/notifications/" + $UserKey)}
                         >
                             notifications
                         </span>
+                        <!-- {#await GetAmountNewNotifications() then data} -->
+                        {#if !isOpen && $notificationCount > 0}
+                            <span class="notification-bell-number"
+                                >{$notificationCount}</span
+                            >
+                        {/if}
+                        <!-- svelte-ignore a11y-click-events-have-key-events -->
                         {#if isOpen}<span
                                 class="label"
                                 in:fade={{ duration: seconds * 1000 }}
@@ -101,19 +112,23 @@
                                 on:click={() =>
                                     goto("/notifications/" + $UserKey)}
                                 >Notifications
-                                <!-- <span
-                                    style="display:flex; align-items:center; justify-content:center; align-self:center;
+                                {#if $notificationCount > 0}
+                                    <span
+                                        style="display:flex; align-items:center; justify-content:center; align-self:center;
                              background-color:var(--primary-color); color: var(--tertiary-color); width: fit-content;
                              padding-inline:10px;
                              height: 18px;
                              flex-shrink: 0;"
-                                    on:click={() => goto("/notifications")}
-                                >
-                                    15
-                                </span> -->
+                                        on:click={() => goto("/notifications")}
+                                    >
+                                        {$notificationCount}
+                                    </span>
+                                {/if}
                             </span>
                         {/if}
+                        <!-- {/await} -->
                     </div>
+                    <!-- svelte-ignore a11y-no-static-element-interactions -->
                     <div class="SideBarElement">
                         <span
                             class="material-symbols-outlined"
@@ -121,6 +136,7 @@
                         >
                             emoji_objects
                         </span>
+                        <!-- svelte-ignore a11y-click-events-have-key-events -->
                         {#if isOpen}<span
                                 class="label"
                                 in:fade={{ duration: seconds * 1000 }}
@@ -133,13 +149,16 @@
                             >{/if}
                     </div>
 
+                    <!-- svelte-ignore a11y-no-static-element-interactions -->
                     <div class="SideBarElement">
+                        <!-- svelte-ignore a11y-click-events-have-key-events -->
                         <span
                             class="material-symbols-outlined"
                             on:click={() => goto("/feed")}
                         >
                             batch_prediction
                         </span>
+                        <!-- svelte-ignore a11y-click-events-have-key-events -->
                         {#if isOpen}<span
                                 class="label"
                                 in:fade={{ duration: seconds * 1000 }}
@@ -163,7 +182,9 @@
                         >Account</span
                     >{/if}
             </div> -->
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
                 <div class="SideBarElement">
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
                     <span
                         class="material-symbols-outlined"
                         on:click={() =>
@@ -171,6 +192,7 @@
                     >
                         contact_support
                     </span>
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
                     {#if isOpen}<span
                             class="label"
                             in:fade={{ duration: seconds * 1000 }}
@@ -209,8 +231,9 @@
                             <div
                                 class="SideBarElement"
                                 style="padding-left: 22px;"
-                                on:click={() => {
-                                    goto("idea/" + idea.key);
+                                on:click={async () => {
+                                    let pathOrigin = window.location.origin;
+                                    goto(pathOrigin + "/idea/" + idea.key);
                                 }}
                             >
                                 <img
@@ -297,6 +320,22 @@
         justify-content: center;
         align-items: center;
         flex-shrink: 0;
+    }
+    .notification-bell-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        background-color: var(--primary-color);
+        color: var(--tertiary-color);
+        /* border: 1px solid var(--tertiary-color); */
+        border-radius: 400px;
+        visibility: visible;
+        transform: translateX(8px) translateY(-10px);
+        z-index: 200;
+        height: 20px;
+        min-width: 20px;
+        padding: 2px;
     }
     .SideBar {
         display: grid;
