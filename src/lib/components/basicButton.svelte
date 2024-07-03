@@ -56,4 +56,11 @@
         transform: scale(0.98); /* Slightly scale down the button */
         box-shadow: 0px 0px 0px 0px var(--primary-color);
     }
+    @media (max-width: 700px) {
+        button {
+            font-size: medium;
+            padding-inline: 15px;
+            padding-block: 7px;
+        }
+    }
 </style>
