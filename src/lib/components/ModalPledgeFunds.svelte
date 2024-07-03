@@ -14,7 +14,7 @@
     import SuccessModalNew from "./SuccessModalNew.svelte";
     import LoadingModalNew from "./LoadingModalNew.svelte";
     import ErrorModalNew from "./ErrorModalNew.svelte";
-    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsolut.svelte";
     let amount = 0;
     let max = 0;
     let isLoading = false;
