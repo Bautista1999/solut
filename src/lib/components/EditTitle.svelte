@@ -44,7 +44,7 @@
     {:else}
         <textarea
             maxlength="70"
-            style="width: 100%;
+            style="width:96%;
                         height:fit-content;
                         overflow-y: hidden;
                 color: var(--secondary-color);
@@ -76,14 +76,16 @@
             help
         </span>
         {#if show}
-            <TutotialMessagePopUp
-                title={"Title"}
-                message={messageTitle +
-                    " The title max characters is 70, for SEO optimization."}
-                {closeTooltip}
-                topPercentage={12}
-                rightPercentage={12}
-            />
+            <div class="message-pop-up">
+                <TutotialMessagePopUp
+                    title={"Title"}
+                    message={messageTitle +
+                        " The title max characters is 70, for SEO optimization."}
+                    {closeTooltip}
+                    topPercentage={12}
+                    rightPercentage={12}
+                />
+            </div>
         {/if}
         {#if title.length == 70}
             <p class="InputErrorMessage">
@@ -105,5 +107,10 @@
             "GRAD" 0,
             "opsz" 24;
         color: var(--sky-blue);
+    }
+    @media (max-width: 480px) {
+        .message-pop-up {
+            display: none;
+        }
     }
 </style>

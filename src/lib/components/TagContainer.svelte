@@ -86,4 +86,11 @@
     .active {
         background: var(--primary-color);
     }
+
+    @media (max-width: 480px) {
+        .tag-container {
+            visibility: hidden;
+            height: 0px;
+        }
+    }
 </style>

@@ -77,4 +77,10 @@
         height: 100%; /* Ensures the image is at least as tall as the container */
         object-fit: cover; /* Covers the area, cropping as needed */
     }
+    @media (max-width: 480px) {
+        .profile-pic-container {
+            width: 40px; /* width and height should be the same */
+            height: 40px;
+        }
+    }
 </style>

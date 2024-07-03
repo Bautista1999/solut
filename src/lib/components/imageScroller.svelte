@@ -14,9 +14,26 @@
         currentImageIndex =
             (currentImageIndex + direction + images.length) % images.length;
     }
+
+    /**
+     * @param {WheelEvent} event
+     */
+    function handleScroll(event) {
+        // Check if the scroll event is horizontal
+        if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+            event.stopPropagation();
+            event.preventDefault();
+            console.log("Horizontal scroll detected");
+            if (event.deltaX < 0) {
+                scroll(-1);
+            } else if (event.deltaX > 0) {
+                scroll(1);
+            }
+        }
+    }
 </script>
 
-<div id="image-scroller">
+<div id="image-scroller" on:wheel={handleScroll}>
     {#if images.length > 0}
         <ImageUrl src={images[currentImageIndex]} />
     {:else}
@@ -36,13 +53,14 @@
                 <span class="material-symbols-outlined"> arrow_back </span>
             </button>
 
-            {#if images.length > 0}{currentImageIndex +
-                    1}/{images.length}{:else}0/0{/if}
+            {#if images.length > 0}
+                {currentImageIndex + 1}/{images.length}
+            {:else}
+                0/0
+            {/if}
             <button on:click={() => scroll(1)}>
-                <span class="material-symbols-outlined">
-                    arrow_forward
-                </span></button
-            >
+                <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
         </div>
     </div>
 </div>
@@ -64,7 +82,6 @@
             "opsz" 48;
         color: var(--primary-color);
     }
-
     #image-scroller {
         width: 75%; /* Set width to 80% of the parent container */
         aspect-ratio: 1200 / 628; /* Maintain the aspect ratio */
@@ -87,8 +104,8 @@
         left: 50%; /* Start at 50% from the left */
         transform: translateX(-50%); /* Center align the .ButtonSection */
         z-index: 1; /* Ensure it's above the images */
-        /* rest of your styles */
     }
+
     .buttons {
         display: flex; /* Set the display to flex to enable flexbox properties */
         flex-direction: row; /* Align children in a row (horizontal alignment) */
@@ -119,5 +136,17 @@
         background-color: transparent;
         cursor: pointer;
         border: 0px solid var(--primary-color);
+    }
+
+    @media (max-width: 480px) {
+        #image-scroller {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 75%; /* Set width to 80% of the parent container */
+            aspect-ratio: 1200 / 628; /* Maintain the aspect ratio */
+            position: relative; /* Establish a positioning context for absolutely positioned children */
+            overflow: hidden; /* Hide any overflowing content */
+            background-position: 10%;
+        }
     }
 </style>

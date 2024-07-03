@@ -393,4 +393,20 @@
         border: 1px solid var(--secondary-color);
         color: var(--tertiary-color);
     }
+    @media (max-width: 480px) {
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: fit-content;
+            width: fit-content;
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            padding-inline: 40px;
+            background-color: var(--tertiary-color);
+            border: 1px solid var(--seventh-color);
+        }
+    }
 </style>

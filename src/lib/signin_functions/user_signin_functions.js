@@ -1,4 +1,4 @@
-import { IsSignedIn } from "$lib/stores/other_stores";
+import { IsSignedIn, UserKey } from "$lib/stores/other_stores";
 import { authSubscribe, initJuno } from "@junobuild/core-peer";
 
 /** 
@@ -9,9 +9,11 @@ export async function CheckIfSignedIn(){
         authSubscribe((user) => {
             if (user == undefined) {
                 IsSignedIn.set(false);
+                UserKey.set("");
                 resolve(false);
             } else {
                 IsSignedIn.set(true);
+                UserKey.set(user.key);
                 resolve(true);
             }
         });

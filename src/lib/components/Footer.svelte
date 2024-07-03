@@ -52,8 +52,6 @@
             </p> 
         </div> -->
     </div>
-
-    <div class="footer-bottom"></div>
 </footer>
 
 <style>
@@ -66,15 +64,12 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-top: 10px;
     }
 
     .footer-content {
         display: flex;
         width: 100%;
         justify-content: space-between;
-        gap: 10%;
-        padding-inline: 10%;
     }
 
     /* .footer-section {
@@ -128,7 +123,31 @@
     }
 
     .footer-bottom {
-        margin-top: 2rem;
         text-align: center;
+    }
+
+    @media (max-width: 480px) {
+        .footer-section {
+            display: flex;
+            flex-direction: row;
+            color: var(--tertiary-color);
+            gap: 0%;
+        }
+        .footer-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+        .site-footer {
+            background-color: var(
+                --secondary-color
+            ); /* Adapt to match your color theme */
+            color: #fff;
+            padding: 0rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     }
 </style>

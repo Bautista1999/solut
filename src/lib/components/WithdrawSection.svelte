@@ -11,7 +11,7 @@
 
     import FlatButtonDarkSmall from "./FlatButtonDarkSmall.svelte";
     import FlatButtonSmall from "./FlatButtonSmall.svelte";
-    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsolut.svelte";
     import { Actor, HttpAgent } from "@dfinity/agent";
     import { Principal } from "@dfinity/principal";
     import { AccountIdentifier, LedgerCanister } from "@dfinity/ledger-icp";
@@ -44,7 +44,6 @@
     }
 </script>
 
-<h4>Withdraw section</h4>
 <div class="SmallSeparator WalletSection">
     {#if !error && !isLoading && !success}
         <p>Wish to withdraw your funds?</p>

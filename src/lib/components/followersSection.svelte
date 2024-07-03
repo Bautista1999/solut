@@ -32,7 +32,7 @@
 
     async function IncreaseFollowers() {
         if (!(await CheckIfSignedIn())) {
-            path.set("/solution/" + element_key);
+            path.set(window.location.toString());
             goto("/signin/");
             return;
         }
@@ -88,7 +88,7 @@
 <style>
     .FollowersSection {
         display: grid;
-        grid-template-columns: 0fr 0.5fr;
+        grid-template-columns: 0fr 0fr;
         grid-template-rows: 1fr;
         gap: 0px 10px;
         grid-auto-flow: row;

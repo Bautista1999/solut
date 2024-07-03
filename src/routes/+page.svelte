@@ -40,7 +40,7 @@
 </script>
 
 <main>
-    <section class="slogan-section">
+    <section class="visibilitySlogan slogan-section">
         <h1 class="slogan">
             A genius idea can come from <span
                 style="color: var(--primary-color);">anywhere.</span
@@ -57,6 +57,14 @@
         <div class="tagContainer">
             <TagContainer bind:keywords bind:firstKeys />
         </div>
+    </section>
+    <section class="search-bar">
+        <SearchBar
+            someFunction={() => {
+                addWordToKeywords(searchText);
+            }}
+            bind:searchText
+        />
     </section>
 
     <section class="featured-ideas">
@@ -105,13 +113,6 @@
 </svelte:head>
 
 <style>
-    .stats-section {
-        display: flex;
-        justify-content: space-around;
-        padding: 20px;
-        background-color: var(--primary-color);
-        font-size: 1.2em;
-    }
     .tagContainer {
         display: flex;
         justify-content: center;
@@ -177,11 +178,6 @@
         ); /* ensure it's readable on any background */
     }
 
-    .genius-slogan {
-        font-size: 1.8em; /* Slightly larger for emphasis */
-        margin-bottom: 1em; /* Added space before search bar */
-    }
-
     .featured-ideas {
         padding: 20px;
         background: var(--forth-color);
@@ -194,44 +190,36 @@
         align-items: center;
         flex-wrap: wrap;
     }
-    .card {
-        width: 30%;
-        margin: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        border-radius: 10px;
-        overflow: hidden;
-        transition: transform 0.3s;
+    .search-bar {
+        visibility: hidden;
+        height: 0px;
     }
-    .card:hover {
-        transform: scale(1.05);
-    }
-    .card img {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-    }
-    .card-content {
-        padding: 15px;
-        background: var(--tertiary-color);
-        color: var(--secondary-color);
-    }
-    .card-content h3 {
-        margin: 0;
-    }
-    .card-content p {
-        font-size: 16px;
-    }
-    @media (max-width: 768px) {
-        .cards {
-            flex-direction: column;
+    @media (max-width: 480px) {
+        .featured-ideas {
+            padding: 5px;
+            padding-bottom: 20px;
         }
-        .card {
-            width: 90%;
+        .visibilitySlogan {
+            visibility: hidden;
+            height: 0px;
+            padding: 0px;
         }
-    }
-    @media (max-width: 768px) {
-        .stats-section {
+        .slogan {
+            animation: fadeInDown 2s ease-out forwards;
+            font-size: 2em;
+            margin-bottom: 0.5em;
+            color: var(
+                --tertiary-color
+            ); /* ensure it's readable on any background */
+        }
+        .search-bar {
+            visibility: visible;
+            height: fit-content;
+            margin-top: 10px;
+            display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
     }
 </style>

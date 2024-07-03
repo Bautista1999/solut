@@ -54,4 +54,29 @@
         justify-content: center;
         align-items: center;
     }
+    @media (max-width: 768px) {
+    }
+
+    @media (max-width: 480px) {
+        .container {
+            display: grid;
+            place-items: center; /* This shorthand centers items both horizontally and vertically */
+            grid-template-columns: 1fr;
+            grid-template-rows: auto auto; /* Set the rows to only take as much space as needed */
+            gap: 0px; /* Add some space between your items */
+            grid-template-areas:
+                "PledgersAmount PledgersAmount"
+                "PledgersPictures PledgersPictures";
+        }
+    }
+    .container {
+        display: grid;
+        place-items: center; /* This shorthand centers items both horizontally and vertically */
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto; /* Set the rows to only take as much space as needed */
+        gap: 0px; /* Add some space between your items */
+        grid-template-areas:
+            "PledgersAmount PledgersAmount"
+            "PledgersPictures PledgersPictures";
+    }
 </style>

@@ -9,7 +9,7 @@
     } from "$lib/data_functions/get_functions";
     import { getTotalPledges } from "$lib/financial_functions/financial_functions";
     import { onMount } from "svelte";
-    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsSmall.svelte";
     import FundingBar from "./fundingBar.svelte";
     import PledgersSection from "./pledgersSection.svelte";
     import ProfilePicture from "./profilePicture.svelte";
@@ -57,16 +57,14 @@
         </div>
     </div>
 
-    <div
-        class="Title"
-        style="font-size: medium; padding:{padding}px; text-align:start; height:50px;"
-    >
+    <div class="Title" style="padding:{padding}px; ">
         {idea.data.title}
     </div>
     <div
         class="FollowersSection"
         style="display: flex; justify-content:center; align-items:left; flex-direction:column; text-align:center;"
     >
+        <!-- <MagicalDotsAbsoluteSmall /> -->
         {#await getTotalFollowers(idea.key)}
             <MagicalDotsAbsoluteSmall />
         {:then data}
@@ -104,7 +102,7 @@
         {/if}
     </div>
     {#await getAmountPledgersAndImages(idea.key)}
-        <MagicalDotsAbsoluteSmall />
+        <!-- <MagicalDotsAbsoluteSmall /> -->
     {:then data}
         <div
             class="PledgersAmount"
@@ -192,6 +190,9 @@
 
     .Title {
         grid-area: Title;
+        font-size: medium;
+        text-align: start;
+        height: 50px;
     }
 
     .FollowersSection {
@@ -214,5 +215,22 @@
 
     .PledgersPictures {
         grid-area: PledgersPictures;
+    }
+
+    @media (max-width: 480px) {
+        .ProfilePicture {
+            grid-area: ProfilePicture;
+            position: absolute; /* Absolute position relative to #image-scroller */
+            z-index: 1;
+            align-self: normal;
+            margin-top: 60px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .Title {
+            font-size: medium;
+            height: 50px;
+            overflow: hidden;
+        }
     }
 </style>

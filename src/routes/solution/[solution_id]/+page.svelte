@@ -56,7 +56,7 @@
         getTransactionsAndPledges,
         roundUpToThreeDecimalPlaces,
     } from "$lib/financial_functions/financial_functions";
-    import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsoluteSmall.svelte";
+    import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsolut.svelte";
     import { path } from "$lib/stores/redirect_store";
     import MagicalDots from "$lib/components/magicalDots.svelte";
     import LoadingModalNew from "$lib/components/LoadingModalNew.svelte";
@@ -282,7 +282,7 @@
                 justify-content: center; 
                 align-items: center; 
                 flex-direction: row; 
-                gap:10px;
+                gap:25px;
                 justify-content:space-between;"
                     >
                         <div class="ShareButton"><ShareButton /></div>
@@ -760,14 +760,67 @@
 
     .ActivityContent {
         grid-area: ActivityContent;
-        min-height: 300px;
+        height: fit-content;
         width: 100%;
     }
-    .Add_Solution_Idea_Section {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: row;
-        margin-bottom: 2%;
+    @media (max-width: 838px) {
+        .Title {
+            grid-area: Title;
+            margin-left: 25px;
+        }
+        .Profile {
+            margin-left: 15px;
+        }
+        .PledgingSection {
+            display: grid;
+            grid-template-columns: auto auto auto;
+            grid-template-rows: auto auto;
+            gap: 0px 15px;
+            grid-auto-flow: row;
+
+            grid-template-areas:
+                "FollowersSection ShareButton PledgersSection"
+                " PledgeInfo PledgersSection";
+            grid-area: PledgingSection;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .FundingSection {
+            display: grid;
+            grid-template-columns: 0fr 1fr 0fr;
+            grid-template-rows: 0fr 0fr;
+            gap: 10px 0px;
+            grid-auto-flow: row;
+            grid-template-areas:
+                ". Funding-bar ."
+                ". Funding-info .";
+            grid-area: FundingSection;
+            height: 80px;
+            padding-inline: 10px;
+        }
+        .PledgingSection {
+            display: grid;
+            grid-template-columns: auto auto auto;
+            grid-template-rows: auto auto;
+            gap: 0px 15px;
+            grid-auto-flow: row;
+
+            grid-template-areas:
+                "FollowersSection ShareButton PledgersSection"
+                " PledgeInfo PledgersSection";
+            grid-area: PledgingSection;
+            justify-content: center;
+            align-items: center;
+        }
+        .Title {
+            grid-area: Title;
+            margin-left: 25px;
+        }
+        .Profile {
+            margin-left: 15px;
+        }
     }
 </style>

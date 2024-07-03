@@ -43,4 +43,13 @@
         /* styles for active tab */
         font-weight: 400;
     }
+    @media (max-width: 480px) {
+        .tabs {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: small;
+            cursor: pointer;
+        }
+    }
 </style>

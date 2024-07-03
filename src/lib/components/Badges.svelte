@@ -22,4 +22,14 @@
         background-color: var(--tertiary-color);
         padding: 10px;
     }
+    @media (max-width: 800px) {
+        .Badges {
+            width: 90%;
+            height: fit-content;
+            border: 2px solid var(--primary-color);
+            background-color: var(--tertiary-color);
+            padding: 10px;
+            margin-block: 15px;
+        }
+    }
 </style>

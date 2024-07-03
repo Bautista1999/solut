@@ -92,13 +92,15 @@ line-height: 1.5;
                 help
             </span>
             {#if show}
-                <TutotialMessagePopUp
-                    title={popUpTitle}
-                    message={descriptionMessage}
-                    {closeTooltip}
-                    topPercentage={70}
-                    rightPercentage={2}
-                />
+                <div class="message-pop-up">
+                    <TutotialMessagePopUp
+                        title={popUpTitle}
+                        message={descriptionMessage}
+                        {closeTooltip}
+                        topPercentage={70}
+                        rightPercentage={2}
+                    />
+                </div>
             {/if}
             {#if description.length == maxLength}
                 <p class="InputErrorMessage">
@@ -142,5 +144,10 @@ line-height: 1.5;
     textarea {
         height: fit-content;
         resize: none;
+    }
+    @media (max-width: 480px) {
+        .message-pop-up {
+            display: none;
+        }
     }
 </style>

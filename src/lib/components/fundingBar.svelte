@@ -43,7 +43,7 @@
             class="progreso"
             style="width: {getBarPercentage()}%; height:20px; font-size:small; color:var(--tertiary-color); font-weight:400;"
         >
-            EXP: {exp} ICP
+            {exp} ICP
         </div>
         {#if window.innerWidth < 500}
             <div class="progreso2"></div>
@@ -75,7 +75,7 @@
     .barra {
         width: 100%;
         height: fit-content;
-        padding: 4px;
+        padding: 0px;
         display: flex; /* Convertimos la barra en un contenedor flex */
         align-items: center; /* Alineación vertical en el centro */
         background-color: var(--secondary-color);
@@ -84,6 +84,7 @@
         border-bottom-left-radius: 40px;
         border-top-right-radius: 40px;
         font-size: small;
+        height: 35px;
     }
     .progreso {
         height: 25px;
@@ -97,6 +98,7 @@
         border-radius: 2px;
         border-bottom-left-radius: 40px;
         border-top-right-radius: 40px;
+        margin-left: 8px;
     }
     .progreso2 {
         flex: 1; /* Ocupará todo el espacio restante después del div progreso */

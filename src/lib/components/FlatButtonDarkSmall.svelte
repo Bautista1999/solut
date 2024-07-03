@@ -54,4 +54,29 @@
         transform: scale(0.98); /* Slightly scale down the button */
         box-shadow: 0px 0px 0px 0px var(--primary-color);
     }
+    @media (max-width: 480px) {
+        button {
+            width: fit-content;
+            height: fit-content;
+            padding-inline: 10px;
+            padding-block: 2px;
+            font-size: small;
+            background-color: var(--tertiary-color);
+            color: var(--primary-color);
+            transition:
+                background-color 0.3s ease,
+                transform 0.1s ease,
+                /* Smooth transitions for background color and transforming */
+                    box-shadow 0.1s ease; /* Adding transition for box-shadow */
+            cursor: pointer;
+            border: 1px solid var(--primary-color);
+            border-radius: 0px;
+            font-family: Barlow;
+            display: flex; /* Set the display to flex to enable flexbox properties */
+            flex-direction: row; /* Align children in a row (horizontal alignment) */
+            justify-content: center; /* Horizontally center the items in the container */
+            align-items: center; /* Vertically align the items in the middle */
+            gap: 5px;
+        }
+    }
 </style>

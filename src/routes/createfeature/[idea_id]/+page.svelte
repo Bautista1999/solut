@@ -496,4 +496,25 @@
         width: 100%;
         height: fit-content;
     }
+    @media (max-width: 480px) {
+        .body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            min-height: 100vh;
+            z-index: 0;
+        }
+
+        .content {
+            width: 100%;
+            max-width: fit-content;
+            text-align: left;
+            margin: 30px auto 40px auto;
+            background-color: var(--tertiary-color);
+            padding-inline: 10px;
+            padding-block: 20px;
+            border: 1px solid var(--secondary-color);
+        }
+    }
 </style>

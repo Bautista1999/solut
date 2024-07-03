@@ -14,7 +14,7 @@
         getUserKey,
     } from "$lib/data_functions/get_functions";
     import ProfilePicture from "./profilePicture.svelte";
-    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsolut.svelte";
     import ProfilePictureHeader from "./ProfilePicture_Header.svelte";
 
     let lastScrollY = window.scrollY;

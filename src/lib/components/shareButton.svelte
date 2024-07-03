@@ -37,7 +37,7 @@
 <style>
     .FollowersSection {
         display: grid;
-        grid-template-columns: 0fr 0.5fr;
+        grid-template-columns: 0.5fr 0.5fr;
         grid-template-rows: 1fr;
         gap: 0px 10px;
         grid-auto-flow: row;
