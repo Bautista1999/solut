@@ -7,8 +7,9 @@
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import FlatButtonDarkSmall from "$lib/components/FlatButtonDarkSmall.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
-    import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsoluteSmall.svelte";
+    import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsolut.svelte";
     import PageTabs from "$lib/components/PageTabs.svelte";
+    import ProfileDashBoardMobileVersion from "$lib/components/ProfileDashBoard_MobileVersion.svelte";
     import ProfilePictureEdit from "$lib/components/ProfilePictureEdit.svelte";
     import Reputation from "$lib/components/Reputation.svelte";
     import TransactionDisplay from "$lib/components/TransactionDisplay.svelte";
@@ -518,6 +519,9 @@
             {/await}
         </div>
     </div>
+    <div class="container-mobile">
+        <ProfileDashBoardMobileVersion data={userKey} />
+    </div>
 {:else if error}
     <ErrorMessage
         message={"Couldnt verify account"}
@@ -743,5 +747,16 @@
     .material-symbols-outlined:hover {
         font-variation-settings: "FILL" 1;
         cursor: pointer;
+    }
+    .container-mobile {
+        display: none;
+    }
+    @media (max-width: 800px) {
+        .container {
+            display: none;
+        }
+        .container-mobile {
+            display: block;
+        }
     }
 </style>
