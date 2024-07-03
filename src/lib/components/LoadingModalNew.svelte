@@ -1,5 +1,5 @@
 <script>
-    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsolut.svelte";
     export let message = "";
     export let color = "var(--seventh-color)";
 </script>
