@@ -279,7 +279,7 @@
         <div class="SmallSeparator">
             {#if !isEditing}
                 <div class="description">
-                    {"1 dic 2023 — The answer to this is no. The user will absolutely not receive any notification if you decide to screenshot someone's story. Screenshotting a ..."}
+                    {description}
                 </div>
             {:else}
                 <textarea
