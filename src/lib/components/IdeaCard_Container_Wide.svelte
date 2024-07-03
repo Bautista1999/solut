@@ -5,7 +5,7 @@
     import IdeaCard from "./IdeaCard.svelte";
     import IdeaCardWide from "./IdeaCard_Wide.svelte";
     import LoadingNew from "./LoadingNew.svelte";
-    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsolut.svelte";
     /**
      * @type {string[]}
      */
@@ -67,7 +67,7 @@
         {/each}
     </div>
 
-    <div class="" style="margin:auto;margin-top:20px;">
+    <div class="" style="margin-bottom:20px;margin-top:20px;">
         <CardScroller
             forwardFunction={() => {
                 if (ideas.length == 0) {
@@ -93,5 +93,15 @@
         padding: 0rem; /* Add some padding around the grid if needed */
         margin: 0; /* Center the grid container */
         max-width: 1200px; /* Max width of the grid to avoid very wide cards */
+    }
+    @media (max-width: 480px) {
+        .features-container {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(100px, 0.5fr));
+            grid-gap: 0.5rem;
+            padding: 0rem; /* Add some padding around the grid if needed */
+            margin: 0; /* Center the grid container */
+            max-width: 600px; /* Max width of the grid to avoid very wide cards */
+        }
     }
 </style>

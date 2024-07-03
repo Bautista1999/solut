@@ -5,7 +5,7 @@
     } from "$lib/data_functions/get_functions";
     import IdeaCard from "./IdeaCard.svelte";
     import LoadingNew from "./LoadingNew.svelte";
-    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsolut.svelte";
     import MagicalDots from "./magicalDots.svelte";
     export let type = "idea";
     let featureExample = {
@@ -59,11 +59,34 @@
         max-width: 1200px; /* Max width of the grid to avoid very wide cards */
     }
 
-    .feature-card {
-        /* Styles for your card */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        overflow: hidden;
-        /* Add any other styles you need for your card */
+    @media (max-width: 950px) {
+        .features-container {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(150px, 0.5fr));
+            grid-gap: 1rem;
+            padding: 0rem; /* Add some padding around the grid if needed */
+            margin: 0; /* Center the grid container */
+            max-width: 800px; /* Max width of the grid to avoid very wide cards */
+        }
+    }
+    @media (max-width: 880px) {
+        .features-container {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(150px, 0.5fr));
+            grid-gap: 1rem;
+            padding: 0rem; /* Add some padding around the grid if needed */
+            margin: 0; /* Center the grid container */
+            max-width: 800px; /* Max width of the grid to avoid very wide cards */
+        }
+    }
+    @media (max-width: 480px) {
+        .features-container {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(100px, 0.5fr));
+            grid-gap: 0.5rem;
+            padding: 0rem; /* Add some padding around the grid if needed */
+            margin: 0; /* Center the grid container */
+            max-width: 600px; /* Max width of the grid to avoid very wide cards */
+        }
     }
 </style>

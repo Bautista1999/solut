@@ -8,7 +8,7 @@
     } from "$lib/data_functions/get_functions";
     import { getTotalPledges } from "$lib/financial_functions/financial_functions";
     import { onMount } from "svelte";
-    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsSmall.svelte";
     import FundingBar from "./fundingBar.svelte";
 
     import ProfilePicture from "./profilePicture.svelte";
@@ -101,7 +101,7 @@
         </div>
         <div
             class="PledgersPictures"
-            style="padding-top:{padding}px; padding-left:0px; margin-left:0px; margin-top:{padding}px;"
+            style="padding-top:{padding}px; padding-left:0px;  margin-top:{padding}px; "
         >
             <UsersOverview card={true} users={data.users} />
         </div>
@@ -194,5 +194,10 @@
 
     .PledgersPictures {
         grid-area: PledgersPictures;
+    }
+    @media (max-width: 480px) {
+        .PledgersPictures {
+            margin-left: 10px;
+        }
     }
 </style>
