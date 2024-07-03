@@ -371,4 +371,42 @@
         color: antiquewhite;
         background-color: rgba(255, 255, 255, 0.2);
     }
+
+    @media (max-width: 700px) {
+        .notification-dropdown {
+            width: 100%;
+            margin-left: 0;
+            margin-right: 0;
+            overflow-y: 0;
+            overflow-x: hidden;
+
+            z-index: 0;
+
+            max-height: fit-content;
+            border-radius: 3px;
+            border: 0px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin: 0px;
+            padding: 0;
+        }
+        .notification {
+            width: 100%;
+            display: flex;
+            justify-content: start;
+            align-items: start;
+            text-align: left;
+            font-size: medium;
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            border: 0px;
+            border-bottom: 1px solid var(--secondary-color);
+            background-color: var(--tertiary-color);
+            cursor: pointer;
+        }
+    }
 </style>
