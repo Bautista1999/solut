@@ -111,30 +111,29 @@
         background-color: var(--tertiary-color);
         border: 1px solid var(--seventh-color);
     }
-    .interests-container {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        width: 100%; /* Adjust based on parent container */
-        gap: 20px;
-    }
-    .interest-input {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        width: 90%; /* Ensure it matches input width */
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 50%;
+    @media (max-width: 480px) {
+        .body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
+        }
 
-        padding: 0.5rem 1rem;
-        border: 2px solid var(--seventh-color);
-        align-self: center;
-        font-family: "Barlow";
-    }
-    .interest-input {
-        border: 1px solid var(--seventh-color);
-        background: var(black, #fff);
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            justify-content: left;
+
+            width: fit-content;
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            padding-top: 0px;
+            padding-inline: 40px;
+            background-color: var(--tertiary-color);
+            border: 1px solid var(--seventh-color);
+        }
     }
 </style>
