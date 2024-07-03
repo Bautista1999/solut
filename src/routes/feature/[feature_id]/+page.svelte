@@ -24,7 +24,7 @@
     import Loading from "$lib/components/loading.svelte";
     import Success from "$lib/components/success.svelte";
     import { goto } from "$app/navigation";
-    import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsoluteSmall.svelte";
+    import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsolut.svelte";
     import {
         CheckIfFeatureIsImplemented,
         SolutionLink,
@@ -243,7 +243,7 @@
                 justify-content: center; 
                 align-items: center; 
                 flex-direction: row; 
-                gap:10px;
+                gap:25px;
                 justify-content:space-between;"
                     >
                         <div class="ShareButton"><ShareButton /></div>
@@ -257,6 +257,31 @@
                                 />
                             {/await}
                         </div>
+                    </div>
+                    <div></div>
+                </div>
+                <div class="PledgeSectionMobile">
+                    <div class="">
+                        <BasicButton
+                            msg={"Pledge"}
+                            someFunction={async () => {
+                                if (await CheckIfSignedIn()) {
+                                    pledgeModalOpen();
+                                } else {
+                                    path.set("/feature/" + key);
+                                    goto("/signin/");
+                                }
+                            }}
+                        />
+                    </div>
+                    <div class="">
+                        <p style="margin:0px; font-size:small;">
+                            Fully refundable until second confirmation. <a
+                                href="https://forum.solutio.one/-205/terms-and-conditions"
+                                style="color:blue; text-decoration:underline;"
+                                >Read more.</a
+                            >
+                        </p>
                     </div>
                 </div>
 
@@ -364,26 +389,6 @@
         min-height: 100vh;
         z-index: 0;
     }
-    .content {
-        width: 80%;
-        max-width: 800px;
-        text-align: left; /* aligns the text to the left */
-        margin: 20px auto 0 auto; /* top margin creates space from the top */
-    }
-
-    .material-symbols-outlined {
-        font-variation-settings:
-            "FILL" 0,
-            "wght" 300,
-            "GRAD" 0,
-            "opsz" NaN;
-        color: white;
-    }
-    .Pictures img {
-        width: 100%; /* make the image stretch to cover the container */
-        height: auto; /* automatic height to maintain aspect ratio */
-        display: block; /* prevent extra space below the image */
-    }
 
     .container {
         display: grid;
@@ -400,7 +405,7 @@
             "FundingSection FundingSection FundingSection"
             "PledgingSection PledgingSection PledgingSection"
             "Solution-section Solution-section Solution-section"
-            "FeaturesSection FeaturesSection FeaturesSection"
+            "PledgeSectionMobile PledgeSectionMobile PledgeSectionMobile"
             "ActivitySection ActivitySection ActivitySection";
     }
 
@@ -499,22 +504,11 @@
         grid-area: PledgeInfo;
         text-align: center;
     }
-
-    .FollowersSection {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr;
-        gap: 0px 0px;
-        grid-auto-flow: row;
-        grid-area: FollowersSection;
-    }
-
-    .Heart {
-        grid-area: 1 / 1 / 2 / 2;
-    }
-
-    .Followers {
-        grid-area: 1 / 2 / 2 / 3;
+    .PledgeSectionMobile {
+        grid-area: PledgeSectionMobile;
+        visibility: hidden;
+        width: 0px;
+        height: 0px;
     }
 
     .HeartFollow {
@@ -540,75 +534,6 @@
         align-items: center;
         flex-direction: column;
         width: fit-content;
-    }
-
-    .PledgersAmount {
-        grid-area: PledgersAmount;
-    }
-
-    .PledgersPictures {
-        grid-area: PledgersPictures;
-    }
-
-    .Solution-section {
-        display: grid;
-        grid-template-columns: 0fr 1fr 0fr;
-        grid-template-rows: 1fr;
-        gap: 0px 0px;
-        grid-auto-flow: row;
-        grid-template-areas: ". SolutionButton .";
-        grid-area: Solution-section;
-    }
-
-    .SolutionButton {
-        grid-area: SolutionButton;
-    }
-
-    .FeaturesSection {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        grid-template-rows: 0fr 2.2fr 0.2fr;
-        gap: 0px 0px;
-        grid-auto-flow: row;
-        grid-template-areas:
-            "FeaturesTitle FeaturesTitle FeaturesTitle"
-            "Features Features Features"
-            "FeaturesScrollerSection FeaturesScrollerSection FeaturesScrollerSection";
-        grid-area: FeaturesSection;
-    }
-
-    .FeaturesTitle {
-        grid-area: FeaturesTitle;
-    }
-
-    .Features {
-        display: grid;
-        grid-template-columns: 0fr;
-        grid-template-rows: 0fr;
-        gap: 10px 0px;
-        grid-auto-flow: row;
-        grid-template-areas:
-            ". . ."
-            ". . ."
-            ". . .";
-        grid-area: Features;
-    }
-
-    .FeaturesScrollerSection {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        grid-template-rows: 0fr 0.1fr 0fr;
-        gap: 0px 0px;
-        grid-auto-flow: row;
-        grid-template-areas:
-            ". FeaturesScroller ."
-            ". FeaturesScroller ."
-            ". FeaturesScroller .";
-        grid-area: FeaturesScrollerSection;
-    }
-
-    .FeaturesScroller {
-        grid-area: FeaturesScroller;
     }
 
     .ActivitySection {
@@ -643,8 +568,7 @@
 
     .ActivityContent {
         grid-area: ActivityContent;
-
-        min-height: 300px;
+        height: fit-content;
         width: 100%;
     }
     .Add_Solution_Idea_Section {
@@ -654,5 +578,87 @@
         flex-direction: row;
         margin-bottom: 2%;
         width: 100%;
+    }
+    @media (max-width: 838px) {
+        .Title {
+            grid-area: Title;
+            margin-left: 25px;
+        }
+        .Profile {
+            margin-left: 15px;
+        }
+        .PledgingSection {
+            display: grid;
+            grid-template-columns: auto auto auto;
+            grid-template-rows: auto auto;
+            gap: 0px 15px;
+            grid-auto-flow: row;
+
+            grid-template-areas:
+                "FollowersSection ShareButton PledgersSection"
+                " PledgeInfo PledgersSection";
+            grid-area: PledgingSection;
+            justify-content: center;
+            align-items: center;
+        }
+        .PledgeSectionMobile {
+            visibility: visible;
+            height: fit-content;
+            width: fit-content;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .FundingSection {
+            display: grid;
+            grid-template-columns: 0fr 1fr 0fr;
+            grid-template-rows: 0fr 0fr;
+            gap: 10px 0px;
+            grid-auto-flow: row;
+            grid-template-areas:
+                ". Funding-bar ."
+                ". Funding-info .";
+            grid-area: FundingSection;
+            height: 80px;
+            padding-inline: 10px;
+        }
+        .PledgingSection {
+            display: grid;
+            grid-template-columns: auto auto auto;
+            grid-template-rows: auto auto auto;
+            gap: 0px 15px;
+            grid-auto-flow: row;
+
+            grid-template-areas:
+                "FollowersSection ShareButton PledgersSection"
+                "PledgeInfo PledgersSection"
+                "PledgeInfo";
+            grid-area: PledgingSection;
+            justify-content: center;
+            align-items: center;
+        }
+        .PledgeButton {
+            visibility: hidden;
+            height: 0px;
+            width: 0px;
+        }
+        .PledgeInfo {
+            visibility: hidden;
+            height: 0px;
+            width: 0px;
+        }
+        .Title {
+            grid-area: Title;
+            margin-left: 25px;
+        }
+        .Profile {
+            margin-left: 15px;
+        }
     }
 </style>

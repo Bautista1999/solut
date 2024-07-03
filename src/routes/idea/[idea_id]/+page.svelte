@@ -24,7 +24,7 @@
         getTotalPledges,
         getTransactionsAndPledges,
     } from "$lib/financial_functions/financial_functions";
-    import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsoluteSmall.svelte";
+    import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsolut.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import {
         SolutionLink,
@@ -189,7 +189,7 @@
                 justify-content: center; 
                 align-items: center; 
                 flex-direction: row; 
-                gap:10px;
+                gap:25px;
                 justify-content:space-between;"
                     >
                         <div class="ShareButton"><ShareButton /></div>
@@ -304,33 +304,9 @@
 
 <style>
     .body {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start; /* aligns items at the top */
         width: 100%;
-
         min-height: 100vh;
         z-index: 0;
-    }
-    .content {
-        width: 80%;
-        max-width: 800px;
-        text-align: left; /* aligns the text to the left */
-        margin: 20px auto 0 auto; /* top margin creates space from the top */
-    }
-
-    .material-symbols-outlined {
-        font-variation-settings:
-            "FILL" 0,
-            "wght" 300,
-            "GRAD" 0,
-            "opsz" NaN;
-        color: white;
-    }
-    .Pictures img {
-        width: 100%; /* make the image stretch to cover the container */
-        height: auto; /* automatic height to maintain aspect ratio */
-        display: block; /* prevent extra space below the image */
     }
 
     .container {
@@ -382,24 +358,6 @@
         gap: 30px;
     }
 
-    .Pictures-scroller {
-        display: grid;
-        grid-template-columns: 1fr 0.9fr 1.1fr;
-        grid-template-rows: 3.6fr 2.7fr 3.6fr;
-        gap: 10px 0px;
-        grid-auto-flow: row;
-        grid-template-areas:
-            ". Scroller ."
-            ". Scroller ."
-            ". . .";
-        grid-area: Pictures-scroller;
-        border: 3px solid green;
-    }
-
-    .Scroller {
-        grid-area: Scroller;
-    }
-
     .FundingSection {
         display: grid;
         grid-template-columns: 0fr 1fr 0fr;
@@ -448,27 +406,6 @@
         text-align: center;
     }
 
-    .FollowersSection {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr;
-        gap: 0px 0px;
-        grid-auto-flow: row;
-        grid-area: FollowersSection;
-    }
-
-    .Heart {
-        grid-area: 1 / 1 / 2 / 2;
-    }
-
-    .Followers {
-        grid-area: 1 / 2 / 2 / 3;
-    }
-
-    .HeartFollow {
-        grid-area: 1 / 1 / 2 / 2;
-    }
-
     .ShareButton {
         grid-area: ShareButton;
     }
@@ -490,28 +427,6 @@
         width: fit-content;
     }
 
-    .PledgersAmount {
-        grid-area: PledgersAmount;
-    }
-
-    .PledgersPictures {
-        grid-area: PledgersPictures;
-    }
-
-    .Solution-section {
-        display: grid;
-        grid-template-columns: 0fr 1fr 0fr;
-        grid-template-rows: 1fr;
-        gap: 0px 0px;
-        grid-auto-flow: row;
-        grid-template-areas: ". SolutionButton .";
-        grid-area: Solution-section;
-    }
-
-    .SolutionButton {
-        grid-area: SolutionButton;
-    }
-
     .FeaturesSection {
         display: grid;
         grid-template-columns: 3fr 0fr 0fr;
@@ -529,19 +444,6 @@
         grid-area: FeaturesTitle;
     }
 
-    .Features {
-        display: grid;
-        grid-template-columns: 0fr;
-        grid-template-rows: 0fr;
-        gap: 10px 0px;
-        grid-auto-flow: row;
-        grid-template-areas:
-            ". . ."
-            ". . ."
-            ". . .";
-        grid-area: Features;
-    }
-
     .FeaturesScrollerSection {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
@@ -553,10 +455,6 @@
             ". FeaturesScroller ."
             ". FeaturesScroller .";
         grid-area: FeaturesScrollerSection;
-    }
-
-    .FeaturesScroller {
-        grid-area: FeaturesScroller;
     }
 
     .ActivitySection {
@@ -591,7 +489,7 @@
 
     .ActivityContent {
         grid-area: ActivityContent;
-        min-height: 300px;
+        height: fit-content;
         width: 100%;
     }
     .Add_Solution_Idea_Section {
@@ -601,5 +499,66 @@
         flex-direction: row;
         gap: 10%;
         margin: 2%;
+    }
+
+    @media (max-width: 838px) {
+        .Title {
+            grid-area: Title;
+            margin-left: 25px;
+        }
+        .Profile {
+            margin-left: 15px;
+        }
+        .PledgingSection {
+            display: grid;
+            grid-template-columns: auto auto auto;
+            grid-template-rows: auto auto;
+            gap: 0px 15px;
+            grid-auto-flow: row;
+
+            grid-template-areas:
+                "FollowersSection ShareButton PledgersSection"
+                " PledgeInfo PledgersSection";
+            grid-area: PledgingSection;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .FundingSection {
+            display: grid;
+            grid-template-columns: 0fr 1fr 0fr;
+            grid-template-rows: 0fr 0fr;
+            gap: 10px 0px;
+            grid-auto-flow: row;
+            grid-template-areas:
+                ". Funding-bar ."
+                ". Funding-info .";
+            grid-area: FundingSection;
+            height: 80px;
+            padding-inline: 10px;
+        }
+        .PledgingSection {
+            display: grid;
+            grid-template-columns: auto auto auto;
+            grid-template-rows: auto auto;
+            gap: 0px 15px;
+            grid-auto-flow: row;
+
+            grid-template-areas:
+                "FollowersSection ShareButton PledgersSection"
+                " PledgeInfo PledgersSection";
+            grid-area: PledgingSection;
+            justify-content: center;
+            align-items: center;
+        }
+        .Title {
+            grid-area: Title;
+            margin-left: 25px;
+        }
+        .Profile {
+            margin-left: 15px;
+        }
     }
 </style>
