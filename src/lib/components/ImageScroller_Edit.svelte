@@ -50,6 +50,7 @@
         <ImageUrl src={images[currentImageIndex]} />
     {:else}
         <div
+            class="no-images-message"
             style="display: flex; justify-content:center ;align-items:center; margin:auto;height:100%; background-color:black;color:var(--tertiary-color)"
         >
             You havent included any image. Include some images in the text
@@ -184,5 +185,19 @@
         color: var(--red-wine);
         box-shadow: 4px 4px 0px 0px var(--red-wine);
         border: 1px solid var(--red-wine);
+    }
+    .no-images-message {
+        padding-inline: 10px;
+    }
+    @media (max-width: 480px) {
+        #image-scroller {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 75%; /* Set width to 80% of the parent container */
+            aspect-ratio: 1200 / 628; /* Maintain the aspect ratio */
+            position: relative; /* Establish a positioning context for absolutely positioned children */
+            overflow: hidden; /* Hide any overflowing content */
+            background-position: 10%;
+        }
     }
 </style>
