@@ -14,4 +14,15 @@
         margin-bottom: 10px;
         font-size: larger;
     }
+    @media (max-width: 480px) {
+        .descriptionSection {
+            border: 1px solid var(--secondary-color);
+            text-align: center;
+            height: fit-content;
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            font-size: medium;
+        }
+    }
 </style>
