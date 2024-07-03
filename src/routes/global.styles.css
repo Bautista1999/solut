@@ -125,7 +125,7 @@ h4 {
 body {
     background: linear-gradient(90deg, var(--forth-color) 50%, var(--forth-color) 100%);
     min-height: 100vh;
-    margin: 0;
+    width: 100%;
 
 }
 
@@ -326,4 +326,115 @@ a:hover {
 .hover-container:hover .hover-message {
     visibility: visible;
     opacity: 1;
+}
+
+.content {
+    /* display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; */
+    width: 90%;
+    max-width: 800px;
+    text-align: left;
+    margin: 20px auto 0 auto;
+    padding: 0 15px;
+    padding-bottom: 0 15px;
+    /* padding: 0 20px; */
+}
+
+.notification-bell-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    background-color: var(--primary-color);
+    color: var(--tertiary-color);
+    /* border: 1px solid var(--tertiary-color); */
+    border-radius: 400px;
+    visibility: visible;
+    transform: translateX(8px) translateY(-10px);
+    z-index: 200;
+    height: 20px;
+    min-width: 20px;
+    padding: 2px;
+}
+
+body {
+    margin: 0px;
+
+
+}
+
+
+@media (max-width: 830px) {
+    .content {
+        width: 90%;
+        /* Use full width for very small screens */
+        padding: 0 15px;
+        padding-bottom: 0 15px;
+        /* Reduce padding */
+    }
+
+    /* Reset CSS */
+    body {
+        margin: 0px;
+
+    }
+
+    #image-scroller {
+        min-width: 100%;
+        /* Set width to 80% of the parent container */
+        aspect-ratio: 1200 / 628;
+        /* Maintain the aspect ratio */
+        position: relative;
+        /* Establish a positioning context for absolutely positioned children */
+        overflow: hidden;
+        /* Hide any overflowing content */
+        background-position: 10%;
+
+    }
+}
+
+@media (max-width: 480px) {
+    .content {
+        width: 100%;
+        /* Use full width for very small screens */
+        padding: 0 0px;
+        /* Reduce padding */
+    }
+
+    /* Reset CSS */
+    body {
+        margin: 0;
+    }
+
+    #image-scroller {
+        min-width: 100%;
+        /* Set width to 80% of the parent container */
+        aspect-ratio: 1200 / 628;
+        /* Maintain the aspect ratio */
+        position: relative;
+        /* Establish a positioning context for absolutely positioned children */
+        overflow: hidden;
+        /* Hide any overflowing content */
+        background-position: 10%;
+
+    }
+
+    .notification-bell-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        background-color: var(--primary-color);
+        color: var(--tertiary-color);
+        /* border: 1px solid var(--tertiary-color); */
+        border-radius: 400px;
+        visibility: visible;
+        transform: translateX(10px) translateY(-10px);
+        z-index: 4000;
+        height: 20px;
+        min-width: 20px;
+        padding: 2px;
+    }
 }
