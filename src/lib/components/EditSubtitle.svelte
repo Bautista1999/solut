@@ -38,12 +38,13 @@
     {:else}
         <textarea
             maxlength={maxLength}
-            style="width: 100%;
+            style=" width:96%;
                     height:fit-content;
                     overflow-y: hidden;
             color: var(--secondary-color);
 font-family: 'Barlow';
 font-size:medium;
+
 padding: 5px; 
 line-height: 1.5;  
 ; 
@@ -68,14 +69,16 @@ line-height: 1.5;
             help
         </span>
         {#if show}
-            <TutotialMessagePopUp
-                title={"Subtitle"}
-                message={messageSubtitle +
-                    " The title max characters is 200, for SEO optimization."}
-                {closeTooltip}
-                topPercentage={17}
-                rightPercentage={12}
-            />
+            <div class="message-pop-up">
+                <TutotialMessagePopUp
+                    title={"Subtitle"}
+                    message={messageSubtitle +
+                        " The title max characters is 200, for SEO optimization."}
+                    {closeTooltip}
+                    topPercentage={17}
+                    rightPercentage={12}
+                />
+            </div>
         {/if}
         {#if title.length == maxLength}
             <p class="InputErrorMessage">
@@ -101,5 +104,10 @@ line-height: 1.5;
             "GRAD" 0,
             "opsz" 24;
         color: var(--sky-blue);
+    }
+    @media (max-width: 480px) {
+        .message-pop-up {
+            display: none;
+        }
     }
 </style>
