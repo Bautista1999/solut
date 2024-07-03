@@ -81,4 +81,17 @@
             "GRAD" 0,
             "opsz" 24;
     }
+    @media (max-width: 480px) {
+        .search-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 90%;
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--seventh-color);
+            box-shadow: 4px 4px 0px 0px var(--seventh-color);
+            align-self: center;
+            font-family: "Barlow";
+        }
+    }
 </style>

@@ -52,4 +52,9 @@
         font-size: 1.5rem;
         width: 50%;
     }
+    @media (max-width: 480px) {
+        p {
+            width: 80%;
+        }
+    }
 </style>

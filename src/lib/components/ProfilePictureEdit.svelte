@@ -50,7 +50,35 @@
         open = false;
     }}
 >
-    <div class="VerticallyAligned HorizontallyAligned">
+    <div class="edit-profile-desktop">
+        <div class="VerticallyAligned HorizontallyAligned">
+            <div class="profile-pic-container-modal">
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+                <!-- svelte-ignore a11y-img-redundant-alt -->
+                <img
+                    class="profile-pic"
+                    src={editUrl}
+                    alt="Profile Picture"
+                    on:click={handleProfileClick}
+                />
+            </div>
+            <input type="text" class="InputText" bind:value={editUrl} />
+            <FlatButtonDarkSmall
+                msg={"Save"}
+                someFunction={() => {
+                    onSave();
+                }}
+            />
+            <FlatButtonDarkSmall
+                msg={"Cancel"}
+                someFunction={() => {
+                    cancel();
+                }}
+            />
+        </div>
+    </div>
+    <div class="edit-profile-mobile">
         <div class="profile-pic-container-modal">
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
@@ -62,23 +90,29 @@
                 on:click={handleProfileClick}
             />
         </div>
-        <input type="text" class="InputText" bind:value={editUrl} />
-        <FlatButtonDarkSmall
-            msg={"Save"}
-            someFunction={() => {
-                onSave();
-            }}
-        />
-        <FlatButtonDarkSmall
-            msg={"Cancel"}
-            someFunction={() => {
-                cancel();
-            }}
-        />
+
+        <div class="VerticallyAligned HorizontallyAligned">
+            <input type="text" class="InputText" bind:value={editUrl} />
+            <FlatButtonDarkSmall
+                msg={"Save"}
+                someFunction={() => {
+                    onSave();
+                }}
+            />
+            <FlatButtonDarkSmall
+                msg={"Cancel"}
+                someFunction={() => {
+                    cancel();
+                }}
+            />
+        </div>
     </div>
 </Modal>
 
 <style>
+    .edit-profile-mobile {
+        display: none;
+    }
     .profile-pic-container {
         width: 60px; /* width and height should be the same */
         height: 60px; /* width and height should be the same */
@@ -138,5 +172,16 @@
         align-items: center; /* Centers vertically in the flex container */
         border: 2px solid var(--primary-color);
         margin-top: 20px;
+    }
+    @media (max-width: 480px) {
+        .edit-profile-desktop {
+            display: none;
+        }
+        .edit-profile-mobile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
     }
 </style>

@@ -9,6 +9,7 @@
     import { path } from "$lib/stores/redirect_store";
     import { GetAmountNewNotifications } from "$lib/data_functions/notifications";
     import { notificationCount } from "$lib/stores/notifications";
+    import AppMenuBar from "./AppMenuBar.svelte";
     let isOpen = false;
 
     function toggleSidebar() {
@@ -67,7 +68,9 @@
                     >
                         home
                     </span>
+                    <!-- svelte-ignore a11y-no-static-element-interactions -->
                     {#if isOpen}
+                        <!-- svelte-ignore a11y-click-events-have-key-events -->
                         <span
                             class="label"
                             in:fade={{ duration: seconds * 1000 }}
@@ -309,6 +312,9 @@
         </div>
     {/await}
 </div>
+<div class="AppMenuBar">
+    <AppMenuBar />
+</div>
 
 <style>
     .recentIdeas {
@@ -474,5 +480,24 @@
         justify-content: start;
         align-items: center;
         margin-top: auto;
+    }
+    .AppMenuBar {
+        visibility: hidden;
+        height: 0px;
+        width: 0px;
+        margin: 0px;
+    }
+
+    @media (max-width: 480px) {
+        .SideBarElement,
+        .SideBar {
+            display: none;
+        }
+        .notification-bell-number {
+            display: none;
+        }
+        .AppMenuBar {
+            visibility: visible;
+        }
     }
 </style>

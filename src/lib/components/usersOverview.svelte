@@ -87,7 +87,6 @@
     }
     .image-scroller_card {
         position: absolute;
-        height: 0px; /* Adjust if necessary */
         display: flex;
         /* Removed justify-content: center; to allow starting from the beginning */
         flex-wrap: nowrap; /* Prevent images from wrapping onto multiple lines */
@@ -107,7 +106,6 @@
         height: 45px; /* Height of the images */
         border: 2px solid var(--secondary-color);
         width: 30px;
-        position: absolute;
         height: 30px;
         transition:
             border-color 0.3s ease,
@@ -123,5 +121,22 @@
         width: 100%;
         height: 100%;
         object-fit: cover; /* Ensure images cover the container without distortion */
+    }
+    @media (max-width: 480px) {
+        .image-container {
+            /* Removed position: absolute; to keep images in the flow of the document */
+            margin-right: -25px; /* Adjust space between images */
+            border-radius: 50%; /* Make images round */
+            overflow: hidden; /* Hide overflow to maintain the circular shape */
+            transform: translateY(-5px);
+            width: 30px; /* Width of the images */
+            height: 30px; /* Height of the images */
+            border: 2px solid var(--secondary-color);
+            cursor: pointer;
+            transition:
+                border-color 0.3s ease,
+                width 0.1s ease,
+                height 0.1s ease;
+        }
     }
 </style>

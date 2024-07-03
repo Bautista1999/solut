@@ -259,4 +259,9 @@
     .add-milestone-form button:hover {
         background-color: var(--dark-primary-color);
     }
+    @media (max-width: 480px) {
+        .InputText {
+            width: 20px;
+        }
+    }
 </style>

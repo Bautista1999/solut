@@ -32,9 +32,8 @@
     {/await}
 
     <p style="margin:0px; font-size:small;">
-        {reputationInformation}<span
-            style="text-decoration: underline;cursor:pointer;"
-        >
+        {reputationInformation}
+        <span style="text-decoration: underline;cursor:pointer;">
             Read more</span
         >
     </p>
@@ -54,5 +53,24 @@
     }
     .Reputation {
         font-size: xx-large;
+    }
+    @media (max-width: 800px) {
+        .ReputationSection {
+            display: flex;
+
+            justify-content: center;
+            align-items: start;
+            flex-direction: column;
+            text-align: left;
+            gap: 15px;
+            margin: 0;
+            padding: 10px;
+            padding-left: 0px;
+        }
+        .Reputation {
+            font-size: xx-large;
+            align-items: center;
+            text-align: center;
+        }
     }
 </style>

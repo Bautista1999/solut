@@ -3,7 +3,7 @@
     import { listDocs } from "@junobuild/core-peer";
     import AddFeaturesSection from "./AddFeaturesSection.svelte";
     import MagicalDots from "./magicalDots.svelte";
-    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsolut.svelte";
 
     let searchText = ""; // To hold the search input text
     /**
@@ -258,5 +258,17 @@
         padding: 5px 10px;
         border-radius: 4px;
         font-weight: bold;
+    }
+    @media (max-width: 480px) {
+        .search-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 90%;
+            background: linear-gradient(to right, var(--tertiary-color));
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--seventh-color);
+            font-family: "Barlow";
+        }
     }
 </style>

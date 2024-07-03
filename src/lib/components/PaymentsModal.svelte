@@ -35,7 +35,7 @@
         updateRevenueCounter,
     } from "$lib/financial_functions/financial_functions";
     import ErrorModalNew from "./ErrorModalNew.svelte";
-    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsoluteSmall.svelte";
+    import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsolut.svelte";
     export let solution_id = "";
     export let idea_id = "";
     let ownerAmount = 0;
