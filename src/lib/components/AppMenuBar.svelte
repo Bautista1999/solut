@@ -71,7 +71,7 @@
                 class:active={active === item.name}
                 class="menu-item"
                 on:click={() => {
-                    active = item.name;
+                    // active = item.name;
                     goto(item.path + "" + $UserKey);
                 }}
             >
@@ -89,7 +89,7 @@
                 class:active={active === item.name}
                 class="menu-item"
                 on:click={() => {
-                    active = item.name;
+                    // active = item.name;
                     goto(item.path + "" + $UserKey);
                 }}
             >
@@ -102,7 +102,7 @@
                 class:active={active === item.name}
                 class="menu-item"
                 on:click={() => {
-                    active = item.name;
+                    // active = item.name;
                     goto(item.path);
                 }}
             >
