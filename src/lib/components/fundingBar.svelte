@@ -62,7 +62,7 @@
             Expected: {exp} ICP
         </div>
         {#if window.innerWidth < 500}
-            <div class="progreso2"></div>
+            <div class="progreso2">Total: {tot} ICP</div>
         {:else}
             <div class="progreso2">
                 Total: {tot} ICP
