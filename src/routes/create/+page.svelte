@@ -117,9 +117,35 @@
      */
     let videos = [];
     let ideaKey = "";
+
+    $: noDescription = false;
+    $: noTitle = false;
+    $: noSubtitle = false;
     async function onPost() {
         document.body.scrollIntoView({ behavior: "smooth" });
         isLoading = true;
+        // Check if the fields are empty and set the flags accordingly
+        if (title == "") {
+            noTitle = true;
+        } else {
+            noTitle = false;
+        }
+        if (subtitle == "") {
+            noSubtitle = true;
+        } else {
+            noSubtitle = false;
+        }
+        if (desc == "") {
+            noDescription = true;
+        } else {
+            noDescription = false;
+        }
+
+        // If any field is empty, return early
+        if (noTitle || noSubtitle || noDescription) {
+            isLoading = false;
+            return;
+        }
 
         let ideaPost = {
             title: title,
@@ -178,10 +204,10 @@
     let errorMsg = "";
 
     onMount(async () => {
-        if (!(await CheckIfSignedIn())) {
-            path.set("/create");
-            goto("/signin/");
-        }
+        // if (!(await CheckIfSignedIn())) {
+        //     path.set("/create");
+        //     goto("/signin/");
+        // }
         user = await getUserKey();
     });
 </script>
@@ -194,6 +220,7 @@
                     <EditSubtitle
                         bind:title={subtitle}
                         active={subtitleActive}
+                        bind:noSubtitle
                     />
                     <div style="height: 10px;"></div>
                 </div>
@@ -207,7 +234,7 @@
                 <div class="Title">
                     <br />
                     <br />
-                    <EditTitle {active} bind:title />
+                    <EditTitle {active} bind:title bind:noTitle />
                     <div style="height: 80px;"></div>
                 </div>
 
@@ -247,7 +274,7 @@
 
                 <div class="ActivitySection">
                     <div class="ActivityTabs">
-                        <h3>About the project</h3>
+                        <h3>About the topic</h3>
                     </div>
 
                     <div class="ActivityContent">
@@ -256,7 +283,10 @@
                         {:else if activeTab === tabs[1]}
                             <!-- <CommentSection project_id={key} /> -->
                         {:else if activeTab === tabs[2]}
-                            <DescriptionEdit bind:description={desc} />
+                            <DescriptionEdit
+                                bind:description={desc}
+                                bind:noDescription
+                            />
                         {/if}
                     </div>
                 </div>
@@ -305,7 +335,7 @@
                     </div>
                 {/each}
             </div>
-            <h3>You have some ideas for this challenge? Include them here!</h3>
+            <h3>You have some ideas for this topic? Include them here!</h3>
             <AddFeaturesSection bind:ideas />
             <br />
             <div

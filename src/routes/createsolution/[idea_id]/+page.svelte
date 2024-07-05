@@ -140,11 +140,35 @@
     }
     let isLoading = false;
     let success = false;
-
+    loadingMsg = "Uploading data...";
+    $: noDescription = false;
+    $: noTitle = false;
+    $: noSubtitle = false;
     async function onPost() {
-        loadingMsg = "Uploading data...";
         document.body.scrollIntoView({ behavior: "smooth" });
         isLoading = true;
+        // Check if the fields are empty and set the flags accordingly
+        if (title == "") {
+            noTitle = true;
+        } else {
+            noTitle = false;
+        }
+        if (subtitle == "") {
+            noSubtitle = true;
+        } else {
+            noSubtitle = false;
+        }
+        if (desc == "") {
+            noDescription = true;
+        } else {
+            noDescription = false;
+        }
+
+        // If any field is empty, return early
+        if (noTitle || noSubtitle || noDescription) {
+            isLoading = false;
+            return;
+        }
 
         let solutionPost = {
             title: title,
@@ -227,6 +251,7 @@
                     <EditSubtitle
                         bind:title={subtitle}
                         active={subtitleActive}
+                        bind:noSubtitle
                     />
                     <div style="height: 10px;"></div>
                 </div>
@@ -242,7 +267,7 @@
                 <div class="Title">
                     <br />
                     <br />
-                    <EditTitle {active} bind:title />
+                    <EditTitle {active} bind:title bind:noTitle />
                     <div style="height: 80px;"></div>
                 </div>
 
@@ -295,7 +320,10 @@
                         {:else if activeTab === tabs[1]}
                             <!-- <CommentSection project_id={key} /> -->
                         {:else if activeTab === tabs[2]}
-                            <DescriptionEdit bind:description={desc} />
+                            <DescriptionEdit
+                                bind:description={desc}
+                                bind:noDescription
+                            />
                         {/if}
                     </div>
                 </div>
@@ -344,7 +372,7 @@
                     </div>
                 {/each}
             </div>
-            <h3>Which ideas/ features are you going to be solving ?</h3>
+            <h3>Which ideas are you going to be solving ?</h3>
             <SearchBarLarger
                 bind:ideas
                 {parentIdeaKey}

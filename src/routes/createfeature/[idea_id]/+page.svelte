@@ -121,11 +121,34 @@
     let errorMsg = "";
     let ideaKey = "";
     let loadingMsg = "Uploading data...";
+    $: noDescription = false;
+    $: noTitle = false;
+    $: noSubtitle = false;
     async function onPost() {
-        loadingMsg = "Uploading data...";
         document.body.scrollIntoView({ behavior: "smooth" });
         isLoading = true;
+        // Check if the fields are empty and set the flags accordingly
+        if (title == "") {
+            noTitle = true;
+        } else {
+            noTitle = false;
+        }
+        if (subtitle == "") {
+            noSubtitle = true;
+        } else {
+            noSubtitle = false;
+        }
+        if (desc == "") {
+            noDescription = true;
+        } else {
+            noDescription = false;
+        }
 
+        // If any field is empty, return early
+        if (noTitle || noSubtitle || noDescription) {
+            isLoading = false;
+            return;
+        }
         let ideaPost = {
             title: title,
             subtitle: subtitle,
@@ -196,6 +219,7 @@
                         bind:title={subtitle}
                         active={subtitleActive}
                         messageSubtitle={"Here type the subtitle of the feature."}
+                        bind:noSubtitle
                     />
                     <div style="height: 10px;"></div>
                 </div>
@@ -210,7 +234,7 @@
                 <div class="Title">
                     <br />
                     <br />
-                    <EditTitle {active} bind:title />
+                    <EditTitle {active} bind:title bind:noTitle />
                     <div style="height: 80px;"></div>
                 </div>
 
@@ -254,7 +278,7 @@
 
                 <div class="ActivitySection">
                     <div class="ActivityTabs">
-                        <h3>Describe the feature here</h3>
+                        <h3>Describe the idea here</h3>
                     </div>
 
                     <div class="ActivityContent">
@@ -267,6 +291,7 @@
                                 descriptionMessage={"Describe the feature or idea you are thinking."}
                                 popUpTitle={"Description of the feature"}
                                 bind:description={desc}
+                                bind:noDescription
                             />
                         {/if}
                     </div>

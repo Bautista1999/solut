@@ -4,6 +4,7 @@
     export let active = false;
     export let title = "";
     export let clickToEdit = "(click to edit)";
+    export let noTitle = false;
 
     export let show = false;
     export let messageTitle = "Here type the title of the challenge.";
@@ -17,21 +18,24 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
     class={active ? "" : "EditTextOption"}
+    style="width:100%;background-color: {noTitle ? 'var(--fifth-color)' : ''}"
     on:click={() => {
         active = true;
     }}
-    style="width:100%;"
 >
     {#if !active}
         {#if title == ""}
             <h1
-                style="font-style: italic;"
+                style="font-style: italic; margin:0px"
                 on:click={(event) => {
                     show = true;
                 }}
             >
                 Click here to edit the title...
             </h1>
+            {#if noTitle}
+                <p class="InputErrorMessage">ERROR: Title required.</p>
+            {/if}
         {:else}
             <h1>
                 {title}

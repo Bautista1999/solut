@@ -4,6 +4,7 @@
     import TutotialMessagePopUp from "./TutotialMessagePopUp.svelte";
 
     export let active = false;
+    export let noDescription = false;
     export let description = "";
     export let clickToEdit = "(click to edit)";
     export let descriptionMessage =
@@ -27,7 +28,10 @@
     }
 </script>
 
-<div class="descriptionSection">
+<div
+    class="descriptionSection"
+    style="background-color: {noDescription ? 'var(--fifth-color)' : ''}"
+>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
@@ -40,13 +44,20 @@
             {#if description == ""}
                 <p>
                     <span
-                        style="font-style: italic;"
+                        style="font-style: italic; background-color: ${noDescription
+                            ? 'red'
+                            : 'orange'}"
                         on:click={(event) => {
                             adjustHeight(event);
                             show = true;
                         }}>Click here to edit the description...</span
                     >
                 </p>
+                {#if noDescription}
+                    <p class="InputErrorMessage">
+                        ERROR: Description required.
+                    </p>
+                {/if}
             {:else}
                 <p style="white-space: pre-wrap;">
                     {description}

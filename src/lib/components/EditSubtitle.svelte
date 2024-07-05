@@ -4,6 +4,7 @@
     export let active = false;
     export let title = "";
     export let clickToEdit = "(click to edit)";
+    export let noSubtitle = false;
     let maxLength = 200;
     export let show = false;
     export let messageSubtitle = "Here type the subtitle of the challenge.";
@@ -17,6 +18,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
     class={active ? "" : "EditTextOption"}
+    style="background-color: {noSubtitle ? 'var(--fifth-color)' : ''}"
     on:click={() => {
         active = true;
     }}
@@ -29,6 +31,10 @@
                     show = !show;
                 }}>Click here to edit the subtitle...</span
             >
+            <br />
+            {#if noSubtitle}
+                <p class="InputErrorMessage">ERROR: Subtitle required.</p>
+            {/if}
         {:else}
             {title}
             <span style="font-size:small; font-weight:300; font-style:italic;"
