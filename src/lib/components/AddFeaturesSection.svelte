@@ -160,7 +160,7 @@
     }
 </script>
 
-<div class="SmallSeparator">
+<div class="SmallSeparator forms-box">
     <input
         type="text"
         bind:value={newIdeaTitle}
@@ -207,7 +207,7 @@
             {/each}
         </div>
     {/if}
-    <BasicButtonDarkSmall msg="Add idea" someFunction={addIdea} />
+    <BasicButtonDarkSmall msg="Save" someFunction={addIdea} />
 </div>
 
 <br />
@@ -327,6 +327,13 @@
 <br />
 
 <style>
+    .forms-box {
+        border: 1px solid var(--seventh-color);
+        background-color: var(--forth-color);
+        box-shadow: 6px 6px 0px 0px var(--seventh-color);
+        padding: 20px;
+    }
+
     .IdeasDisplay {
         border: 1px solid var(--seventh-color);
         padding: 10px;
