@@ -484,7 +484,8 @@ function extractSubstring(input) {
  * @return {Promise<Array<{key:string,data:import("$lib/data_objects/data_types").IndexDataReturn}>>}
  */
 export async function getIdeasByKeyWords(keywords,pages){
-    let regexInput = createOrRegexInput(keywords);
+    let variationOfKeyWords = createVariationsOfKeywords(keywords);
+    let regexInput = createOrRegexInput(variationOfKeyWords);
     let searchedIdeas = (await listDocs({
         collection:"index_search",
         filter:{
@@ -509,6 +510,21 @@ export async function getIdeasByKeyWords(keywords,pages){
          */
         let returnedIdeas = [];
         for(let i=0; i<searchedIdeas.length;i++){
+                                // @ts-ignore
+
+            let documentType =  extractType(searchedIdeas[i].description);
+            // @ts-ignore
+            let createdTimestamp = Number(searchedIdeas[i].created_at/1000000n);
+            let july8thDate = new Date("2024-07-08").getTime();
+            if (
+                createdTimestamp < july8thDate
+            ){
+                if(documentType == "idea"){
+                    documentType = "topic";
+                }else if(documentType == "feature"){
+                    documentType = "idea";
+                }
+            }
             /**
              * @type {{key:string,data:import("$lib/data_objects/data_types").IndexDataReturn}}
              */
@@ -520,7 +536,7 @@ export async function getIdeasByKeyWords(keywords,pages){
                     images:searchedIdeas[i].data.images,
                     videos:searchedIdeas[i].data.videos,
                     // @ts-ignore
-                    type: extractType(searchedIdeas[i].description),
+                    type:documentType,
                     // @ts-ignore
                     owner: searchedIdeas[i].owner, 
                 }
@@ -551,8 +567,33 @@ export function createOrRegexInput(keywords){
     return regexInput;
     
 }
-
-
+/**
+ * @param {Array<string>} keywords
+ * @return {Array<string>} keywordsReturned
+ */
+export function createVariationsOfKeywords(keywords){
+    /**
+     * @type {Array<string>} keywords
+     **/
+    let newKeyWords = [];
+    for(let i  = 0; i<keywords.length;i++){
+        
+        let word = keywords[i];
+        console.log(word);
+        newKeyWords.push(keywords[i])
+        newKeyWords = newKeyWords;
+        let wordVariation1 = keywords[i].toUpperCase();
+        let wordVariation2 = keywords[i].toLowerCase();
+        let wordVariation3 = word.charAt(0).toUpperCase() + word.slice(1);
+        newKeyWords.push(wordVariation1)
+        newKeyWords = newKeyWords;
+        newKeyWords.push(wordVariation2)
+        newKeyWords = newKeyWords;
+        newKeyWords.push(wordVariation3)
+        newKeyWords = newKeyWords;
+    };
+    return newKeyWords;
+}
 /**
  * @param {string} url
  */
@@ -682,6 +723,15 @@ export async function getUserNotifications(){
 
 }
 /**
+ * @param {string} url
+ * @param {string} documentTolookFor
+ */
+export function extractDocumentIdFromURL(url,documentTolookFor) {
+    const startIndex = url.indexOf(`/${documentTolookFor}/`) + `/${documentTolookFor}/`.length;
+    return url.substring(startIndex);
+}
+
+/**
  * @return {Promise<Array<string>>}
  * @param {string} userKey
  */
@@ -803,7 +853,7 @@ export async function getManyFeaturesOwner(features){
         docs:docs
     });
     if(featuresDocs.length==0){
-        throw new Error("No feature was found")
+        throw new Error("No idea was found")
     }else{
         /**
          * @type {Array<{key:string,owner:string}>}
