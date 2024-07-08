@@ -4,6 +4,10 @@
     import AddFeaturesSection from "./AddFeaturesSection.svelte";
     import MagicalDots from "./magicalDots.svelte";
     import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsolut.svelte";
+    import {
+        createOrRegexInput,
+        createVariationsOfKeywords,
+    } from "$lib/data_functions/get_functions";
 
     let searchText = ""; // To hold the search input text
     export let noIdeas = false;
@@ -33,13 +37,15 @@
             return;
         }
         const regex = `(?=.*${query})(?=.*${parentIdeaKey})`;
+        let variatedQuery = createVariationsOfKeywords([query]);
+        let regexInput = createOrRegexInput(variatedQuery);
         try {
             isLoading = true;
             let counterDoc = await listDocs({
                 collection: "index_search",
                 filter: {
                     matcher: {
-                        description: query /*+ "|" + parentIdeaKey*/,
+                        description: regexInput /*+ "|" + parentIdeaKey*/,
                     },
                 },
             });
@@ -166,7 +172,7 @@
                 <p>{result.data.title}</p>
                 <p>{result.data.subtitle}</p>
             </div>
-            <div class="badge">Feature</div>
+            <div class="badge">Idea</div>
         </div>
     {/each}
     {#if noIdeas}
