@@ -208,7 +208,7 @@
                                     },
                                     {
                                         title: data,
-                                        link: "/idea/" + idea_id,
+                                        link: "/topic/" + idea_id,
                                     },
                                     {
                                         title: title,
@@ -300,7 +300,7 @@
                 </div>
                 <div class="FeaturesSection">
                     <div class="FeaturesTitle">
-                        <h3>Implemented ideas by this solution</h3>
+                        <h3>Implemented ideas on this solution</h3>
                     </div>
                     <div>
                         <IdeaCardContainer

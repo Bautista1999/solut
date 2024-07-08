@@ -43,6 +43,7 @@
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { path } from "$lib/stores/redirect_store";
+    import Error from "../../+error.svelte";
 
     /** @type {import('./$types').PageData} */
     // @ts-ignore
@@ -70,7 +71,7 @@
      * @type {never[]}
      */
     export let transactions = [];
-    let tabs = ["Pledge Timeline", "Comments", "About the feature"];
+    let tabs = ["Pledge Timeline", "Comments", "About the idea"];
     let activeTab = tabs[2]; // default active tab
     // Function to change active tab
     /**
@@ -85,14 +86,13 @@
 
     onMount(async () => {
         isLoading = true;
-        // await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
         let doc = await getDoc({
             collection: "feature",
             key: key,
         });
         if (doc == undefined) {
-            isLoading = false;
             ideaNonExistent = true;
+            isLoading = false;
         } else {
             images = doc.data.images;
             images = images;
@@ -114,7 +114,7 @@
 
 <div class="body">
     <div class="content">
-        {#if !isLoading}
+        {#if !isLoading && !ideaNonExistent}
             <div class="container">
                 <div class="Subtitle">{subtitle}</div>
                 <div class="Title" style="color: var(--secondary-color);">
@@ -155,7 +155,7 @@
                                     },
                                     {
                                         title: title,
-                                        link: "/solution/" + key,
+                                        link: "/idea/" + key,
                                     },
                                 ]}
                             />
@@ -168,11 +168,11 @@
                                     },
                                     {
                                         title: data,
-                                        link: "/idea/" + idea_id,
+                                        link: "/topic/" + idea_id,
                                     },
                                     {
                                         title: title,
-                                        link: "/solution/" + key,
+                                        link: "/idea/" + key,
                                     },
                                 ]}
                             />
@@ -214,7 +214,7 @@
                                 if (await CheckIfSignedIn()) {
                                     pledgeModalOpen();
                                 } else {
-                                    path.set("/feature/" + key);
+                                    path.set("/idea/" + key);
                                     goto("/signin/");
                                 }
                             }}
@@ -268,7 +268,7 @@
                                 if (await CheckIfSignedIn()) {
                                     pledgeModalOpen();
                                 } else {
-                                    path.set("/feature/" + key);
+                                    path.set("/idea/" + key);
                                     goto("/signin/");
                                 }
                             }}

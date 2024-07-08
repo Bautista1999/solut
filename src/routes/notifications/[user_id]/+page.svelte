@@ -13,6 +13,7 @@
     import { goto } from "$app/navigation";
     import { path } from "$lib/stores/redirect_store";
     import {
+        extractDocumentIdFromURL,
         getUserKey,
         getUserNotifications,
     } from "$lib/data_functions/get_functions";
@@ -53,14 +54,7 @@
     /**
      * @type {notification[]} userNotifications
      */
-    $: userNotifications = [
-        notification,
-        notification,
-        notification,
-        notification,
-        notification,
-        notification,
-    ];
+    $: userNotifications = [];
 
     onMount(async () => {
         if (!(await CheckIfSignedIn())) {
@@ -90,6 +84,40 @@
                     <button
                         class="notification"
                         on:click={() => {
+                            let date = Number(
+                                (notification.created_at == undefined
+                                    ? 0n
+                                    : notification.created_at) / 1000000n,
+                            );
+                            if (
+                                new Date(date) < new Date("8 July 2024") &&
+                                !notification.data.linkURL.includes("solution")
+                            ) {
+                                // if notification was created before renaming of topics.
+                                if (
+                                    notification.data.linkURL.includes(
+                                        "/feature/",
+                                    )
+                                ) {
+                                    window.location.href =
+                                        "/idea/" +
+                                        extractDocumentIdFromURL(
+                                            notification.data.linkURL,
+                                            "feature",
+                                        );
+                                    return;
+                                } else if (
+                                    notification.data.linkURL.includes("/idea/")
+                                ) {
+                                    window.location.href =
+                                        "/topic/" +
+                                        extractDocumentIdFromURL(
+                                            notification.data.linkURL,
+                                            "idea",
+                                        );
+                                    return;
+                                }
+                            }
                             window.location.href = notification.data.linkURL;
                         }}
                     >

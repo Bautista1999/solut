@@ -122,7 +122,7 @@
                     <Breadcrumbs
                         breadcrumbs={[
                             { title: "Home", link: "/" },
-                            { title: title, link: "/idea/" + key },
+                            { title: title, link: "/topic/" + key },
                         ]}
                     />
                 </div>
@@ -207,7 +207,9 @@
                 </div>
 
                 <div class="FeaturesSection">
-                    <div class="FeaturesTitle"><h3>Feature Requests</h3></div>
+                    <div class="FeaturesTitle">
+                        <h3>Ideas from the community</h3>
+                    </div>
                     <div>
                         <IdeaCardContainer idea_id={key} />
                     </div>
@@ -245,10 +247,10 @@
 
                                 <br />
                                 <BasicButtonDark
-                                    msg={"Add feature-request"}
+                                    msg={"Contribute idea"}
                                     icon={"emoji_objects"}
                                     someFunction={() => {
-                                        goto("/createfeature/" + key);
+                                        goto("/createidea/" + key);
                                     }}
                                 />
                             </div>

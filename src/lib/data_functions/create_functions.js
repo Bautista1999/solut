@@ -79,7 +79,7 @@ export async function setIdea(idea,features){
         collection:"index_search",
         doc:{
             key:"INDEX_"+idea_id,
-            description:joinTags(idea.categories) +" "+"title:"+idea.title+"subtitle:"+idea.subtitle+"type:idea",
+            description:joinTags(idea.categories) +" "+"title:"+idea.title+"subtitle:"+idea.subtitle+"type:topic",
             data:{
                 title:idea.title,
                 subtitle:idea.subtitle,
@@ -174,7 +174,7 @@ export async function setFeatures(features, parentIdea_id){
             collection:"index_search",
             doc:{
                 key:"INDEX_"+idea_id,
-                description:joinTags(idea.categories) +" "+"title:"+idea.title+"subtitle:"+idea.subtitle+"type:feature"+" "+"idea_id:"+parentIdea_id,
+                description:joinTags(idea.categories) +" "+"title:"+idea.title+"subtitle:"+idea.subtitle+"type:idea"+" "+"idea_id:"+parentIdea_id,
                 data:{
                     title:idea.title,
                 subtitle:idea.subtitle,

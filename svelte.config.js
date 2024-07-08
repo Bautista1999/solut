@@ -11,10 +11,10 @@ const config = {
         '*', // Prerender all found static routes
         '/account/[user_key]',
         '/createaccount/[user_id]',
-        '/createfeature/[idea_id]',
+        '/createidea/[idea_id]',
         '/createsolution/[idea_id]',
-        '/feature/[feature_id]',
-        '/idea/[idea_id]',
+        '/idea/[feature_id]',
+        '/topic/[idea_id]',
         '/notifications/[user_id]',
         '/profile/[user_id]',
         '/signin/[inviter_key]',

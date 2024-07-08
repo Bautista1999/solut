@@ -183,13 +183,12 @@
     let parentIdeaKey = "";
     onMount(async () => {
         if (!(await CheckIfSignedIn())) {
-            path.set("/createfeature/" + data.params.idea_id);
+            path.set("/createidea/" + data.params.idea_id);
             goto("/signin/");
         }
-        console.log("Idea ID:", data.params.idea_id);
         user = await getUserKey();
         isLoading = true;
-        loadingMsg = "Checking parent's idea existance...";
+        loadingMsg = "Checking parent's topic existance...";
         let parentDoc = await getDoc({
             collection: "index_search",
             key: "INDEX_" + data.params.idea_id,
@@ -198,7 +197,7 @@
         if (typeof parentDoc == "undefined") {
             error = true;
 
-            errorMsg = "Parent idea non-existent";
+            errorMsg = "Parent topic non-existent";
         } else {
             parentIdeaKey = data.params.idea_id;
             parentIdeaTitle = parentDoc.data.title;
@@ -218,7 +217,7 @@
                     <EditSubtitle
                         bind:title={subtitle}
                         active={subtitleActive}
-                        messageSubtitle={"Here type the subtitle of the feature."}
+                        messageSubtitle={"Here type the subtitle of the idea."}
                         bind:noSubtitle
                     />
                     <div style="height: 10px;"></div>
@@ -244,7 +243,7 @@
                             { title: "Home", link: "" },
                             {
                                 title: parentIdeaTitle,
-                                link: "/idea/" + parentIdeaKey,
+                                link: "/topic/" + parentIdeaKey,
                             },
                             { title: title, link: "" },
                         ]}
@@ -288,8 +287,8 @@
                             <!-- <CommentSection project_id={key} /> -->
                         {:else if activeTab === tabs[2]}
                             <DescriptionEdit
-                                descriptionMessage={"Describe the feature or idea you are thinking."}
-                                popUpTitle={"Description of the feature"}
+                                descriptionMessage={"Describe the idea you are thinking."}
+                                popUpTitle={"Description of the idea"}
                                 bind:description={desc}
                                 bind:noDescription
                             />
@@ -345,7 +344,7 @@
                 style="display: flex; justify-content:center;align-items:center;"
             >
                 <BasicButtonDark
-                    msg={"Post feature"}
+                    msg={"Post idea"}
                     icon={"emoji_objects"}
                     someFunction={() => {
                         onPost();
@@ -357,12 +356,12 @@
         <SuccessNew
             message={"Idea created successfully"}
             someFunction={() => {
-                goto("/feature/" + ideaKey);
+                goto("/idea/" + ideaKey);
             }}
         />
     {:else if error}
         <ErrorMessage
-            message={"The creation of the feature failed."}
+            message={"The creation of the idea failed."}
             error={errorMsg}
             someFunction={() => {
                 error = false;
@@ -376,7 +375,7 @@
 <svelte:head>
     <meta name="twitter:card" content="summary" />
     <meta charset="utf-8" />
-    <title>Request Feature</title>
+    <title>Create idea</title>
 </svelte:head>
 
 <style>

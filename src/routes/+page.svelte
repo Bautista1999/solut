@@ -92,12 +92,12 @@
         <h2 style="margin-bottom: 0em; font-size: 2em;">
             Just had an <span style="color: var(--primary-color);"> idea?</span>
         </h2>
-        <div class="tagContainer">
+        <!-- <div class="tagContainer">
             <p>Tell us more.</p>
-        </div>
+        </div> -->
         <div style="display: flex; justify-content:center; align-items:center;">
             <BasicButtonDark
-                msg={"Create an idea"}
+                msg={"Tell us more."}
                 icon={"emoji_objects"}
                 someFunction={() => {
                     goto("/create");
