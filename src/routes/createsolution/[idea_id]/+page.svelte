@@ -144,6 +144,7 @@
     $: noDescription = false;
     $: noTitle = false;
     $: noSubtitle = false;
+    $: noIdeas = false;
     async function onPost() {
         document.body.scrollIntoView({ behavior: "smooth" });
         isLoading = true;
@@ -163,9 +164,14 @@
         } else {
             noDescription = false;
         }
+        if (ideas.length == 0) {
+            noIdeas = true;
+        } else {
+            noIdeas = false;
+        }
 
         // If any field is empty, return early
-        if (noTitle || noSubtitle || noDescription) {
+        if (noTitle || noSubtitle || noDescription || ideas.length == 0) {
             isLoading = false;
             return;
         }
@@ -377,6 +383,7 @@
                 bind:ideas
                 {parentIdeaKey}
                 bind:ideasNames={ideasTitle}
+                bind:noIdeas
             />
             <TagsDisplay bind:tags={ideasTitle} deleteFunction={deleteIdea} />
             <h3>Roadmap: set important milestones</h3>
