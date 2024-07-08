@@ -38,7 +38,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="container" on:click={() => goto("/feature/" + key)}>
+<div class="container" on:click={() => goto("/idea/" + key)}>
     <div class="Image">
         <img src={displaySrc} alt="" />
     </div>

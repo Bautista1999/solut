@@ -223,7 +223,7 @@
                                 font-weight: 500;
                                 line-height: 16px;
                                 color: var(--ffffff-transparent, rgba(255, 255, 255, 0.75));
-                                ">Recent ideas</span
+                                ">Recent topics</span
                             >
                         {/if}
                     </div>
@@ -236,7 +236,7 @@
                                 style="padding-left: 22px;"
                                 on:click={async () => {
                                     let pathOrigin = window.location.origin;
-                                    goto(pathOrigin + "/idea/" + idea.key);
+                                    goto(pathOrigin + "/topic/" + idea.key);
                                 }}
                             >
                                 <img
