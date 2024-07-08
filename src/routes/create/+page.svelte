@@ -183,7 +183,6 @@
             } else {
                 ideaKey = "";
             }
-            console.log("Your creation: ", creation);
         } catch (e) {
             isLoading = false;
             error = true;
@@ -204,10 +203,10 @@
     let errorMsg = "";
 
     onMount(async () => {
-        // if (!(await CheckIfSignedIn())) {
-        //     path.set("/create");
-        //     goto("/signin/");
-        // }
+        if (!(await CheckIfSignedIn())) {
+            path.set("/create");
+            goto("/signin/");
+        }
         user = await getUserKey();
     });
 </script>
@@ -255,9 +254,7 @@
                     <br />
                     <div
                         style="display: flex; justify-content:left;align-items:center;
-                    gap:20px;
-                    
-                    "
+                    gap:20px;"
                     >
                         <input
                             type="text"
@@ -342,7 +339,7 @@
                 style="display: flex; justify-content:center;align-items:center;"
             >
                 <BasicButtonDark
-                    msg={"Post idea"}
+                    msg={"Post topic"}
                     icon={"emoji_objects"}
                     someFunction={() => {
                         onPost();
@@ -352,14 +349,14 @@
         </div>
     {:else if success}
         <SuccessNew
-            message={"Idea created successfully"}
+            message={"Topic created successfully"}
             someFunction={() => {
-                goto("/idea/" + ideaKey);
+                goto("/topic/" + ideaKey);
             }}
         />
     {:else if error}
         <ErrorMessage
-            message={"The creation of the idea failed."}
+            message={"The creation of the topic failed."}
             error={errorMsg}
             someFunction={() => {
                 error = false;
@@ -373,7 +370,7 @@
 <svelte:head>
     <meta name="twitter:card" content="summary" />
     <meta charset="utf-8" />
-    <title>Create Idea</title>
+    <title>Create topic</title>
 </svelte:head>
 
 <style>

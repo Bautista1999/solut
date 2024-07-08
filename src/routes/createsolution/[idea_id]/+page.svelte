@@ -226,7 +226,7 @@
             goto("/signin/");
         }
         isLoading = true;
-        loadingMsg = "Checking parent's idea existance...";
+        loadingMsg = "Checking parent's topic existance...";
 
         let parentDoc = await getDoc({
             collection: "index_search",
@@ -236,7 +236,7 @@
         isLoading = false;
         if (typeof parentDoc == "undefined") {
             error = true;
-            errorMsg = "Parent idea non-existent";
+            errorMsg = "Parent topic non-existent";
         } else {
             parentIdeaKey = data.params.idea_id;
             parentIdeaTitle = parentDoc.data.title;
@@ -283,7 +283,7 @@
                             { title: "Home", link: "" },
                             {
                                 title: parentIdeaTitle,
-                                link: "/idea/" + parentIdeaKey,
+                                link: "/topic/" + parentIdeaKey,
                             },
                             { title: title, link: "/" },
                         ]}
