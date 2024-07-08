@@ -560,12 +560,6 @@
         min-height: 100vh;
         z-index: 0;
     }
-    .content {
-        width: 80%;
-        max-width: 800px;
-        text-align: left; /* aligns the text to the left */
-        margin: 20px auto 0 auto; /* top margin creates space from the top */
-    }
 
     .container {
         display: grid;
