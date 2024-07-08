@@ -6,6 +6,7 @@
     import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsolut.svelte";
 
     let searchText = ""; // To hold the search input text
+    export let noIdeas = false;
     /**
      * @type {string[]}
      */
@@ -147,6 +148,8 @@
 </div>
 <div class="results">
     {#each results as result}
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
             class="result-card"
             on:click={() => {
@@ -166,6 +169,12 @@
             <div class="badge">Feature</div>
         </div>
     {/each}
+    {#if noIdeas}
+        <p class="InputErrorMessage">
+            ERROR: At least one idea is required. Select at least one idea to
+            implement.
+        </p>
+    {/if}
 </div>
 
 <style>
