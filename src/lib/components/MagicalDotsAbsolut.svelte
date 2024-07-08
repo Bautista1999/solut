@@ -66,8 +66,8 @@
         z-index: 3000;
     }
     .dot {
-        width: 20px;
-        height: 20px;
+        width: 17px;
+        height: 17px;
         border-radius: 50%;
         background-color: var(--tertiary-color);
         box-shadow: 0px 4px 0px 0px var(--primary-color);
