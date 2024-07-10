@@ -10,14 +10,15 @@ export async function setLastNotificationRead(notificationKey){
         collection: "last_notification_read",
         key: "LAST_READ_" + userKey
     });
-
+    let newNotifications = await GetNewNotifications();
+    let LastNotificationReadKey = (newNotifications)[newNotifications.length-1].key;
     if(notificationReadDoc==undefined){
 
         await setDoc({
             collection: "last_notification_read",
             doc: {
                 key: "LAST_READ_" + userKey,
-                data:notificationKey,
+                data:LastNotificationReadKey,
             }
         });
         return;
@@ -26,7 +27,7 @@ export async function setLastNotificationRead(notificationKey){
             collection: "last_notification_read",
             doc: {
                 key: "LAST_READ_" + userKey,
-                data:notificationKey,
+                data:LastNotificationReadKey,
                 updated_at:notificationReadDoc.updated_at,
                 version:notificationReadDoc.version,
             }
