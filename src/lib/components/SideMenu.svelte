@@ -482,7 +482,7 @@
         margin-top: auto;
     }
     .AppMenuBar {
-        visibility: hidden;
+        display: none;
         height: 0px;
         width: 0px;
         margin: 0px;
@@ -497,7 +497,7 @@
             display: none;
         }
         .AppMenuBar {
-            visibility: visible;
+            display: block;
         }
     }
 </style>
