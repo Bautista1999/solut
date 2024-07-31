@@ -329,10 +329,6 @@ a:hover {
 }
 
 .content {
-    /* display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center; */
     width: 90%;
     max-width: 800px;
     text-align: left;
@@ -359,6 +355,168 @@ a:hover {
     padding: 2px;
 }
 
+.idea-card {
+    display: block;
+    border: 1px solid var(--seventh-color);
+    box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background-color: var(--tertiary-color);
+    width: 100%;
+    height: 424px;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    /* For desktop */
+}
+
+.idea-card_ultra_small {
+    display: block;
+    border: 1px solid var(--seventh-color);
+    box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background-color: var(--tertiary-color);
+    width: 100%;
+    height: 90px;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.idea-card:hover {
+    background-color: var(--forth-color);
+}
+
+.idea-card:active {
+    box-shadow: none;
+}
+
+.idea-card-image-container {
+    position: relative;
+}
+
+.idea-card-image {
+    width: 100%;
+    position: relative;
+    aspect-ratio: 1200/628;
+    object-fit: cover;
+    overflow: hidden;
+}
+
+.idea-card-profile-picture {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid var(--tertiary-color);
+}
+
+.idea-card-content {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 5px;
+}
+
+.idea-title-subtitle {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    height: 150px;
+
+}
+
+.idea-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    padding-top: 0px;
+
+}
+
+.idea-card-title {
+    color: var(--secondary-color);
+    text-align: left;
+    padding: 0;
+    font-weight: 450;
+    vertical-align: top;
+    height: fit-content;
+    margin-bottom: 0px;
+    min-width: 80%;
+    max-width: 80%;
+    margin: 0px;
+}
+
+.idea-card-followers {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 20%;
+    justify-content: center;
+    color: var(--seventh-color);
+
+    text-align: center;
+
+}
+
+.idea-card-heart-icon {
+    color: var(--red-wine);
+
+}
+
+.idea-card-subtitle {
+    color: var(--secondary-color);
+    text-align: start;
+    font-size: small;
+}
+
+.idea-card-pledgers {
+    font-size: small;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    height: 100%;
+    color: var(--secondary-color);
+}
+
+.idea-card-pledgers-followers {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+}
+
+.idea-card-pledgers-followers>.idea-card-followers {
+    display: none;
+}
+
+.idea-card-created-at {
+    font-size: small;
+    text-align: left;
+    font-style: italic;
+    color: var(--secondary-color);
+}
+
+.idea-card-funding-bar {
+    margin: 0px 0;
+    display: flex;
+    align-items: center;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .idea-card {
+        width: calc(100% / 2 - 20px);
+    }
+}
+
 body {
     margin: 0px;
 
@@ -373,6 +531,10 @@ body {
         padding: 0 15px;
         padding-bottom: 0 15px;
         /* Reduce padding */
+    }
+
+    .idea-card {
+        width: 100%;
     }
 
     /* Reset CSS */
@@ -394,6 +556,7 @@ body {
 
     }
 }
+
 
 @media (max-width: 480px) {
     .content {
@@ -428,7 +591,6 @@ body {
         position: absolute;
         background-color: var(--primary-color);
         color: var(--tertiary-color);
-        /* border: 1px solid var(--tertiary-color); */
         border-radius: 400px;
         visibility: visible;
         transform: translateX(10px) translateY(-10px);
@@ -436,5 +598,48 @@ body {
         height: 20px;
         min-width: 20px;
         padding: 2px;
+    }
+
+    .idea-card {
+        width: 100%;
+        height: 280px;
+    }
+
+    .idea-card-profile-picture {
+        width: 40px;
+        height: 40px;
+    }
+
+    .idea-card-title {
+        font-size: 0.9rem;
+        max-width: 100%;
+        min-width: 100%;
+    }
+
+    .idea-card-subtitle,
+    .idea-card-pledgers,
+    .idea-card-created-at {
+        font-size: 0.875rem;
+    }
+
+    .idea-card-subtitle {
+        display: none;
+    }
+
+    .idea-card-header :last-child {
+        display: none;
+
+    }
+
+    .idea-title-subtitle {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        height: 55px;
+
+    }
+
+    .idea-card-pledgers-followers :last-child {
+        display: block;
     }
 }
