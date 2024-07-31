@@ -35,7 +35,7 @@
     "@dfinity/principal": "^1.0.1",
     "@dfinity/utils": "^2.1.2",
     "@junobuild/analytics": "^0.0.24",
-    "@junobuild/core-peer": "^0.0.20",
+    "@junobuild/core-peer": "^0.0.21",
     "@junobuild/utils": "^0.0.22",
     "buffer": "^6.0.3",
     "country-list": "^2.3.0",

@@ -1,6 +1,8 @@
 <script>
     import { getIdeasByKeyWords } from "$lib/data_functions/get_functions";
     import { key } from "$lib/data_objects/testing_objects";
+    import CardPreview from "./CardPreview.svelte";
+    import CardPreviewUltraSmall from "./CardPreviewUltraSmall.svelte";
     import CardScroller from "./CardScroller.svelte";
     import IdeaCard from "./IdeaCard.svelte";
     import IdeaCardWide from "./IdeaCard_Wide.svelte";
@@ -62,7 +64,8 @@
     <div class="features-container">
         {#each ideas as idea}
             <div class="">
-                <IdeaCardWide {idea} padding={10} />
+                <!-- <IdeaCardWide {idea} padding={10} /> -->
+                <CardPreview {idea} padding={10} />
             </div>
         {/each}
     </div>
@@ -98,7 +101,7 @@
         .features-container {
             display: grid;
             grid-template-columns: repeat(2, minmax(100px, 0.5fr));
-            grid-gap: 0.5rem;
+            grid-gap: 1rem;
             padding: 0rem; /* Add some padding around the grid if needed */
             margin: 0; /* Center the grid container */
             max-width: 600px; /* Max width of the grid to avoid very wide cards */
