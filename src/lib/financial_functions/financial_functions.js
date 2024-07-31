@@ -123,6 +123,11 @@ export async function getUserTransactions_byProject(project_id){
  * @return {Promise<import("$lib/data_objects/data_types").TotalPledge>}
  */
 export async function getTotalPledges(idea_id,type) {
+    if(type=="TOPIC"){
+        type = "IDEA"
+    }else if(type == "IDEA"){
+        type = "FEA";
+    }
     let doc = await getDoc({
         collection: "idea_feature_pledge",
         key: "PLG_"+type+"_"+idea_id,
