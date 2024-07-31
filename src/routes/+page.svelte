@@ -68,7 +68,7 @@
     </section>
 
     <section class="featured-ideas">
-        <h2>Featured topics</h2>
+        <h2>Most recent topics</h2>
         <div class="cards">
             <IdeaCardContainerWide
                 keywords={[...keywords, ...searchTextArray]}
