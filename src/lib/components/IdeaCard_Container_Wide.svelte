@@ -1,5 +1,8 @@
 <script>
-    import { getIdeasByKeyWords } from "$lib/data_functions/get_functions";
+    import {
+        getIdeasByKeyWords,
+        getMostRecentTopics,
+    } from "$lib/data_functions/get_functions";
     import { key } from "$lib/data_objects/testing_objects";
     import CardPreview from "./CardPreview.svelte";
     import CardPreviewUltraSmall from "./CardPreviewUltraSmall.svelte";
@@ -13,42 +16,104 @@
      */
     export let keywords = [];
     export let amountDisplayed = 12;
+    export let genericDatabase = false;
 
     /**
      * @type {Promise<{ key: string; data: import("../data_objects/data_types").IndexDataReturn; }[]>}
      */
     let ideasPromise; // Initialize the promise
 
-    // Reactive statement to refresh the await block
-    $: ideasPromise = getIdeasByKeyWords(keywords, { start: "", limit: 12 });
+    $: ideasPromise = !genericDatabase
+        ? getMostRecentTopics(keywords, {
+              start: "",
+              limit: amountDisplayed,
+          })
+        : getIdeasByKeyWords(keywords, {
+              start: "",
+              limit: amountDisplayed,
+          });
+
+    $: ideasPromise.then((ideas) => {
+        if (ideas.length > 0) {
+            disableRightButton = true;
+            checkNextPageFirstElementExistance(ideas[ideas.length - 1].key);
+        }
+        if (firstKeys.length <= 1) {
+            disableLeftButton = true;
+        } else {
+            disableLeftButton = false;
+        }
+    });
     /**
      * @type {string[]}
      */
     export let firstKeys = [""];
+    $: disableLeftButton = true;
+    $: disableRightButton = false;
 
     /**
      * @param {any} lastKey
      */
     function forwardPage(lastKey) {
-        firstKeys.push("INDEX_" + lastKey);
-        firstKeys = firstKeys;
-        ideasPromise = getIdeasByKeyWords(keywords, {
-            start: "INDEX_" + lastKey,
-            limit: amountDisplayed,
-        });
+        if (!genericDatabase) {
+            firstKeys.push(lastKey);
+            firstKeys = firstKeys;
+            ideasPromise = getMostRecentTopics(keywords, {
+                start: lastKey,
+                limit: amountDisplayed,
+            });
+        } else {
+            firstKeys.push("INDEX_" + lastKey);
+            firstKeys = firstKeys;
+            ideasPromise = getIdeasByKeyWords(keywords, {
+                start: "INDEX_" + lastKey,
+                limit: amountDisplayed,
+            });
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function backwardsPage() {
         if (firstKeys.length <= 1) {
             return;
         }
-        console.log("Index: ", firstKeys[firstKeys.length - 2]);
-        ideasPromise = getIdeasByKeyWords(keywords, {
-            start: firstKeys[firstKeys.length - 2],
-            limit: amountDisplayed,
-        });
+        if (!genericDatabase) {
+            ideasPromise = getMostRecentTopics(keywords, {
+                start: firstKeys[firstKeys.length - 2],
+                limit: amountDisplayed,
+            });
+        } else {
+            ideasPromise = getIdeasByKeyWords(keywords, {
+                start: firstKeys[firstKeys.length - 2],
+                limit: amountDisplayed,
+            });
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
         firstKeys.pop();
         firstKeys = firstKeys;
+        if (firstKeys.length <= 1) {
+            disableLeftButton = true;
+        }
+    }
+    /**
+     * @param {any} lastKey
+     */
+    async function checkNextPageFirstElementExistance(lastKey) {
+        let firstElementNextPage = !genericDatabase
+            ? await getMostRecentTopics(keywords, {
+                  start: lastKey,
+                  limit: 1,
+              })
+            : await getIdeasByKeyWords(keywords, {
+                  start: "INDEX_" + lastKey,
+                  limit: 1,
+              });
+
+        if (firstElementNextPage.length == 0) {
+            disableRightButton = true;
+        } else {
+            disableRightButton = false;
+        }
     }
 </script>
 
@@ -70,7 +135,7 @@
         {/each}
     </div>
 
-    <div class="" style="margin-bottom:20px;margin-top:20px;">
+    <div class="" style="margin-bottom:20px;margin-top:20px; ">
         <CardScroller
             forwardFunction={() => {
                 if (ideas.length == 0) {
@@ -84,6 +149,8 @@
             backFunction={() => {
                 backwardsPage();
             }}
+            {disableLeftButton}
+            {disableRightButton}
         />
     </div>
 {/await}
