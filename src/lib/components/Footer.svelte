@@ -97,35 +97,6 @@
         color: var(--primary-color);
     }
 
-    .subscribe-form {
-        display: flex;
-        gap: 0.5rem;
-        margin-top: 1rem;
-    }
-
-    .subscribe-form input[type="email"] {
-        flex: 1;
-        padding: 0.5rem;
-    }
-
-    .subscribe-form button {
-        background-color: var(--primary-color); /* Button color */
-        color: var(--tertiary-color);
-        border: none;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-    }
-
-    .social a {
-        color: var(--tertiary-color);
-        text-decoration: none;
-        margin-right: 1rem; /* Space out social links */
-    }
-
-    .footer-bottom {
-        text-align: center;
-    }
-
     @media (max-width: 480px) {
         .footer-section {
             display: flex;
