@@ -486,6 +486,7 @@ function extractSubstring(input) {
 export async function getIdeasByKeyWords(keywords,pages){
     let variationOfKeyWords = createVariationsOfKeywords(keywords);
     let regexInput = createOrRegexInput(variationOfKeyWords);
+    console.log("REGEX: ",regexInput)
     let searchedIdeas = (await listDocs({
         collection:"index_search",
         filter:{
@@ -515,7 +516,7 @@ export async function getIdeasByKeyWords(keywords,pages){
             let documentType =  extractType(searchedIdeas[i].description);
             // @ts-ignore
             let createdTimestamp = Number(searchedIdeas[i].created_at/1000000n);
-            let july8thDate = new Date("2024-07-08").getTime();
+            let july8thDate = new Date("2024-07-08").getTime(); //the day we change the names from topic to idea, and feature to idea
             if (
                 createdTimestamp < july8thDate
             ){
@@ -543,6 +544,7 @@ export async function getIdeasByKeyWords(keywords,pages){
             };
             returnedIdeas.push(thisIdea);
             returnedIdeas=returnedIdeas;
+            
         };
         return returnedIdeas;
     };
@@ -579,7 +581,6 @@ export function createVariationsOfKeywords(keywords){
     for(let i  = 0; i<keywords.length;i++){
         
         let word = keywords[i];
-        console.log(word);
         newKeyWords.push(keywords[i])
         newKeyWords = newKeyWords;
         let wordVariation1 = keywords[i].toUpperCase();
@@ -907,6 +908,79 @@ export async function validateImageUrl(userUrl, defaultUrl) {
       img.onload = () => resolve(userUrl);
       img.onerror = () => resolve(defaultUrl);
     });
-  }
+}
+
+
+/**
+ * @param {Array<string>} keywords
+ * @param {{start:string,limit:number}} pages
+ * @return {Promise<Array<{key:string,data:import("$lib/data_objects/data_types").IndexDataReturn}>>}
+ */
+export async function getMostRecentTopics(keywords,pages){
+    let variationOfKeyWords = createVariationsOfKeywords(keywords);
+    let regexInput = createOrRegexInput(variationOfKeyWords);
+    let searchedIdeas = (await listDocs({
+        collection:"idea",
+        filter:{
+            matcher:{
+                description:regexInput.length == 0 ? undefined : regexInput,
+            },
+            paginate:{
+                startAfter: pages.start==""?undefined:pages.start,
+                limit: pages.limit,
+            },
+            order:{
+                desc:true,
+                field: 'created_at',
+            }
+        }
+    })).items;
+    if(searchedIdeas.length==0){
+        return [];
+    }else{
+        /**
+         * @type {Array<{key:string,data:import("$lib/data_objects/data_types").IndexDataReturn}>}
+         */
+        let returnedIdeas = [];
+        for(let i=0; i<searchedIdeas.length;i++){
+                                // @ts-ignore
+
+            let documentType =  "topic";
+            // @ts-ignore
+            let createdTimestamp = Number(searchedIdeas[i].created_at/1000000n);
+            let july8thDate = new Date("2024-07-08").getTime(); //the day we change the names from topic to idea, and feature to idea
+            if (
+                createdTimestamp < july8thDate
+            ){
+                if(documentType == "idea"){
+                    documentType = "topic";
+                }else if(documentType == "feature"){
+                    documentType = "idea";
+                }
+            }
+            /**
+             * @type {{key:string,data:import("$lib/data_objects/data_types").IndexDataReturn}}
+             */
+            let thisIdea = {
+                key: searchedIdeas[i].key,
+                data: {
+                    title:searchedIdeas[i].data.title,
+                    subtitle:searchedIdeas[i].data.subtitle,
+                    images:searchedIdeas[i].data.images,
+                    videos:searchedIdeas[i].data.videos,
+                    // @ts-ignore
+                    type:"topic",
+                    // @ts-ignore
+                    owner: searchedIdeas[i].owner, 
+                }
+            };
+            returnedIdeas.push(thisIdea);
+            returnedIdeas=returnedIdeas;
+            
+        };
+        return returnedIdeas;
+    };
+}
+
 
 
