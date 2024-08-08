@@ -181,7 +181,7 @@
                 </div>
 
                 <div class="FundingSection">
-                    {#await getTotalPledges(key, "FEA")}
+                    {#await getTotalPledges(key, "IDEA")}
                         <div class="Funding-bar">
                             <MagicalDotsAbsoluteSmall />
                         </div>
