@@ -41,18 +41,6 @@
                 "https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg";
         }
     });
-    export let idea_example = {
-        image: "https://images.shiksha.com/mediadata/images/articles/1707905364phpqiseG5.jpeg",
-        profilePicture:
-            "https://preview.redd.it/trying-to-come-up-with-a-new-avatar-for-my-various-social-v0-wby69l6e1lsb1.jpg?width=519&format=pjpg&auto=webp&s=61341c3ce447f8356da3146c1903395fc43d28dc",
-        title: "Explore Innovative Ideas: Share, Pledge, and Bring Solutions to Life",
-        followers: 1230,
-        subtitle:
-            "Discover a world of creativity with our platform. Join like-minded individuals, support groundbreaking projects, and watch ideas transform into reality. Together, we can foster innovation and drive meaningful change.",
-        pledgers: 50,
-        funding: 75, // percentage
-        createdAt: "12 July 2023",
-    };
 
     async function followingInformation() {
         let amount = await getTotalFollowers(idea.key);
