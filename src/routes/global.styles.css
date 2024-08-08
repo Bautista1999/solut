@@ -404,6 +404,7 @@ a:hover {
     aspect-ratio: 1200/628;
     object-fit: cover;
     overflow: hidden;
+
 }
 
 .idea-card-profile-picture {
@@ -523,6 +524,24 @@ body {
 
 }
 
+.btn_clear {
+    font-variation-settings:
+        "FILL" 0,
+        "wght" 400,
+        "GRAD" 0,
+        "opsz" 24;
+    color: var(--secondary-color)
+}
+
+.btn_clear:hover {
+    font-variation-settings:
+        "FILL" 1,
+        "wght" 400,
+        "GRAD" 400,
+        "opsz" 24;
+    color: var(--primary-color);
+    cursor: pointer;
+}
 
 @media (max-width: 830px) {
     .content {
