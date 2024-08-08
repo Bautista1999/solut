@@ -45,7 +45,7 @@
                     <!-- <IdeaCard {feature} /> -->
                     <CardPreview
                         idea={{
-                            key: feature.key,
+                            key: feature.key.substring(6, feature.key.length),
                             data: {
                                 title: feature.data.title,
                                 subtitle: feature.data.subtitle,
