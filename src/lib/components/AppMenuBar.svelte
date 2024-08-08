@@ -124,7 +124,7 @@
         align-items: center;
         padding: 10px 0;
         /* box-shadow: 0 -4px 5px rgba(0, 0, 0, 0.5); */
-        z-index: 3000;
+        z-index: 4000;
     }
 
     .menu-item {
