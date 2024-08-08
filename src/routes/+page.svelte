@@ -1,15 +1,14 @@
 <script>
-    import AnimatedBackground from "$lib/components/AnimatedBackground.svelte";
-    import IdeaCard from "$lib/components/IdeaCard.svelte";
     import IdeaCardContainerWide from "$lib/components/IdeaCard_Container_Wide.svelte";
-    import IdeaCardWide from "$lib/components/IdeaCard_Wide.svelte";
     import SearchBar from "$lib/components/SearchBar.svelte";
     import TagContainer from "$lib/components/TagContainer.svelte";
-    import { featuresExamples } from "$lib/data_objects/testing_objects";
-    import StatsItem from "$lib/components/StatsItem.svelte";
-    import BasicButton from "$lib/components/basicButton.svelte";
+
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
     import { goto } from "$app/navigation";
+    import { getIdeasByKeyWords } from "$lib/data_functions/get_functions";
+    import SearchedIdeas from "$lib/components/SearchedIdeas.svelte";
+    import MagicalDots from "$lib/components/magicalDots.svelte";
+    import MagicalDotsAbsolut from "$lib/components/MagicalDotsAbsolut.svelte";
     $: firstKeys = [""];
     let stats = [
         { label: "Ideas Created", count: 320, icon: "lightbulb" },
@@ -17,25 +16,115 @@
         { label: "Total Revenue", count: "150K", icon: "monetization_on" },
     ];
     $: searchText = "";
+
     /**
-     * @type {Array<string>}
+     * @type {{ key: string; data: import("../data_objects/data_types").IndexDataReturn; }[]}
      */
-    $: categories = [];
+    let searchedIdeas = [];
+
+    async function searchName() {
+        searchLoading = true;
+        searchedIdeas = await getIdeasByKeyWords([searchText], {
+            start: "",
+            limit: 12,
+        });
+        searchLoading = false;
+        if (searchedIdeas.length > 0) {
+            disableRightButton = true;
+            checkNextPageFirstElementExistance(
+                searchedIdeas[searchedIdeas.length - 1].key,
+            );
+        }
+    }
+
     /**
      * @type {Array<string>}
      */
     $: keywords = [];
+
+    let searchComponentOpen = false;
+    $: disableLeftButton = true;
+    $: disableRightButton = false;
+    $: searchLoading = false;
     /**
-     * @type {string[]}
+     * @param {any} lastKey
      */
-    $: searchTextArray = [];
+    async function forwardPage(lastKey) {
+        firstKeys.push("INDEX_" + lastKey);
+        firstKeys = firstKeys;
+        searchLoading = true;
+        searchedIdeas = await getIdeasByKeyWords(keywords, {
+            start: "INDEX_" + lastKey,
+            limit: 12,
+        });
+        searchLoading = false;
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        if (searchedIdeas.length > 0) {
+            disableRightButton = true;
+            checkNextPageFirstElementExistance(
+                searchedIdeas[searchedIdeas.length - 1].key,
+            );
+        }
+        if (firstKeys.length <= 1) {
+            disableLeftButton = true;
+        } else {
+            disableLeftButton = false;
+        }
+    }
+    async function backwardsPage() {
+        if (firstKeys.length <= 1) {
+            return;
+        }
+        searchLoading = true;
+        searchedIdeas = await getIdeasByKeyWords(keywords, {
+            start: firstKeys[firstKeys.length - 2],
+            limit: 12,
+        });
+        searchLoading = false;
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        firstKeys.pop();
+        firstKeys = firstKeys;
+        if (firstKeys.length <= 1) {
+            disableLeftButton = true;
+        }
+        if (searchedIdeas.length > 0) {
+            disableRightButton = true;
+            checkNextPageFirstElementExistance(
+                searchedIdeas[searchedIdeas.length - 1].key,
+            );
+        }
+        if (firstKeys.length <= 1) {
+            disableLeftButton = true;
+        } else {
+            disableLeftButton = false;
+        }
+    }
     /**
-     * @param {string} word
+     * @param {any} lastKey
      */
-    function addWordToKeywords(word) {
-        //keywords = [...searchTextArray];
-        searchTextArray = [searchText];
-        firstKeys = [""];
+    async function checkNextPageFirstElementExistance(lastKey) {
+        let firstElementNextPage = await getIdeasByKeyWords([searchText], {
+            start: "INDEX_" + lastKey,
+            limit: 1,
+        });
+        debugger;
+
+        if (firstElementNextPage.length == 0) {
+            disableRightButton = true;
+        } else {
+            disableRightButton = false;
+        }
+    }
+
+    function closeSearchPanel() {
+        searchedIdeas = [];
+        searchComponentOpen = false;
+        searchText = "";
+    }
+    function openSearchPanel() {
+        searchComponentOpen = true;
     }
 </script>
 
@@ -49,9 +138,12 @@
         <div style="display: flex; justify-content:center; align-items:center;">
             <SearchBar
                 someFunction={() => {
-                    addWordToKeywords(searchText);
+                    searchName();
                 }}
                 bind:searchText
+                bind:searchComponentOpen
+                {openSearchPanel}
+                {closeSearchPanel}
             />
         </div>
         <div class="tagContainer">
@@ -61,50 +153,61 @@
     <section class="search-bar">
         <SearchBar
             someFunction={() => {
-                addWordToKeywords(searchText);
+                searchName();
             }}
             bind:searchText
+            bind:searchComponentOpen
+            {openSearchPanel}
+            {closeSearchPanel}
         />
     </section>
+    {#if !searchComponentOpen}
+        <section class="featured-ideas">
+            <h2>Most recent topics</h2>
+            <div class="cards">
+                <IdeaCardContainerWide
+                    keywords={[...keywords]}
+                    bind:firstKeys
+                />
+            </div>
+        </section>
 
-    <section class="featured-ideas">
-        <h2>Most recent topics</h2>
-        <div class="cards">
-            <IdeaCardContainerWide
-                keywords={[...keywords, ...searchTextArray]}
-                bind:firstKeys
-            />
-        </div>
-    </section>
-    <!-- <div
-        style="display: flex; align-items:center; justify-content:center; color: var(--tertiary-color);background-color: var(--primary-color); margin-top:15px;"
-    >
-        <h2>Our progress</h2>
-    </div>
-
-    <section class="stats-section">
-        {#each stats as stat}
-            <StatsItem label={stat.label} count={stat.count} icon={stat.icon} />
-        {/each}
-    </section> -->
-
-    <section class="slogan-section" style="padding-top: 10px;">
-        <h2 style="margin-bottom: 0em; font-size: 2em;">
-            Just had an <span style="color: var(--primary-color);"> idea?</span>
-        </h2>
-        <!-- <div class="tagContainer">
-            <p>Tell us more.</p>
-        </div> -->
-        <div style="display: flex; justify-content:center; align-items:center;">
-            <BasicButtonDark
-                msg={"Tell us more."}
-                icon={"emoji_objects"}
-                someFunction={() => {
-                    goto("/create");
-                }}
-            />
-        </div>
-    </section>
+        <section class="slogan-section">
+            <h2 style="margin-bottom: 0em; font-size: 2em;">
+                Just had an <span style="color: var(--primary-color);">
+                    idea?</span
+                >
+            </h2>
+            <div
+                style="display: flex; justify-content:center; align-items:center;"
+            >
+                <BasicButtonDark
+                    msg={"Tell us more."}
+                    icon={"emoji_objects"}
+                    someFunction={() => {
+                        goto("/create");
+                    }}
+                />
+            </div>
+        </section>
+    {:else}
+        <section class="featured-ideas">
+            <br />
+            <div class="cards">
+                {#if !searchLoading}
+                    <SearchedIdeas
+                        ideas={searchedIdeas}
+                        {forwardPage}
+                        {backwardsPage}
+                        {disableRightButton}
+                        {disableLeftButton}
+                    />
+                {:else}
+                    <MagicalDotsAbsolut />
+                {/if}
+            </div>
+        </section>
+    {/if}
 </main>
 <svelte:head>
     <meta name="twitter:card" content="summary" />
@@ -179,7 +282,9 @@
     }
 
     .featured-ideas {
+        min-height: 140px;
         padding: 20px;
+        padding-bottom: 0px;
         background: var(--forth-color);
         text-align: center;
     }
@@ -197,7 +302,7 @@
     @media (max-width: 480px) {
         .featured-ideas {
             padding: 5px;
-            padding-bottom: 20px;
+            padding-bottom: 0px;
         }
         .visibilitySlogan {
             visibility: hidden;
