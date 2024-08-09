@@ -64,7 +64,9 @@
 />
 <div class="container">
   <div class="Sidebar"><SideMenu /></div>
-  <div class="Header"><HeaderV2 /></div>
+  <div class="Header">
+    <!-- <HeaderV2 /> -->
+  </div>
   <div class="Body-content">
     {#await init()}
       <!-- TODO: a loading component. That said loading Juno module is fast -->
@@ -92,7 +94,7 @@
 
   .Body-content {
     grid-area: Body-content;
-    padding-top: 50px; /* Padding at the top */
+    padding-top: 0px; /* Padding at the top */
     padding-left: 75px; /* Padding to the left */
     min-height: 100vh;
     /* Removed flex: 1 as it's not necessary with grid and can be removed */
