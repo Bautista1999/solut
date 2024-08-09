@@ -28,6 +28,8 @@
             start: "",
             limit: 12,
         });
+        firstKeys = [];
+        disableLeftButton = true;
         searchLoading = false;
         if (searchedIdeas.length > 0) {
             disableRightButton = true;
