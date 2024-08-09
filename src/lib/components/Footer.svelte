@@ -61,6 +61,7 @@
         ); /* Adapt to match your color theme */
         color: #fff;
         padding: 2rem;
+        padding-block: 0.5rem;
         display: flex;
         justify-content: center;
         align-items: center;
