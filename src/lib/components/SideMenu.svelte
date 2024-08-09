@@ -5,11 +5,18 @@
     import { goto } from "$app/navigation";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { IsSignedIn, UserKey } from "$lib/stores/other_stores";
-    import { getMostFollowedIdeas } from "$lib/data_functions/get_functions";
+    import {
+        getMostFollowedIdeas,
+        getUserImages,
+        validateImageUrl,
+    } from "$lib/data_functions/get_functions";
     import { path } from "$lib/stores/redirect_store";
     import { GetAmountNewNotifications } from "$lib/data_functions/notifications";
     import { notificationCount } from "$lib/stores/notifications";
     import AppMenuBar from "./AppMenuBar.svelte";
+    import ProfilePictureHeader from "./ProfilePicture_Header.svelte";
+    import PledgerProfilePicture from "./PledgerProfilePicture.svelte";
+    import { signOut } from "@junobuild/core-peer";
     let isOpen = false;
 
     function toggleSidebar() {
@@ -60,8 +67,11 @@
             </div>
         </div>
         <div class="SideBarBody">
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
             <div class="SideBarContent">
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
                 <div class="SideBarElement">
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
                     <span
                         class="material-symbols-outlined"
                         on:click={() => goto("/")}
@@ -78,6 +88,28 @@
                             style="overflow-x: hidden; position:absolute;"
                             on:click={() => goto("/")}>Home</span
                         >
+                    {/if}
+                </div>
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                <div class="SideBarElement">
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <a
+                        class="material-symbols-outlined"
+                        href={"https://home.solutio.one/"}
+                    >
+                        info
+                    </a>
+                    <!-- svelte-ignore a11y-no-static-element-interactions -->
+                    {#if isOpen}
+                        <!-- svelte-ignore a11y-click-events-have-key-events -->
+                        <a
+                            class="label"
+                            in:fade={{ duration: seconds * 1000 }}
+                            out:fade={{ duration: seconds * 1000 }}
+                            style="overflow-x: hidden; position:absolute;"
+                            href={"https://home.solutio.one/"}
+                            >About
+                        </a>
                     {/if}
                 </div>
                 {#if $IsSignedIn}
@@ -174,6 +206,69 @@
                                 >Followed ideas</span
                             >{/if}
                     </div>
+
+                    <!-- svelte-ignore a11y-no-static-element-interactions -->
+                    <div class="SideBarElement">
+                        <!-- svelte-ignore a11y-click-events-have-key-events -->
+                        <a
+                            class="material-symbols-outlined"
+                            href={`/signin`}
+                            on:click={async () => {
+                                await signOut();
+                                location.reload();
+                            }}
+                        >
+                            logout
+                        </a>
+                        <!-- svelte-ignore a11y-no-static-element-interactions -->
+                        {#if isOpen}
+                            <!-- svelte-ignore a11y-click-events-have-key-events -->
+                            <a
+                                class="label"
+                                in:fade={{ duration: seconds * 1000 }}
+                                out:fade={{ duration: seconds * 1000 }}
+                                href={`/signin`}
+                                on:click={async () => {
+                                    await signOut();
+                                    location.reload();
+                                }}
+                                style="white-space: nowrap;  text-overflow: ellipsis; 
+                                display: block; 
+                                max-width: 100%; position:absolute;
+                                overflow: hidden; 
+                                font-style: normal;
+                                line-height: 16px;
+                                "
+                                >Sign out
+                            </a>
+                        {/if}
+                    </div>
+                {:else}
+                    <!-- svelte-ignore a11y-no-static-element-interactions -->
+                    <div class="SideBarElement">
+                        <!-- svelte-ignore a11y-click-events-have-key-events -->
+                        <a class="material-symbols-outlined" href={"/signin"}>
+                            login
+                        </a>
+                        <!-- svelte-ignore a11y-no-static-element-interactions -->
+                        {#if isOpen}
+                            <!-- svelte-ignore a11y-click-events-have-key-events -->
+                            <a
+                                class="label"
+                                in:fade={{ duration: seconds * 1000 }}
+                                out:fade={{ duration: seconds * 1000 }}
+                                href={"/signin"}
+                                style="white-space: nowrap;  text-overflow: ellipsis; 
+                                display: block; 
+                                max-width: 100%; position:absolute;
+                                overflow: hidden; 
+                                font-style: normal;
+                                line-height: 16px;
+                                "
+                                >Sign in
+                            </a>
+                        {/if}
+                    </div>
                 {/if}
                 <!-- <div class="SideBarElement">
                 <span class="material-symbols-outlined"> account_circle </span>
@@ -239,14 +334,21 @@
                                     goto(pathOrigin + "/topic/" + idea.key);
                                 }}
                             >
-                                <img
-                                    src={idea.data.images[0]
-                                        ? idea.data.images[0]
-                                        : ""}
-                                    alt="Solutio Logo"
-                                    style="width: 25px; height:25px; object-fit:cover; 
+                                {#await validateImageUrl(idea.data.images[0], "https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg")}
+                                    <img
+                                        src={"https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg"}
+                                        alt="Solutio Logo"
+                                        style="width: 25px; height:25px; object-fit:cover; 
                         "
-                                />
+                                    />
+                                {:then data}
+                                    <img
+                                        src={data}
+                                        alt="Solutio Logo"
+                                        style="width: 25px; height:25px; object-fit:cover; 
+                        "
+                                    />
+                                {/await}
                                 {#if isOpen}
                                     <span
                                         class="label"
@@ -267,6 +369,7 @@
                         {/each}
                     {/await}
                 {/if}
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <span
                     class="material-symbols-outlined"
                     style="bottom:0px; padding: 7.5px 170px 6.5px 27px;"
@@ -280,33 +383,87 @@
         </div>
         <div class="SideBarFooter">
             <div class="SideBarElement">
-                <span
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <a class="material-symbols-outlined" href={"/create"}>
+                    add_circle
+                </a>
+                {#if isOpen}
+                    <!-- svelte-ignore a11y-no-static-element-interactions -->
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <a
+                        class="label"
+                        in:fade={{ duration: seconds * 1000 }}
+                        out:fade={{ duration: seconds * 1000 }}
+                        href={"/create"}
+                        style="white-space: nowrap;  text-overflow: ellipsis; 
+                        display: block; 
+                        max-width: 100%; position:absolute;
+                        overflow: hidden; 
+                        font-style: normal;
+                        line-height: 16px;
+                        ">Create Topic</a
+                    >{/if}
+            </div>
+            <div class="SideBarElement" style="margin-bottom: 30px;">
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <!-- <a
                     class="material-symbols-outlined"
-                    on:click={async () => {
-                        if (!(await CheckIfSignedIn())) {
-                            path.set(window.location.href);
-                            goto("/signin");
-
-                            return;
-                        }
-                        goto("/account/" + $UserKey);
-                    }}
+                    href={$UserKey == "" ? "/signin" : "/account/" + $UserKey}
                 >
                     account_circle
-                </span>
-                {#if isOpen}<span
+                </a> -->
+                {#await getUserImages([$UserKey])}
+                    <!-- <ProfilePictureSmall src={""} userKey={""} /> -->
+                    <a
+                        class="material-symbols-outlined"
+                        href={$UserKey == ""
+                            ? "/signin"
+                            : "/account/" + $UserKey}
+                    >
+                        account_circle
+                    </a>
+                {:then data}
+                    {#if data.length > 0}
+                        <a
+                            class="image-container"
+                            style="width: fit-content;position:absolute;"
+                            href={$UserKey == ""
+                                ? "/signin"
+                                : "/account/" + $UserKey}
+                        >
+                            <PledgerProfilePicture
+                                image={data[0].image}
+                                index="1"
+                            />
+                            <!-- <ProfilePictureHeader
+                                src={data[0].image}
+                                userKey={data[0].key}
+                            /> -->
+                        </a>
+                    {:else}
+                        <a
+                            class="material-symbols-outlined"
+                            href={$UserKey == ""
+                                ? "/signin"
+                                : "/account/" + $UserKey}
+                        >
+                            account_circle
+                        </a>
+                    {/if}
+                {/await}
+                {#if isOpen}
+                    <!-- svelte-ignore a11y-no-static-element-interactions -->
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                    <a
                         class="label"
                         in:fade={{ duration: seconds * 1000 }}
                         out:fade={{ duration: seconds * 1000 }}
                         style="overflow-x: hidden; position:absolute;"
-                        on:click={async () => {
-                            if (!(await CheckIfSignedIn())) {
-                                path.set(window.location.href);
-                                goto("/signin");
-                                return;
-                            }
-                            goto("/account/" + $UserKey);
-                        }}>Account</span
+                        href={$UserKey == ""
+                            ? "/signin"
+                            : "/account/" + $UserKey}>Account</a
                     >{/if}
             </div>
         </div>
@@ -317,6 +474,20 @@
 </div>
 
 <style>
+    .image-container {
+        border-radius: 50%; /* Make images round */
+
+        overflow: hidden; /* Hide overflow to maintain the circular shape */
+        width: 25px; /* Width of the images */
+        height: 25px; /* Height of the images */
+        left: 21px;
+        border: 2px solid var(--primary-color);
+        cursor: pointer;
+        transition:
+            border-color 0.3s ease,
+            width 0.1s ease,
+            height 0.1s ease;
+    }
     .recentIdeas {
         background-color: transparent;
         display: flex;
@@ -366,7 +537,7 @@
         justify-content: space-between; /* Distribute space between the elements */
         color: var(--tertiary-color);
         transition: width 0.5s ease;
-        gap: 30px;
+        gap: 10px;
         z-index: 3000;
         overflow-x: hidden;
     }
@@ -380,8 +551,6 @@
         /* overflow-y: auto; Enable scroll if content is taller than the screen */
         overflow: hidden;
         color: var(--tertiary-color);
-
-        gap: 30px;
     }
     .SideBarContent {
         height: fit-content;
@@ -475,10 +644,11 @@
         grid-area: SideBarFooter;
 
         padding: 11px 0px;
+        gap: 20px;
         height: fit-content;
         display: flex;
-        justify-content: start;
-        align-items: center;
+        flex-direction: column;
+
         margin-top: auto;
     }
     .AppMenuBar {
@@ -486,6 +656,13 @@
         height: 0px;
         width: 0px;
         margin: 0px;
+    }
+    a {
+        text-decoration: none;
+        color: var(--tertiary-color);
+    }
+    a:hover {
+        color: var(--primary-color);
     }
 
     @media (max-width: 480px) {
