@@ -23,21 +23,19 @@
         isOpen = !isOpen;
     }
     let seconds = 0.5;
-    let idea1 = {
-        title: "Solutio, the decentralized idea incubator",
-        image: "/assets/LogoSol3.png",
-    };
-    let idea2 = {
-        title: "ICRC-7: A new standard for the ICP ecosystem",
-        image: "https://opengraph.githubassets.com/7c70681dfb31fc0b7a7e9e27a9936dab6e43c9e318ecca3b65e7ee49392e23bb/dfinity/ICRC/issues/7",
-    };
-    let idea3 = {
-        title: "New DEX:  A new decentralized exchange in the ecosystem ICP",
-        image: "https://cryptoadventure.com/wp-content/uploads/2022/01/Decentralized-Exchanges-2022-Which-is-the-Best-Crypto-DEX-to-Trade-on.jpg",
-    };
-    let ideas = [idea1, idea2, idea3];
 
     let maxChars = 17;
+
+    // Function to close the sidebar when clicking outside of it
+    document.addEventListener("click", function (event) {
+        const sidebar = document.querySelector(".SideBar.open");
+        const isClickInside = sidebar.contains(event.target);
+
+        if (!isClickInside && isOpen) {
+            event.stopPropagation();
+            toggleSidebar();
+        }
+    });
 </script>
 
 <div class="SideBar {isOpen ? 'open' : ''}">
