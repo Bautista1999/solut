@@ -79,7 +79,6 @@ export async function getArrayPledgers (project_id){
  * @return {Promise<Array<import("$lib/data_objects/data_types").UserProfilePic>>}
  */
 export async function getUserImages(users_ids){
-
     if(users_ids.length==0){
         return [];
     }
