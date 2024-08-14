@@ -11,6 +11,7 @@
     import { getFollowingsAndTheirInformation } from "$lib/data_functions/get_functions";
     import FollowerDisplay from "./FollowerDisplay.svelte";
     import ProfilePicture from "./profilePicture.svelte";
+    import FollowedDisplay from "./FollowedDisplay.svelte";
 
     export let solution_id = "";
     export let idea_id = "";
@@ -29,7 +30,6 @@
     };
     //TODO: Paginate followers: right now we are currently querying the first 12. Once we start getting more followers, we should start to paginate results.
     async function getInformation() {
-        debugger;
         let usersReturn = await getFollowingsAndTheirInformation(
             elementId,
             pages,
@@ -76,7 +76,7 @@
                                 key={user.owner ? user.owner : ""}
                             />
                         {:else}
-                            <FollowerDisplay
+                            <FollowedDisplay
                                 username={user.data.title.length > 30
                                     ? user.data.title.substring(0, 30) + "..."
                                     : user.data.title}
