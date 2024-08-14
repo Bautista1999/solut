@@ -2,6 +2,8 @@ import { UserKey } from "$lib/stores/other_stores";
 import { authSubscribe, getDoc,getManyDocs ,initJuno, listDocs } from "@junobuild/core-peer";
 import { setLastNotificationRead } from "./notifications";
 
+
+
 /**
  * @param {string} element_id
  * @return {Promise<number>}
@@ -26,6 +28,45 @@ export async function getTotalFollowers(element_id) {
         return Number(docs.items_length);
     }
 }
+
+/**
+ * @param {string} element_id
+ * @return {Promise<number>}
+ */
+export async function getTotalFollowing(element_id) {
+   
+
+    let docs = await listDocs({
+        collection:"follow",
+        filter:{
+            matcher:{
+                key:element_id+"_"
+            }
+        }
+    })
+    
+        return Number(docs.items_length);
+    
+}
+
+/**
+ * @param {string} element_id
+ * @return {Promise<{followers:number,following:number}>}
+ */
+export async function getFollowersAndFollowing(element_id) {
+   
+
+    let followers = await getTotalFollowers(element_id);
+    let following = await getTotalFollowing (element_id);
+    
+        return {
+            followers:followers,
+            following:following,
+        };
+    
+}
+
+
 
 /**
  * @param {string} idea_id
@@ -980,6 +1021,133 @@ export async function getMostRecentTopics(keywords,pages){
         return returnedIdeas;
     };
 }
+/**
+ * @param {string} elementId
+ * @param {{start:string,limit:number}} pages
+ * @return {Promise<Array<string>>}
+ */
+export async function getFollowers(elementId,pages){
+    let followDocuments = await listDocs({
+        collection:"follow",
+        filter:{
+            matcher:{
+                key:"_"+elementId
+            },
+            paginate:{
+                startAfter: pages.start==""?undefined:pages.start,
+                limit: pages.limit,
+            },
+            order:{
+                desc:true,
+                field:'created_at'
+            }
+        }
+    })
+    if(followDocuments.items.length==0){
+        return [];
+    }else{
+        /**
+         * @type {string[]}
+         */
+        let followedItems = [];
+        for(let i = 0 ; i<followDocuments.items.length;i++){
+                let elementKey = followDocuments.items[i].owner;
+                // @ts-ignore
+                followedItems.push(elementKey);
+                followedItems=followedItems;
+        }
+        return followedItems;
+    }
+};
 
+/**
+ * @param {string} elementId
+ * @param {{start:string,limit:number}} pages
+ * @return {Promise<Array<string>>}
+ */
+export async function getFollowing(elementId,pages){
+    let followDocuments = await listDocs({
+        collection:"follow",
+        filter:{
+            matcher:{
+                key:elementId+"_"
+            },
+            paginate:{
+                startAfter: pages.start==""?undefined:pages.start,
+                limit: pages.limit,
+            },
+            order:{
+                desc:true,
+                field:'created_at'
+            }
+        }
+    })
+    if(followDocuments.items.length==0){
+        return [];
+    }else{
+        /**
+         * @type {string[]}
+         */
+        let followedItems = [];
+        for(let i = 0 ; i<followDocuments.items.length;i++){
+                let elementKey = followDocuments.items[i].key.substring(elementId.length+1);
+                // @ts-ignore
+                followedItems.push(elementKey);
+                followedItems=followedItems;
+        }
+        return followedItems;
+    }
+};
 
+/**
+ * @param {Array<string>} listUsersKeys
+ */
+export async function getListUsersBasicData(listUsersKeys){
+    /**
+     * @type {{collection:string,key:string}[]}
+     */
+    let docInput = [];
+    for (const currentKey of listUsersKeys) {
+        if(currentKey.length==63){
+            docInput.push({
+                collection: "user_index",
+                key:"INDEX_"+currentKey
+            })
+            docInput = docInput;
+        }else{
+            docInput.push({
+                collection: "index_search",
+                key:"INDEX_"+currentKey
+            })
+            docInput = docInput;
+        }
+    }
+    if(docInput.length>0){
+        let docs = await getManyDocs({docs:docInput});
+        console.log("Docs: " , docs);
+        return docs;
+    }else{
+        return[];
+    }
+    
+}
+/**
+ * @param {string} elementId
+ * @param {{start:string,limit:number}} pages
+ * @return {Promise<Array<import("@junobuild/core-peer").Doc<any>|undefined>>}
+ */
+export async function getFollowersAndTheirInformation(elementId,pages){
+    let listFollowersKeys = await getFollowers(elementId,pages);
+    return await getListUsersBasicData(listFollowersKeys);
+}
+
+/**
+ * @param {string} elementId
+ * @param {{start:string,limit:number}} pages
+ * @return {Promise<Array<import("@junobuild/core-peer").Doc<any>|undefined>>}
+ */
+export async function getFollowingsAndTheirInformation(elementId,pages){
+    let listFollowersKeys = await getFollowing(elementId,pages);
+    return await getListUsersBasicData(listFollowersKeys);
+}
 
