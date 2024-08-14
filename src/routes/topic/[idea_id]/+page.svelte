@@ -34,6 +34,8 @@
         getUserImages,
     } from "$lib/data_functions/get_functions";
     import SuccessNew from "$lib/components/Success_New.svelte";
+    import FollowersModalDisplay from "$lib/components/FollowersModalDisplay.svelte";
+    import FundingBarNew from "$lib/components/FundingBarNew.svelte";
 
     /** @type {import('./$types').PageData} */
     export let data;
@@ -134,7 +136,7 @@
                         </div>
                     {:then data}
                         <div class="Funding-bar">
-                            <FundingBar
+                            <FundingBarNew
                                 expected={data.expected}
                                 total={data.pledges}
                             />
@@ -180,7 +182,7 @@
                         <FollowersSection
                             amount={data}
                             element_key={key}
-                            type={"idea"}
+                            type={"topic"}
                         />
                     {/await}
 
