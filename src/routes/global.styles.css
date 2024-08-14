@@ -174,6 +174,21 @@ a:hover {
     height: fit-content;
 }
 
+.userSmallProfilePicture {
+    border-radius: 50%;
+    /* Make images round */
+    overflow: hidden;
+    /* Hide overflow to maintain the circular shape */
+
+    border: 1px solid var(--tertiary-color);
+    width: 30px;
+    height: 30px;
+    transition:
+        border-color 0.3s ease,
+        width 0.1s ease,
+        height 0.1s ease;
+}
+
 .InputText:focus {
     border: 2px solid var(--primary-color);
     /* Change to orange when the input is focused */
