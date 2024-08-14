@@ -6,6 +6,7 @@
     import CircledButtonDarkSmall from "$lib/components/CircledButtonDarkSmall.svelte";
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import FlatButtonDarkSmall from "$lib/components/FlatButtonDarkSmall.svelte";
+    import FollowersAndFollowingSection from "$lib/components/FollowersAndFollowingSection.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsolut.svelte";
     import PageTabs from "$lib/components/PageTabs.svelte";
@@ -15,6 +16,7 @@
     import TransactionDisplay from "$lib/components/TransactionDisplay.svelte";
     import Wallet from "$lib/components/Wallet.svelte";
     import WithdrawSection from "$lib/components/WithdrawSection.svelte";
+    import FollowersSection from "$lib/components/followersSection.svelte";
     import Loading from "$lib/components/loading.svelte";
     import ProfilePicture from "$lib/components/profilePicture.svelte";
     import { getWalletAddress } from "$lib/data_functions/docu.functions";
@@ -315,15 +317,12 @@
                     resize: none; /* Disable resizing */"
                 />
             {/if}
+
+            <FollowersAndFollowingSection element_key={userKey} />
             <div class="Reputation">
                 <Reputation {reputation} />
             </div>
-            <div class="Badges">
-                <div class="BudgesTitle">Badges</div>
-                <div class="BadgesSection">
-                    <Badges />
-                </div>
-            </div>
+            <!--   -->
             <div class="Social-Section">
                 <div class="SocialsTitle">Socials</div>
                 <div class="SocialsList">
@@ -499,6 +498,7 @@
                 {:catch error}
                     <p>Error: {error.message}</p>
                 {/await}
+                Withdraw your tokens
                 <WithdrawSection />
             </div>
         </div>
