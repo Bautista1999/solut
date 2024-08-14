@@ -509,7 +509,12 @@ export async function followElement(element_id,type){
                 doc:{
                     key:user?.key+"_"+element_id,
                     description:type,
-                    data:[]
+                    /**@type {import("$lib/data_objects/data_types").follow} */
+                    data:{
+                        follower:user?.key?user.key:"",
+                        following:element_id,
+                        type:type,
+                    }
                 }
                 
             })
