@@ -1,6 +1,9 @@
 <script>
+    // @ts-ignore
     import { fade, slide } from "svelte/transition";
+    // @ts-ignore
     import AboutProject from "./AboutProject.svelte";
+    // @ts-ignore
     import Badges from "./Badges.svelte";
     import { goto } from "$app/navigation";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
@@ -10,10 +13,13 @@
         getUserImages,
         validateImageUrl,
     } from "$lib/data_functions/get_functions";
+    // @ts-ignore
     import { path } from "$lib/stores/redirect_store";
+    // @ts-ignore
     import { GetAmountNewNotifications } from "$lib/data_functions/notifications";
     import { notificationCount } from "$lib/stores/notifications";
     import AppMenuBar from "./AppMenuBar.svelte";
+    // @ts-ignore
     import ProfilePictureHeader from "./ProfilePicture_Header.svelte";
     import PledgerProfilePicture from "./PledgerProfilePicture.svelte";
     import { signOut } from "@junobuild/core-peer";
@@ -29,6 +35,7 @@
     // Function to close the sidebar when clicking outside of it
     document.addEventListener("click", function (event) {
         const sidebar = document.querySelector(".SideBar.open");
+        // @ts-ignore
         const isClickInside = sidebar.contains(event.target);
 
         if (!isClickInside && isOpen) {
