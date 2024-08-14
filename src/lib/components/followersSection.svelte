@@ -8,6 +8,8 @@
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { path } from "$lib/stores/redirect_store";
     import { onMount } from "svelte";
+    import FollowersModalDisplay from "./FollowersModalDisplay.svelte";
+    import { FollowersModal } from "$lib/stores/other_stores";
 
     /**
      * @param {number} num
@@ -43,7 +45,7 @@
     }
     async function DecreaseFollowers() {
         if (!(await CheckIfSignedIn())) {
-            path.set("/solution/" + element_key);
+            path.set(window.location.toString());
             goto("/signin/");
             return;
         }
@@ -82,7 +84,16 @@
         {/if}
     </div>
 
-    <div class="Followers">Followers: {amount_sub}</div>
+    <div
+        class="Followers"
+        on:click={() => {
+            FollowersModal.set(true);
+        }}
+    >
+        Followers: {amount_sub}
+    </div>
+
+    <FollowersModalDisplay elementId={element_key} bind:amount />
 </div>
 
 <style>
@@ -111,6 +122,15 @@
         display: flex;
         align-items: center; /* Ensures text is centered vertically */
         justify-content: center; /* Center horizontally */
+        cursor: pointer;
+    }
+    .Followers:hover {
+        grid-area: 1 / 2 / 2 / 3;
+        display: flex;
+        align-items: center; /* Ensures text is centered vertically */
+        justify-content: center; /* Center horizontally */
+        cursor: pointer;
+        color: var(--primary-color);
     }
 
     .material-symbols-outlined {
