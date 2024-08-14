@@ -67,6 +67,12 @@ export type UserProfilePic = {
 
 export type IndexDataReturn = { title: string, subtitle: string, images: string, videos: string, owner: string, type: string };
 
+export type follow = {
+    follower: string,
+    following: string,
+    type: string,
+}
+
 export type Notification = {
     title: string;
     subtitle: string;
