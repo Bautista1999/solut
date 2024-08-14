@@ -326,10 +326,10 @@
         {#if $activeTab === "Information"}
             <div class="information">
                 <Reputation {reputation} />
-                <div class="badges">
+                <!-- <div class="badges">
                     <div class="badges-title">Badges</div>
                     <Badges />
-                </div>
+                </div> -->
                 <div class="social-section">
                     <div class="socials-title">Socials</div>
                     <div class="socials-list">
