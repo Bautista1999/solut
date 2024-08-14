@@ -61,6 +61,7 @@
     import MagicalDots from "$lib/components/magicalDots.svelte";
     import LoadingModalNew from "$lib/components/LoadingModalNew.svelte";
     import IdeaCardContainer from "$lib/components/IdeaCard_container.svelte";
+    import FundingBarNew from "$lib/components/FundingBarNew.svelte";
 
     let userKey = "";
     let ownerKey = "";
@@ -227,7 +228,7 @@
                         </div>
                     {:then data}
                         <div class="Funding-bar">
-                            <FundingBar
+                            <FundingBarNew
                                 expected={data.expected}
                                 total={data.pledges}
                             />
