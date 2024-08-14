@@ -44,6 +44,7 @@
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { path } from "$lib/stores/redirect_store";
     import Error from "../../+error.svelte";
+    import FundingBarNew from "$lib/components/FundingBarNew.svelte";
 
     /** @type {import('./$types').PageData} */
     // @ts-ignore
@@ -187,7 +188,7 @@
                         </div>
                     {:then data}
                         <div class="Funding-bar">
-                            <FundingBar
+                            <FundingBarNew
                                 expected={data.expected}
                                 total={data.pledges}
                             />
@@ -235,7 +236,7 @@
                         <FollowersSection
                             amount={data}
                             element_key={key}
-                            type={"feature"}
+                            type={"idea"}
                         />
                     {/await}
                     <div
