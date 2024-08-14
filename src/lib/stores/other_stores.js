@@ -111,4 +111,7 @@ export const IsSignedIn = writable(false);
 
 export const UserKey = writable("");
 
+export let FollowersModal = writable(false);
+export let FollowingModal = writable(false);
+
 
