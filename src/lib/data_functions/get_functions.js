@@ -551,7 +551,7 @@ export async function getIdeasByKeyWords(keywords,pages){
          */
         let returnedIdeas = [];
         for(let i=0; i<searchedIdeas.length;i++){
-                                // @ts-ignore
+            // @ts-ignore
 
             let documentType =  extractType(searchedIdeas[i].description);
             // @ts-ignore
@@ -1151,3 +1151,36 @@ export async function getFollowingsAndTheirInformation(elementId,pages){
     return await getListUsersBasicData(listFollowersKeys);
 }
 
+
+/**
+ * @param {string} element_id
+ * @return {Promise<string>}
+ */
+export async function getElementType(element_id){
+    let indexDoc = await getDoc({
+        collection:"index_search",
+        key:"INDEX_"+element_id,
+    })
+    if(indexDoc!=undefined){
+
+        // @ts-ignore
+        let documentType =  extractType(indexDoc.description?indexDoc.description:"");
+        // @ts-ignore
+        let createdTimestamp = Number(indexDoc.created_at/1000000n);
+        let july8thDate = new Date("2024-07-08").getTime(); //the day we change the names from topic to idea, and feature to idea
+        if (
+            createdTimestamp < july8thDate
+        ){
+            if(documentType == "idea"){
+                return "topic";
+            }else if(documentType == "feature"){
+                return "idea";
+            }
+            return documentType?documentType:"idea";
+        }
+        return documentType?documentType:"idea";
+    }else{
+            return "user";
+    }
+    
+}
