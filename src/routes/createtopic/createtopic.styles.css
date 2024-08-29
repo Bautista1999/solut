@@ -1,0 +1,218 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    height: fit-content;
+    padding-block: 20px;
+    width: 100%;
+    /* Ensures it takes the full height of the viewport */
+    /* Optional: To add some space around the wizard */
+}
+
+.wizard-container {
+    width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--tertiary-color);
+    color: var(--seventh-color);
+    border-radius: 0px;
+    border: 1px solid var(--seventh-color);
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: center;
+    height: fit-content;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background-color: var(--forth-color);
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.field-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 3px;
+}
+
+.required-field {
+    font-size: 0.875rem;
+    color: red;
+}
+
+.progress {
+    height: 100%;
+    background-color: var(--primary-color);
+    border-radius: 5px;
+    transition: width 0.3s ease-in-out;
+}
+
+.form-section {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.form-section label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.form-section input,
+.form-section textarea {
+    width: 100%;
+}
+
+.form-section textarea {
+    height: 150px;
+    resize: none;
+}
+
+.char-count {
+    font-size: 0.875rem;
+    color: var(--primary-color);
+    margin-top: 8px;
+    display: block;
+    text-align: right;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.tags {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    gap: 5px;
+    padding-block: 10px;
+    flex-wrap: wrap;
+    /* Wrap tags to the next line when full */
+}
+
+.tagInput {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    gap: 20px;
+}
+
+.tag {
+    width: fit-content;
+    padding-inline: 5px;
+    padding-block: 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--primary-color);
+    border: 1px solid var(--secondary-color);
+    color: var(--tertiary-color);
+}
+
+.optionalText {
+    color: grey;
+    font-style: italic;
+    font-weight: lighter;
+}
+
+@media (max-width: 768px) {
+    .wizard-container {
+        width: 100%;
+        padding: 15px;
+    }
+
+    .form-section {
+        margin-bottom: 15px;
+    }
+
+    .form-section label {
+        font-size: 1.1rem;
+    }
+
+    .char-count,
+    .required-field {
+        font-size: 0.75rem;
+    }
+
+    .tags {
+        justify-content: start;
+        padding-block: 8px;
+    }
+
+    .tagInput {
+        gap: 15px;
+    }
+
+    .tag {
+        padding-inline: 3px;
+        padding-block: 1px;
+    }
+
+    .form-actions {
+        margin-top: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .wizard-container {
+        width: 100%;
+        padding: 10px;
+    }
+
+    .progress-bar {
+        height: 8px;
+    }
+
+    .form-section label {
+        font-size: 1.1rem;
+    }
+
+    .char-count,
+    .required-field {
+        font-size: 0.7rem;
+    }
+
+    .tags {
+        padding-block: 6px;
+        gap: 3px;
+    }
+
+    .tagInput {
+        gap: 10px;
+    }
+
+    .tag {
+        padding-inline: 2px;
+        padding-block: 1px;
+    }
+
+    .form-actions {
+        margin-top: 10px;
+    }
+
+    .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        height: fit-content;
+        padding-block: 5px;
+        width: 100%;
+        /* Ensures it takes the full height of the viewport */
+        /* Optional: To add some space around the wizard */
+    }
+}
