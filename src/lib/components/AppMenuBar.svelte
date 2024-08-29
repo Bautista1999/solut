@@ -14,7 +14,7 @@
             name: "Create",
             icon: "add_circle",
             label: "Create",
-            path: "/create",
+            path: "/createtopic",
         },
         { name: "Sign in", icon: "login", label: "Sign in", path: "/signin" },
     ];
@@ -30,7 +30,7 @@
             name: "Create",
             icon: "add_circle",
             label: "Create",
-            path: "/create",
+            path: "/createtopic",
         },
 
         {
