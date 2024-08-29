@@ -139,122 +139,136 @@
 </script>
 
 {#if !error && !isLoading && !success}
-    <div class="container">
-        <h1>Account</h1>
+    <div class="container" style="margin-top: 0px;">
+        <div class="content" style="margin-top: 0px;">
+            <h1>Account</h1>
 
-        <div class="profile-pic-container">
-            <!-- svelte-ignore a11y-img-redundant-alt -->
-            <img
-                class="profile-pic"
-                src={profileUrl || defaultUrl}
-                alt="Profile Picture"
-            />
-        </div>
-        <p style="width: 100%;">Picture URL</p>
-        <input
-            type="list"
-            bind:value={profileUrl}
-            placeholder="Profile picture URL"
-            class="field"
-        />
-        <!-- <p>Your principal: {data.params.user_id}</p> -->
-        <p style="width: 100%;">Username</p>
+            <div class="profile-pic-container">
+                <!-- svelte-ignore a11y-img-redundant-alt -->
+                <img
+                    class="profile-pic"
+                    src={profileUrl || defaultUrl}
+                    alt="Profile Picture"
+                />
+            </div>
+            <div class="form-section">
+                <label for="ideasSelected">Picture URL</label>
+                <input
+                    type="list"
+                    bind:value={profileUrl}
+                    placeholder="Profile picture URL"
+                    class="InputText"
+                />
+            </div>
+            <!-- <p>Your principal: {data.params.user_id}</p> -->
+            <div class="form-section">
+                <label for="ideasSelected">Username</label>
 
-        <input
-            type="text"
-            bind:value={username}
-            placeholder="Username"
-            on:blur={handleInput}
-            class="field"
-        />
-        {#if isTaken}
-            <p
-                class="InputErrorMessage"
-                style="width: 100%;margin-bottom:10px;"
-            >
-                That name is already taken!
-            </p>
-        {:else if !isTaken && username != "" && username != " "}
-            <p
-                class="InputSuccessMessage"
-                style="width: 100%; margin-bottom:10px;"
-            >
-                Name available!
-            </p>
-        {/if}
-        <p style="width: 100%;">Country</p>
-        <select
-            bind:value={country}
-            class="InputText"
-            style="font-family: Barlow; padding-inline:15px; width:100%; margin-block:10px;"
-        >
-            <option value="" disabled selected>Select your country</option>
-            {#each countries as countryName}
-                <option value={countryName}>{countryName}</option>
-            {/each}
-        </select>
-        <p style="width: 100%;">Sex</p>
+                <input
+                    type="text"
+                    bind:value={username}
+                    placeholder="Username"
+                    on:blur={handleInput}
+                    class="InputText"
+                />
+                {#if isTaken}
+                    <p
+                        class="InputErrorMessage"
+                        style="width: 100%;margin-bottom:10px;"
+                    >
+                        That name is already taken!
+                    </p>
+                {:else if !isTaken && username != "" && username != " "}
+                    <p
+                        class="InputSuccessMessage"
+                        style="width: 100%; margin-bottom:10px;"
+                    >
+                        Name available!
+                    </p>
+                {/if}
+            </div>
+            <div class="form-section">
+                <label for="ideasSelected">Country</label>
+                <select
+                    bind:value={country}
+                    class="InputText"
+                    style="font-family: Barlow; padding-inline:15px; width:100%; margin-block:10px;"
+                >
+                    <option value="" disabled selected
+                        >Select your country</option
+                    >
+                    {#each countries as countryName}
+                        <option value={countryName}>{countryName}</option>
+                    {/each}
+                </select>
+            </div>
+            <div class="form-section">
+                <label for="ideasSelected">Sex</label>
+                <select
+                    bind:value={gender}
+                    class="InputText"
+                    style="width:100%;"
+                >
+                    <option value="" disabled selected>Select your sex</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
 
-        <select
-            bind:value={gender}
-            class="InputText"
-            style="font-family: Barlow; padding-inline:15px; width:100%; margin-block:10px;"
-        >
-            <option value="" disabled selected>Select your sex</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-        </select>
-        <p style="width: 100%;">Interests</p>
-        <div class="interests-container">
-            <input
-                class="interest-input"
-                bind:value={interestInput}
-                placeholder="Add Interest"
-            />
-            <BasicButtonDarkSmall
-                msg={"Add tag"}
-                someFunction={() => {
-                    addTag();
+            <div class="form-section">
+                <label for="ideasSelected">Interests</label>
+                <div class="interests-container">
+                    <input
+                        class="InputText"
+                        bind:value={interestInput}
+                        placeholder="Add Interest"
+                    />
+                    <BasicButtonDarkSmall
+                        msg={"Add tag"}
+                        someFunction={() => {
+                            addTag();
+                        }}
+                    />
+                </div>
+                <div class="tags">
+                    {#each interests as tag}
+                        <!-- svelte-ignore a11y-no-static-element-interactions -->
+                        <div class="tag">
+                            <p>{tag}</p>
+                            <!-- svelte-ignore a11y-click-events-have-key-events -->
+                            <span
+                                class="material-symbols-outlined"
+                                style="cursor: pointer;"
+                                on:click={() => {
+                                    deleteTag(tag);
+                                }}
+                            >
+                                delete
+                            </span>
+                        </div>
+                    {/each}
+                </div>
+            </div>
+            {#if tagsTooLong}
+                <p class="InputErrorMessage" style="width: 100%;">
+                    You can't have more than 10 interests.
+                </p>
+            {/if}
+            <BasicButtonLarger
+                msg={"Set Account"}
+                someFunction={async () => {
+                    await createUser();
                 }}
             />
+            <br />
+            <BasicButtonDarkLarger
+                msg={"Skip this"}
+                someFunction={() => {
+                    goto("/");
+                }}
+                icon={"fast_forward"}
+            />
         </div>
-        <div class="tags">
-            {#each interests as tag}
-                <!-- svelte-ignore a11y-no-static-element-interactions -->
-                <div class="tag">
-                    <p>{tag}</p>
-                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                    <span
-                        class="material-symbols-outlined"
-                        style="cursor: pointer;"
-                        on:click={() => {
-                            deleteTag(tag);
-                        }}
-                    >
-                        delete
-                    </span>
-                </div>
-            {/each}
-        </div>
-        {#if tagsTooLong}
-            <p class="InputErrorMessage" style="width: 100%;">
-                You can't have more than 10 interests.
-            </p>
-        {/if}
-        <BasicButtonLarger
-            msg={"Set Account"}
-            someFunction={async () => {
-                await createUser();
-            }}
-        />
-        <br />
-        <BasicButtonDarkLarger
-            msg={"Skip this"}
-            someFunction={() => {
-                goto("/");
-            }}
-            icon={"fast_forward"}
-        />
     </div>
 {:else if error}
     <ErrorMessage
@@ -282,40 +296,29 @@
 </svelte:head>
 
 <style>
+    @import "../../createtopic/createtopic.styles.css";
     .field {
         width: 100%;
         height: 64px;
         flex-shrink: 0;
         border: 1px solid var(--seventh-color);
-        background: var(black, #fff);
     }
 
     .field:focus {
         border: 1px solid var(--primary-color);
-        background: var(black, #fff);
     }
-    .container {
+    .content {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         height: fit-content;
         width: 100%;
-        max-width: 400px;
-        margin: 20px auto;
+        max-width: 450px;
         padding: 20px;
-        padding-inline: 40px;
+        padding-inline: 20px;
         background-color: var(--tertiary-color);
         border: 1px solid var(--seventh-color);
-    }
-
-    input {
-        width: 100%;
-        padding: 12px 20px;
-        margin: 8px 0;
-        display: inline-block;
-        border: 1px solid #ccc;
-        box-sizing: border-box;
     }
 
     .interests-container {
@@ -394,7 +397,7 @@
         color: var(--tertiary-color);
     }
     @media (max-width: 480px) {
-        .container {
+        .content {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -402,9 +405,9 @@
             height: fit-content;
             width: fit-content;
             max-width: 400px;
-            margin: 20px auto;
+            margin: 0px auto;
             padding: 20px;
-            padding-inline: 40px;
+            padding-inline: 15px;
             background-color: var(--tertiary-color);
             border: 1px solid var(--seventh-color);
         }
