@@ -58,7 +58,7 @@
                                         ? ""
                                         : feature.data.videos[0],
                                 owner: feature.owner,
-                                type: type,
+                                type: "idea",
                             },
                         }}
                         padding={10}
