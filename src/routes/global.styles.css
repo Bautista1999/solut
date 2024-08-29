@@ -209,6 +209,18 @@ a:hover {
     gap: 20px;
 }
 
+.SmallerSeparator {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.TinySeparator {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .VerticallyAligned {
     display: flex;
     justify-content: center;

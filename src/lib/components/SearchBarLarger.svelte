@@ -140,13 +140,13 @@
         />
     </div>
     {#if !isLoading}
-        <button class="search-button">
-            <span
-                class="material-symbols-outlined"
-                on:click={async () => {
-                    await searchDatabase(searchText);
-                }}>search</span
-            >
+        <button
+            class="search-button"
+            on:click={async () => {
+                await searchDatabase(searchText);
+            }}
+        >
+            <span class="material-symbols-outlined">search</span>
         </button>
     {:else}
         <MagicalDotsAbsoluteSmall />
@@ -188,7 +188,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        max-width: 100%;
+        width: 760px;
         background: linear-gradient(to right, var(--tertiary-color));
         padding: 0.5rem 1rem;
         border: 1px solid var(--seventh-color);
@@ -199,6 +199,7 @@
         display: flex;
         align-items: center;
         flex-grow: 1;
+        width: 100%;
     }
 
     .search-box {
@@ -279,7 +280,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            max-width: 90%;
+            width: 100%;
+            max-width: 100%;
             background: linear-gradient(to right, var(--tertiary-color));
             padding: 0.5rem 1rem;
             border: 1px solid var(--seventh-color);

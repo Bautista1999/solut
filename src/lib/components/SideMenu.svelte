@@ -390,7 +390,7 @@
             <div class="SideBarElement">
                 <!-- svelte-ignore a11y-no-static-element-interactions -->
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <a class="material-symbols-outlined" href={"/create"}>
+                <a class="material-symbols-outlined" href={"/createtopic"}>
                     add_circle
                 </a>
                 {#if isOpen}
@@ -400,7 +400,7 @@
                         class="label"
                         in:fade={{ duration: seconds * 1000 }}
                         out:fade={{ duration: seconds * 1000 }}
-                        href={"/create"}
+                        href={"/createtopic"}
                         style="white-space: nowrap;  text-overflow: ellipsis; 
                         display: block; 
                         max-width: 100%; position:absolute;

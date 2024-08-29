@@ -112,6 +112,9 @@
      * @param {number} index - Index of the idea to update
      */
     function saveEdits(index) {
+        if (editTitle.length == 0 || editSubtitle.length == 0) {
+            return;
+        }
         ideas[index] = {
             ...ideas[index],
             title: editTitle,
@@ -119,6 +122,7 @@
             images: editIdeaImages,
         };
         editImageUrl = "";
+
         stopEditing();
     }
 
@@ -158,179 +162,269 @@
         ideas = ideas.filter((_, i) => i !== index);
         ideas = ideas;
     }
+
+    const charLimit = { title: 70, subtitle: 200, description: 2000 };
 </script>
 
-<div class="SmallSeparator forms-box">
-    <input
-        type="text"
-        bind:value={newIdeaTitle}
-        class="InputText"
-        placeholder="Title of the Idea"
-    />
-
-    <input
-        type="text"
-        class="InputText"
-        bind:value={newIdeaSubtitle}
-        placeholder="Subtitle"
-    />
-    <div class="HorizontallyAligned">
+<div class=" form-section forms-box">
+    <div class="form-section">
+        <label for="title">Title</label>
         <input
             type="text"
-            placeholder="Image URL"
+            bind:value={newIdeaTitle}
             class="InputText"
-            bind:value={url}
+            placeholder="Title of the Idea"
         />
-        <BasicButtonDarkSmall
-            msg="Add image"
-            someFunction={() => {
-                addImage(url);
-            }}
-        />
-    </div>
-    {#if newIdeaImageUrls.length > 0}
-        <div class="image-container">
-            {#each newIdeaImageUrls as url}
-                <div>
-                    <div
-                        class="image"
-                        style="background-image: url({url})"
-                    ></div>
-                    <div class="delete-button">
-                        <CircledButtonDarkSmall
-                            icon={"delete"}
-                            someFunction={() =>
-                                removeImage(newIdeaImageUrls.indexOf(url))}
-                        />
-                    </div>
-                </div>
-            {/each}
+        <div class="field-info">
+            {#if newIdeaTitle.length === 0}
+                <span class="required-field">*Required field</span>
+            {:else}
+                <span></span>
+            {/if}
+            <span class="char-count"
+                >{newIdeaTitle.length} / {charLimit.title} characters</span
+            >
         </div>
-    {/if}
-    <BasicButtonDarkSmall msg="Save" someFunction={addIdea} />
+    </div>
+
+    <div class="form-section">
+        <label for="title">Subtitle</label>
+        <input
+            type="text"
+            class="InputText"
+            bind:value={newIdeaSubtitle}
+            placeholder="Subtitle"
+        />
+        <div class="field-info">
+            {#if newIdeaSubtitle.length === 0}
+                <span class="required-field">*Required field</span>
+            {:else}
+                <span></span>
+            {/if}
+            <span class="char-count"
+                >{newIdeaSubtitle.length} / {charLimit.subtitle} characters</span
+            >
+        </div>
+    </div>
+    <div class="form-section">
+        <label for="images"
+            >Images <span class="optionalText">(Optional field)</span></label
+        >
+        <div class="HorizontallyAligned">
+            <input
+                type="text"
+                placeholder="Image URL"
+                class="InputText"
+                bind:value={url}
+            />
+            <BasicButtonDarkSmall
+                msg="Add image"
+                someFunction={() => {
+                    addImage(url);
+                }}
+            />
+        </div>
+        <br />
+        {#if newIdeaImageUrls.length > 0}
+            <div class="image-container">
+                {#each newIdeaImageUrls as url}
+                    <div>
+                        <div
+                            class="image"
+                            style="background-image: url({url})"
+                        ></div>
+                        <div class="delete-button">
+                            <CircledButtonDarkSmall
+                                icon={"delete"}
+                                someFunction={() =>
+                                    removeImage(newIdeaImageUrls.indexOf(url))}
+                            />
+                        </div>
+                    </div>
+                {/each}
+            </div>
+        {/if}
+        <BasicButtonDarkSmall msg="Save" someFunction={addIdea} />
+    </div>
 </div>
 
 <br />
-<h3>Your ideas</h3>
-{#if ideas.length > 0}
-    <div class="SmallSeparator" style="height: fit-content;">
-        {#each ideas as idea, index}
-            <div
-                class="IdeasDisplay VerticallyAligned"
-                style="flex-direction: column;"
-            >
-                {#if editingIndex === index}
-                    <input bind:value={editTitle} class="InputTextSmall" />
-                    <input bind:value={editSubtitle} class="InputTextSmall" />
-                    <div>
-                        {#if editIdeaImages.length > 0}
-                            <div class="image-container">
-                                {#each editIdeaImages as img, i}
-                                    <div>
+<div class="form-section">
+    <label for="ideas">Your ideas</label>
+    {#if ideas.length > 0}
+        <div class="SmallSeparator" style="height: fit-content;">
+            {#each ideas as idea, index}
+                <div class="IdeasDisplay" style="flex-direction: column;">
+                    {#if editingIndex === index}
+                        <div class="form-section">
+                            <label for="editTitle">Title </label>
+                            <input bind:value={editTitle} class="InputText" />
+                            <div class="field-info">
+                                {#if editTitle.length === 0}
+                                    <span class="required-field"
+                                        >*Required field</span
+                                    >
+                                {:else}
+                                    <span></span>
+                                {/if}
+                                <span class="char-count"
+                                    >{editTitle.length} / {charLimit.title}
+                                    characters</span
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <label for="editSubtitle">Subtitle </label>
+                            <input
+                                bind:value={editSubtitle}
+                                class="InputText"
+                            />
+                            <div class="field-info">
+                                {#if editSubtitle.length === 0}
+                                    <span class="required-field"
+                                        >*Required field</span
+                                    >
+                                {:else}
+                                    <span></span>
+                                {/if}
+                                <span class="char-count"
+                                    >{editSubtitle.length} / {charLimit.subtitle}
+                                    characters</span
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <label for="editIdeaImages"
+                                >Images <span class="optionalText">
+                                    (Optional field)</span
+                                >
+                            </label>
+                            {#if editIdeaImages.length > 0}
+                                <div class="image-container">
+                                    {#each editIdeaImages as img, i}
+                                        <div>
+                                            <div
+                                                class="image"
+                                                style="background-image: url({img})"
+                                            ></div>
+                                            <div class="delete-button">
+                                                <CircledButtonDarkSmall
+                                                    icon={"delete"}
+                                                    someFunction={() =>
+                                                        removeEditImage(i)}
+                                                />
+                                            </div>
+                                        </div>
+                                    {/each}
+                                </div>
+                            {:else}
+                                <p style="margin-bottom: 5px;">
+                                    ---- You havent included any image. Include
+                                    some images in the text field. ----
+                                </p>
+                            {/if}
+                            <div class="HorizontallyAligned">
+                                <input
+                                    type="text"
+                                    class="InputTextSmall"
+                                    bind:value={editImageUrl}
+                                />
+                                <BasicButtonDarkSmall
+                                    msg={"Add image"}
+                                    someFunction={() => {
+                                        addEditImage(editImageUrl);
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div class="VerticallyAligned HorizontallyAligned">
+                            <BasicButtonDarkSmall
+                                msg={"Save"}
+                                someFunction={() => {
+                                    saveEdits(index);
+                                }}
+                            />
+                            <BasicButtonDarkSmall
+                                msg={"Cancel"}
+                                someFunction={() => {
+                                    stopEditing();
+                                }}
+                            />
+                        </div>
+                    {:else}
+                        <div
+                            style="display: flex; flex-direction:column; gap:10px;"
+                        >
+                            <h3 style="margin: 0px;">{idea.title}</h3>
+                            <p>{idea.subtitle}</p>
+                            {#if idea.images.length > 0}
+                                <div class="image-container">
+                                    {#each idea.images as img}
                                         <div
                                             class="image"
                                             style="background-image: url({img})"
                                         ></div>
-                                        <div class="delete-button">
-                                            <CircledButtonDarkSmall
-                                                icon={"delete"}
-                                                someFunction={() =>
-                                                    removeEditImage(i)}
-                                            />
-                                        </div>
-                                    </div>
-                                {/each}
-                            </div>
-                        {/if}
-                        <br />
-                        <div class="HorizontallyAligned">
-                            <input
-                                type="text"
-                                class="InputTextSmall"
-                                bind:value={editImageUrl}
-                            />
-                            <BasicButtonDarkSmall
-                                msg={"Add image"}
-                                someFunction={() => {
-                                    addEditImage(editImageUrl);
-                                }}
-                            />
-                        </div>
-                    </div>
-                    <div class="VerticallyAligned HorizontallyAligned">
-                        <BasicButtonDarkSmall
-                            msg={"Save"}
-                            someFunction={() => {
-                                saveEdits(index);
-                            }}
-                        />
-                        <BasicButtonDarkSmall
-                            msg={"Cancel"}
-                            someFunction={() => {
-                                stopEditing();
-                            }}
-                        />
-                    </div>
-                {:else}
-                    <h3 style="margin: 0px;">{idea.title}</h3>
-                    <p>{idea.subtitle}</p>
-                    {#if idea.images.length > 0}
-                        <div class="image-container">
-                            {#each idea.images as img}
+                                    {/each}
+                                </div>
                                 <div
-                                    class="image"
-                                    style="background-image: url({img})"
-                                ></div>
-                            {/each}
-                        </div>
-                        <div
-                            style="transform: translateY(-210%) translateX(540%);height:fit-content; position:absolute; z-index:100;"
-                        >
-                            <div class="VerticallyAligned HorizontallyAligned">
-                                <BasicButtonDarkSmall
-                                    msg="edit"
-                                    someFunction={() => startEditing(index)}
-                                />
-                                <CircledButtonDarkSmall
-                                    icon="delete"
-                                    someFunction={() => removeIdea(index)}
-                                />
-                            </div>
-                        </div>
-                    {:else}
-                        <div
-                            style="transform: translateY(-20%) translateX(540%);height:fit-content; position:absolute; z-index:100;"
-                        >
-                            <div class="VerticallyAligned HorizontallyAligned">
-                                <BasicButtonDarkSmall
-                                    msg="edit"
-                                    someFunction={() => startEditing(index)}
-                                />
-                                <CircledButtonDarkSmall
-                                    icon="delete"
-                                    someFunction={() => removeIdea(index)}
-                                />
-                            </div>
+                                    style="transform: translateX(505%);height:fit-content; position:absolute; z-index:100;"
+                                >
+                                    <div
+                                        class="VerticallyAligned HorizontallyAligned"
+                                    >
+                                        <BasicButtonDarkSmall
+                                            msg="edit"
+                                            someFunction={() =>
+                                                startEditing(index)}
+                                        />
+                                        <CircledButtonDarkSmall
+                                            icon="delete"
+                                            someFunction={() =>
+                                                removeIdea(index)}
+                                        />
+                                    </div>
+                                </div>
+                            {:else}
+                                <div
+                                    style="transform: translateX(505%);height:fit-content; position:absolute; z-index:100;"
+                                >
+                                    <div
+                                        class="VerticallyAligned HorizontallyAligned"
+                                    >
+                                        <BasicButtonDarkSmall
+                                            msg="edit"
+                                            someFunction={() =>
+                                                startEditing(index)}
+                                        />
+                                        <CircledButtonDarkSmall
+                                            icon="delete"
+                                            someFunction={() =>
+                                                removeIdea(index)}
+                                        />
+                                    </div>
+                                </div>
+                            {/if}
                         </div>
                     {/if}
-                {/if}
-            </div>
-        {/each}
-    </div>
-{:else}
-    <div class="VerticallyAligned">
-        <p style="font-size: large; font-style:italic;">
-            --------------- No idea was added yet. ---------------
-        </p>
-    </div>
-{/if}
-<br />
+                </div>
+            {/each}
+        </div>
+    {:else}
+        <div class="VerticallyAligned">
+            <p style="font-size: small; font-style:italic;">
+                --------------- No idea was added yet. ---------------
+            </p>
+        </div>
+    {/if}
+</div>
 
 <style>
+    @import "../../routes/createtopic/createtopic.styles.css";
     .forms-box {
         border: 1px solid var(--seventh-color);
         background-color: var(--forth-color);
-        box-shadow: 6px 6px 0px 0px var(--seventh-color);
         padding: 20px;
     }
 
