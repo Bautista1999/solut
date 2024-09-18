@@ -5,6 +5,7 @@ import { Actor, HttpAgent } from "@dfinity/agent";
 import { admin_canister_id } from "./canisters";
 import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
 import { getUserKey } from "./get_functions";
+import { createAndUploadHTMLStaticFile } from "$lib/SEO and metadata/metadata_functions";
 
 
 /**
@@ -104,6 +105,7 @@ export async function setIdea(idea,features){
     let arrayDocsAdmin =[solutionPledgeDoc,totalPledgeDoc, ideaRevenueCounterDoc,followersCounterDoc];
     await updateCounter("ideas_counter",1);
     let newDocs = await setManyDocs({docs:arrayDocs});
+    createAndUploadHTMLStaticFile(idea.title,idea_id,idea.subtitle,idea.images[0],"topic");
 
 
     let identity = await unsafeIdentity();
@@ -201,6 +203,7 @@ export async function setFeatures(features, parentIdea_id){
         let otherArrayAdmin = [totalPledgeDoc,ideaRevenueCounterDoc,followersCounterDoc];
         arrayDocsAdmin.push(...otherArrayAdmin);
         arrayDocsAdmin=arrayDocsAdmin;
+        createAndUploadHTMLStaticFile(idea.title,idea_id,idea.subtitle,idea.images[0],"idea");
        
     };
     
@@ -313,7 +316,8 @@ export async function setSolution(solution,parentIdea_id){
     const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
     const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
     const result = await canister.setManyDocs(arrayDocsAdmin);
-    let solutionCounter = await updateCounter("solutions_counter",1);
+    let solutionCounter = updateCounter("solutions_counter",1);
+    createAndUploadHTMLStaticFile(solution.title,sol_id,solution.subtitle,solution.images[0],"solution");
     /**
     * @type {import("$lib/data_objects/data_types").Notification}
     */
