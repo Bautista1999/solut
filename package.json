@@ -26,16 +26,17 @@
     "vite": "^4.4.2"
   },
   "dependencies": {
-    "@dfinity/agent": "^1.0.1",
-    "@dfinity/candid": "^1.0.1",
-    "@dfinity/identity": "^1.0.1",
-    "@dfinity/ledger-icp": "^2.2.1",
-    "@dfinity/ledger-icrc": "^2.2.0",
-    "@dfinity/nns": "^4.0.1",
-    "@dfinity/principal": "^1.0.1",
-    "@dfinity/utils": "^2.1.2",
+    "@dfinity/agent": "^2.0.0",
+    "@dfinity/auth-client": "^2.0.0",
+    "@dfinity/candid": "^2.0.0",
+    "@dfinity/identity": "^2.0.0",
+    "@dfinity/ledger-icp": "^2.4.0",
+    "@dfinity/ledger-icrc": "^2.4.0",
+    "@dfinity/nns": "^5.2.0",
+    "@dfinity/principal": "^2.0.0",
+    "@dfinity/utils": "^2.4.0",
     "@junobuild/analytics": "^0.0.24",
-    "@junobuild/core-peer": "^0.0.21",
+    "@junobuild/core-peer": "^0.0.26",
     "@junobuild/utils": "^0.0.22",
     "buffer": "^6.0.3",
     "country-list": "^2.3.0",
@@ -43,5 +44,10 @@
     "p5": "^1.9.3",
     "svelte-canvas-confetti": "^0.6.0"
   },
-  "type": "module"
+  "type": "module",
+  "description": "<p align=\"center\"> <img src=\"static/assets/LogoSol3.png\" alt=\"Alt Text\" width=\"300\"> </p>",
+  "main": "svelte.config.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
