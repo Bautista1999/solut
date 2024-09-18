@@ -187,7 +187,7 @@
                     msg={"Tell us more."}
                     icon={"emoji_objects"}
                     someFunction={() => {
-                        goto("/create");
+                        goto("/createtopic");
                     }}
                 />
             </div>
