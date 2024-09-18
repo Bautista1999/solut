@@ -6,4 +6,4 @@ export async function load({ params }) {
   }
 
 
-  export const prerender = false;
+export const prerender = false;
