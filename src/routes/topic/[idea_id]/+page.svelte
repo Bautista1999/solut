@@ -300,7 +300,6 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content={window.location.toString()} />
     <meta property="og:image" content={images[0]} />
-
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={subtitle} />
     <meta name="twitter:image" content={images[0]} />
