@@ -59,7 +59,7 @@
 
 {#if !error}
     <div class="body">
-        <div class="container">
+        <div class="content">
             <h1 style="font-size: 2.5em;">Sign in</h1>
             <p>Choose your option to sign in into Solutio.</p>
             <br />
@@ -96,7 +96,7 @@
         height: 80vh;
     }
 
-    .container {
+    .content {
         display: flex;
         flex-direction: column;
         align-items: start;
@@ -120,7 +120,7 @@
             height: 80vh;
         }
 
-        .container {
+        .content {
             display: flex;
             flex-direction: column;
             align-items: start;
