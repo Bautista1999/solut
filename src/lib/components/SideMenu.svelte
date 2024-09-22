@@ -35,12 +35,14 @@
     // Function to close the sidebar when clicking outside of it
     document.addEventListener("click", function (event) {
         const sidebar = document.querySelector(".SideBar.open");
-        // @ts-ignore
-        const isClickInside = sidebar.contains(event.target);
+        if (isOpen) {
+            // @ts-ignore
+            const isClickInside = sidebar.contains(event.target);
 
-        if (!isClickInside && isOpen) {
-            event.stopPropagation();
-            toggleSidebar();
+            if (!isClickInside && isOpen) {
+                event.stopPropagation();
+                toggleSidebar();
+            }
         }
     });
 </script>
