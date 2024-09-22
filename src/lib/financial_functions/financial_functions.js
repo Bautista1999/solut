@@ -12,6 +12,7 @@ import { admin_canister_id, escrow_canister_id } from "../data_functions/caniste
 import  {idlFactory as Escrow} from "$lib/declarations/escrow.declarations.did";
 import { getIdeaIdBySolution, getImplementedFeaturesOfSolution, getUserKey } from "$lib/data_functions/get_functions";
 import { createNotification, followElement, updateSolutionStatus } from "$lib/data_functions/create_functions";
+import { trackEvent } from "@junobuild/analytics";
 
 // import("../declarations/juno.declarations.did.js")._SERVICE.set_doc;
 /**
@@ -233,6 +234,14 @@ export async function CreatePledge(idea_id, feature_id, amount, userPrincipalTex
     // @ts-ignore
     let result = await admin.pledgeCreate(docKey, idea_id, feature_id, AmountInNat64, accountIdentifierInBlob);
     followElement(idea_id,"IDEA");
+    trackEvent({
+        name: "Pledges created",
+        metadata: {
+            idea_id: idea_id,
+            amount: amount.toString(),
+            user_key: userPrincipalText,
+        }
+      });
     
     console.log("Result: ", result);
 }
@@ -456,6 +465,14 @@ export async function approveProject(amount,project_id, approvals){
             canisterId:escrow_canister_id,
         });
         let result2 = await escrow.storeApprovals(project_id,newListApprovals);
+        trackEvent({
+            name: "Approvals created",
+            metadata: {
+                project_id: project_id,
+                amount: amount.toString(),
+                user_key: userKey,
+            }
+          });
         console.log("Storing approvals: ", result);
     }catch(e){
         throw new Error(String(e));
@@ -621,6 +638,13 @@ export async function completeSolution(project_id,idea_id){
         let description = idea_id;
         createNotification(newNotification,description);
     };
+    trackEvent({
+        name: "Solutions completed",
+        metadata: {
+            project_id: project_id,
+            idea_id: idea_id
+        }
+      });
     console.log("Approvals: ", result);
 }
 /**

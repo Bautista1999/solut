@@ -6,6 +6,7 @@ import { admin_canister_id } from "./canisters";
 import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
 import { getUserKey } from "./get_functions";
 import { createAndUploadHTMLStaticFile } from "$lib/SEO and metadata/metadata_functions";
+import { trackEvent } from "@junobuild/analytics";
 
 
 /**
@@ -113,9 +114,15 @@ export async function setIdea(idea,features){
     const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
 
     const result = await canister.setManyDocs(arrayDocsAdmin);
-
+    trackEvent({
+        name: "Topics created",
+        metadata: {
+          title: idea.title,
+          key: idea_id
+        }
+      });
     let featuresDocs = await setFeatures(features,idea_id);
-    followElement(idea_id,"idea");
+    await followElement(idea_id,"idea");
     if (typeof featuresDocs === "string") {
         return featuresDocs;
     }else {
@@ -155,7 +162,11 @@ export async function setFeatures(features, parentIdea_id){
             }
             return "ERROR: Is required for all fields to be completed in feature: " + idea.title + ". The field " + errorDetail;
         };
-        followElement(idea_id,"feature");
+        if(features.length>1){
+            followElement(idea_id,"feature");
+        }else{
+            await followElement(idea_id,"feature");
+        }
     // Collection we need to update:
     // feature: feature, idea_feature_pledge, index_search, idea_revenue_counter, solutio_numbers (update idea_counter), followers
         let ideaDoc = {
@@ -204,7 +215,13 @@ export async function setFeatures(features, parentIdea_id){
         arrayDocsAdmin.push(...otherArrayAdmin);
         arrayDocsAdmin=arrayDocsAdmin;
         createAndUploadHTMLStaticFile(idea.title,idea_id,idea.subtitle,idea.images[0],"idea");
-       
+        trackEvent({
+            name: "Ideas created",
+            metadata: {
+                title: idea.title,
+                key: idea_id
+            }
+          });
     };
     
     let newDocs = await setManyDocs({docs:arrayDocs});
@@ -330,6 +347,13 @@ export async function setSolution(solution,parentIdea_id){
         description: "",
         typeOf: "solution proposal"
     };
+    trackEvent({
+        name: "Solutions created",
+        metadata: {
+            title: solution.title,
+            key: sol_id
+        }
+      });
     let description = parentIdea_id;
     createNotification(newNotification,description);
     return newDocs;
@@ -403,6 +427,13 @@ export async function setUser(user, userKey){
     const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
     const result = await canister.setManyDocs(arrayDocsAdmin);
     let usersCounter = await updateCounter("users_counter",1);
+    trackEvent({
+        name: "Users registered",
+        metadata: {
+            name: user.username,
+            id: userKey
+        }
+      });
     return newDocs;
 };
 
@@ -654,6 +685,14 @@ export async function deliverSolution(solution_id, link){
                     let description = solution_id;
                     createNotification(newNotification,description);
                     resolve("Success");
+                    trackEvent({
+                        name: "Solutions delivered",
+                        metadata: {
+                            title: solDoc.data.title,
+                            key: solution_id,
+                            link: link
+                        }
+                      });
                 }
             catch(e){
                 return reject( new Error (String(e)));
@@ -695,6 +734,13 @@ export async function setInvitationDocument(inviterKey){
             version:0n,
         }
     });
+    trackEvent({
+        name: "Users invited",
+        metadata: {
+            inviter_key: inviterKey,
+            invited_user_key:userKey,
+        }
+      });
 }
 
 /**
