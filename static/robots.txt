@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Sitemap: https://solutio.one/solutio-files/sitemap.xml
+Host: https://solutio.one
