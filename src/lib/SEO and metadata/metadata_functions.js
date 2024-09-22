@@ -1,5 +1,7 @@
+import { getUserKey, getUsername } from "$lib/data_functions/get_functions";
 import { uploadFile } from "@junobuild/core-peer";
-
+import fs from 'fs';
+import path from "path";
 /**
  * @param {string} type
  * @param {string} title
@@ -8,10 +10,11 @@ import { uploadFile } from "@junobuild/core-peer";
  * @param {string} type
  * @param {string} url
  */
-export function metadataTagsCreator(title, description, image, type, url){
+export async function metadataTagsCreator(title, description, image, type, url){
 
     
     type = type.length==0?"website":type;
+    let user = await getUsername(await getUserKey());
     return  `
     <!DOCTYPE html>
     <html lang="en">
@@ -27,7 +30,9 @@ export function metadataTagsCreator(title, description, image, type, url){
       <meta name="twitter:title" content="${title}" />
       <meta name="twitter:description" content="${description}" />
       <meta name="twitter:image" content="${image}" />
+      <meta name="twitter:creator" content="${user}" />
       <title>${title}</title>
+      <meta name="author" content="${user}" />
     </head>
     <body>
       <noscript>Please enable JavaScript to view the full content.</noscript>
@@ -35,8 +40,7 @@ export function metadataTagsCreator(title, description, image, type, url){
       <div id="app"></div> 
   
      
-      <scr` +
-              `ipt>
+      <script>
         // This JavaScript will load the full Svelte app for users
         window.onload = function() {
           // Load the full Svelte app dynamically
@@ -47,8 +51,7 @@ export function metadataTagsCreator(title, description, image, type, url){
         }
       }
         }
-      </scr` +
-              `ipt>
+      </script>
     </body>
     </html>`;
 };
@@ -234,3 +237,94 @@ export async function createAndUploadHTMLStaticFile( title, id, description, ima
   let html = await metadataTagsCreator(title,description,image,"website","https://solutio.one/"+elementType+"/"+id);
   let URL = await uploadHTMLToDatabase(html,elementType,id);
 };
+
+
+/**
+ * Update the sitemap.xml file when a new topic is created.
+ * @param {string} id - The ID of the new topic
+ */
+export async function updateSiteMapxml(id) {
+  const sitemapUrl = 'https://solutio.one/solutio-files/sitemap.xml'; // Assuming it's hosted
+  const response = await fetch(sitemapUrl);
+  let sitemap = await response.text();
+  console.log("Sitemap: ",sitemap)
+  // If the sitemap doesn't exist, start a new one
+  if (!sitemap) {
+    sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<url>
+  <loc>https://solutio.one</loc>
+  <lastmod>2024-09-18T19:39:50+00:00</lastmod>
+  <priority>1</priority>
+</url>
+  <url>
+    <loc>https://solutio.one/createtopic</loc>
+    <lastmod>2024-09-18T19:39:50+00:00</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://solutio.one/feed</loc>
+    <lastmod>2024-09-18T19:39:50+00:00</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://solutio.one/myideas</loc>
+    <lastmod>2024-09-18T19:39:50+00:00</lastmod>
+    <priority>0.8</priority>
+  </url>
+</urlset>`;
+  }
+
+  // Create the new topic URL
+  const newTopicUrl = `
+  <url>
+    <loc>https://solutio.one/topic/${id}</loc>
+    <lastmod>${new Date().toISOString()}</lastmod>
+    <priority>0.8</priority>
+  </url>`;
+
+  // Insert the new topic URL before the closing </urlset> tag
+  const insertIndex = sitemap.indexOf('</urlset>');
+  const updatedSitemap = [
+    sitemap.slice(0, insertIndex),
+    newTopicUrl,
+    sitemap.slice(insertIndex),
+  ].join('');
+  console.log("Updated Sitemap: ",updatedSitemap)
+  // Convert updated sitemap to a Blob (or File)
+  const sitemapBlob = new Blob([updatedSitemap], { type: 'text/xml' });
+
+  // Create a File from Blob to upload (optional)
+  const sitemapFile = new File([sitemapBlob], 'sitemap.xml', { type: 'text/xml' });
+  let url = await uploadFileToDatabase(sitemapFile,"solutio-files");
+  console.log("URL: ",url)
+  return (url)
+}
+
+
+
+/**
+ * @param {string} collection
+ * @param {File} file
+ */
+export async function uploadFileToDatabase(file,collection){
+  try{
+    
+    console.log("The size is", file.size);
+    // Step 4: Upload the file to Juno's storage
+    const result = await uploadFile({
+        data: file,
+        collection: collection,
+    });
+  
+    // Display the uploaded file's URL
+    return result.downloadUrl;
+  }
+  catch(e){
+    throw new Error("Something went wrong when uploading file...")
+  }
+}
