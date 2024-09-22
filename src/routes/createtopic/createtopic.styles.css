@@ -10,8 +10,8 @@
     align-items: center;
     min-height: 100vh;
     height: fit-content;
-    padding-block: 20px;
     width: 100%;
+
     /* Ensures it takes the full height of the viewport */
     /* Optional: To add some space around the wizard */
 }
@@ -20,6 +20,7 @@
     width: 800px;
     margin: 0 auto;
     padding: 20px;
+    margin-block: 20px;
     background-color: var(--tertiary-color);
     color: var(--seventh-color);
     border-radius: 0px;
@@ -171,6 +172,7 @@
     .wizard-container {
         width: 100%;
         padding: 10px;
+        margin-block: 5px;
     }
 
     .progress-bar {
