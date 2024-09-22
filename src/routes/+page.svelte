@@ -215,6 +215,17 @@
     <meta name="twitter:card" content="summary" />
     <meta charset="utf-8" />
     <title>Home</title>
+    <meta
+        name="description"
+        content="Solutio its a place where users request products and devs deliver them."
+    />
+    <meta name="author" content="Solutio" />
+    <!-- Optional but useful for identifying content authors -->
+    <link rel="canonical" href="https://solutio.one" />
+    <!-- Canonical URL to prevent duplicate content issues -->
+
+    <!-- Other common meta tags -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </svelte:head>
 
 <style>
