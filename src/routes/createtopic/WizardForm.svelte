@@ -290,10 +290,6 @@
         </div>
     </div>
 
-    <script lang="ts">
-        export let slots: { [key: string]: any } = {};
-    </script>
-
     <slot name="additional-fields" />
     <div class="form-actions">
         <!-- <BasicRoundedButton
