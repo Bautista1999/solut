@@ -3,13 +3,17 @@
 
   import "./global.styles.css";
   import SideMenu from "$lib/components/SideMenu.svelte";
-  import HeaderV2 from "$lib/components/Header_v2.svelte";
   import Footer from "$lib/components/Footer.svelte";
   import { initSatellite } from "@junobuild/core-peer";
   import { onMount, onDestroy } from "svelte";
   import { updateNotificationCount } from "$lib/stores/notifications";
   import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
   import { initOrbiter } from "@junobuild/analytics";
+  import { onLCP, onINP, onCLS } from "web-vitals";
+
+  onCLS(console.log);
+  onINP(console.log);
+  onLCP(console.log);
 
   const init = async () => {
     await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
@@ -18,6 +22,16 @@
       orbiterId: "vwcao-hiaaa-aaaal-ajlpq-cai",
     });
   };
+  import { afterNavigate } from "$app/navigation";
+
+  afterNavigate(({ to }) => {
+    // @ts-ignore
+    if (to.url.pathname.endsWith("/")) {
+      // @ts-ignore
+      const newUrl = to.url.pathname.slice(0, -1); // Remove the trailing slash
+      history.replaceState(null, "", newUrl); // Update the browser URL without a reload
+    }
+  });
 
   function addGlobalEventListeners() {
     const events = ["click", "keypress"];
@@ -43,18 +57,21 @@
     };
   }
 
-  onMount(async () => {
-    await init();
-    await updateNotificationCount();
-    await CheckIfSignedIn();
+  onMount(() => {
+    // Add global event listeners
     const removeEventListeners = addGlobalEventListeners();
 
-    // Remove event listeners when component is destroyed
-    onDestroy(() => {
-      removeEventListeners();
+    // Perform async tasks after the event listeners are added
+    init().then(async () => {
+      await updateNotificationCount();
+      await CheckIfSignedIn();
     });
 
-    // Initial notification count update
+    // Cleanup on destroy
+  });
+  onDestroy(() => {
+    const removeEventListeners = addGlobalEventListeners();
+    removeEventListeners();
   });
 </script>
 
