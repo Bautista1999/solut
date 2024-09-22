@@ -4,6 +4,7 @@
   import {
     createPledgeImage,
     createPledgeMetatags,
+    updateSiteMapxml,
     uploadHTMLToDatabase,
     uploadImageToDatabase,
   } from "$lib/SEO and metadata/metadata_functions";
@@ -203,6 +204,12 @@
       disabledCondition={null}
       someFunction={uploadPledgeAsset}
       msg={"Upload pledge html"}
+    />
+    <!-- <a href={pledgeURL}>{pledgeURL}</a> -->
+    <BasicRoundedButton
+      disabledCondition={null}
+      someFunction={() => updateSiteMapxml("RWUi7R26NWUYafaTzzQWQ")}
+      msg={"Update sitemap"}
     />
   {/if}
 </div>
