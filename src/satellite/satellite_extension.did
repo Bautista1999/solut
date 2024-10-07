@@ -1,0 +1,15 @@
+type Product = record {
+  owner : opt principal;
+  link : text;
+  name : text;
+  description : text;
+  score : opt nat8;
+  company : opt text;
+  image : opt text;
+};
+type Result = variant { Ok; Err : text };
+service : {
+  build_version : () -> (text) query;
+  create_new_product : (Product, text) -> (Result);
+  eliminate_solution : (text) -> (Result);
+}
