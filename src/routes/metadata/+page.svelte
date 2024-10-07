@@ -1,6 +1,7 @@
 <script>
   import BasicRoundedButton from "$lib/components/BasicRoundedButton.svelte";
   import MagicalDotsSmall from "$lib/components/MagicalDotsSmall.svelte";
+  import MetadataSearcher from "$lib/components/MetadataSearcher.svelte";
   import {
     createPledgeImage,
     createPledgeMetatags,
@@ -8,17 +9,54 @@
     uploadHTMLToDatabase,
     uploadImageToDatabase,
   } from "$lib/SEO and metadata/metadata_functions";
-  import { uploadFile } from "@junobuild/core-peer";
+  import { uploadFile, setDoc } from "@junobuild/core-peer";
   import { nanoid } from "nanoid";
+  import { onMount } from "svelte";
   import { compile } from "svelte/compiler"; // Import the Svelte compiler
+  import {
+    createNewProduct,
+    eliminateSolution,
+  } from "../../declarations/satellite/satellite.api";
+  import { listJunoDocs } from "$lib/testingInterface_logic/testing.interface.logic";
 
   export let title;
   export let description;
   export let image;
   let msg = "";
   let loading = false;
+  async function triggerServerlessFunction() {
+    loading = true;
+    // console.log(await getListDocs("idea"));
+    loading = false;
+  }
+  async function newProduct() {
+    loading = true;
+    /**
+     * @typedef {import("../../declarations/satellite/satellite.did").Product}
+     */
+    let product = {
+      name: "Juno",
+      link: "https://juno.build",
+      description: "Juno is a blockchainless platform",
+      company: ["Juno"],
+      owner: [],
+      score: [],
+      image: [
+        "https://pbs.twimg.com/profile_images/1621262585852051456/MySlUBIN_400x400.jpg",
+      ],
+    };
+    await createNewProduct(product, nanoid());
+    loading = false;
+  }
   async function uploadAsset() {
     loading = true;
+
+    // onMount(async () => {
+    //   await initSatellite({
+    //     satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
+    //     workers: { auth: true },
+    //   });
+    // });
     const compiledHTML =
       `
   <!DOCTYPE html>
@@ -104,14 +142,20 @@
     loading = false;
   }
 
+  $: solutionId = "";
+
+  async function deleteSolution() {
+    await eliminateSolution(solutionId);
+  }
   /**
-   * @type { File | null}
+   * @type { File}
    */
-  let selectedFile = null;
+  let selectedFile;
   let message = "";
   let imageUrl = ""; // This will store the image URL for preview
 
   // Function to handle file input change
+
   /**
    * @param {{ target: { files: any[]; value: string; }; }} event
    */
@@ -122,7 +166,6 @@
     if (file) {
       if (file.size > maxSize) {
         message = "Error: File size exceeds 50MB.";
-        selectedFile = null;
         imageUrl = ""; // Clear the image preview
         event.target.value = ""; // Clear the input
       } else {
@@ -134,7 +177,6 @@
       }
     } else {
       message = "No file selected.";
-      selectedFile = null;
       imageUrl = ""; // Clear the image preview
     }
   }
@@ -158,18 +200,14 @@
 </svelte:head>
 <div
   class="content"
-  style="display: flex; flex-direction:column; justify-content:center;align-items:center; height:80vh; gap: 40px"
+  style="display: flex; flex-direction:column; justify-content:center;align-items:center; min-height:80vh; gap: 30px"
 >
   {#if loading}
     <MagicalDotsSmall />
   {:else}
-    <div
-      style="display:flex; flex-direction:column; align-items: center; justify-content:center; text-align:left; "
-    >
-      <br />
-      <h1>Upload an Image</h1>
-      <input type="file" accept="image/*" on:change={handleFileInput} />
-      <p>{message}</p>
+    <div class="Field">
+      <h1 style="margin: 0px;">Upload an Image</h1>
+      <input type="file" accept="image/*" on:change={() => handleFileInput} />
       {#if selectedFile != null}
         <p>Ready to upload: {selectedFile.name}</p>
         <img src={imageUrl} alt="Image Preview" width="400" />
@@ -183,16 +221,14 @@
           msg={"Upload image to database"}
         />
       {/if}
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={uploadAsset}
+        msg={"Upload Image"}
+      />
     </div>
 
-    <a href={msg}>{msg}</a>
-    <BasicRoundedButton
-      disabledCondition={null}
-      someFunction={uploadAsset}
-      msg={"Upload file"}
-    />
-
-    <a href={imagePath}>{imagePath}</a>
+    <!-- <a href={imagePath}>{imagePath}</a>
     <BasicRoundedButton
       disabledCondition={null}
       someFunction={uploadImage}
@@ -205,12 +241,45 @@
       someFunction={uploadPledgeAsset}
       msg={"Upload pledge html"}
     />
-    <!-- <a href={pledgeURL}>{pledgeURL}</a> -->
+    <a href={pledgeURL}>{pledgeURL}</a>
     <BasicRoundedButton
       disabledCondition={null}
       someFunction={() => updateSiteMapxml("RWUi7R26NWUYafaTzzQWQ")}
       msg={"Update sitemap"}
+    /> -->
+
+    <MetadataSearcher />
+    <!-- <BasicRoundedButton
+      disabledCondition={null}
+      someFunction={async () => {
+        loading = true;
+        await triggerServerlessFunction();
+        loading = false;
+      }}
+      msg={"Serverless functions!"}
     />
+    <BasicRoundedButton
+      disabledCondition={null}
+      someFunction={async () => {
+        await newProduct();
+      }}
+      msg={"Create New Product"}
+    /> -->
+    <div class="Field">
+      <h1 style="margin:0px;">Eliminate a specified solution</h1>
+      <input
+        class="InputTextSmall"
+        placeholder="Enter ID of the solution"
+        bind:value={solutionId}
+      />
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          //await newProduct();
+        }}
+        msg={"Eliminate solution"}
+      />
+    </div>
   {/if}
 </div>
 
@@ -220,5 +289,14 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 5px;
+  }
+  .Field {
+    width: 400px;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: right;
+    align-items: left;
+    gap: 20px;
   }
 </style>
