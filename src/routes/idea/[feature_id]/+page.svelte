@@ -1,19 +1,13 @@
 <script>
-    import IdeaCard from "$lib/components/IdeaCard.svelte";
     import BasicButton from "$lib/components/basicButton.svelte";
     import FollowersSection from "$lib/components/followersSection.svelte";
-    import FundingBar from "$lib/components/fundingBar.svelte";
     import ImageScroller from "$lib/components/imageScroller.svelte";
     import PledgersSection from "$lib/components/pledgersSection.svelte";
     import ProfilePicture from "$lib/components/profilePicture.svelte";
-    import { nanoid } from "nanoid";
     import ShareButton from "$lib/components/shareButton.svelte";
-    import IdeaCardContainer from "$lib/components/IdeaCard_container.svelte";
-    import CardScroller from "$lib/components/CardScroller.svelte";
+
     import TransactionDisplay from "$lib/components/TransactionDisplay.svelte";
-    import FinishProject from "$lib/components/finishProject.svelte";
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
-    import { space } from "postcss/lib/list";
     import Breadcrumbs from "$lib/components/breadcrumbs.svelte";
     import PageTabs from "$lib/components/PageTabs.svelte";
     import AboutProject from "$lib/components/AboutProject.svelte";
@@ -21,8 +15,7 @@
     import { pledgeModal } from "$lib/stores/other_stores";
     import { onMount } from "svelte";
     import ModalPledgeFunds from "$lib/components/ModalPledgeFunds.svelte";
-    import Loading from "$lib/components/loading.svelte";
-    import Success from "$lib/components/success.svelte";
+
     import { goto } from "$app/navigation";
     import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsolut.svelte";
     import {
@@ -43,7 +36,6 @@
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { path } from "$lib/stores/redirect_store";
-    import Error from "../../+error.svelte";
     import FundingBarNew from "$lib/components/FundingBarNew.svelte";
 
     /** @type {import('./$types').PageData} */
