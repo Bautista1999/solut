@@ -123,7 +123,7 @@
     }
 
     onMount(async () => {
-        authSubscribe((user) => {
+        authSubscribe((/** @type {{ key: string; } | null} */ user) => {
             if (user == null) {
                 goto("/signin/");
             } else {
@@ -139,7 +139,7 @@
 </script>
 
 {#if !error && !isLoading && !success}
-    <div class="container" style="margin-top: 0px;">
+    <div class="container-form setuser-form-margin">
         <div class="content" style="margin-top: 0px;">
             <h1>Account</h1>
 
@@ -297,15 +297,8 @@
 
 <style>
     @import "../../createtopic/createtopic.styles.css";
-    .field {
-        width: 100%;
-        height: 64px;
-        flex-shrink: 0;
-        border: 1px solid var(--seventh-color);
-    }
-
-    .field:focus {
-        border: 1px solid var(--primary-color);
+    .setuser-form-margin {
+        margin-block: 20px;
     }
     .content {
         display: flex;
@@ -410,6 +403,9 @@
             padding-inline: 15px;
             background-color: var(--tertiary-color);
             border: 1px solid var(--seventh-color);
+        }
+        .setuser-form-margin {
+            margin-block: 0px;
         }
     }
 </style>

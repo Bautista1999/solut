@@ -254,7 +254,7 @@
     let ideasTitle = [];
 </script>
 
-<div class="container">
+<div class="container-form">
     {#if !isLoading && !success && !error}
         <WizardForm
             bind:this={wizardFormComponent}
