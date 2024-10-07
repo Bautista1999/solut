@@ -1,15 +1,19 @@
-*,
-*::before,
-*::after {
+.wizard-container,
+.container-form *,
+.wizard-container,
+.container-form *::before,
+.wizard-container,
+.container-form *::after {
     box-sizing: border-box;
 }
 
-.container {
+.container-form {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     height: fit-content;
+    margin-block: 10px;
     width: 100%;
 
     /* Ensures it takes the full height of the viewport */
@@ -206,7 +210,7 @@
         margin-top: 10px;
     }
 
-    .container {
+    .container-form {
         display: flex;
         justify-content: center;
         align-items: center;
