@@ -295,7 +295,6 @@ export async function getSolutionStatus(project_id){
         if(solStatusDoc.description==undefined){
             return "Not defined";
         }else{
-            console.log(ExtractStatus(solStatusDoc.description));
             return ExtractStatus(solStatusDoc.description);
         }
     }
