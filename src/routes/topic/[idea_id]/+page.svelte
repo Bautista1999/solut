@@ -56,10 +56,6 @@
     let createdAt = "";
     let isLoading = false;
     let ideaNonExistent = false;
-    /**
-     * @type {never[]}
-     */
-    export let transactions = [];
     let tabs = ["Pledge Timeline", "Comments", "About the project"];
     let activeTab = tabs[2]; // default active tab
     // Function to change active tab
