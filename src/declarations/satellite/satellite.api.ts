@@ -18,6 +18,14 @@ export const createNewProduct = async (value0: Product, value1: string): Promise
 	return await create_new_product(value0, value1);
 }
 
+export const deletePledge = async (value0: string): Promise<Result> => {
+	const {delete_pledge} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await delete_pledge(value0);
+}
+
 export const eliminateSolution = async (value0: string): Promise<Result> => {
 	const {eliminate_solution} = await getSatelliteExtendedActor<SatelliteActor>({
 		idlFactory
