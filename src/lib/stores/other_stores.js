@@ -114,4 +114,6 @@ export const UserKey = writable("");
 export let FollowersModal = writable(false);
 export let FollowingModal = writable(false);
 
+export let confirmationModal = writable(false);
+
 
