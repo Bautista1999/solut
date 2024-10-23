@@ -26,7 +26,7 @@
     "vite": "^4.5.5"
   },
   "dependencies": {
-    "@dfinity/agent": "^2.1.1",
+    "@dfinity/agent": "^2.1.2",
     "@dfinity/auth-client": "^2.1.1",
     "@dfinity/candid": "^2.1.1",
     "@dfinity/identity": "^2.1.1",
