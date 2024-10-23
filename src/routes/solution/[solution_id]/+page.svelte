@@ -18,6 +18,7 @@
         DeliveryModal,
         PaymentModal,
         RejectModal,
+        confirmationModal,
         pledgeModal,
     } from "$lib/stores/other_stores";
     import ModalPledgeFunds from "$lib/components/ModalPledgeFunds.svelte";
@@ -62,6 +63,11 @@
     import LoadingModalNew from "$lib/components/LoadingModalNew.svelte";
     import IdeaCardContainer from "$lib/components/IdeaCard_container.svelte";
     import FundingBarNew from "$lib/components/FundingBarNew.svelte";
+    import FlatButtonDarkSmall from "$lib/components/FlatButtonDarkSmall.svelte";
+    import BasicButtonDarkSmall from "$lib/components/BasicButton_Dark_Small.svelte";
+    import ModalConfirmation from "$lib/components/ModalConfirmation.svelte";
+    import { deleteSolution } from "$lib/data_functions/create_functions";
+    import BasicButtonDarkLarger from "$lib/components/BasicButtonDarkLarger.svelte";
 
     let userKey = "";
     let ownerKey = "";
@@ -148,6 +154,11 @@
             amountApprovals: approvals,
         };
     }
+
+    let modalErrorMsg = "Something went wrong when deleting the solution";
+    $: modalError = false;
+    $: modalLoading = false;
+    $: modalSuccess = false;
 </script>
 
 <div class="body">
@@ -280,11 +291,11 @@
                     {/await}
                     <div
                         style="display: flex;
-                justify-content: center; 
-                align-items: center; 
-                flex-direction: row; 
-                gap:25px;
-                justify-content:space-between;"
+                                justify-content: center; 
+                                align-items: center; 
+                                flex-direction: row; 
+                                gap:25px;
+                                justify-content:space-between;"
                     >
                         <div class="ShareButton"><ShareButton /></div>
                         <div class="PledgersSection">
@@ -299,8 +310,43 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="FeaturesSection">
                     <div class="FeaturesTitle">
+                        {#if ownerKey == userKey}
+                            <BasicButtonDark
+                                msg={"Delete solution"}
+                                someFunction={() => {
+                                    confirmationModal.set(true);
+                                }}
+                            />
+                            <ModalConfirmation
+                                message={"This action is irreversible. Are you sure you want to delete the solution?"}
+                                someFunction={async () => {
+                                    modalLoading = true;
+                                    modalError = false;
+                                    modalSuccess = false;
+                                    const result = await deleteSolution(key);
+                                    modalLoading = false;
+                                    if ("Ok" in result) {
+                                        modalSuccess = true;
+                                        setTimeout(() => {
+                                            window.location.href = "/";
+                                        }, 4000);
+                                    } else {
+                                        modalError = true;
+                                        modalErrorMsg = result.Err;
+                                    }
+                                    console.log("Result: ", result);
+                                }}
+                                errorMsg={modalErrorMsg}
+                                successMsg={"Your solution was deleted successfully"}
+                                loadingMsg={"Deleting solution..."}
+                                error={modalError}
+                                loading={modalLoading}
+                                success={modalSuccess}
+                            />
+                        {/if}
                         <h3>Implemented ideas on this solution</h3>
                     </div>
                     <div>
