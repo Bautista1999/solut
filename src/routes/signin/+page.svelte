@@ -14,6 +14,7 @@
     import { isRegistered } from "$lib/data_functions/user.functions";
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import { GoToPath } from "$lib/stores/redirect_store";
+    import { DAYS } from "$lib/signin_functions/user_signin_functions";
 
     // Accessing the parameter
     let inviteCode;
@@ -30,6 +31,7 @@
                 provider: new InternetIdentityProvider({
                     domain: "ic0.app",
                 }),
+                maxTimeToLive: BigInt(DAYS * 24 * 60 * 60 * 1000 * 1000 * 1000),
             });
             await authSubscribe(async (user) => {
                 if (user == null) {
