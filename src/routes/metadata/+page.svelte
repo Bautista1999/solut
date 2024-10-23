@@ -18,6 +18,7 @@
   import {
     createNewProduct,
     deletePledge,
+    eliminateSolution,
   } from "../../declarations/satellite/satellite.api";
   import { signIn, NFIDProvider, authSubscribe } from "@junobuild/core";
   import SearchBarLarger from "$lib/components/SearchBarLarger.svelte";
@@ -172,7 +173,7 @@
 
   async function deleteSolution() {
     loading = true;
-    // console.log(await eliminateSomeSolution(solutionId));
+    console.log(await eliminateSolution(solutionId));
     loading = false;
   }
   /**
