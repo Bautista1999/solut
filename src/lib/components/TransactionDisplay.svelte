@@ -1,19 +1,27 @@
 <script>
     import { goto } from "$app/navigation";
-    import { getUsername } from "$lib/data_functions/get_functions";
     import {
+        getSolutionStatus,
+        getSolutionStatusFromIdeaId,
+        getUserKey,
+        getUsername,
+    } from "$lib/data_functions/get_functions";
+    import {
+        deletePledgeFromProject,
         ICPtoDecimal,
         roundToFiveDecimals,
         roundUpToThreeDecimalPlaces,
     } from "$lib/financial_functions/financial_functions";
+    import { confirmationModal, UserKey } from "$lib/stores/other_stores";
     import { Principal } from "@dfinity/principal";
+    import ModalConfirmation from "./ModalConfirmation.svelte";
 
     // You would populate this with data, possibly from a backend API call
     /**
      * @type {Array<import('$lib/declarations/escrow_declarations').Transaction>}
      */
     export let transactions = [];
-    export let maxCharacters = 10;
+    export let maxCharacters = 7;
     /**
      *
      * @param {number} number
@@ -24,6 +32,11 @@
                 number.toString(),
         );
     }
+
+    let modalErrorMsg = "Something went wrong when canceling the pledge.";
+    $: error = false;
+    $: loading = false;
+    $: success = false;
 </script>
 
 <table class="transaction-table">
@@ -38,6 +51,7 @@
                 <th class="currency-field">currency</th>
                 <th class="amount-field">amount</th>
                 <th class="status-field">status</th>
+                <th class="delete-field"></th>
             {:else}
                 <br />
                 <br />
@@ -110,13 +124,82 @@
                         </div>
                     {/if}
                 </td>
-                <div class="hover-message">message: {transaction.message}</div>
+                {#if transaction.trans_type != "Pledge"}
+                    <div class="hover-message">
+                        message: {transaction.message}
+                    </div>
+                {/if}
+                {#if transaction.trans_type == "Pledge" && transaction.sender.toString() == $UserKey}
+                    {#await getSolutionStatusFromIdeaId(transaction.project_id) then data}
+                        {#if data.toLowerCase() != "delivered"}
+                            <span
+                                class="material-symbols-outlined"
+                                style=""
+                                on:click={() => {
+                                    confirmationModal.set(true);
+                                }}
+                            >
+                                delete
+                            </span>
+
+                            <ModalConfirmation
+                                message={"Are you sure you want to cancel this pledge?"}
+                                someFunction={async () => {
+                                    loading = true;
+                                    error = false;
+                                    success = false;
+                                    const result =
+                                        await deletePledgeFromProject(
+                                            transaction.message,
+                                        );
+                                    loading = false;
+                                    if ("Ok" in result) {
+                                        success = true;
+                                        setTimeout(() => {
+                                            window.location.reload();
+                                        }, 4000);
+                                    } else {
+                                        error = true;
+                                        modalErrorMsg = result.Err;
+                                    }
+                                    console.log("Result: ", result);
+                                }}
+                                errorMsg={modalErrorMsg}
+                                successMsg={"Your pledge was canceled successfully."}
+                                loadingMsg={"Deleting message..."}
+                                {error}
+                                {loading}
+                                {success}
+                            />
+                        {/if}
+                    {/await}
+                {/if}
             </tr>
         {/each}
     </tbody>
 </table>
 
 <style>
+    .material-symbols-outlined {
+        font-variation-settings:
+            "FILL" 0,
+            "wght" 300,
+            "GRAD" 0,
+            "opsz" 10;
+        color: var(--primary-color);
+        align-self: center;
+        margin-block: 2px;
+    }
+    .material-symbols-outlined:hover {
+        font-variation-settings:
+            "FILL" 1,
+            "wght" 300,
+            "GRAD" 0,
+            "opsz" 10;
+        color: var(--primary-color);
+        align-self: center;
+        margin-block: 2px;
+    }
     .transaction-table {
         width: 100%;
         border-collapse: collapse;
@@ -181,7 +264,8 @@
         .destination-field,
         .from-field,
         .amount-field,
-        .type-field {
+        .type-field,
+        .delete-field {
             display: table-cell;
         }
 
