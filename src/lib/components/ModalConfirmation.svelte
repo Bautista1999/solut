@@ -3,19 +3,13 @@
     import BasicButtonDarkSmall from "./BasicButton_Dark_Small.svelte";
     import ErrorModalNew from "./ErrorModalNew.svelte";
     import LoadingModalNew from "./LoadingModalNew.svelte";
-    import MagicalDots from "./magicalDots.svelte";
-    import MagicalDotsAbsolut from "./MagicalDotsAbsolut.svelte";
-    import MagicalDotsSmall from "./MagicalDotsSmall.svelte";
     import Modal from "./modal.svelte";
-    import Success from "./success.svelte";
     import SuccessModalNew from "./SuccessModalNew.svelte";
 
     export let message = "";
     export let someFunction = async () => {};
-
     export let loading = false;
     export let success = false;
-
     export let error = false;
     export let errorMsg = "";
     export let successMsg = "";
