@@ -539,7 +539,7 @@ export async function followElement(element_id,type){
         return "Following fail";
     }
     authSubscribe(async(user)=>{
-            let doc =  setDoc({
+            let doc =  await setDoc({
                 collection:"follow",
                 doc:{
                     key:user?.key+"_"+element_id,
@@ -557,7 +557,7 @@ export async function followElement(element_id,type){
             let identity = await unsafeIdentity();
             const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
             const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
-            let adminFollowerCounterUpdate = canister.followerCounter(element_id,true,type);
+            let adminFollowerCounterUpdate = await canister.followerCounter(element_id,true,type);
             console.log("doc",adminFollowerCounterUpdate)
     })
     return "Success";
