@@ -11,5 +11,6 @@ type Result = variant { Ok; Err : text };
 service : {
   build_version : () -> (text) query;
   create_new_product : (Product, text) -> (Result);
+  delete_pledge : (text) -> (Result);
   eliminate_solution : (text) -> (Result);
 }
