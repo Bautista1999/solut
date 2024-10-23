@@ -288,15 +288,28 @@ export async function getSolutionStatus(project_id){
         collection: "solution_status",
         key: "SOL_STAT_"+project_id
     })
+   
     if(solStatusDoc==undefined){
         return "Not defined";
     }else{
         if(solStatusDoc.description==undefined){
             return "Not defined";
         }else{
+            console.log(ExtractStatus(solStatusDoc.description));
             return ExtractStatus(solStatusDoc.description);
         }
     }
+}
+
+
+/**
+ * @param {string} project_id
+ * @return {Promise<string>}
+ */
+export async function getSolutionStatusFromIdeaId(project_id){
+    console.log(project_id);
+    let solutionKey = await SolutionLink(project_id);
+    return getSolutionStatus(solutionKey);
 }
 
 
