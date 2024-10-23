@@ -15,7 +15,8 @@ use junobuild_macros::{
     on_upload_asset,
 };
 use junobuild_satellite::{
-    count_docs_store, get_doc_store, list_docs_store, log, set_doc_store, DelDoc, Key, SetDoc,
+    count_docs_store, delete_doc_store, get_doc_store, list_docs_store, log, set_doc_store, DelDoc,
+    Key, SetDoc,
 };
 use junobuild_satellite::{
     include_satellite, AssertDeleteAssetContext, AssertDeleteDocContext, AssertSetDocContext,
@@ -114,98 +115,125 @@ async fn create_new_product(product: Product, key: String) -> Result<(), String>
 #[update]
 async fn eliminate_solution(key: String) -> Result<(), String> {
     let caller = api::caller();
-    match get_doc_store(caller, "solution".to_string(), key.clone()) {
+    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+
+    // Step 1: Fetch the main solution document and check ownership
+    let solution_doc = match get_doc_store(caller, "solution".to_string(), key.clone()) {
         Ok(Some(doc)) => {
-            // If we successfully retrieved the document, check ownership.
             if doc.owner != caller {
-                Err("Caller is not the owner of the solution.".to_string())
+                return Err("Caller is not the owner of the solution.".to_string());
             }
-            // Implement your logic for deleting the document here.
-
-            // Fetch the `version` attribute from the main solution document.
-            let version = doc.version;
-
-            // Create the vector of documents to delete.
-            let mut docs_to_delete: Vec<(String, Key, DelDoc)> = Vec::new();
-
-            // 1. Main solution document
-            docs_to_delete.push((
-                "solution".to_string(),
-                key.clone(),
-                DelDoc {
-                    version: version.clone(),
-                },
-            ));
-
-            // 2. Index search document
-            docs_to_delete.push((
-                "index_search".to_string(),
-                format!("INDEX_{}", key.clone()),
-                DelDoc {
-                    version: version.clone(),
-                },
-            ));
-
-            let parent_idea_id = match doc.description.as_deref() {
-                Some(description) => match extract_idea_id(description.clone()) {
-                    Some(idea_id) => idea_id,
-                    None => {
-                        return Err("Failed to extract parent idea ID from description.".to_string())
-                    }
-                },
-                None => {
-                    return Err("Description is missing, cannot extract parent idea ID.".to_string())
-                }
-            };
-            docs_to_delete.push((
-                "pledges_solution".to_string(),
-                format!("SOL_PL_{}", parent_idea_id.clone()),
-                DelDoc {
-                    version: version.clone(),
-                },
-            ));
-
-            // 4. Followers document
-            docs_to_delete.push((
-                "followers".to_string(),
-                format!("FOLL_{}", key.clone()),
-                DelDoc {
-                    version: version.clone(),
-                },
-            ));
-
-            // 5. Solution approved document
-            docs_to_delete.push((
-                "solution_approved".to_string(),
-                format!("SOL_APPR_{}", key.clone()),
-                DelDoc {
-                    version: version.clone(),
-                },
-            ));
-
-            // 6. Solution status document
-            docs_to_delete.push((
-                "solution_status".to_string(),
-                format!("SOL_STAT_{}", key.clone()),
-                DelDoc {
-                    version: version.clone(),
-                },
-            ));
-
-            del_many_docs(docs_to_delete);
-
-            // Return success after deleting documents.
-            Ok(())
+            doc
         }
-        Ok(None) => {
-            // Document was not found in the collection.
-            Err("Solution not found.".to_string())
-        }
+        Ok(None) => return Err("Solution not found.".to_string()),
+        Err(err) => return Err(format!("Failed to retrieve solution: {}", err)),
+    };
+
+    let version = solution_doc.version; // Get the version of the solution document
+
+    // Step 2: Prepare to validate the other documents, starting with their versions
+    let index_key = format!("INDEX_{}", key.clone());
+    let index_version = match get_document_version("index_search".to_string(), index_key.clone()) {
+        Ok(version) => version,
         Err(err) => {
-            // An error occurred while retrieving the document.
-            Err(format!("Failed to retrieve solution: {}", err))
+            return Err(format!(
+                "Failed to get version for index_search document: {}",
+                err
+            ))
         }
+    };
+
+    let foll_key = format!("FOLL_{}", key.clone());
+    let foll_version = match get_document_version("followers".to_string(), foll_key.clone()) {
+        Ok(version) => version,
+        Err(err) => {
+            return Err(format!(
+                "Failed to get version for followers document: {}",
+                err
+            ))
+        }
+    };
+
+    let sol_appr_key = format!("SOL_APPR_{}", key.clone());
+    let sol_appr_version =
+        match get_document_version("solution_approved".to_string(), sol_appr_key.clone()) {
+            Ok(version) => version,
+            Err(err) => {
+                return Err(format!(
+                    "Failed to get version for solution_approved document: {}",
+                    err
+                ))
+            }
+        };
+
+    let sol_stat_key = format!("SOL_STAT_{}", key.clone());
+    let sol_stat_version =
+        match get_document_version("solution_status".to_string(), sol_stat_key.clone()) {
+            Ok(version) => version,
+            Err(err) => {
+                return Err(format!(
+                    "Failed to get version for solution_status document: {}",
+                    err
+                ))
+            }
+        };
+
+    // Step 3: If all validations passed, proceed with deletion
+    // Create the vector of documents to delete after all validations
+    let mut docs_to_delete: Vec<(String, Key, DelDoc)> = Vec::new();
+
+    // 1. Delete the main solution document
+    docs_to_delete.push((
+        "solution".to_string(),
+        key.clone(),
+        DelDoc {
+            version: version.clone(),
+        },
+    ));
+
+    // 2. Delete the index_search document
+    docs_to_delete.push((
+        "index_search".to_string(),
+        index_key,
+        DelDoc {
+            version: Some(index_version),
+        },
+    ));
+
+    // 3. Delete the followers document
+    docs_to_delete.push((
+        "followers".to_string(),
+        foll_key,
+        DelDoc {
+            version: Some(foll_version),
+        },
+    ));
+
+    // 4. Delete the solution_approved document
+    docs_to_delete.push((
+        "solution_approved".to_string(),
+        sol_appr_key,
+        DelDoc {
+            version: Some(sol_appr_version),
+        },
+    ));
+
+    // 5. Delete the solution_status document
+    docs_to_delete.push((
+        "solution_status".to_string(),
+        sol_stat_key,
+        DelDoc {
+            version: Some(sol_stat_version),
+        },
+    ));
+
+    // Step 4: Delete all the documents using the controller as the caller
+    for (collection, key, del_doc) in docs_to_delete {
+        delete_doc_store(controller, collection, key, del_doc);
     }
+
+    // Return success after all documents have been deleted
+    return Ok(());
 }
 
 fn extract_idea_id(description: &str) -> Option<String> {
@@ -218,6 +246,22 @@ fn extract_idea_id(description: &str) -> Option<String> {
         captures.get(1).map(|id| id.as_str().to_string())
     } else {
         None
+    }
+}
+
+fn get_document_version(collection: String, key: String) -> Result<u64, String> {
+    let caller = api::caller();
+    match get_doc_store(caller, collection.clone(), key.clone()) {
+        Ok(Some(doc)) => match doc.version {
+            Some(version) => {
+                return Ok(version);
+            }
+            None => {
+                return Ok(0);
+            }
+        },
+        Ok(None) => return Err(format!("Failed to retrieve document with id {}", key)),
+        Err(err) => return Err(format!("Failed to retrieve document's version: {}", err)),
     }
 }
 
@@ -467,5 +511,35 @@ fn delete_pledge(id: String) -> Result<(), String> {
 
     return Ok(());
 }
+
+// #[update]
+// fn eliminate_topic(key: String) -> Result<(), String> {
+//     let parent_idea_id = match doc.description.as_deref() {
+//         Some(description) => match extract_idea_id(description.clone()) {
+//             Some(idea_id) => idea_id,
+//             None => return Err("Failed to extract parent idea ID from description.".to_string()),
+//         },
+//         None => return Err("Description is missing, cannot extract parent idea ID.".to_string()),
+//     };
+//     let sol_pl_key = format!("SOL_PL_{}", parent_idea_id.clone());
+//     let sol_pl_version =
+//         match get_document_version("pledges_solution".to_string(), sol_pl_key.clone()) {
+//             Ok(version) => version,
+//             Err(err) => {
+//                 return Err(format!(
+//                     "Failed to get version for pledges_solution document: {}",
+//                     err
+//                 ))
+//             }
+//         };
+//     docs_to_delete.push((
+//         "pledges_solution".to_string(),
+//         sol_pl_key,
+//         DelDoc {
+//             version: Some(sol_pl_version),
+//         },
+//     ));
+//     return Ok(());
+// }
 
 include_satellite!();
