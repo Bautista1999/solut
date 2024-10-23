@@ -29,7 +29,7 @@
                 box-shadow 0.1s ease; /* Adding transition for box-shadow */
         cursor: pointer;
         border: 1px solid var(--primary-color);
-        border-radius: 0px;
+        border-radius: 8px;
         font-size: medium;
         font-family: Barlow;
         display: flex; /* Set the display to flex to enable flexbox properties */
