@@ -13,6 +13,7 @@ import  {idlFactory as Escrow} from "$lib/declarations/escrow.declarations.did";
 import { getIdeaIdBySolution, getImplementedFeaturesOfSolution, getUserKey } from "$lib/data_functions/get_functions";
 import { createNotification, followElement, updateSolutionStatus } from "$lib/data_functions/create_functions";
 import { trackEvent } from "@junobuild/analytics";
+import { deletePledge } from "../../declarations/satellite/satellite.api";
 
 // import("../declarations/juno.declarations.did.js")._SERVICE.set_doc;
 /**
@@ -284,7 +285,7 @@ export async function getTransactionsAndPledges(project_id){
                 trans_type: "Pledge",
                 to:[],
                 from:[],
-                message: "",
+                message: pledges.items[i].key,
                 project_id: pledges.items[i].data.idea_id,
                 transaction_number: _number,
                 created_at: _number[0],
@@ -838,4 +839,11 @@ export async function getAllowance(){
     let userKey = await getUserKey();
     let allowanceResult = await allowance({spender:{owner: Principal.fromText(escrow_canister_id),subaccount:[]},account:{owner: Principal.fromText(userKey),subaccount:[]}});
     return allowanceResult.allowance;
+}
+
+/**
+ * @param {string} id
+ */
+export async function deletePledgeFromProject(id){
+    return await deletePledge(id);
 }
