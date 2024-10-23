@@ -31,4 +31,27 @@ pub mod interface {
             self.0
         }
     }
+    #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct PledgeData {
+        pub amount: u64,
+        pub doc_key: String,
+        pub expected_amount: u64,
+        pub feature_id: Option<String>, // Feature might be optional
+        pub idea_id: String,
+        pub target: String,
+        pub user: String,
+    }
+
+    #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct PledgeUser {
+        pub amount_pledged: u64, // Amount the user has pledged
+        pub amount_paid: u64,    // Amount the user has paid
+        pub user: String,        // The user (as a principal or a string)
+    }
+
+    #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct TotalPledging {
+        pub pledges: u64,  // Total amount pledged for this idea or feature
+        pub expected: u64, // Expected amount based on the pledges
+    }
 }
