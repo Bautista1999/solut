@@ -13,11 +13,15 @@
   import { nanoid } from "nanoid";
   import { onMount } from "svelte";
   import { compile } from "svelte/compiler"; // Import the Svelte compiler
+  import { initSatellite } from "@junobuild/core-peer";
+
   import {
     createNewProduct,
-    eliminateSolution,
+    deletePledge,
   } from "../../declarations/satellite/satellite.api";
-  import { listJunoDocs } from "$lib/testingInterface_logic/testing.interface.logic";
+  import { signIn, NFIDProvider, authSubscribe } from "@junobuild/core";
+  import SearchBarLarger from "$lib/components/SearchBarLarger.svelte";
+  import SearchBar from "$lib/components/SearchBar.svelte";
 
   export let title;
   export let description;
@@ -45,6 +49,7 @@
         "https://pbs.twimg.com/profile_images/1621262585852051456/MySlUBIN_400x400.jpg",
       ],
     };
+    // @ts-ignore
     await createNewProduct(product, nanoid());
     loading = false;
   }
@@ -141,11 +146,34 @@
     pledgeURL = await uploadHTMLToDatabase(html, "pledges", id);
     loading = false;
   }
-
+  onMount(async () => {
+    await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
+    console.log("Initialized");
+  });
+  async function NFIDSignIn() {
+    await signIn({
+      provider: new NFIDProvider({
+        appName: "Solutio",
+        logoUrl: "https://solutio.one/assets/LogoSol3.png",
+      }),
+    });
+    let unsubscribe = authSubscribe((user) => {
+      console.log("User:", user);
+    });
+  }
+  async function InternetIdentitySignIn() {
+    // await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
+    await signIn();
+    let unsubscribe = authSubscribe((user) => {
+      console.log("User:", user);
+    });
+  }
   $: solutionId = "";
 
   async function deleteSolution() {
-    await eliminateSolution(solutionId);
+    loading = true;
+    // console.log(await eliminateSomeSolution(solutionId));
+    loading = false;
   }
   /**
    * @type { File}
@@ -188,6 +216,13 @@
       imageUrl = "";
     }
   }
+
+  let pledgeId = "";
+  async function deletePledgeFromId() {
+    loading = true;
+    console.log(await deletePledge(pledgeId));
+    loading = false;
+  }
 </script>
 
 <svelte:head>
@@ -199,8 +234,7 @@
   <meta property="og:type" content="website" />
 </svelte:head>
 <div
-  class="content"
-  style="display: flex; flex-direction:column; justify-content:center;align-items:center; min-height:80vh; gap: 30px"
+  style="display: flex; flex-direction:column; justify-content:center;align-items:center;  gap: 30px;height:fit-content; padding-block:20px;"
 >
   {#if loading}
     <MagicalDotsSmall />
@@ -247,6 +281,7 @@
       someFunction={() => updateSiteMapxml("RWUi7R26NWUYafaTzzQWQ")}
       msg={"Update sitemap"}
     /> -->
+    <title>Hello</title>
 
     <MetadataSearcher />
     <!-- <BasicRoundedButton
@@ -275,9 +310,46 @@
       <BasicRoundedButton
         disabledCondition={null}
         someFunction={async () => {
-          //await newProduct();
+          await deleteSolution();
         }}
         msg={"Eliminate solution"}
+      />
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">Sign In with NFID</h1>
+
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          await NFIDSignIn();
+        }}
+        msg={"NFID Sign in"}
+      />
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">Sign In with Internet Identity (new one)</h1>
+
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          await InternetIdentitySignIn();
+        }}
+        msg={"Internet Identity Sign in"}
+      />
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">Delete pledge</h1>
+      <input
+        class="InputTextSmall"
+        placeholder="Enter ID of the pledge"
+        bind:value={pledgeId}
+      />
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          await deletePledgeFromId();
+        }}
+        msg={"Delete pledge"}
       />
     </div>
   {/if}
@@ -298,5 +370,30 @@
     justify-content: right;
     align-items: left;
     gap: 20px;
+  }
+  .horizontalCard {
+    display: flex;
+    flex-direction: row;
+    padding-inline: 10px;
+    padding-block: 5px;
+    align-self: center;
+    height: fit-content;
+    gap: 10px;
+    background-color: var(--tertiary-color);
+    border: 1px solid var(--seventh-color);
+    width: 700px;
+    text-decoration: none;
+  }
+  .horizontalCard img {
+    width: 20%;
+    border: none;
+    margin: 0;
+  }
+  .horizontalCard h4 {
+    width: 30%;
+  }
+  .horizontalCard p {
+    text-align: center;
+    width: 25%;
   }
 </style>
