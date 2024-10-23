@@ -162,7 +162,6 @@
                                         error = true;
                                         modalErrorMsg = result.Err;
                                     }
-                                    console.log("Result: ", result);
                                 }}
                                 errorMsg={modalErrorMsg}
                                 successMsg={"Your pledge was canceled successfully."}
