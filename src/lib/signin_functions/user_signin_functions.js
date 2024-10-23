@@ -1,6 +1,8 @@
 import { IsSignedIn, UserKey } from "$lib/stores/other_stores";
 import { authSubscribe, initJuno } from "@junobuild/core-peer";
 
+export const DAYS = 7;
+
 /** 
 * @return {Promise<boolean>}
 */
