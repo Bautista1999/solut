@@ -29,6 +29,7 @@
     export let userKey = "";
     let showModal6 = false;
     onMount(async () => {
+        // @ts-ignore
         authSubscribe((user) => {
             if (user != undefined) {
                 userKey = user?.key;
