@@ -40,11 +40,12 @@
     export let close10 = () => {
         isOpen10 = false;
     };
+    export let style = "";
 </script>
 
 {#if isOpen}
     <div class="modal-background" on:click={close}>
-        <div class="modal-content" on:click|stopPropagation>
+        <div class="modal-content" {style} on:click|stopPropagation>
             <div class="delete-button-container">
                 <button
                     class="delete-button"
