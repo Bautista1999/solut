@@ -12,7 +12,11 @@
     import PageTabs from "$lib/components/PageTabs.svelte";
     import AboutProject from "$lib/components/AboutProject.svelte";
     import CommentSection from "$lib/components/CommentSection.svelte";
-    import { pledgeModal } from "$lib/stores/other_stores";
+    import {
+        confirmationModal,
+        pledgeModal,
+        UserKey,
+    } from "$lib/stores/other_stores";
     import { onMount } from "svelte";
     import ModalPledgeFunds from "$lib/components/ModalPledgeFunds.svelte";
 
@@ -37,6 +41,9 @@
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { path } from "$lib/stores/redirect_store";
     import FundingBarNew from "$lib/components/FundingBarNew.svelte";
+    import BasicButtonBlackWhite from "$lib/components/BasicButtonBlackWhite.svelte";
+    import ModalConfirmation from "$lib/components/ModalConfirmation.svelte";
+    import { deleteIdea } from "$lib/data_functions/create_functions";
 
     /** @type {import('./$types').PageData} */
     // @ts-ignore
@@ -103,6 +110,10 @@
         }
         isLoading = false;
     });
+    let modalErrorMsg = "Something went wrong when deleting the idea";
+    $: modalError = false;
+    $: modalLoading = false;
+    $: modalSuccess = false;
 </script>
 
 <div class="body">
@@ -281,6 +292,42 @@
                 <div class="ActivitySection">
                     <div class="ActivityTabs" style="">
                         <div class="CommentsTab">
+                            {#if user == $UserKey}
+                                <BasicButtonDark
+                                    msg={"Delete idea"}
+                                    someFunction={() => {
+                                        confirmationModal.set(true);
+                                    }}
+                                />
+                                <ModalConfirmation
+                                    message={"This action is irreversible. Are you sure you want to delete the idea?"}
+                                    someFunction={async () => {
+                                        modalLoading = true;
+                                        modalError = false;
+                                        modalSuccess = false;
+                                        const result = await deleteIdea(key);
+                                        modalLoading = false;
+                                        if ("Ok" in result) {
+                                            modalSuccess = true;
+                                            setTimeout(() => {
+                                                window.location.href =
+                                                    "/topic/" + idea_id;
+                                            }, 4000);
+                                        } else {
+                                            modalError = true;
+                                            modalErrorMsg = result.Err;
+                                        }
+                                    }}
+                                    errorMsg={modalErrorMsg}
+                                    successMsg={"Your idea was deleted successfully"}
+                                    loadingMsg={"Deleting idea..."}
+                                    error={modalError}
+                                    loading={modalLoading}
+                                    success={modalSuccess}
+                                />
+                                <br />
+                            {/if}
+
                             <div class="Add_Solution_Idea_Section">
                                 {#await SolutionLink(idea_id)}
                                     <MagicalDotsAbsoluteSmall />
