@@ -7,7 +7,7 @@ import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
 import { getUserKey } from "./get_functions";
 import { createAndUploadHTMLStaticFile } from "$lib/SEO and metadata/metadata_functions";
 import { trackEvent } from "@junobuild/analytics";
-import { eliminateSolution } from "../../declarations/satellite/satellite.api";
+import { eliminateIdea, eliminateSolution, eliminateTopic } from "../../declarations/satellite/satellite.api";
 
 
 /**
@@ -794,4 +794,18 @@ catch(e){
  */
 export async function deleteSolution(sol_id){
     return await eliminateSolution(sol_id);
+}
+
+/**
+ * @param {String} idea_id
+ */
+export async function deleteIdea(idea_id){
+    return await eliminateIdea(idea_id);
+}
+
+/**
+ * @param {String} topic_id
+ */
+export async function deleteTopic(topic_id){
+    return await eliminateTopic(topic_id);
 }
