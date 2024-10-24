@@ -236,6 +236,132 @@ async fn eliminate_solution(key: String) -> Result<(), String> {
     return Ok(());
 }
 
+#[update]
+fn eliminate_idea(key: String) -> Result<(), String> {
+    let caller = api::caller();
+    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+
+    // Step 1: Fetch the main solution document and check ownership
+    let idea_doc = match get_doc_store(caller, "feature".to_string(), key.clone()) {
+        Ok(Some(doc)) => {
+            if doc.owner != caller {
+                return Err("Caller is not the owner of the idea.".to_string());
+            }
+            doc
+        }
+        Ok(None) => return Err("idea not found.".to_string()),
+        Err(err) => return Err(format!("Failed to retrieve idea: {}", err)),
+    };
+
+    let version = idea_doc.version; // Get the version of the solution document
+
+    // Step 2: Prepare to validate the other documents, starting with their versions
+    let index_key = format!("INDEX_{}", key.clone());
+    let index_version = match get_document_version("index_search".to_string(), index_key.clone()) {
+        Ok(version) => version,
+        Err(err) => {
+            return Err(format!(
+                "Failed to get version for index_search document: {}",
+                err
+            ))
+        }
+    };
+
+    let foll_key = format!("FOLL_{}", key.clone());
+    let foll_version = match get_document_version("followers".to_string(), foll_key.clone()) {
+        Ok(version) => version,
+        Err(err) => {
+            return Err(format!(
+                "Failed to get version for followers document: {}",
+                err
+            ))
+        }
+    };
+
+    let feature_pledge_document = format!("PLG_FEA_{}", key.clone());
+    let pledge_version = match get_document_version(
+        "idea_feature_pledge".to_string(),
+        feature_pledge_document.clone(),
+    ) {
+        Ok(version) => version,
+        Err(err) => {
+            return Err(format!(
+                "Failed to get version for the documnt that holds the total pledged: {}",
+                err
+            ))
+        }
+    };
+
+    let revenue_document = format!("REV_FEA_{}", key.clone());
+    let revenue_version =
+        match get_document_version("idea_revenue_counter".to_string(), revenue_document.clone()) {
+            Ok(version) => version,
+            Err(err) => {
+                return Err(format!(
+                    "Failed to get version for the documnt that holds the total pledged: {}",
+                    err
+                ))
+            }
+        };
+
+    // Step 3: If all validations passed, proceed with deletion
+    // Create the vector of documents to delete after all validations
+    let mut docs_to_delete: Vec<(String, Key, DelDoc)> = Vec::new();
+
+    // 1. Delete the main solution document
+    docs_to_delete.push((
+        "feature".to_string(),
+        key.clone(),
+        DelDoc {
+            version: version.clone(),
+        },
+    ));
+
+    // 2. Delete the index_search document
+    docs_to_delete.push((
+        "index_search".to_string(),
+        index_key,
+        DelDoc {
+            version: Some(index_version),
+        },
+    ));
+
+    // 3. Delete the followers document
+    docs_to_delete.push((
+        "followers".to_string(),
+        foll_key,
+        DelDoc {
+            version: Some(foll_version),
+        },
+    ));
+
+    // 4. Delete the amount funded document
+    docs_to_delete.push((
+        "idea_feature_pledge".to_string(),
+        feature_pledge_document,
+        DelDoc {
+            version: Some(pledge_version),
+        },
+    ));
+
+    // 5. Delete the revenue document
+    docs_to_delete.push((
+        "idea_revenue_counter".to_string(),
+        revenue_document,
+        DelDoc {
+            version: Some(revenue_version),
+        },
+    ));
+
+    // Step 4: Delete all the documents using the controller as the caller
+    for (collection, key, del_doc) in docs_to_delete {
+        delete_doc_store(controller, collection, key, del_doc);
+    }
+
+    // Return success after all documents have been deleted
+    return Ok(());
+}
+
 fn extract_idea_id(description: &str) -> Option<String> {
     // Define a regex pattern to capture `idea_id:<value>`
     let re = Regex::new(r"idea_id:(\w+)").unwrap();
@@ -512,34 +638,151 @@ fn delete_pledge(id: String) -> Result<(), String> {
     return Ok(());
 }
 
-// #[update]
-// fn eliminate_topic(key: String) -> Result<(), String> {
-//     let parent_idea_id = match doc.description.as_deref() {
-//         Some(description) => match extract_idea_id(description.clone()) {
-//             Some(idea_id) => idea_id,
-//             None => return Err("Failed to extract parent idea ID from description.".to_string()),
-//         },
-//         None => return Err("Description is missing, cannot extract parent idea ID.".to_string()),
-//     };
-//     let sol_pl_key = format!("SOL_PL_{}", parent_idea_id.clone());
-//     let sol_pl_version =
-//         match get_document_version("pledges_solution".to_string(), sol_pl_key.clone()) {
-//             Ok(version) => version,
-//             Err(err) => {
-//                 return Err(format!(
-//                     "Failed to get version for pledges_solution document: {}",
-//                     err
-//                 ))
-//             }
-//         };
-//     docs_to_delete.push((
-//         "pledges_solution".to_string(),
-//         sol_pl_key,
-//         DelDoc {
-//             version: Some(sol_pl_version),
-//         },
-//     ));
-//     return Ok(());
-// }
+#[update]
+fn eliminate_topic(key: String) -> Result<(), String> {
+    let caller = api::caller();
+    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+
+    // Step 1: Fetch the main solution document and check ownership
+    let idea_doc = match get_doc_store(caller, "idea".to_string(), key.clone()) {
+        Ok(Some(doc)) => {
+            if doc.owner != caller {
+                return Err("Caller is not the owner of the topic.".to_string());
+            }
+            doc
+        }
+        Ok(None) => return Err("idea not found.".to_string()),
+        Err(err) => return Err(format!("Failed to retrieve topic: {}", err)),
+    };
+
+    let version = idea_doc.version; // Get the version of the solution document
+
+    // Step 2: Prepare to validate the other documents, starting with their versions
+    let index_key = format!("INDEX_{}", key.clone());
+    let index_version = match get_document_version("index_search".to_string(), index_key.clone()) {
+        Ok(version) => version,
+        Err(err) => {
+            return Err(format!(
+                "Failed to get version for index_search document: {}",
+                err
+            ))
+        }
+    };
+
+    let foll_key = format!("FOLL_{}", key.clone());
+    let foll_version = match get_document_version("followers".to_string(), foll_key.clone()) {
+        Ok(version) => version,
+        Err(err) => {
+            return Err(format!(
+                "Failed to get version for followers document: {}",
+                err
+            ))
+        }
+    };
+
+    let idea_pledge_document = format!("PLG_IDEA_{}", key.clone());
+    let pledge_version = match get_document_version(
+        "idea_feature_pledge".to_string(),
+        idea_pledge_document.clone(),
+    ) {
+        Ok(version) => version,
+        Err(err) => {
+            return Err(format!(
+                "Failed to get version for the document that holds the total pledged: {}",
+                err
+            ))
+        }
+    };
+
+    let revenue_document = format!("REV_IDEA_{}", key.clone());
+    let revenue_version =
+        match get_document_version("idea_revenue_counter".to_string(), revenue_document.clone()) {
+            Ok(version) => version,
+            Err(err) => {
+                return Err(format!(
+                    "Failed to get version for the documnt that holds the total pledged: {}",
+                    err
+                ))
+            }
+        };
+
+    let sol_pl_key = format!("SOL_PL_{}", key.clone());
+    let sol_pl_version =
+        match get_document_version("pledges_solution".to_string(), sol_pl_key.clone()) {
+            Ok(version) => version,
+            Err(err) => {
+                return Err(format!(
+                    "Failed to get version for pledges_solution document: {}",
+                    err
+                ))
+            }
+        };
+
+    // Step 3: If all validations passed, proceed with deletion
+    // Create the vector of documents to delete after all validations
+    let mut docs_to_delete: Vec<(String, Key, DelDoc)> = Vec::new();
+
+    // 1. Delete the main solution document
+    docs_to_delete.push((
+        "idea".to_string(),
+        key.clone(),
+        DelDoc {
+            version: version.clone(),
+        },
+    ));
+
+    // 2. Delete the index_search document
+    docs_to_delete.push((
+        "index_search".to_string(),
+        index_key,
+        DelDoc {
+            version: Some(index_version),
+        },
+    ));
+
+    // 3. Delete the followers document
+    docs_to_delete.push((
+        "followers".to_string(),
+        foll_key,
+        DelDoc {
+            version: Some(foll_version),
+        },
+    ));
+
+    // 4. Delete the amount funded document
+    docs_to_delete.push((
+        "idea_feature_pledge".to_string(),
+        idea_pledge_document,
+        DelDoc {
+            version: Some(pledge_version),
+        },
+    ));
+
+    // 5. Delete the revenue document
+    docs_to_delete.push((
+        "idea_revenue_counter".to_string(),
+        revenue_document,
+        DelDoc {
+            version: Some(revenue_version),
+        },
+    ));
+
+    // 6. Delete the revenue document
+    docs_to_delete.push((
+        "pledges_solution".to_string(),
+        sol_pl_key,
+        DelDoc {
+            version: Some(sol_pl_version),
+        },
+    ));
+
+    // Step 4: Delete all the documents using the controller as the caller
+    for (collection, key, del_doc) in docs_to_delete {
+        delete_doc_store(controller, collection, key, del_doc);
+    }
+
+    // Return success after all documents have been deleted
+    return Ok(());
+}
 
 include_satellite!();
