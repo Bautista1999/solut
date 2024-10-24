@@ -13,7 +13,9 @@ export const idlFactory = ({ IDL }) => {
     'build_version' : IDL.Func([], [IDL.Text], ['query']),
     'create_new_product' : IDL.Func([Product, IDL.Text], [Result], []),
     'delete_pledge' : IDL.Func([IDL.Text], [Result], []),
+    'eliminate_idea' : IDL.Func([IDL.Text], [Result], []),
     'eliminate_solution' : IDL.Func([IDL.Text], [Result], []),
+    'eliminate_topic' : IDL.Func([IDL.Text], [Result], []),
   });
 };
 export const init = ({ IDL }) => { return []; };

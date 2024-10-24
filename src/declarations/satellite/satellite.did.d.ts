@@ -17,7 +17,9 @@ export interface _SERVICE {
   'build_version' : ActorMethod<[], string>,
   'create_new_product' : ActorMethod<[Product, string], Result>,
   'delete_pledge' : ActorMethod<[string], Result>,
+  'eliminate_idea' : ActorMethod<[string], Result>,
   'eliminate_solution' : ActorMethod<[string], Result>,
+  'eliminate_topic' : ActorMethod<[string], Result>,
 }
 export declare const idlFactory: IDL.InterfaceFactory;
 export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];

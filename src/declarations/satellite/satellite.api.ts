@@ -26,10 +26,26 @@ export const deletePledge = async (value0: string): Promise<Result> => {
 	return await delete_pledge(value0);
 }
 
+export const eliminateIdea = async (value0: string): Promise<Result> => {
+	const {eliminate_idea} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await eliminate_idea(value0);
+}
+
 export const eliminateSolution = async (value0: string): Promise<Result> => {
 	const {eliminate_solution} = await getSatelliteExtendedActor<SatelliteActor>({
 		idlFactory
 	});
 
 	return await eliminate_solution(value0);
+}
+
+export const eliminateTopic = async (value0: string): Promise<Result> => {
+	const {eliminate_topic} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await eliminate_topic(value0);
 }
