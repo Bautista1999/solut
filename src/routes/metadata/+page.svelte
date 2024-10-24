@@ -18,7 +18,9 @@
   import {
     createNewProduct,
     deletePledge,
+    eliminateIdea,
     eliminateSolution,
+    eliminateTopic,
   } from "../../declarations/satellite/satellite.api";
   import { signIn, NFIDProvider, authSubscribe } from "@junobuild/core";
   import SearchBarLarger from "$lib/components/SearchBarLarger.svelte";
@@ -224,6 +226,20 @@
     console.log(await deletePledge(pledgeId));
     loading = false;
   }
+
+  let ideaId = "";
+  async function deleteIdeafromId() {
+    loading = true;
+    console.log(await eliminateIdea(ideaId));
+    loading = false;
+  }
+
+  let topicId = "";
+  async function deleteTopicfromId() {
+    loading = true;
+    console.log(await eliminateTopic(topicId));
+    loading = false;
+  }
 </script>
 
 <svelte:head>
@@ -351,6 +367,36 @@
           await deletePledgeFromId();
         }}
         msg={"Delete pledge"}
+      />
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">Delete idea</h1>
+      <input
+        class="InputTextSmall"
+        placeholder="Enter ID of the idea"
+        bind:value={ideaId}
+      />
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          await deleteIdeafromId();
+        }}
+        msg={"Delete idea"}
+      />
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">Delete topic</h1>
+      <input
+        class="InputTextSmall"
+        placeholder="Enter ID of the topic"
+        bind:value={topicId}
+      />
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          await deleteTopicfromId();
+        }}
+        msg={"Delete topic"}
       />
     </div>
   {/if}
