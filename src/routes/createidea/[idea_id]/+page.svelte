@@ -16,7 +16,10 @@
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
 
     import { goto } from "$app/navigation";
-    import { setFeatures } from "$lib/data_functions/create_functions";
+    import {
+        setFeature,
+        setFeatures,
+    } from "$lib/data_functions/create_functions";
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import { onMount } from "svelte";
@@ -148,24 +151,23 @@
         };
         isLoading = true;
         try {
-            let creation = await setFeatures([ideaPost], parentIdeaKey);
-            if (typeof creation === "string") {
+            let creation = await setFeature(ideaPost, parentIdeaKey); // Call to create a single feature
+
+            if (typeof creation === "string" && creation.startsWith("ERROR:")) {
                 error = true;
-                errorMsg = creation;
-            } else if (Array.isArray(creation) && creation.length > 0) {
-                ideaKey = creation[0].key;
+                errorMsg = creation; // Directly assign the error message
             } else {
-                ideaKey = "";
+                ideaKey = creation; // Set the key on success
             }
         } catch (e) {
             isLoading = false;
             error = true;
-            console.log(e);
-            errorMsg = String(e); // Convert the error object to a string
+            console.error(e);
+            errorMsg = `ERROR: ${String(e)}`; // Convert the error to a string and set as errorMsg
         }
         isLoading = false;
         if (!error) {
-            success = true;
+            success = true; // If no error, indicate success
         }
     }
     let parentIdeaKey = "";
@@ -184,7 +186,6 @@
         isLoading = false;
         if (typeof parentDoc == "undefined") {
             error = true;
-
             errorMsg = "Parent topic non-existent";
         } else {
             parentIdeaKey = data.params.idea_id;
@@ -221,7 +222,7 @@
             message={"The creation of the idea failed."}
             error={errorMsg}
             someFunction={() => {
-                error = false;
+                window.location.href = "/";
             }}
         />
     {:else}

@@ -44,13 +44,13 @@
     };
     let milestones = [
         {
-            id: 1,
+            id: BigInt(1),
             title: "Project Kick-off",
             date: new Date("2024-05-25").getTime(),
             description: "Project kickoff day",
         },
         {
-            id: 6,
+            id: BigInt(6),
             title: "Delivery Date",
             date: new Date("2024-05-25").getTime(),
             description: "Delivery Date day",
@@ -189,29 +189,30 @@
             videos: videos,
             categories: tags,
             features: ideas,
-            milestones: milestones,
+            milestones: milestones.map((milestone) => ({
+                ...milestone,
+                date: BigInt(milestone.date), // Convert date to bigint
+            })),
         };
         isLoading = true;
         try {
-            let creation = await setSolution(solutionPost, parentIdeaKey);
-            if (typeof creation === "string") {
+            let creation = await setSolution(solutionPost, parentIdeaKey); // Call to create or update a solution
+
+            if (typeof creation === "string" && creation.startsWith("ERROR:")) {
                 error = true;
-                errorMsg = creation;
-            } else if (Array.isArray(creation) && creation.length > 0) {
-                solutionKey = creation[0].key;
+                errorMsg = creation; // Directly assign the error message
             } else {
-                solutionKey = "";
+                solutionKey = creation; // Set the solution key on success
             }
-            console.log("Your creation: ", creation);
         } catch (e) {
             isLoading = false;
             error = true;
-            console.log(e);
-            errorMsg = String(e); // Convert the error object to a string
+            console.error(e);
+            errorMsg = `ERROR: ${String(e)}`; // Convert the error to a string and set as errorMsg
         }
         isLoading = false;
         if (!error) {
-            success = true;
+            success = true; // If no error, indicate success
         }
     }
     /**

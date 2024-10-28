@@ -101,22 +101,21 @@
         }
         isLoading = true;
         try {
-            let creation = await setIdea(ideaPost, featuresPost);
-            if (typeof creation === "string") {
+            const creation = await setIdea(ideaPost, featuresPost);
+
+            if (typeof creation === "string" && creation.startsWith("ERROR:")) {
                 error = true;
-                errorMsg = creation;
-            } else if (Array.isArray(creation) && creation.length > 0) {
-                ideaKey = creation[0].key;
+                errorMsg = creation; // Directly assign the error message
             } else {
-                ideaKey = "";
+                ideaKey = creation; // Set the key on success
             }
         } catch (e) {
-            isLoading = false;
             error = true;
-            console.log(e);
-            errorMsg = String(e); // Convert the error object to a string
+            errorMsg = String(e); // Handle any unexpected errors
         }
+
         isLoading = false;
+
         if (!error) {
             success = true;
         }
