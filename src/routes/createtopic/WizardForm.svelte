@@ -25,7 +25,7 @@
      */
     export let tags = [];
     export let type = "Topic";
-    const charLimit = { title: 70, subtitle: 200, description: 2000 };
+    const charLimit = { title: 70, subtitle: 200, description: 3000 };
     let newImage = "";
     function addImage() {
         imageScroller.addNewImage(newImage);
