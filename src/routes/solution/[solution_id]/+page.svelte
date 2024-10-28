@@ -66,8 +66,13 @@
     import FlatButtonDarkSmall from "$lib/components/FlatButtonDarkSmall.svelte";
     import BasicButtonDarkSmall from "$lib/components/BasicButton_Dark_Small.svelte";
     import ModalConfirmation from "$lib/components/ModalConfirmation.svelte";
-    import { deleteSolution } from "$lib/data_functions/create_functions";
+    import {
+        deleteSolution,
+        updateSolution,
+    } from "$lib/data_functions/create_functions";
     import BasicButtonDarkLarger from "$lib/components/BasicButtonDarkLarger.svelte";
+    import SubtitleSection from "$lib/components/SubtitleSection.svelte";
+    import TitleSection from "$lib/components/TitleSection.svelte";
 
     let userKey = "";
     let ownerKey = "";
@@ -84,6 +89,18 @@
     let subtitle = "";
     let description = "";
     let user = "";
+    /**
+     * @type {string[]}
+     */
+    let videos = [];
+    /**
+     * @type {string[]}
+     */
+    let categories = [];
+    /**
+     * @type {string[]}
+     */
+    let features = [];
     let userPicture = "";
     let expected = 0;
     let total = 0;
@@ -134,6 +151,9 @@
             title = doc.data.title;
             subtitle = doc.data.subtitle;
             description = doc.data.description;
+            videos = doc.data.videos;
+            categories = doc.data.categories;
+            features = doc.data.features;
             ownerKey = doc.owner ? doc.owner : "";
             // ownerKey = "kkk";
             createdAt = (doc.created_at ? doc.created_at : "").toString();
@@ -159,15 +179,94 @@
     $: modalError = false;
     $: modalLoading = false;
     $: modalSuccess = false;
+
+    $: newTitle = title;
+    async function saveTitle() {
+        let solInfo = {
+            title: newTitle,
+            subtitle: subtitle,
+            description: description,
+            images: images,
+            videos: videos,
+            categories: categories,
+            milestones: milestones,
+            features: features,
+        };
+        let result = await updateSolution(key, solInfo, idea_id);
+        console.log(result);
+        if ("Ok" in result) {
+            title = newTitle;
+        } else {
+            alert("Something went wrong when updating title: " + result.Err);
+            newTitle = title;
+        }
+    }
+    $: newSubtitle = subtitle;
+    async function saveSubtitle() {
+        let solInfo = {
+            title: title,
+            subtitle: newSubtitle,
+            description: description,
+            images: images,
+            videos: videos,
+            categories: categories,
+            milestones: milestones,
+            features: features,
+        };
+        let result = await updateSolution(key, solInfo, idea_id);
+        console.log(result);
+        if ("Ok" in result) {
+            subtitle = newSubtitle;
+        } else {
+            alert("Something went wrong when updating subtitle: " + result.Err);
+            newSubtitle = subtitle;
+        }
+    }
+
+    $: newDescription = description;
+    async function saveDescription() {
+        let solInfo = {
+            title: title,
+            subtitle: subtitle,
+            description: newDescription,
+            images: images,
+            videos: videos,
+            categories: categories,
+            milestones: milestones,
+            features: features,
+        };
+        let result = await updateSolution(key, solInfo, idea_id);
+        console.log(result);
+        if ("Ok" in result) {
+            description = newDescription;
+        } else {
+            alert(
+                "Something went wrong when updating description: " + result.Err,
+            );
+            newDescription = description;
+        }
+    }
 </script>
 
 <div class="body">
     <div class="content">
         {#if !isLoading && !success && !solutionNonExistent && !error}
             <div class="container">
-                <div class="Subtitle">{subtitle}</div>
+                <div class="Subtitle">
+                    <SubtitleSection
+                        {subtitle}
+                        owner={ownerKey}
+                        saveSubtitleFunction={saveSubtitle}
+                        bind:newSubtitle
+                    />
+                </div>
                 <div class="Title" style="color: var(--secondary-color);">
-                    <h1>{title}</h1>
+                    <TitleSection
+                        {title}
+                        owner={ownerKey}
+                        saveTitleFunction={saveTitle}
+                        bind:newTitle
+                    />
                 </div>
                 <div class="Profile">
                     {#await getUserImages([ownerKey])}
@@ -421,7 +520,12 @@
                         {:else if activeTab === tabs[1]}
                             <CommentSection project_id={key} />
                         {:else if activeTab === tabs[2]}
-                            <AboutProject {description} />
+                            <AboutProject
+                                {description}
+                                owner={ownerKey}
+                                saveDescriptionFunction={saveDescription}
+                                bind:newDescription
+                            />
                         {/if}
                     </div>
                     <br />

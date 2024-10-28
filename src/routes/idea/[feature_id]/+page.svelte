@@ -43,7 +43,12 @@
     import FundingBarNew from "$lib/components/FundingBarNew.svelte";
     import BasicButtonBlackWhite from "$lib/components/BasicButtonBlackWhite.svelte";
     import ModalConfirmation from "$lib/components/ModalConfirmation.svelte";
-    import { deleteIdea } from "$lib/data_functions/create_functions";
+    import {
+        deleteIdea,
+        updateIdea,
+    } from "$lib/data_functions/create_functions";
+    import SubtitleSection from "$lib/components/SubtitleSection.svelte";
+    import TitleSection from "$lib/components/TitleSection.svelte";
 
     /** @type {import('./$types').PageData} */
     // @ts-ignore
@@ -57,6 +62,14 @@
     let title = "";
     let subtitle = "";
     let description = "";
+    /**
+     * @type {string[]}
+     */
+    let videos = [];
+    /**
+     * @type {string[]}
+     */
+    let categories = [];
     let user = "";
     let userPicture = "";
     let expected = 100000;
@@ -99,6 +112,8 @@
             title = doc.data.title;
             subtitle = doc.data.subtitle;
             description = doc.data.description;
+            videos = doc.data.videos;
+            categories = doc.data.categories;
             user = doc.owner ? doc.owner : "";
             userPicture = "";
             expected = 0;
@@ -114,15 +129,88 @@
     $: modalError = false;
     $: modalLoading = false;
     $: modalSuccess = false;
+
+    $: newTitle = title;
+    async function saveTitle() {
+        let ideaInfo = {
+            title: newTitle,
+            subtitle: subtitle,
+            description: description,
+            images: images,
+            videos: videos,
+            categories: categories,
+        };
+        let result = await updateIdea(key, ideaInfo, idea_id);
+        console.log(result);
+        if ("Ok" in result) {
+            title = newTitle;
+        } else {
+            alert("Something went wrong when updating title: " + result.Err);
+            newTitle = title;
+        }
+    }
+    $: newSubtitle = subtitle;
+    async function saveSubtitle() {
+        let ideaInfo = {
+            title: title,
+            subtitle: newSubtitle,
+            description: description,
+            images: images,
+            videos: videos,
+            categories: categories,
+        };
+        let result = await updateIdea(key, ideaInfo, idea_id);
+        console.log(result);
+        if ("Ok" in result) {
+            subtitle = newSubtitle;
+        } else {
+            alert("Something went wrong when updating subtitle: " + result.Err);
+            newSubtitle = subtitle;
+        }
+    }
+
+    $: newDescription = description;
+    async function saveDescription() {
+        let ideaInfo = {
+            title: title,
+            subtitle: subtitle,
+            description: newDescription,
+            images: images,
+            videos: videos,
+            categories: categories,
+        };
+        let result = await updateIdea(key, ideaInfo, idea_id);
+        console.log(result);
+        if ("Ok" in result) {
+            description = newDescription;
+        } else {
+            alert(
+                "Something went wrong when updating description: " + result.Err,
+            );
+            newDescription = description;
+        }
+    }
 </script>
 
 <div class="body">
     <div class="content">
         {#if !isLoading && !ideaNonExistent}
             <div class="container">
-                <div class="Subtitle">{subtitle}</div>
+                <div class="Subtitle">
+                    <SubtitleSection
+                        {subtitle}
+                        owner={user}
+                        saveSubtitleFunction={saveSubtitle}
+                        bind:newSubtitle
+                    />
+                </div>
                 <div class="Title" style="color: var(--secondary-color);">
-                    <h1>{title}</h1>
+                    <TitleSection
+                        {title}
+                        owner={user}
+                        saveTitleFunction={saveTitle}
+                        bind:newTitle
+                    />
                 </div>
                 <div class="Profile">
                     {#await getUserImages([user])}
@@ -389,7 +477,12 @@
                         {:else if activeTab === tabs[1]}
                             <CommentSection project_id={key} />
                         {:else if activeTab === tabs[2]}
-                            <AboutProject {description} />
+                            <AboutProject
+                                {description}
+                                owner={user}
+                                saveDescriptionFunction={saveDescription}
+                                bind:newDescription
+                            />
                         {/if}
                     </div>
                 </div>

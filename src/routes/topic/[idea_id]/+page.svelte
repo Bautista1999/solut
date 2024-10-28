@@ -42,13 +42,21 @@
     import FollowersModalDisplay from "$lib/components/FollowersModalDisplay.svelte";
     import FundingBarNew from "$lib/components/FundingBarNew.svelte";
     import ModalConfirmation from "$lib/components/ModalConfirmation.svelte";
-    import { deleteTopic } from "$lib/data_functions/create_functions";
+    import {
+        deleteTopic,
+        updateTopic,
+    } from "$lib/data_functions/create_functions";
+    import IconButton from "$lib/components/IconButton.svelte";
+    import MagicalDotsSmall from "$lib/components/MagicalDotsSmall.svelte";
+    import TitleSection from "$lib/components/TitleSection.svelte";
+    import EditSubtitle from "$lib/components/EditSubtitle.svelte";
+    import SubtitleSection from "$lib/components/SubtitleSection.svelte";
 
     /** @type {import('./$types').PageData} */
     export let data;
     let key = data.params.idea_id;
     /**
-     * @type {any[]}
+     * @type {string[]}
      */
     let images = [];
     let title = "";
@@ -61,6 +69,14 @@
     let totalFollowers = 14560;
     let amountPledgers = 100;
     let createdAt = "";
+    /**
+     * @type {string[]}
+     */
+    let videos = [];
+    /**
+     * @type {string[]}
+     */
+    let categories = [];
     let isLoading = false;
     let ideaNonExistent = false;
     let tabs = ["Pledge Timeline", "Comments", "About the project"];
@@ -92,6 +108,8 @@
             title = doc.data.title;
             subtitle = doc.data.subtitle;
             description = doc.data.description;
+            videos = doc.data.videos;
+            categories = doc.data.categories;
             user = doc.owner ? doc.owner : "";
             userPicture = "";
             expected = 100000;
@@ -106,15 +124,88 @@
     $: modalError = false;
     $: modalLoading = false;
     $: modalSuccess = false;
+
+    $: newTitle = title;
+    async function saveTitle() {
+        let topicInfo = {
+            title: newTitle,
+            subtitle: subtitle,
+            description: description,
+            images: images,
+            videos: videos,
+            categories: categories,
+        };
+        let result = await updateTopic(key, topicInfo);
+        console.log(result);
+        if ("Ok" in result) {
+            title = newTitle;
+        } else {
+            alert("Something went wrong when updating title: " + result.Err);
+            newTitle = title;
+        }
+    }
+    $: newSubtitle = subtitle;
+    async function saveSubtitle() {
+        let topicInfo = {
+            title: title,
+            subtitle: newSubtitle,
+            description: description,
+            images: images,
+            videos: videos,
+            categories: categories,
+        };
+        let result = await updateTopic(key, topicInfo);
+        console.log(result);
+        if ("Ok" in result) {
+            subtitle = newSubtitle;
+        } else {
+            alert("Something went wrong when updating subtitle: " + result.Err);
+            newSubtitle = subtitle;
+        }
+    }
+
+    $: newDescription = description;
+    async function saveDescription() {
+        let topicInfo = {
+            title: title,
+            subtitle: subtitle,
+            description: newDescription,
+            images: images,
+            videos: videos,
+            categories: categories,
+        };
+        let result = await updateTopic(key, topicInfo);
+        console.log(result);
+        if ("Ok" in result) {
+            description = newDescription;
+        } else {
+            alert(
+                "Something went wrong when updating description: " + result.Err,
+            );
+            newDescription = description;
+        }
+    }
 </script>
 
 <div class="body">
     <div class="content">
         {#if !isLoading && !$success && !ideaNonExistent}
             <div class="container">
-                <div class="Subtitle">{subtitle}</div>
+                <div class="Subtitle">
+                    <SubtitleSection
+                        {subtitle}
+                        owner={user}
+                        saveSubtitleFunction={saveSubtitle}
+                        bind:newSubtitle
+                    />
+                </div>
                 <div class="Title" style="color: var(--secondary-color);">
-                    <h1>{title}</h1>
+                    <TitleSection
+                        {title}
+                        owner={user}
+                        saveTitleFunction={saveTitle}
+                        bind:newTitle
+                    />
                 </div>
                 <div class="Profile">
                     {#await getUserImages([user])}
@@ -243,7 +334,7 @@
                                     }
                                 }}
                                 errorMsg={modalErrorMsg}
-                                successMsg={"Your idea was topic successfully"}
+                                successMsg={"Your topic was deleted successfully"}
                                 loadingMsg={"Deleting topic..."}
                                 error={modalError}
                                 loading={modalLoading}
@@ -313,7 +404,12 @@
                         {:else if activeTab === tabs[1]}
                             <CommentSection project_id={key} />
                         {:else if activeTab === tabs[2]}
-                            <AboutProject {description} />
+                            <AboutProject
+                                {description}
+                                owner={user}
+                                saveDescriptionFunction={saveDescription}
+                                bind:newDescription
+                            />
                         {/if}
                     </div>
                 </div>
