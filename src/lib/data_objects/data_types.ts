@@ -22,9 +22,9 @@ export type solution = {
     milestones: Array<milestone>;
 }
 export type milestone = {
-    id: number;
+    id: bigint,
     title: string,
-    date: number,
+    date: bigint,
     description: string,
 }
 type link = {

@@ -8,31 +8,31 @@
 
     export let milestones = [
         {
-            id: 1,
+            id: BigInt(1),
             title: "Project Kick-off",
             date: new Date("2024-05-25").getTime(),
             description: "delete",
         },
         {
-            id: 2,
+            id: BigInt(2),
             title: "Launch Date",
             date: new Date("2024-05-25").getTime(),
             description: "delete",
         },
         {
-            id: 3,
+            id: BigInt(3),
             title: "Testing phase",
             date: new Date("2024-05-25").getTime(),
             description: "delete",
         },
         {
-            id: 4,
+            id: BigInt(4),
             title: "Alpha launch",
             date: new Date("2024-05-25").getTime(),
             description: "delete",
         },
         {
-            id: 5,
+            id: BigInt(5),
             title: "Beta",
             date: new Date("2024-05-25").getTime(),
             description: "delete",
@@ -48,7 +48,7 @@
     function addMilestone() {
         if (newMilestoneTitle.trim() && newMilestoneDate) {
             const newMilestone = {
-                id: milestones.length + 1,
+                id: BigInt(milestones.length + 1),
                 title: newMilestoneTitle,
                 date: new Date(newMilestoneDate).getTime(),
                 description: "",
@@ -60,7 +60,7 @@
     }
 
     /**
-     * @param {number} id
+     * @param {bigint} id
      */
     function deleteMilestone(id) {
         milestones = milestones.filter((m) => m.id !== id);
@@ -69,7 +69,7 @@
     let editingId = writable(null);
 
     /**
-     * @param {null|number} id
+     * @param {null|bigint} id
      */
     function startEditing(id) {
         // @ts-ignore
@@ -77,7 +77,7 @@
     }
 
     /**
-     * @param {number} id
+     * @param {bigint} id
      * @param {string} newTitle
      * @param {number} newDate
      */
@@ -131,7 +131,7 @@
                         msg="Save"
                         someFunction={() =>
                             saveEdits(
-                                milestone.id,
+                                BigInt(milestone.id),
                                 milestone.title,
                                 milestone.date,
                             )}
@@ -152,13 +152,14 @@
                     <FlatButtonDarkSmall
                         msg={"edit"}
                         icon={"edit"}
-                        someFunction={() => startEditing(milestone.id)}
+                        someFunction={() => startEditing(BigInt(milestone.id))}
                     />
                 </div>
                 {#if milestone.title != "Project Kick-off" && milestone.title != "Delivery Date"}
                     <CircledButtonSmall
                         icon={"delete"}
-                        someFunction={() => deleteMilestone(milestone.id)}
+                        someFunction={() =>
+                            deleteMilestone(BigInt(milestone.id))}
                     />
                 {/if}
             {/if}
