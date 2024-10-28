@@ -7,7 +7,7 @@ import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
 import { getUserKey } from "./get_functions";
 import { createAndUploadHTMLStaticFile } from "$lib/SEO and metadata/metadata_functions";
 import { trackEvent } from "@junobuild/analytics";
-import { eliminateIdea, eliminateSolution, eliminateTopic } from "../../declarations/satellite/satellite.api";
+import { createIdeas, createOrUpdateIdea, createOrUpdateSolution, createOrUpdateTopic, eliminateIdea, eliminateSolution, eliminateTopic } from "../../declarations/satellite/satellite.api";
 
 
 /**
@@ -15,8 +15,7 @@ import { eliminateIdea, eliminateSolution, eliminateTopic } from "../../declarat
  * @param {Array<import("$lib/data_objects/data_types").feature>} features
  */
 export async function setIdea(idea,features){
-    let versionGen = [0n];
-    if(idea.description.length>1000 || idea.title.length>70 || idea.subtitle.length>200){
+    if(idea.description.length>3000 || idea.title.length>70 || idea.subtitle.length>200){
         return "ERROR: Fields in idea does not fulfill length requirements";
     };
     if(idea.description.length==0 || idea.title.length==0 || idea.subtitle.length==0){
@@ -37,7 +36,7 @@ export async function setIdea(idea,features){
     };
     for(let i=0;i<features.length;i++){
         let feature = features[i];
-        if(feature.description.length>1000 || feature.title.length>70 || feature.subtitle.length>200){
+        if(feature.description.length>3000 || feature.title.length>70 || feature.subtitle.length>200){
             return "ERROR: Fields in feature -"+ feature.title +"- does not fulfill length requirements";
         };
         if(feature.title.length==0 || feature.subtitle.length==0){
@@ -58,63 +57,11 @@ export async function setIdea(idea,features){
         
     };
     let idea_id = nanoid();
-    // Collection we need to update:
-    // idea: idea, pledges_solution (admin), idea_feature_pledge(admin), index_search, idea_revenue_counter(admin), solutio_numbers (update idea_counter)(admin), followers(admin)
-    // feature: feature, idea_feature_pledge, index_search, idea_revenue_counter, solutio_numbers (update idea_counter), followers
-    let ideaDoc = {
-        collection:"idea",
-        
-        doc:{
-            key:idea_id,
-            description:joinTags(idea.categories),
-            data:idea,
-        }
-    };
-    let solutionPledgeDoc = [
-        "pledges_solution", "SOL_PL_" + idea_id, { description:["SOL_ID:"] , version:versionGen, data: await toArray([])}
-    ];
-    let totalPledgeDoc = [
-        "idea_feature_pledge","PLG_IDEA_"+idea_id, { description: [idea.title], version:versionGen, data: await toArray({
-                pledges:0,
-                expected:0, }) }
-    ];
-    let indexSearchDoc = {
-        collection:"index_search",
-        doc:{
-            key:"INDEX_"+idea_id,
-            description:joinTags(idea.categories) +" "+"title:"+idea.title+"subtitle:"+idea.subtitle+"type:topic",
-            data:{
-                title:idea.title,
-                subtitle:idea.subtitle,
-                images:idea.images,
-                videos:idea.videos,
-            },
-        }
-    };
-    let ideaRevenueCounterDoc = [ "idea_revenue_counter","REV_IDEA_"+idea_id,{description:[(0).toString()],version:versionGen, data:await toArray({ total_revenue:0,}),}];
     
-    let followersCounterDoc = [
-       "followers","FOLL_"+idea_id,
-        {
-            
-            description:[(0).toString()],version:versionGen,
-            data: await toArray({
-                followers:0,
-            }),
-        }
-    ];
-    let arrayDocs = [ideaDoc,indexSearchDoc];
-    let arrayDocsAdmin =[solutionPledgeDoc,totalPledgeDoc, ideaRevenueCounterDoc,followersCounterDoc];
-    await updateCounter("ideas_counter",1);
-    let newDocs = await setManyDocs({docs:arrayDocs});
     createAndUploadHTMLStaticFile(idea.title,idea_id,idea.subtitle,idea.images[0],"topic");
 
 
-    let identity = await unsafeIdentity();
-    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
-    const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
-
-    const result = await canister.setManyDocs(arrayDocsAdmin);
+   
     trackEvent({
         name: "Topics created",
         metadata: {
@@ -123,242 +70,226 @@ export async function setIdea(idea,features){
         }
       });
     let featuresDocs = await setFeatures(features,idea_id);
-    await followElement(idea_id,"idea");
-    if (typeof featuresDocs === "string") {
-        return featuresDocs;
-    }else {
-        return [...newDocs,...featuresDocs];
+    followElement(idea_id,"idea");
+    
+    const creationResult = await createOrUpdateTopic(idea_id, idea);
+    if ("Ok" in creationResult) {
+        return idea_id; // Success: Return the key of the newly created topic
+    } else if ("Err" in creationResult) {
+        return `ERROR: ${creationResult.Err}`; // Backend error
     }
     
+    return "ERROR: Unknown error occurred";
 };
+/**
+ * @param {import("$lib/data_objects/data_types").idea} idea
+ * @param {string} key
+ */
+export async function updateTopic(key, idea){
+    return await createOrUpdateTopic(key,idea);
+}
+
+
+/**
+ * Creates or updates a single feature in the database.
+ * 
+ * @param {import("$lib/data_objects/data_types").feature} feature - The feature data to create/update.
+ * @param {string} parentIdeaId - The ID of the parent idea for this feature.
+ * @returns {Promise<string>} The feature ID if successful, or an error message if validation fails.
+ */
+export async function setFeature(feature, parentIdeaId) {
+    // Check field length validation
+    if (feature.description.length > 3000 || feature.title.length > 70 || feature.subtitle.length > 200) {
+        return "ERROR: Fields in feature do not meet length requirements.";
+    }
+
+    // Check required fields
+    if (feature.description.length === 0 || feature.title.length === 0 || feature.subtitle.length === 0) {
+        let missingField = '';
+        if (feature.description.length === 0) missingField = 'Description';
+        else if (feature.title.length === 0) missingField = 'Title';
+        else if (feature.subtitle.length === 0) missingField = 'Subtitle';
+
+        return `ERROR: ${missingField} is required in feature.`;
+    }
+
+    // Generate a unique ID for the feature if it's a new creation
+    const featureId = nanoid();
+
+    // Prepare the feature data structure for backend processing
+    try {
+        const result = await createOrUpdateIdea(featureId, feature, parentIdeaId);  // Calls Rust function on the backend
+
+        if ("Ok" in result) {
+            // Return the feature ID if the backend operation was successful
+            return featureId;
+        } else if ("Err" in result) {
+            // If there's an error from the backend, return it directly
+            return result.Err;
+        }
+    } catch (e) {
+        // Handle any other errors and return them for display
+        return `ERROR: Failed to create feature. Details: ${String(e)}`;
+    }
+    return "ERROR: Unknown error occurred";
+}
+
+/**
+ * @param {import("$lib/data_objects/data_types").idea} idea
+ * @param {string} key
+ * @param {string} parentIdea_id
+ */
+export async function updateIdea(key, idea, parentIdea_id){
+    return await createOrUpdateIdea(key,idea, parentIdea_id);
+}
 
 /**
  * @param {Array<import("$lib/data_objects/data_types").feature>} features
- * @param {string} [parentIdea_id]
+ * @param {string} parentIdea_id - ID of the parent idea
  */
-export async function setFeatures(features, parentIdea_id){
-    let versionGen = [3n];
-    if(features.length>0){
-    /**
-     * @type {any[]}
-     */
-    let arrayDocs=[];
-    /**
-     * @type {any[]}
-     */
-    let arrayDocsAdmin=[]
-    for(let i=0; i<features.length; i++){
-        let idea=features[i];
-        let idea_id = nanoid();
-        if(idea.title.length==0 || idea.subtitle.length==0){
-            let errorDetail = "";
-            switch (true) {
-               
-                case idea.title.length === 0:
-                    errorDetail= "Title is required.";
-                    break;
-                case idea.subtitle.length === 0:
-                    errorDetail= "Subtitle is required.";
-                    break;
-            }
-            return "ERROR: Is required for all fields to be completed in feature: " + idea.title + ". The field " + errorDetail;
-        };
-        if(features.length>1){
-            followElement(idea_id,"feature");
-        }else{
-            await followElement(idea_id,"feature");
+export async function setFeatures(features, parentIdea_id) {
+    if (features.length === 0) return []; // If no features, return an empty array
+    
+    // Prepare each feature for the backend function, ensuring validation and key assignment
+    const setIdeas = features.map(feature => {
+        // Generate a unique ID for each feature
+        const idea_id = nanoid();
+
+        // Perform client-side validation for required fields
+        if (feature.title.length === 0 || feature.subtitle.length === 0) {
+            let errorDetail = feature.title.length === 0 ? "Title is required." : "Subtitle is required.";
+            return `ERROR: ${errorDetail} in feature: ${feature.title}`;
         }
-    // Collection we need to update:
-    // feature: feature, idea_feature_pledge, index_search, idea_revenue_counter, solutio_numbers (update idea_counter), followers
-        let ideaDoc = {
-            collection:"feature",
-            
-            doc:{
-                key:idea_id,
-                description:joinTags(idea.categories)+" "+"idea_id:"+parentIdea_id,
-                data:idea,
-            }
-        };
-        let totalPledgeDoc = [
-            "idea_feature_pledge","PLG_FEA_"+idea_id, { description: [idea.title],version:versionGen, data: await toArray({
-                    pledges:0,
-                    expected:0, }) }
-        ];
-        let indexSearchDoc = {
-            collection:"index_search",
-            doc:{
-                key:"INDEX_"+idea_id,
-                description:joinTags(idea.categories) +" "+"title:"+idea.title+"subtitle:"+idea.subtitle+"type:idea"+" "+"idea_id:"+parentIdea_id,
-                data:{
-                    title:idea.title,
-                subtitle:idea.subtitle,
-                    images:idea.images,
-                    videos:idea.videos,
-                },
-            }
-        };
-        
-        let ideaRevenueCounterDoc = [ "idea_revenue_counter","REV_FEA_"+idea_id,{description:[(0).toString()],version:versionGen, data:await toArray({ total_revenue:0,}),}];
-        let followersCounterDoc = [
-            "followers","FOLL_"+idea_id,
-             {
-                 
-                 description:[(0).toString()],version:versionGen,
-                 data: await toArray({
-                     followers:0,
-                 }),
-             }
-        ];
-        let otherArray = [ideaDoc,indexSearchDoc, ];
-        arrayDocs.push(...otherArray);
-        arrayDocs=arrayDocs;
-        let otherArrayAdmin = [totalPledgeDoc,ideaRevenueCounterDoc,followersCounterDoc];
-        arrayDocsAdmin.push(...otherArrayAdmin);
-        arrayDocsAdmin=arrayDocsAdmin;
-        createAndUploadHTMLStaticFile(idea.title,idea_id,idea.subtitle,idea.images[0],"idea");
+
+        // Create static HTML and track events on the frontend as before
+        createAndUploadHTMLStaticFile(feature.title, idea_id, feature.subtitle, feature.images[0], "idea");
         trackEvent({
             name: "Ideas created",
             metadata: {
-                title: idea.title,
+                title: feature.title,
                 key: idea_id
             }
-          });
-    };
-    
-    let newDocs = await setManyDocs({docs:arrayDocs});
-    let identity = await unsafeIdentity();
-    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
-    const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
-    const result = await canister.setManyDocs(arrayDocsAdmin);
-    await updateCounter("ideas_counter",features.length);
-    return newDocs;}
-    return [];
-};
+        });
+
+        // Return each feature structured for the backend function
+        return { key: idea_id, idea: feature };
+    });
+
+    // Attempt to create all features on the backend and handle any errors
+    try {
+        const result = await createIdeas(setIdeas, parentIdea_id);
+
+        if ("Ok" in result) {
+            return setIdeas.map(idea => (idea)); // Return an array of keys if successful
+        } else if ("Err" in result) {
+            return result.Err; // Return the error message if failed
+        }
+    } catch (e) {
+        console.error("Failed to create ideas:", e);
+        return `ERROR: ${String(e)}`;
+    }
+}
+
 
 /**
  * @param {import("$lib/data_objects/data_types").solution} solution
  * @param {string} parentIdea_id
  */
-export async function setSolution(solution,parentIdea_id){
-    let versionGen = [3n];
-   // Collections we need to create:
-    // solution: solution, solution_approved, index_search, solution_status,followers
-    // Collections we need to update:
-    // solution: pledges_solution of idea (description field)
+export async function setSolution(solution, parentIdea_id) {
+    if (solution.description.length > 3000 || solution.title.length > 70 || solution.subtitle.length > 200) {
+        return "ERROR: Fields in solution do not fulfill length requirements";
+    }
 
-    if(solution.description.length>1000 || solution.title.length>70 || solution.subtitle.length>200){
-        return "ERROR: Fields in solution does not fulfill length requirements";
-    };
-    if(solution.description.length==0 || solution.title.length==0 || solution.subtitle.length==0 || solution.features.length==0){
+    if (solution.description.length === 0 || solution.title.length === 0 || solution.subtitle.length === 0 || solution.features.length === 0) {
         let errorDetail = "";
         switch (true) {
             case solution.description.length === 0:
-                
-                errorDetail= "Description is required.";
+                errorDetail = "Description is required.";
                 break;
             case solution.title.length === 0:
-                errorDetail= "Title is required.";
+                errorDetail = "Title is required.";
                 break;
             case solution.subtitle.length === 0:
-                errorDetail= "Subtitle is required.";
+                errorDetail = "Subtitle is required.";
                 break;
             case solution.features.length === 0:
-                errorDetail= "At least one feature needs to be implemented";
+                errorDetail = "At least one feature needs to be implemented.";
                 break;
         }
-        return "ERROR: Is required for all fields to be completed. The field " + errorDetail;
-    };
-
-    let ideaDoc = await getDoc({
-        collection:"idea",
-        key:parentIdea_id
-    });
-    if(ideaDoc==undefined){
-        return "The idea doesnt exist!";
+        return "ERROR: All fields must be completed. The field " + errorDetail;
     }
 
+    // Check if parent idea exists (for validation)
+    let ideaDoc = await getDoc({
+        collection: "idea",
+        key: parentIdea_id
+    });
+    if (!ideaDoc) {
+        return "ERROR: The parent idea does not exist!";
+    }
+
+    // Generate a unique key for the solution
     let sol_id = nanoid();
-    let solutionDoc = {
-        collection:"solution",
-        doc:{
-            key:sol_id,
-            description:joinTags(solution.categories)+" "+"idea_id:"+parentIdea_id,
-            data:solution,
-        }
-    };
-    let SolPledkey = ("SOL_PL_" + parentIdea_id);
-    let descriptionSolPled = "SOL_ID:"+sol_id;
-    let solutionPledgeDoc = await updateDocDescription(SolPledkey,descriptionSolPled,"pledges_solution");
 
-    let indexSearchDoc = {
-        collection:"index_search",
-        doc:{
-            key:"INDEX_"+sol_id,
-            description:joinTags(solution.categories) +" "+"title:"+solution.title+"subtitle:"+solution.subtitle+"type:solution"+" "+"idea_id:"+parentIdea_id,
-            data:{
-                title:solution.title,
-                subtitle:solution.subtitle,
-                images:solution.images,
-                videos:solution.videos,
-            },
-        }
+    // Prepare the solution object to send to the backend
+    const solutionData = {
+        title: solution.title,
+        subtitle: solution.subtitle,
+        description: solution.description,
+        images: solution.images,
+        videos: solution.videos,
+        categories: solution.categories,
+        features: solution.features,
+        milestones: (solution.milestones)
     };
 
-    let followersCounterDoc =[ 
-        "followers","FOLL_"+sol_id,
-        {
-            description:[(0).toString()],version:versionGen,
-            data:await toArray({
-                followers:0,
-            }),
+    // Call the backend function to create or update the solution
+    try {
+        const result = await createOrUpdateSolution(sol_id, solutionData, parentIdea_id);
+
+        if ("Ok" in result) {
+            // Track event and notify user if creation succeeded
+            trackEvent({
+                name: "Solution created",
+                metadata: {
+                    title: solution.title,
+                    key: sol_id
+                }
+            });
+
+            // Send notification about the solution creation
+            const newNotification = {
+                title: "New Solution Proposed!",
+                subtitle: `A solution has been proposed for the idea ${ideaDoc.data.title}. Check it out!`,
+                imageURL: solution.images[0] || "",
+                linkURL: `/solution/${sol_id}`,
+                sender: await getUserKey(),
+                description: "",
+                typeOf: "solution proposal"
+            };
+
+            createNotification(newNotification, parentIdea_id);
+
+            return sol_id; // Return the solution key if successful
+        } else if ("Err" in result) {
+            return result.Err; // Return error message from the backend if failed
         }
-    ];
-    let solutionApprovedDoc = [
-        "solution_approved","SOL_APPR_"+sol_id,
-        {
-            
-            description:[(0).toString()],version:versionGen,
-            data:await toArray("")
-        }];
-    let solutionStatusDoc = [
-        "solution_status","SOL_STAT_"+sol_id,
-        {
-            description:["status:"+"PROPOSAL"],version:versionGen,
-            data:await toArray("")
-        }
-    ];
-    let arrayDocs = [solutionDoc,indexSearchDoc];
-    let arrayDocsAdmin = [followersCounterDoc,solutionApprovedDoc,solutionStatusDoc];
-    let newDocs = await setManyDocs({docs:arrayDocs});
-    let identity = await unsafeIdentity();
-    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
-    const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
-    const result = await canister.setManyDocs(arrayDocsAdmin);
-    let solutionCounter = updateCounter("solutions_counter",1);
-    createAndUploadHTMLStaticFile(solution.title,sol_id,solution.subtitle,solution.images[0],"solution");
-    /**
-    * @type {import("$lib/data_objects/data_types").Notification}
-    */
-    let newNotification={
-        title: "Solution proposed!",
-        subtitle: "A solution was already delivered for the idea "+ ideaDoc.data.title +". You can check it out!",
-        imageURL: solution.images[0],
-        linkURL: "/solution/"+sol_id,
-        sender: await getUserKey(),
-        description: "",
-        typeOf: "solution proposal"
-    };
-    trackEvent({
-        name: "Solutions created",
-        metadata: {
-            title: solution.title,
-            key: sol_id
-        }
-      });
-    let description = parentIdea_id;
-    createNotification(newNotification,description);
-    return newDocs;
-};
+    } catch (e) {
+        console.error(e);
+        return String(e); // Return any unexpected errors
+    }
+    return "ERROR: Unknown error occurred";
+}
+
+/**
+ * @param {import("$lib/data_objects/data_types").solution} solution
+ * @param {string} key
+ *  @param {string} parentIdea_id
+ */
+export async function updateSolution(key, solution,parentIdea_id){
+    return await createOrUpdateSolution(key,solution,parentIdea_id);
+}
+
 /**
  * @param {import("$lib/data_objects/data_types").user} user
  * @param {string} userKey
