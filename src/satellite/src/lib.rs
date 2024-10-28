@@ -7,7 +7,10 @@ use ic_cdk_macros::{query, update};
 use junobuild_storage::well_known::update;
 use junobuild_utils::{decode_doc_data, encode_doc_data};
 use regex::Regex;
-use types::interface::{PledgeData, PledgeUser, Product, TotalPledging};
+use types::interface::{
+    Idea, IdeaRevenueCounter, IndexSearch, PledgeData, PledgeUser, Product, SetIdea, Solution,
+    Topic, TotalPledging,
+};
 
 use junobuild_macros::{
     assert_delete_asset, assert_delete_doc, assert_set_doc, assert_upload_asset, on_delete_asset,
@@ -135,12 +138,7 @@ async fn eliminate_solution(key: String) -> Result<(), String> {
     let index_key = format!("INDEX_{}", key.clone());
     let index_version = match get_document_version("index_search".to_string(), index_key.clone()) {
         Ok(version) => version,
-        Err(err) => {
-            return Err(format!(
-                "Failed to get version for index_search document: {}",
-                err
-            ))
-        }
+        Err(err) => 1,
     };
 
     let foll_key = format!("FOLL_{}", key.clone());
@@ -259,12 +257,7 @@ fn eliminate_idea(key: String) -> Result<(), String> {
     let index_key = format!("INDEX_{}", key.clone());
     let index_version = match get_document_version("index_search".to_string(), index_key.clone()) {
         Ok(version) => version,
-        Err(err) => {
-            return Err(format!(
-                "Failed to get version for index_search document: {}",
-                err
-            ))
-        }
+        Err(err) => 1,
     };
 
     let foll_key = format!("FOLL_{}", key.clone());
@@ -286,7 +279,7 @@ fn eliminate_idea(key: String) -> Result<(), String> {
         Ok(version) => version,
         Err(err) => {
             return Err(format!(
-                "Failed to get version for the documnt that holds the total pledged: {}",
+                "Failed to get version for the document that holds the total pledged: {}",
                 err
             ))
         }
@@ -298,7 +291,7 @@ fn eliminate_idea(key: String) -> Result<(), String> {
             Ok(version) => version,
             Err(err) => {
                 return Err(format!(
-                    "Failed to get version for the documnt that holds the total pledged: {}",
+                    "Failed to get version for the document that holds the total revenue: {}",
                     err
                 ))
             }
@@ -377,17 +370,44 @@ fn extract_idea_id(description: &str) -> Option<String> {
 
 fn get_document_version(collection: String, key: String) -> Result<u64, String> {
     let caller = api::caller();
-    match get_doc_store(caller, collection.clone(), key.clone()) {
+    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+
+    match get_doc_store(controller, collection.clone(), key.clone()) {
         Ok(Some(doc)) => match doc.version {
             Some(version) => {
                 return Ok(version);
             }
             None => {
-                return Ok(0);
+                return Ok(1);
             }
         },
-        Ok(None) => return Err(format!("Failed to retrieve document with id {}", key)),
+        Ok(None) => {
+            return Err(format!(
+                "Failed to retrieve document with id {} and collection {}",
+                key, collection
+            ))
+        }
         Err(err) => return Err(format!("Failed to retrieve document's version: {}", err)),
+    }
+}
+
+fn get_document_version_or_default(collection: String, key: String) -> Result<u64, String> {
+    let caller = api::caller();
+    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+
+    match get_doc_store(controller, collection.clone(), key.clone()) {
+        Ok(Some(doc)) => match doc.version {
+            Some(version) => {
+                return Ok(version);
+            }
+            None => {
+                return Ok(1);
+            }
+        },
+        Ok(None) => {
+            return Ok(1);
+        }
+        Err(err) => return Err(format!("Failed get document's version: {}", err)),
     }
 }
 
@@ -661,23 +681,13 @@ fn eliminate_topic(key: String) -> Result<(), String> {
     let index_key = format!("INDEX_{}", key.clone());
     let index_version = match get_document_version("index_search".to_string(), index_key.clone()) {
         Ok(version) => version,
-        Err(err) => {
-            return Err(format!(
-                "Failed to get version for index_search document: {}",
-                err
-            ))
-        }
+        Err(err) => 1,
     };
 
     let foll_key = format!("FOLL_{}", key.clone());
     let foll_version = match get_document_version("followers".to_string(), foll_key.clone()) {
         Ok(version) => version,
-        Err(err) => {
-            return Err(format!(
-                "Failed to get version for followers document: {}",
-                err
-            ))
-        }
+        Err(err) => 1,
     };
 
     let idea_pledge_document = format!("PLG_IDEA_{}", key.clone());
@@ -686,24 +696,14 @@ fn eliminate_topic(key: String) -> Result<(), String> {
         idea_pledge_document.clone(),
     ) {
         Ok(version) => version,
-        Err(err) => {
-            return Err(format!(
-                "Failed to get version for the document that holds the total pledged: {}",
-                err
-            ))
-        }
+        Err(err) => 1,
     };
 
     let revenue_document = format!("REV_IDEA_{}", key.clone());
     let revenue_version =
         match get_document_version("idea_revenue_counter".to_string(), revenue_document.clone()) {
             Ok(version) => version,
-            Err(err) => {
-                return Err(format!(
-                    "Failed to get version for the documnt that holds the total pledged: {}",
-                    err
-                ))
-            }
+            Err(err) => 1,
         };
 
     let sol_pl_key = format!("SOL_PL_{}", key.clone());
@@ -711,10 +711,11 @@ fn eliminate_topic(key: String) -> Result<(), String> {
         match get_document_version("pledges_solution".to_string(), sol_pl_key.clone()) {
             Ok(version) => version,
             Err(err) => {
-                return Err(format!(
-                    "Failed to get version for pledges_solution document: {}",
-                    err
-                ))
+                // return Err(format!(
+                //     "Failed to get version for pledges_solution document: {}",
+                //     err
+                // ))
+                1
             }
         };
 
@@ -783,6 +784,539 @@ fn eliminate_topic(key: String) -> Result<(), String> {
 
     // Return success after all documents have been deleted
     return Ok(());
+}
+
+#[update]
+fn create_or_update_topic(key: String, topic: Topic) -> Result<(), String> {
+    let caller = api::caller();
+    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+
+    // Step 1: Basic field validation
+    match validate_basic_fields(&topic.title, &topic.subtitle, &topic.description) {
+        Ok(_) => {
+            //do nothing
+        }
+        Err(error) => return Err(format!("Validation failed: {}", error)),
+    }
+
+    // Step 2: Check if the topic document already exists in the database
+    let is_update = match get_doc_store(caller, "idea".to_string(), key.clone()) {
+        Ok(Some(_)) => true, // Existing topic, proceed with update
+        Ok(None) => false,   // New topic, proceed with creation
+        Err(err) => return Err(format!("Failed to retrieve topic: {}", err)),
+    };
+
+    // Step 3: Generate document data and descriptions for each collection
+    let idea_data =
+        encode_doc_data(&topic).map_err(|e| format!("Failed to encode topic data: {}", e))?;
+    let idea_description = None; // Empty description for the idea document
+
+    let joined_categories = topic.categories.join(", ");
+    let index_search_data = encode_doc_data(&IndexSearch {
+        title: topic.title.clone(),
+        subtitle: topic.subtitle.clone(),
+        images: topic.images.clone(),
+        videos: topic.videos.clone(),
+        element_id: key.clone(),
+        element_type: "topic".to_string(),
+    })
+    .map_err(|e| format!("Failed to encode index_search data: {}", e))?;
+    let index_search_description = Some(format!(
+        "title:{} subtitle:{} type:topic idea_id:{} categories:{}",
+        topic.title, topic.subtitle, key, joined_categories
+    ));
+
+    let total_pledging_data = encode_doc_data(&TotalPledging {
+        pledges: 0,
+        expected: 0,
+    })
+    .map_err(|e| format!("Failed to encode pledging data: {}", e))?;
+    let total_pledging_description = Some(topic.title.clone());
+
+    let idea_revenue_data = encode_doc_data(&IdeaRevenueCounter { total_revenue: 0 })
+        .map_err(|e| format!("Failed to encode revenue data: {}", e))?;
+    let idea_revenue_description = Some("0".to_string());
+
+    let followers_data =
+        encode_doc_data(&0u32).map_err(|e| format!("Failed to encode followers data: {}", e))?;
+    let followers_description = Some("0".to_string());
+
+    // Encode an empty array for pledges_solution
+    let pledges_solution_data = encode_doc_data::<Vec<PledgeUser>>(&vec![])
+        .map_err(|e| format!("Failed to encode pledges_solution data: {}", e))?;
+    let pledges_solution_description = Some("SOL_ID:".to_string());
+
+    // Step 4: Retrieve versions for each document (for updates), or default to 1 for new documents
+    let idea_version = Some(get_document_version_or_default(
+        "idea".to_string(),
+        key.clone(),
+    )?);
+    let index_search_version = Some(get_document_version_or_default(
+        "index_search".to_string(),
+        format!("INDEX_{}", key),
+    )?);
+    let total_pledging_version = Some(get_document_version_or_default(
+        "idea_feature_pledge".to_string(),
+        format!("PLG_IDEA_{}", key),
+    )?);
+    let idea_revenue_version = Some(get_document_version_or_default(
+        "idea_revenue_counter".to_string(),
+        format!("REV_IDEA_{}", key),
+    )?);
+    let followers_version = Some(get_document_version_or_default(
+        "followers".to_string(),
+        format!("FOLL_{}", key),
+    )?);
+    let pledges_solution_version = Some(get_document_version_or_default(
+        "pledges_solution".to_string(),
+        format!("SOL_PL_{}", key),
+    )?);
+
+    // Step 5: Perform validation only (skip doc creation if errors exist)
+    if !is_update {
+        // Create additional docs only if this is a new topic creation, not an update
+        let docs_to_create_admin = vec![
+            (
+                "idea_feature_pledge".to_string(),
+                format!("PLG_IDEA_{}", key),
+                SetDoc {
+                    data: total_pledging_data.clone(),
+                    description: total_pledging_description.clone(),
+                    version: total_pledging_version,
+                },
+            ),
+            (
+                "idea_revenue_counter".to_string(),
+                format!("REV_IDEA_{}", key),
+                SetDoc {
+                    data: idea_revenue_data.clone(),
+                    description: idea_revenue_description.clone(),
+                    version: idea_revenue_version,
+                },
+            ),
+            (
+                "followers".to_string(),
+                format!("FOLL_{}", key),
+                SetDoc {
+                    data: followers_data.clone(),
+                    description: followers_description.clone(),
+                    version: followers_version,
+                },
+            ),
+            (
+                "pledges_solution".to_string(),
+                format!("SOL_PL_{}", key),
+                SetDoc {
+                    data: pledges_solution_data.clone(),
+                    description: pledges_solution_description.clone(),
+                    version: pledges_solution_version,
+                },
+            ),
+        ];
+
+        for (collection, key, set_doc) in docs_to_create_admin {
+            set_doc_store(controller, collection, key, set_doc)?;
+        }
+    }
+
+    // Step 6: Insert or update the user-owned documents
+    let docs_to_create_user = vec![
+        (
+            "idea".to_string(),
+            key.clone(),
+            SetDoc {
+                data: idea_data,
+                description: idea_description.clone(),
+                version: idea_version,
+            },
+        ),
+        (
+            "index_search".to_string(),
+            format!("INDEX_{}", key),
+            SetDoc {
+                data: index_search_data,
+                description: index_search_description.clone(),
+                version: index_search_version,
+            },
+        ),
+    ];
+
+    for (collection, key, set_doc) in docs_to_create_user {
+        set_doc_store(caller, collection, key, set_doc)?;
+    }
+
+    Ok(())
+}
+
+#[update]
+fn create_or_update_idea(key: String, idea: Idea, parent_idea_id: String) -> Result<(), String> {
+    let caller = api::caller();
+    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+
+    // Step 1: Basic field validation
+    match validate_basic_fields(&idea.title, &idea.subtitle, &idea.description) {
+        Ok(_) => {
+            //do nothing
+        }
+        Err(error) => return Err(format!("Validation failed: {}", error)),
+    }
+    // Step 2: Check if the idea document already exists in the database
+    let is_update = match get_doc_store(caller, "feature".to_string(), key.clone()) {
+        Ok(Some(_)) => true, // Existing idea, proceed with update
+        Ok(None) => false,   // New idea, proceed with creation
+        Err(err) => return Err(format!("Failed to retrieve idea: {}", err)),
+    };
+
+    // Step 3: Generate document data and descriptions for each collection
+    let idea_data =
+        encode_doc_data(&idea).map_err(|e| format!("Failed to encode idea data: {}", e))?;
+    let idea_description = Some(format!("idea_id:{}", parent_idea_id));
+
+    // Join categories for the index_search description
+    let joined_categories = idea.categories.join(", ");
+    let index_search_data = encode_doc_data(&IndexSearch {
+        title: idea.title.clone(),
+        subtitle: idea.subtitle.clone(),
+        images: idea.images.clone(),
+        videos: idea.videos.clone(),
+        element_id: key.clone(),
+        element_type: "idea".to_string(),
+    })
+    .map_err(|e| format!("Failed to encode index_search data: {}", e))?;
+    let index_search_description = Some(format!(
+        "title:{} subtitle:{} type:idea idea_id:{} categories:{}",
+        idea.title, idea.subtitle, parent_idea_id, joined_categories
+    ));
+
+    // Only create additional documents if this is a new idea
+    let total_pledging_data = encode_doc_data(&TotalPledging {
+        pledges: 0,
+        expected: 0,
+    })
+    .map_err(|e| format!("Failed to encode pledging data: {}", e))?;
+    let total_pledging_description = Some(idea.title.clone());
+
+    let idea_revenue_data = encode_doc_data(&IdeaRevenueCounter { total_revenue: 0 })
+        .map_err(|e| format!("Failed to encode revenue data: {}", e))?;
+    let idea_revenue_description = Some("0".to_string());
+
+    let followers_data =
+        encode_doc_data(&0u32).map_err(|e| format!("Failed to encode followers data: {}", e))?;
+    let followers_description = Some("0".to_string());
+
+    // Step 4: Retrieve versions for each document (for updates), or default to 1 for new documents
+    let idea_version = Some(get_document_version_or_default(
+        "feature".to_string(),
+        key.clone(),
+    )?);
+    let index_search_version = Some(get_document_version_or_default(
+        "index_search".to_string(),
+        format!("INDEX_{}", key),
+    )?);
+    let total_pledging_version = Some(get_document_version_or_default(
+        "idea_feature_pledge".to_string(),
+        format!("PLG_FEA_{}", key),
+    )?);
+    let idea_revenue_version = Some(get_document_version_or_default(
+        "idea_revenue_counter".to_string(),
+        format!("REV_FEA_{}", key),
+    )?);
+    let followers_version = Some(get_document_version_or_default(
+        "followers".to_string(),
+        format!("FOLL_{}", key),
+    )?);
+
+    // Step 5: Perform validation only (skip doc creation if errors exist)
+    if !is_update {
+        // Create additional docs only if this is a new idea creation, not an update
+        let docs_to_create_admin = vec![
+            (
+                "idea_feature_pledge".to_string(),
+                format!("PLG_FEA_{}", key),
+                SetDoc {
+                    data: total_pledging_data.clone(),
+                    description: total_pledging_description.clone(),
+                    version: total_pledging_version,
+                },
+            ),
+            (
+                "idea_revenue_counter".to_string(),
+                format!("REV_FEA_{}", key),
+                SetDoc {
+                    data: idea_revenue_data.clone(),
+                    description: idea_revenue_description.clone(),
+                    version: idea_revenue_version,
+                },
+            ),
+            (
+                "followers".to_string(),
+                format!("FOLL_{}", key),
+                SetDoc {
+                    data: followers_data.clone(),
+                    description: followers_description.clone(),
+                    version: followers_version,
+                },
+            ),
+        ];
+
+        for (collection, key, set_doc) in docs_to_create_admin {
+            set_doc_store(controller, collection, key, set_doc)?;
+        }
+    }
+
+    // Step 6: Insert or update the user-owned documents
+    let docs_to_create_user = vec![
+        (
+            "feature".to_string(),
+            key.clone(),
+            SetDoc {
+                data: idea_data,
+                description: idea_description.clone(),
+                version: idea_version,
+            },
+        ),
+        (
+            "index_search".to_string(),
+            format!("INDEX_{}", key),
+            SetDoc {
+                data: index_search_data,
+                description: index_search_description.clone(),
+                version: index_search_version,
+            },
+        ),
+    ];
+
+    for (collection, key, set_doc) in docs_to_create_user {
+        set_doc_store(caller, collection, key, set_doc)?;
+    }
+
+    Ok(())
+}
+
+#[update]
+fn create_ideas(set_ideas: Vec<SetIdea>, parent_topic_id: String) -> Result<(), String> {
+    // Step 1: Validate each idea independently
+    for set_idea in &set_ideas {
+        let validation_result = validate_basic_fields(
+            &set_idea.idea.title,
+            &set_idea.idea.subtitle,
+            &set_idea.idea.description,
+        );
+        if let Err(error) = validation_result {
+            return Err(format!(
+                "Validation failed for idea with key {}: {}",
+                set_idea.key, error
+            ));
+        }
+    }
+
+    // Step 2: If all ideas are validated, proceed with creating each one
+    for set_idea in set_ideas {
+        // Call the create_idea function with each idea's unique key, the idea itself, and the parent topic ID
+        if let Err(error) =
+            create_or_update_idea(set_idea.key.clone(), set_idea.idea, parent_topic_id.clone())
+        {
+            return Err(format!(
+                "Failed to create idea with key {}: {}",
+                set_idea.key, error
+            ));
+        }
+    }
+
+    return Ok(()); // Return success if all ideas were created successfully
+}
+
+fn validate_basic_fields(
+    title: &String,
+    subtitle: &String,
+    description: &String,
+) -> Result<(), String> {
+    if title.len() > 70 {
+        return Err("Title length exceeds 70 characters".to_string());
+    }
+    if subtitle.len() > 200 {
+        return Err("Subtitle length exceeds 200 characters".to_string());
+    }
+    if description.len() > 5000 {
+        return Err("Description length exceeds 5000 characters".to_string());
+    }
+    Ok(())
+}
+
+#[update]
+fn create_or_update_solution(
+    key: String,
+    solution: Solution,
+    parent_idea_id: String,
+) -> Result<(), String> {
+    let caller = api::caller();
+    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+
+    // Step 1: Basic field validation
+    match validate_basic_fields(&solution.title, &solution.subtitle, &solution.description) {
+        Ok(_) => {
+            //do nothing
+        }
+        Err(error) => return Err(format!("Validation failed: {}", error)),
+    }
+
+    // Step 2: Check if the solution document already exists in the database
+    let is_update = match get_doc_store(caller, "solution".to_string(), key.clone()) {
+        Ok(Some(_)) => true, // Existing solution, proceed with update
+        Ok(None) => false,   // New solution, proceed with creation
+        Err(err) => return Err(format!("Failed to retrieve solution: {}", err)),
+    };
+
+    // Step 3: Generate document data and descriptions for each collection
+    let solution_data =
+        encode_doc_data(&solution).map_err(|e| format!("Failed to encode solution data: {}", e))?;
+    let solution_description = Some(format!("idea_id:{}", parent_idea_id));
+
+    // Join categories for the index_search description
+    let joined_categories = solution.categories.join(", ");
+
+    let index_search_data = encode_doc_data(&IndexSearch {
+        title: solution.title.clone(),
+        subtitle: solution.subtitle.clone(),
+        images: solution.images.clone(),
+        videos: solution.videos.clone(),
+        element_id: key.clone(),
+        element_type: "solution".to_string(), // Specify the type as "solution"
+    })
+    .map_err(|e| format!("Failed to encode index_search data: {}", e))?;
+
+    let index_search_description = Some(format!(
+        "title:{} subtitle:{} type:solution idea_id:{} categories:{}",
+        solution.title, solution.subtitle, parent_idea_id, joined_categories
+    ));
+
+    let followers_data =
+        encode_doc_data(&0u32).map_err(|e| format!("Failed to encode followers data: {}", e))?;
+    let followers_description = Some("0".to_string());
+
+    let solution_approved_data = encode_doc_data(&String::new())
+        .map_err(|e| format!("Failed to encode solution_approved data: {}", e))?;
+    let solution_approved_description = Some("0".to_string());
+
+    let solution_status_data = encode_doc_data(&String::new())
+        .map_err(|e| format!("Failed to encode solution_status data: {}", e))?;
+    let solution_status_description = Some("status:PROPOSAL".to_string());
+
+    // Step 4: Retrieve versions for each document (for updates), or default to 1 for new documents
+    let solution_version = Some(get_document_version_or_default(
+        "solution".to_string(),
+        key.clone(),
+    )?);
+    let index_search_version = Some(get_document_version_or_default(
+        "index_search".to_string(),
+        format!("INDEX_{}", key),
+    )?);
+    let followers_version = Some(get_document_version_or_default(
+        "followers".to_string(),
+        format!("FOLL_{}", key),
+    )?);
+    let solution_approved_version = Some(get_document_version_or_default(
+        "solution_approved".to_string(),
+        format!("SOL_APPR_{}", key),
+    )?);
+    let solution_status_version = Some(get_document_version_or_default(
+        "solution_status".to_string(),
+        format!("SOL_STAT_{}", key),
+    )?);
+
+    // Step 5: Update the description for the `pledges_solution` document
+    let doc_key = format!("SOL_PL_{}", parent_idea_id);
+    let sol_id_desc = format!("SOL_ID:{}", key);
+
+    update_doc_description(controller, doc_key.clone(), sol_id_desc)?;
+
+    // Step 6: Create or update user-owned documents
+    let docs_to_create_user = vec![
+        (
+            "solution".to_string(),
+            key.clone(),
+            SetDoc {
+                data: solution_data,
+                description: solution_description.clone(),
+                version: solution_version,
+            },
+        ),
+        (
+            "index_search".to_string(),
+            format!("INDEX_{}", key),
+            SetDoc {
+                data: index_search_data,
+                description: index_search_description.clone(),
+                version: index_search_version,
+            },
+        ),
+    ];
+
+    for (collection, key, set_doc) in docs_to_create_user {
+        set_doc_store(caller, collection, key, set_doc)?;
+    }
+
+    // Step 7: Create additional docs that require admin access only if this is a new solution
+    if !is_update {
+        let docs_to_create_admin = vec![
+            (
+                "followers".to_string(),
+                format!("FOLL_{}", key),
+                SetDoc {
+                    data: followers_data,
+                    description: followers_description.clone(),
+                    version: followers_version,
+                },
+            ),
+            (
+                "solution_approved".to_string(),
+                format!("SOL_APPR_{}", key),
+                SetDoc {
+                    data: solution_approved_data,
+                    description: solution_approved_description.clone(),
+                    version: solution_approved_version,
+                },
+            ),
+            (
+                "solution_status".to_string(),
+                format!("SOL_STAT_{}", key),
+                SetDoc {
+                    data: solution_status_data,
+                    description: solution_status_description.clone(),
+                    version: solution_status_version,
+                },
+            ),
+        ];
+
+        for (collection, key, set_doc) in docs_to_create_admin {
+            set_doc_store(controller, collection, key, set_doc)?;
+        }
+    }
+
+    return Ok(());
+}
+
+fn update_doc_description(
+    controller: candid::Principal,
+    doc_key: String,
+    description: String,
+) -> Result<(), String> {
+    // Fetch the document to retrieve its version
+    let doc_version =
+        get_document_version_or_default("pledges_solution".to_string(), doc_key.clone())?;
+
+    // Update the description for the `pledges_solution` document
+    let update = SetDoc {
+        data: encode_doc_data(&Vec::<u8>::new())
+            .map_err(|e| format!("Failed to encode empty pledges_solution data: {}", e))?,
+        description: Some(description),
+        version: Some(doc_version),
+    };
+
+    // Set the document in `pledges_solution` with the controller as the caller
+    set_doc_store(controller, "pledges_solution".to_string(), doc_key, update)?;
+
+    Ok(())
 }
 
 include_satellite!();

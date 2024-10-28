@@ -1,3 +1,17 @@
+type Idea = record {
+  categories : vec text;
+  title : text;
+  description : text;
+  videos : vec text;
+  subtitle : text;
+  images : vec text;
+};
+type Milestone = record {
+  id : nat64;
+  title : text;
+  date : nat64;
+  description : text;
+};
 type Product = record {
   owner : opt principal;
   link : text;
@@ -8,9 +22,24 @@ type Product = record {
   image : opt text;
 };
 type Result = variant { Ok; Err : text };
+type SetIdea = record { key : text; idea : Idea };
+type Solution = record {
+  categories : vec text;
+  title : text;
+  features : vec text;
+  description : text;
+  videos : vec text;
+  subtitle : text;
+  milestones : vec Milestone;
+  images : vec text;
+};
 service : {
   build_version : () -> (text) query;
+  create_ideas : (vec SetIdea, text) -> (Result);
   create_new_product : (Product, text) -> (Result);
+  create_or_update_idea : (text, Idea, text) -> (Result);
+  create_or_update_solution : (text, Solution, text) -> (Result);
+  create_or_update_topic : (text, Idea) -> (Result);
   delete_pledge : (text) -> (Result);
   eliminate_idea : (text) -> (Result);
   eliminate_solution : (text) -> (Result);
