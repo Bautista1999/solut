@@ -1,25 +1,31 @@
+use bytes::Bytes;
+use candid::{CandidType, Int, Nat, Principal};
+
+use ic_cdk_timers::{clear_timer, set_timer_interval, TimerId};
+use junobuild_storage::http::types::HeaderField;
+use junobuild_storage::types::store::AssetKey;
+use mime::Mime;
+use serde_json::json;
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::iter::Filter;
 
-use candid::{CandidType, Int};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use url::Url;
+mod scheduled;
 mod types;
-use ic_cdk::api;
+use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
+use ic_cdk::api::{self, set_global_timer, time};
 use ic_cdk_macros::{query, update};
-use junobuild_storage::well_known::update;
-use junobuild_utils::{decode_doc_data, encode_doc_data};
-use regex::Regex;
-use types::interface::{
-    Idea, IdeaRevenueCounter, IndexSearch, PledgeData, PledgeUser, Product, SetIdea, Solution,
-    Topic, TotalPledging,
-};
-
 use junobuild_macros::{
     assert_delete_asset, assert_delete_doc, assert_set_doc, assert_upload_asset, on_delete_asset,
     on_delete_doc, on_delete_many_assets, on_delete_many_docs, on_set_doc, on_set_many_docs,
     on_upload_asset,
 };
 use junobuild_satellite::{
-    count_docs_store, delete_doc_store, get_doc_store, list_docs_store, log, set_doc_store, DelDoc,
-    Key, SetDoc,
+    count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, get_doc_store,
+    list_docs_store, log, set_asset_handler, set_doc_store, DelDoc, Key, SetDoc,
 };
 use junobuild_satellite::{
     include_satellite, AssertDeleteAssetContext, AssertDeleteDocContext, AssertSetDocContext,
@@ -27,6 +33,14 @@ use junobuild_satellite::{
     OnDeleteManyDocsContext, OnSetDocContext, OnSetManyDocsContext, OnUploadAssetContext,
 };
 use junobuild_shared::types::list::ListParams;
+use junobuild_storage::well_known::update;
+use junobuild_utils::{decode_doc_data, encode_doc_data};
+use regex::Regex;
+use scheduled::delete_unused_images;
+use types::interface::{
+    Idea, IdeaRevenueCounter, IndexSearch, PledgeData, PledgeUser, Product, SetIdea, Solution,
+    Topic, TotalPledging,
+};
 
 #[on_set_doc(collections = ["pledges_active"])]
 async fn on_set_doc(_context: OnSetDocContext) -> Result<(), String> {
@@ -1317,6 +1331,138 @@ fn update_doc_description(
     set_doc_store(controller, "pledges_solution".to_string(), doc_key, update)?;
 
     Ok(())
+}
+
+use std::str;
+
+#[update]
+pub fn upload_image(
+    collection: String,
+    image_name: String,
+    image_data: Vec<u8>,
+    element_id: String,
+    element_type: String,
+    content_type: String,
+) -> Result<String, String> {
+    let owner = api::caller();
+    if owner == Principal::anonymous() {
+        return Err("Anonymous principal not allowed to make upload files.".to_string());
+    }
+    let max_file_size = 2 * 1024 * 1024; // 2 MB limit
+
+    if image_data.len() > max_file_size {
+        return Err("File size exceeds the 2 MB limit.".to_string());
+    }
+
+    let file_extension = match content_type.as_str() {
+        "image/png" => "png",
+        "image/jpeg" => "jpeg",
+        _ => return Err("Unsupported format. Only PNG and JPEG are allowed.".to_string()),
+    };
+
+    let full_path = format!("/{}/{}.{}", collection, image_name, file_extension);
+    let asset_key = AssetKey {
+        name: image_name.clone(),
+        full_path: full_path.clone(),
+        token: None,
+        collection: collection.clone(),
+        owner,
+        description: Some(format!(
+            "id:{},type:{}",
+            element_id.clone(),
+            element_type.clone()
+        )),
+    };
+
+    let headers = vec![HeaderField("content-type".to_string(), content_type)];
+
+    // Bypass UTF-8 check using from_utf8_unchecked
+    let binary_data_as_str = unsafe { str::from_utf8_unchecked(&image_data) };
+
+    match set_asset_handler(&asset_key, binary_data_as_str, &headers) {
+        Ok(()) => Ok(format!("https://solutio.one{}", full_path)),
+        Err(e) => Err(format!("Failed to upload image: {}", e)),
+    }
+}
+
+#[update]
+pub fn delete_many_images(collection: String, fullpaths: Vec<String>) -> Result<String, String> {
+    // Get the caller's Principal for permission checks
+    let caller = api::caller();
+    let caller_text = candid::Principal::to_text(&caller);
+    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+
+    ic_cdk::print(format!("Caller of function: {}", caller_text.as_str()));
+    // Loop through each image and attempt to delete it
+    for name in fullpaths.iter() {
+        // Construct the full path for the image
+        let full_path = name.clone();
+
+        match delete_asset_store(controller, &collection, full_path.clone()) {
+            Ok(Some(_)) => continue, // Successfully deleted, continue to the next image
+            Ok(None) => return Err(format!("Image {} not found in collection.", name)),
+            Err(e) if e.contains("NOT_ALLOWED") => {
+                return Err(format!("Permission denied to delete image {}.", name));
+            }
+            Err(e) => return Err(format!("Failed to delete image {}: {}", name, e)),
+        }
+    }
+
+    Ok("Selected images deleted successfully.".to_string())
+}
+
+thread_local! {
+    static SCHEDULED_TASKS: RefCell<HashMap<String, TimerId>> = RefCell::new(HashMap::new());
+}
+
+#[update]
+fn start_scheduled_tasks() -> String {
+    let image_deletion_interval = Duration::from_secs(86000); // 24 hours
+
+    let timer_id = set_timer_interval(image_deletion_interval, || {
+        delete_unused_images();
+    });
+
+    SCHEDULED_TASKS.with(|tasks| {
+        tasks
+            .borrow_mut()
+            .insert("image_deletion".to_string(), timer_id);
+    });
+
+    "Scheduled tasks started".to_string()
+}
+
+#[update]
+fn stop_scheduled_tasks() -> String {
+    SCHEDULED_TASKS.with(|tasks| {
+        for (_, timer_id) in tasks.borrow_mut().drain() {
+            clear_timer(timer_id);
+        }
+    });
+
+    "Scheduled tasks stopped".to_string()
+}
+
+#[query]
+fn query_scheduled_tasks_state() -> String {
+    let task_states = SCHEDULED_TASKS.with(|tasks| {
+        tasks
+            .borrow()
+            .iter()
+            .map(|(task_name, _)| format!("{}: Active", task_name))
+            .collect::<Vec<String>>()
+    });
+
+    if task_states.is_empty() {
+        "No active scheduled tasks".to_string()
+    } else {
+        task_states.join("\n")
+    }
+}
+
+#[update]
+fn trying_log_function() -> Result<(), String> {
+    return delete_unused_images();
 }
 
 include_satellite!();
