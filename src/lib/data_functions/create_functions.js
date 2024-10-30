@@ -7,14 +7,15 @@ import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
 import { getUserKey } from "./get_functions";
 import { createAndUploadHTMLStaticFile } from "$lib/SEO and metadata/metadata_functions";
 import { trackEvent } from "@junobuild/analytics";
-import { createIdeas, createOrUpdateIdea, createOrUpdateSolution, createOrUpdateTopic, eliminateIdea, eliminateSolution, eliminateTopic } from "../../declarations/satellite/satellite.api";
+import { createIdeas, createOrUpdateIdea, createOrUpdateSolution, createOrUpdateTopic, deleteManyImages, eliminateIdea, eliminateSolution, eliminateTopic, uploadImage } from "../../declarations/satellite/satellite.api";
 
 
 /**
  * @param {import("$lib/data_objects/data_types").idea} idea
  * @param {Array<import("$lib/data_objects/data_types").feature>} features
+ * @param {string} key
  */
-export async function setIdea(idea,features){
+export async function setIdea(idea,features, key){
     if(idea.description.length>3000 || idea.title.length>70 || idea.subtitle.length>200){
         return "ERROR: Fields in idea does not fulfill length requirements";
     };
@@ -56,7 +57,7 @@ export async function setIdea(idea,features){
         };
         
     };
-    let idea_id = nanoid();
+    let idea_id = key;
     
     createAndUploadHTMLStaticFile(idea.title,idea_id,idea.subtitle,idea.images[0],"topic");
 
@@ -95,9 +96,10 @@ export async function updateTopic(key, idea){
  * 
  * @param {import("$lib/data_objects/data_types").feature} feature - The feature data to create/update.
  * @param {string} parentIdeaId - The ID of the parent idea for this feature.
+ * @param {string} key
  * @returns {Promise<string>} The feature ID if successful, or an error message if validation fails.
  */
-export async function setFeature(feature, parentIdeaId) {
+export async function setFeature(feature, parentIdeaId, key) {
     // Check field length validation
     if (feature.description.length > 3000 || feature.title.length > 70 || feature.subtitle.length > 200) {
         return "ERROR: Fields in feature do not meet length requirements.";
@@ -114,7 +116,7 @@ export async function setFeature(feature, parentIdeaId) {
     }
 
     // Generate a unique ID for the feature if it's a new creation
-    const featureId = nanoid();
+    const featureId = key;
 
     // Prepare the feature data structure for backend processing
     try {
@@ -194,8 +196,9 @@ export async function setFeatures(features, parentIdea_id) {
 /**
  * @param {import("$lib/data_objects/data_types").solution} solution
  * @param {string} parentIdea_id
+ * @param {string} key
  */
-export async function setSolution(solution, parentIdea_id) {
+export async function setSolution(solution, parentIdea_id, key) {
     if (solution.description.length > 3000 || solution.title.length > 70 || solution.subtitle.length > 200) {
         return "ERROR: Fields in solution do not fulfill length requirements";
     }
@@ -229,7 +232,7 @@ export async function setSolution(solution, parentIdea_id) {
     }
 
     // Generate a unique key for the solution
-    let sol_id = nanoid();
+    let sol_id = key;
 
     // Prepare the solution object to send to the backend
     const solutionData = {
@@ -740,3 +743,48 @@ export async function deleteIdea(idea_id){
 export async function deleteTopic(topic_id){
     return await eliminateTopic(topic_id);
 }
+
+
+/**
+ * @param {string} collection
+ * @param {any} images
+ */
+export async function deleteImages(collection , images){
+    return await deleteManyImages(collection,images);
+}
+
+/**
+ * @param {string} collection
+ * @param {any} images
+ */
+export function deleteImagesAsynchronously(collection , images){
+    console.log("Calling it...");
+    deleteManyImages(collection,images);
+    console.log("Called!");
+}
+
+/**
+ * @param {string} collection
+ * @param {{type: any;arrayBuffer: () => any;}} file
+ * @param {string} element_id
+ * @param {string} element_type
+ * @param {string} name
+ */
+export async function saveImageDatabase(collection, file, element_id, element_type, name){
+    const imageName = name;
+    const contentType = file.type;
+    // Convert file to ArrayBuffer, then to Uint8Array, and finally to an array of bytes
+    const arrayBuffer = await file.arrayBuffer();
+    const imageData = Array.from(new Uint8Array(arrayBuffer)); // Ensures correct Vec<u8> format
+
+    return await uploadImage(
+        collection,
+        imageName,
+        imageData, element_id,
+        element_type,
+        
+        contentType,
+    );   
+}
+
+
