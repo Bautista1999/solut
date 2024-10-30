@@ -1,9 +1,10 @@
 <script>
+    import { deleteImages } from "$lib/data_functions/create_functions";
     import CircledButtonDarkSmall from "./CircledButtonDarkSmall.svelte";
     import ImageUrl from "./ImageUrl.svelte";
 
     /**
-     * @type {string[]}
+     * @type {{localUrl: string, uploadedUrl: string}[]}
      */
     let images = []; // Array of image URLs passed in as a prop
     export let currentImageIndex = images.length;
@@ -15,25 +16,30 @@
         currentImageIndex =
             (currentImageIndex + direction + images.length) % images.length;
     }
-    function deleteImage() {
+    async function deleteImage() {
         if (images.length > 0 && currentImageIndex >= 0) {
+            console.log("Images: ", images);
+            let imageName = images[currentImageIndex].uploadedUrl
+                .split("/")
+                .pop();
             images.splice(currentImageIndex, 1); // Remove the image at the current index
             images = [...images];
             if (currentImageIndex > 0) {
                 currentImageIndex--; // Adjust the index if needed
             }
+            console.log(await deleteImages("images", ["/images/" + imageName]));
         }
     }
+
     /**
-     * @param {string} newImage
+     * @param {{localUrl: string, uploadedUrl: string}} newImage
      */
     export function addNewImage(newImage) {
-        if (newImage == "") {
+        if (newImage.localUrl == "") {
             return;
         }
         images = [...images, newImage]; // Use spread syntax to trigger reactivity
         currentImageIndex = images.length - 1;
-        newImage = "";
     }
 </script>
 
@@ -47,7 +53,7 @@
             </button>
         </div>
         <!-- <img alt="Scroller Image" src={images[currentImageIndex]} /> -->
-        <ImageUrl src={images[currentImageIndex]} />
+        <ImageUrl src={images[currentImageIndex].localUrl} />
     {:else}
         <div
             class="no-images-message"
