@@ -9,6 +9,7 @@
     import { writable } from "svelte/store";
     import ProgressIndicator from "./ProgressIndicator.svelte";
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
+    import ImageUploader from "$lib/components/ImageUploader.svelte";
     /**
      * @type {ImageScrollerEdit}
      */
@@ -24,16 +25,19 @@
      * @type {string[]}
      */
     export let tags = [];
+    export let key = "";
+    export let collection_db = "";
     export let type = "Topic";
     const charLimit = { title: 70, subtitle: 200, description: 3000 };
-    let newImage = "";
-    function addImage() {
-        imageScroller.addNewImage(newImage);
-        if (newImage == "") {
+    /**
+     * @param {{localUrl: string, uploadedUrl: string}} image
+     */
+    function addImage(image) {
+        imageScroller.addNewImage(image);
+        if (image.uploadedUrl == "") {
             return;
         }
-        images = [...images, newImage]; // Use spread syntax to trigger reactivity
-        newImage = "";
+        images = [...images, image.uploadedUrl]; // Use spread syntax to trigger reactivity
     }
 
     /**
@@ -200,22 +204,23 @@
     <div
         class="form-section"
         style="display:flex;flex-direction: row;justify-content:left;align-items:center;
-        gap:20px;
+        gap:20px; 
         
         "
     >
-        <input
+        <!-- <input
             type="text"
             placeholder="Type the url of the image here..."
             class="InputTextSmall"
             bind:value={newImage}
-        />
-        <!-- <BasicRoundedButtonSmall
-            msg={"Add image"}
-            someFunction={addImage}
-            disabledCondition={null}
         /> -->
-        <BasicButtonDarkSmall msg="Add image" someFunction={addImage} />
+
+        <!-- <BasicButtonDarkSmall msg="Add image" someFunction={addImage} /> -->
+        <ImageUploader
+            addNewImage={(image) => addImage(image)}
+            collection={collection_db}
+            {key}
+        />
     </div>
     <div class="form-section">
         <label for="description">Description</label>
