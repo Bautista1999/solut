@@ -11,6 +11,8 @@
     import SuccessNew from "$lib/components/Success_New.svelte";
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
+    import { nanoid } from "nanoid";
+
     let category = "";
     /**
      * @type {WizardForm}
@@ -48,6 +50,7 @@
     $: noDescription = false;
     $: noTitle = false;
     $: noSubtitle = false;
+    let id = nanoid();
     async function onPost() {
         document.body.scrollIntoView({ behavior: "smooth" });
         isLoading = true;
@@ -101,7 +104,7 @@
         }
         isLoading = true;
         try {
-            const creation = await setIdea(ideaPost, featuresPost);
+            const creation = await setIdea(ideaPost, featuresPost, id);
 
             if (typeof creation === "string" && creation.startsWith("ERROR:")) {
                 error = true;
@@ -144,6 +147,8 @@
             bind:images
             bind:tags
             PostElement={onPost}
+            collection_db={"idea"}
+            key={id}
         >
             <div slot="additional-fields" class="form-section">
                 <label for="ideas"

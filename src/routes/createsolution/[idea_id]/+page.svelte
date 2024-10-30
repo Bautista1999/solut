@@ -1,17 +1,6 @@
 <script>
     import ImageScrollerEdit from "$lib/components/ImageScroller_Edit.svelte";
-    /**
-     * @type {ImageScrollerEdit}
-     */
-    let imageScroller;
 
-    import ProfilePicture from "$lib/components/profilePicture.svelte";
-    import Breadcrumbs from "$lib/components/breadcrumbs.svelte";
-    import EditSubtitle from "$lib/components/EditSubtitle.svelte";
-    import EditTitle from "$lib/components/EditTitle.svelte";
-    import BasicButtonDarkSmall from "$lib/components/BasicButton_Dark_Small.svelte";
-    import DescriptionEdit from "$lib/components/DescriptionEdit.svelte";
-    import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import SuccessNew from "$lib/components/Success_New.svelte";
@@ -22,10 +11,12 @@
     import TagsDisplay from "$lib/components/TagsDisplay.svelte";
     import TimelineEdit from "$lib/components/TimelineEdit.svelte";
     import { onMount } from "svelte";
-    import { getDoc, initJuno } from "@junobuild/core-peer";
+    import { getDoc } from "@junobuild/core-peer";
     import { setSolution } from "$lib/data_functions/create_functions";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { path } from "$lib/stores/redirect_store";
+    import { nanoid } from "nanoid";
+
     import {
         getUserImages,
         getUserKey,
@@ -90,14 +81,7 @@
      * @type {never[]}
      */
     let videos = [];
-    function addImage() {
-        imageScroller.addNewImage(newImage);
-        if (newImage == "") {
-            return;
-        }
-        images = [...images, newImage]; // Use spread syntax to trigger reactivity
-        newImage = "";
-    }
+
     let newTag = "";
     /**
      * @type {string[]}
@@ -150,6 +134,7 @@
     $: noTitle = false;
     $: noSubtitle = false;
     $: noIdeas = false;
+    let id = nanoid();
     async function onPost() {
         document.body.scrollIntoView({ behavior: "smooth" });
         isLoading = true;
@@ -196,7 +181,7 @@
         };
         isLoading = true;
         try {
-            let creation = await setSolution(solutionPost, parentIdeaKey); // Call to create or update a solution
+            let creation = await setSolution(solutionPost, parentIdeaKey, id); // Call to create or update a solution
 
             if (typeof creation === "string" && creation.startsWith("ERROR:")) {
                 error = true;
@@ -266,6 +251,8 @@
             bind:tags
             PostElement={onPost}
             type={"Solution"}
+            collection_db={"solution"}
+            key={id}
         >
             <div slot="additional-fields">
                 <div class="form-section">

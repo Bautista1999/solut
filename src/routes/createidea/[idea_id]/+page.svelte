@@ -1,19 +1,6 @@
 <script>
     import ImageScrollerEdit from "$lib/components/ImageScroller_Edit.svelte";
-    /**
-     * @type {ImageScrollerEdit}
-     */
-    let imageScroller;
-
-    import ProfilePicture from "$lib/components/profilePicture.svelte";
-    import Breadcrumbs from "$lib/components/breadcrumbs.svelte";
     import SuccessNew from "$lib/components/Success_New.svelte";
-
-    import EditSubtitle from "$lib/components/EditSubtitle.svelte";
-    import EditTitle from "$lib/components/EditTitle.svelte";
-    import BasicButtonDarkSmall from "$lib/components/BasicButton_Dark_Small.svelte";
-    import DescriptionEdit from "$lib/components/DescriptionEdit.svelte";
-    import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
 
     import { goto } from "$app/navigation";
     import {
@@ -24,13 +11,10 @@
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import { onMount } from "svelte";
     import { getDoc } from "@junobuild/core-peer";
+    import { nanoid } from "nanoid";
     import { path } from "$lib/stores/redirect_store";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
-    import {
-        getUserImages,
-        getUserKey,
-    } from "$lib/data_functions/get_functions";
-    import { UserKey } from "$lib/stores/other_stores";
+    import { getUserKey } from "$lib/data_functions/get_functions";
     import WizardForm from "../../createtopic/WizardForm.svelte";
 
     let key = "";
@@ -62,15 +46,7 @@
     let active = false;
     let subtitleActive = false;
     let clickToEdit = "(click to edit)";
-    let newImage = "";
-    function addImage() {
-        imageScroller.addNewImage(newImage);
-        if (newImage == "") {
-            return;
-        }
-        images = [...images, newImage]; // Use spread syntax to trigger reactivity
-        newImage = "";
-    }
+
     let newTag = "";
     /**
      * @type {never[]}
@@ -115,14 +91,7 @@
         tags = [...tags, newTag]; // Use spread syntax to trigger reactivity
         newTag = "";
     }
-    /**
-     * @param {string} tag
-     */
-    function deleteTag(tag) {
-        let currentIndex = tags.indexOf(tag);
-        tags.splice(currentIndex, 1);
-        tags = [...tags];
-    }
+
     let isLoading = false;
     let success = false;
     let error = false;
@@ -132,6 +101,7 @@
     $: noDescription = false;
     $: noTitle = false;
     $: noSubtitle = false;
+    let id = nanoid();
     async function onPost() {
         document.body.scrollIntoView({ behavior: "smooth" });
         isLoading = true;
@@ -151,7 +121,7 @@
         };
         isLoading = true;
         try {
-            let creation = await setFeature(ideaPost, parentIdeaKey); // Call to create a single feature
+            let creation = await setFeature(ideaPost, parentIdeaKey, id); // Call to create a single feature
 
             if (typeof creation === "string" && creation.startsWith("ERROR:")) {
                 error = true;
@@ -209,6 +179,8 @@
             bind:tags
             PostElement={onPost}
             type={"Idea"}
+            collection_db={"feature"}
+            key={id}
         ></WizardForm>
     {:else if success}
         <SuccessNew
