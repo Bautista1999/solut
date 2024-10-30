@@ -1,4 +1,4 @@
-import type {_SERVICE as SatelliteActor, Idea, Milestone, Product, SetIdea, Solution, Result} from './satellite.did';
+import type {_SERVICE as SatelliteActor, Idea, Milestone, Product, SetIdea, Solution, Result, Result_1} from './satellite.did';
 import {idlFactory} from './satellite.factory.did.js';
 import {getSatelliteExtendedActor} from '@junobuild/core-peer';
 
@@ -50,6 +50,14 @@ export const createOrUpdateTopic = async (value0: string, value1: Idea): Promise
 	return await create_or_update_topic(value0, value1);
 }
 
+export const deleteManyImages = async (value0: string, value1: Array): Promise<Result_1> => {
+	const {delete_many_images} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await delete_many_images(value0, value1);
+}
+
 export const deletePledge = async (value0: string): Promise<Result> => {
 	const {delete_pledge} = await getSatelliteExtendedActor<SatelliteActor>({
 		idlFactory
@@ -80,4 +88,44 @@ export const eliminateTopic = async (value0: string): Promise<Result> => {
 	});
 
 	return await eliminate_topic(value0);
+}
+
+export const queryScheduledTasksState = async (): Promise<string> => {
+	const {query_scheduled_tasks_state} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await query_scheduled_tasks_state();
+}
+
+export const startScheduledTasks = async (): Promise<string> => {
+	const {start_scheduled_tasks} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await start_scheduled_tasks();
+}
+
+export const stopScheduledTasks = async (): Promise<string> => {
+	const {stop_scheduled_tasks} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await stop_scheduled_tasks();
+}
+
+export const tryingLogFunction = async (): Promise<Result> => {
+	const {trying_log_function} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await trying_log_function();
+}
+
+export const uploadImage = async (value0: string, value1: string, value2: unknown, value3: string, value4: string, value5: string): Promise<Result_1> => {
+	const {upload_image} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await upload_image(value0, value1, value2, value3, value4, value5);
 }
