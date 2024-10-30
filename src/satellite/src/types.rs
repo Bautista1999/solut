@@ -1,8 +1,8 @@
 pub mod interface {
+    use bytes::Bytes;
     use candid::CandidType; // Renaming the Candid `Deserialize`
     use candid::{Int, Principal}; // Candid for Internet Computer serialization
     use serde::{Deserialize, Serialize}; // Renaming the Serde `Deserialize`
-
     #[derive(Default, CandidType, Serialize, Deserialize, Clone)]
     pub struct Product {
         pub name: String,
