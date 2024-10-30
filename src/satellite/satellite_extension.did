@@ -22,6 +22,7 @@ type Product = record {
   image : opt text;
 };
 type Result = variant { Ok; Err : text };
+type Result_1 = variant { Ok : text; Err : text };
 type SetIdea = record { key : text; idea : Idea };
 type Solution = record {
   categories : vec text;
@@ -40,8 +41,14 @@ service : {
   create_or_update_idea : (text, Idea, text) -> (Result);
   create_or_update_solution : (text, Solution, text) -> (Result);
   create_or_update_topic : (text, Idea) -> (Result);
+  delete_many_images : (text, vec text) -> (Result_1);
   delete_pledge : (text) -> (Result);
   eliminate_idea : (text) -> (Result);
   eliminate_solution : (text) -> (Result);
   eliminate_topic : (text) -> (Result);
+  query_scheduled_tasks_state : () -> (text) query;
+  start_scheduled_tasks : () -> (text);
+  stop_scheduled_tasks : () -> (text);
+  trying_log_function : () -> (Result);
+  upload_image : (text, text, blob, text, text, text) -> (Result_1);
 }
