@@ -9,22 +9,26 @@
     uploadHTMLToDatabase,
     uploadImageToDatabase,
   } from "$lib/SEO and metadata/metadata_functions";
-  import { uploadFile, setDoc } from "@junobuild/core-peer";
+  import { uploadFile, initSatellite } from "@junobuild/core-peer";
   import { nanoid } from "nanoid";
   import { onMount } from "svelte";
   import { compile } from "svelte/compiler"; // Import the Svelte compiler
-  import { initSatellite } from "@junobuild/core-peer";
-
   import {
     createNewProduct,
+    deleteManyImages,
     deletePledge,
     eliminateIdea,
     eliminateSolution,
     eliminateTopic,
+    queryScheduledTasksState,
+    startScheduledTasks,
+    stopScheduledTasks,
+    tryingLogFunction,
   } from "../../declarations/satellite/satellite.api";
   import { signIn, NFIDProvider, authSubscribe } from "@junobuild/core";
   import SearchBarLarger from "$lib/components/SearchBarLarger.svelte";
   import SearchBar from "$lib/components/SearchBar.svelte";
+  import ImageUploader from "$lib/components/ImageUploader.svelte";
 
   export let title;
   export let description;
@@ -240,6 +244,70 @@
     console.log(await eliminateTopic(topicId));
     loading = false;
   }
+
+  let newImage = "";
+  // Array to store uploaded image names
+  /**
+   * @type {string[]}
+   */
+  $: uploadedImageNames = [];
+
+  /**
+   * Adds an uploaded image name to the tracking array.
+   * @param {string} imageName - The name of the uploaded image.
+   */
+  function addImageName(imageName) {
+    uploadedImageNames.push(imageName);
+    newImage = "";
+    console.log(`Added image: ${imageName}`);
+    console.log("Current images list:", uploadedImageNames);
+  }
+
+  /**
+   * Deletes all images in the `uploadedImageNames` array by calling `deleteManyImages`.
+   * Resets the array upon successful deletion.
+   */
+  async function deleteAllUploadedImages() {
+    loading = true;
+    if (uploadedImageNames.length === 0) {
+      console.log("No images to delete.");
+      return;
+    }
+
+    try {
+      const response = await deleteManyImages("images", uploadedImageNames); // Assuming "images" is your collection name
+
+      if ("Ok" in response) {
+        console.log("Images deleted successfully:", response.Ok);
+        uploadedImageNames = []; // Clear the array after deletion
+      } else if ("Err" in response) {
+        console.error("Failed to delete images:", response.Err);
+      }
+    } catch (error) {
+      console.error("Unexpected error during deletion:", error);
+    }
+    loading = false;
+  }
+
+  let taskState = "Unknown";
+
+  async function startTasks() {
+    const result = await startScheduledTasks();
+    taskState = `Started: ${result}`;
+    console.log(result);
+  }
+
+  async function stopTasks() {
+    const result = await stopScheduledTasks();
+    taskState = `Stopped: ${result}`;
+    console.log(result);
+  }
+
+  async function checkTaskState() {
+    const state = await queryScheduledTasksState();
+    taskState = state;
+    console.log(state);
+  }
 </script>
 
 <svelte:head>
@@ -279,44 +347,8 @@
       />
     </div>
 
-    <!-- <a href={imagePath}>{imagePath}</a>
-    <BasicRoundedButton
-      disabledCondition={null}
-      someFunction={uploadImage}
-      msg={"Upload pledge image"}
-    />
-
-    <a href={pledgeURL}>{pledgeURL}</a>
-    <BasicRoundedButton
-      disabledCondition={null}
-      someFunction={uploadPledgeAsset}
-      msg={"Upload pledge html"}
-    />
-    <a href={pledgeURL}>{pledgeURL}</a>
-    <BasicRoundedButton
-      disabledCondition={null}
-      someFunction={() => updateSiteMapxml("RWUi7R26NWUYafaTzzQWQ")}
-      msg={"Update sitemap"}
-    /> -->
-    <title>Hello</title>
-
     <MetadataSearcher />
-    <!-- <BasicRoundedButton
-      disabledCondition={null}
-      someFunction={async () => {
-        loading = true;
-        await triggerServerlessFunction();
-        loading = false;
-      }}
-      msg={"Serverless functions!"}
-    />
-    <BasicRoundedButton
-      disabledCondition={null}
-      someFunction={async () => {
-        await newProduct();
-      }}
-      msg={"Create New Product"}
-    /> -->
+
     <div class="Field">
       <h1 style="margin:0px;">Eliminate a specified solution</h1>
       <input
@@ -398,6 +430,72 @@
         }}
         msg={"Delete topic"}
       />
+    </div>
+
+    <div class="Field">
+      <h1 style="margin:0px;">Delete images</h1>
+      <input
+        class="InputTextSmall"
+        placeholder="Enter full path of the image"
+        bind:value={newImage}
+      />
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={() => {
+          addImageName(newImage);
+        }}
+        msg={"Push image to delete"}
+      />
+
+      {#if uploadedImageNames.length > 0}
+        {#each uploadedImageNames as file}
+          <div class="fileItem">
+            <p>{file}</p>
+          </div>
+        {/each}
+        <BasicRoundedButton
+          disabledCondition={null}
+          someFunction={async () => {
+            await deleteAllUploadedImages();
+          }}
+          msg={"Delete images"}
+        />
+      {/if}
+    </div>
+    <div class="Field">
+      <ImageUploader />
+    </div>
+
+    <div class="Field">
+      <h1 style="margin:0px;">Scheduled Functions</h1>
+
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={startTasks}
+        msg={"Start Image Deletion Task"}
+      />
+
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={stopTasks}
+        msg={"Stop Image Deletion Task"}
+      />
+
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={checkTaskState}
+        msg={"Check Task Status"}
+      />
+
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          console.log(await tryingLogFunction());
+        }}
+        msg={"Trigger delete unused images function"}
+      />
+
+      <p>Task Status: {taskState}</p>
     </div>
   {/if}
 </div>
