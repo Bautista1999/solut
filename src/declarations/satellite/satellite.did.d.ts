@@ -27,6 +27,8 @@ export interface Product {
 }
 export type Result = { 'Ok' : null } |
   { 'Err' : string };
+export type Result_1 = { 'Ok' : string } |
+  { 'Err' : string };
 export interface SetIdea { 'key' : string, 'idea' : Idea }
 export interface Solution {
   'categories' : Array<string>,
@@ -45,10 +47,19 @@ export interface _SERVICE {
   'create_or_update_idea' : ActorMethod<[string, Idea, string], Result>,
   'create_or_update_solution' : ActorMethod<[string, Solution, string], Result>,
   'create_or_update_topic' : ActorMethod<[string, Idea], Result>,
+  'delete_many_images' : ActorMethod<[string, Array<string>], Result_1>,
   'delete_pledge' : ActorMethod<[string], Result>,
   'eliminate_idea' : ActorMethod<[string], Result>,
   'eliminate_solution' : ActorMethod<[string], Result>,
   'eliminate_topic' : ActorMethod<[string], Result>,
+  'query_scheduled_tasks_state' : ActorMethod<[], string>,
+  'start_scheduled_tasks' : ActorMethod<[], string>,
+  'stop_scheduled_tasks' : ActorMethod<[], string>,
+  'trying_log_function' : ActorMethod<[], Result>,
+  'upload_image' : ActorMethod<
+    [string, string, Uint8Array | number[], string, string, string],
+    Result_1
+  >,
 }
 export declare const idlFactory: IDL.InterfaceFactory;
 export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];

@@ -34,6 +34,7 @@ export const idlFactory = ({ IDL }) => {
     'milestones' : IDL.Vec(Milestone),
     'images' : IDL.Vec(IDL.Text),
   });
+  const Result_1 = IDL.Variant({ 'Ok' : IDL.Text, 'Err' : IDL.Text });
   return IDL.Service({
     'build_version' : IDL.Func([], [IDL.Text], ['query']),
     'create_ideas' : IDL.Func([IDL.Vec(SetIdea), IDL.Text], [Result], []),
@@ -49,10 +50,24 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'create_or_update_topic' : IDL.Func([IDL.Text, Idea], [Result], []),
+    'delete_many_images' : IDL.Func(
+        [IDL.Text, IDL.Vec(IDL.Text)],
+        [Result_1],
+        [],
+      ),
     'delete_pledge' : IDL.Func([IDL.Text], [Result], []),
     'eliminate_idea' : IDL.Func([IDL.Text], [Result], []),
     'eliminate_solution' : IDL.Func([IDL.Text], [Result], []),
     'eliminate_topic' : IDL.Func([IDL.Text], [Result], []),
+    'query_scheduled_tasks_state' : IDL.Func([], [IDL.Text], ['query']),
+    'start_scheduled_tasks' : IDL.Func([], [IDL.Text], []),
+    'stop_scheduled_tasks' : IDL.Func([], [IDL.Text], []),
+    'trying_log_function' : IDL.Func([], [Result], []),
+    'upload_image' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Vec(IDL.Nat8), IDL.Text, IDL.Text, IDL.Text],
+        [Result_1],
+        [],
+      ),
   });
 };
 export const init = ({ IDL }) => { return []; };
