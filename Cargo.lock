@@ -884,6 +884,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 
 [[package]]
+name = "mime"
+version = "0.3.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
+
+[[package]]
 name = "minimal-lexical"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1139,17 +1145,23 @@ checksum = "f3cb5ba0dc43242ce17de99c180e96db90b235b8a9fdc9543c96d2209116bd9f"
 name = "satellite"
 version = "0.0.1"
 dependencies = [
+ "base64 0.13.1",
+ "bytes",
  "candid",
  "ic-cdk",
  "ic-cdk-macros",
+ "ic-cdk-timers",
  "junobuild-macros",
  "junobuild-satellite",
  "junobuild-shared",
  "junobuild-storage",
  "junobuild-utils",
+ "mime",
  "regex",
  "serde",
  "serde_cbor",
+ "serde_json",
+ "url",
 ]
 
 [[package]]
