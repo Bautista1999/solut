@@ -104,6 +104,8 @@
         position: relative;
         transition: background-color 0.3s ease;
         width: 100%;
+        max-width: 100%; /* Prevent overflow in constrained parent containers */
+        box-sizing: border-box; /* Ensure padding and border fit within the set width */
     }
 
     .dragging {
@@ -120,5 +122,10 @@
         width: 100%;
         height: 100%;
         cursor: pointer;
+    }
+
+    .uploadArea *::before,
+    .uploadArea *::after {
+        box-sizing: border-box;
     }
 </style>
