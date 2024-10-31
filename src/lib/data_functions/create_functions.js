@@ -750,7 +750,8 @@ export async function deleteTopic(topic_id){
  * @param {any} images
  */
 export async function deleteImages(collection , images){
-    return await deleteManyImages(collection,images);
+    let result =  await deleteManyImages(collection,images);
+    return result
 }
 
 /**
