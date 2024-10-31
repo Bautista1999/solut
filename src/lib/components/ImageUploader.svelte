@@ -128,9 +128,4 @@
 {/if} -->
 
 <style>
-    .uploadedImages {
-        margin-top: 15px;
-        font-size: 0.9rem;
-        color: var(--primary-color);
-    }
 </style>
