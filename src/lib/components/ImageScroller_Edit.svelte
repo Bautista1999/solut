@@ -169,6 +169,7 @@
         position: absolute; /* Position relative to image-scroller */
         top: 10px; /* Adjust as needed */
         right: 10px; /* Adjust as needed */
+
         z-index: 2; /* Ensure it's above the image */
     }
 
@@ -178,6 +179,7 @@
         ); /* Use a color that indicates a delete action */
         color: var(--tertiary-color);
         box-shadow: 4px 4px 0px 0px var(--tertiary-color);
+        border-radius: 8px;
         border: 1px solid var(--tertiary-color);
         padding: 2px;
         cursor: pointer;
