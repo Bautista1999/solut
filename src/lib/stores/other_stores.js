@@ -116,4 +116,6 @@ export let FollowingModal = writable(false);
 
 export let confirmationModal = writable(false);
 
+export let editImages = writable(false);
+
 
