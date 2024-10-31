@@ -16,6 +16,7 @@
     import CommentSection from "$lib/components/CommentSection.svelte";
     import {
         confirmationModal,
+        editImages,
         pledgeModal,
         success,
         UserKey,
@@ -51,6 +52,8 @@
     import TitleSection from "$lib/components/TitleSection.svelte";
     import EditSubtitle from "$lib/components/EditSubtitle.svelte";
     import SubtitleSection from "$lib/components/SubtitleSection.svelte";
+    import EditImagesSection from "$lib/components/EditImagesSection.svelte";
+    import MagicalDots from "$lib/components/magicalDots.svelte";
 
     /** @type {import('./$types').PageData} */
     export let data;
@@ -59,6 +62,16 @@
      * @type {string[]}
      */
     let images = [];
+    /**
+     * @type {string[]}
+     */
+    let oldImages = []; // Original images from the database (strings)
+
+    /**
+     * @type {{ localUrl: string, uploadedUrl: string }[]}
+     */
+    let newImages = []; // Used for image editing (objects)
+
     let title = "";
     let subtitle = "";
     let description = "";
@@ -104,7 +117,11 @@
         } else {
             let data = doc.data;
             images = doc.data.images;
-            images = images;
+            oldImages = doc.data.images;
+            newImages = oldImages.map((image) => ({
+                localUrl: image,
+                uploadedUrl: image,
+            }));
             title = doc.data.title;
             subtitle = doc.data.subtitle;
             description = doc.data.description;
@@ -185,6 +202,42 @@
             newDescription = description;
         }
     }
+
+    $: editImagesLoading = false;
+    async function saveImageChanges() {
+        editImagesLoading = true;
+        console.log(newImages.map((img) => img.uploadedUrl));
+        let topicInfo = {
+            title: title,
+            subtitle: subtitle,
+            description: description,
+            images: newImages.map((img) => img.uploadedUrl),
+            videos: videos,
+            categories: categories,
+        };
+
+        let result = await updateTopic(key, topicInfo);
+        console.log(result);
+        if ("Ok" in result) {
+            oldImages = images;
+            images = newImages.map((img) => img.uploadedUrl);
+        } else {
+            alert(
+                "Something went wrong when updating the images: " + result.Err,
+            );
+        }
+        editImages.set(false);
+        editImagesLoading = false;
+    }
+
+    async function cancelImageChanges() {
+        newImages = oldImages.map((image) => ({
+            localUrl: image,
+            uploadedUrl: image,
+        })); // Reset to the original state
+
+        editImages.set(false);
+    }
 </script>
 
 <div class="body">
@@ -215,7 +268,23 @@
                     {/await}
                 </div>
                 <div class="Pictures">
-                    <ImageScroller {images} />
+                    <ImageScroller
+                        bind:newImages
+                        saveChanges={saveImageChanges}
+                        cancelChanges={cancelImageChanges}
+                        owner={user}
+                    />
+                </div>
+                <div class="EditImages" style="width: 100%; position:relative">
+                    {#if editImagesLoading}
+                        <MagicalDotsSmall />
+                    {:else if $editImages}
+                        <EditImagesSection
+                            {key}
+                            collection_db={"idea"}
+                            bind:images={newImages}
+                        />
+                    {/if}
                 </div>
 
                 <div class="Breadcrumbs">
@@ -459,7 +528,7 @@
             "Profile Title Title"
             "Subtitle Subtitle Subtitle"
             "Pictures Pictures Pictures"
-            "Pictures-scroller Pictures-scroller Pictures-scroller"
+            "EditImages EditImages EditImages"
             "FundingSection FundingSection FundingSection"
             "PledgingSection PledgingSection PledgingSection"
             "Solution-section Solution-section Solution-section"
@@ -485,7 +554,12 @@
 
     .Pictures {
         grid-area: Pictures;
+        width: 100%;
         background-color: var(--secondary-color);
+        position: relative;
+    }
+    .EditImages {
+        grid-area: EditImages;
     }
 
     .Breadcrumbs {
