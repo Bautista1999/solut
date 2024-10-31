@@ -10,6 +10,7 @@
         initJuno,
         signIn,
         InternetIdentityProvider,
+        NFIDProvider,
     } from "@junobuild/core-peer";
     import { isRegistered } from "$lib/data_functions/user.functions";
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
@@ -57,6 +58,39 @@
             errorMsg = String(e);
         }
     }
+    async function logInNFID() {
+        try {
+            await signIn({
+                provider: new NFIDProvider({
+                    appName: "Solutio",
+                    logoUrl: "https://solutio.one/assets/LogoSol3.png",
+                }),
+                maxTimeToLive: BigInt(DAYS * 24 * 60 * 60 * 1000 * 1000 * 1000),
+            });
+            await authSubscribe(async (user) => {
+                if (user == null) {
+                    error = true;
+                } else {
+                    let isReg = await isRegistered(user.key);
+                    switch (isReg) {
+                        case true:
+                            console.log("User key: ", user.key);
+                            GoToPath();
+                            // location.reload();
+                            break;
+                        case false:
+                            console.log("User key: ", user.key);
+                            goto("/createaccount/" + user.key);
+                            // location.reload();
+                            break;
+                    }
+                }
+            });
+        } catch (e) {
+            error = true;
+            errorMsg = String(e);
+        }
+    }
 </script>
 
 {#if !error}
@@ -64,12 +98,21 @@
         <div class="content">
             <h1 style="font-size: 2.5em;">Sign in</h1>
             <p>Choose your option to sign in into Solutio.</p>
-            <br />
+            <h2>Internet Identity</h2>
             <BasicButtonLarger
                 msg={"Sign in with interent identity"}
                 icon={"all_inclusive"}
                 someFunction={async () => {
                     await logIn();
+                }}
+            />
+
+            <h2>NFID or Google</h2>
+            <BasicButtonLarger
+                msg={"Sign in with NFID/ Google"}
+                icon={"g_mobiledata"}
+                someFunction={async () => {
+                    await logInNFID();
                 }}
             />
         </div>
@@ -107,6 +150,7 @@
         width: 100%;
         max-width: 400px;
         margin: 20px auto;
+        border-radius: 8px;
         padding: 20px;
         padding-top: 0px;
         padding-inline: 40px;
