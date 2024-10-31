@@ -12,6 +12,7 @@ thread_local! {
     static LAST_TIME: RefCell<u64> = RefCell::new(0); // Stores the last execution timestamp
 }
 //TODO: When we check if the image's parent element exists or not, if it does we also need to check if its also using that image. In case not, we need to get rid of it.
+//TODO: Only check for images older than 8 hours or something. Just to avoid deleting the images that were uploaded by the user on the create topic, idea or solution.
 pub fn delete_unused_images() -> Result<(), String> {
     // Set the controller as the caller
     let controller = Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
