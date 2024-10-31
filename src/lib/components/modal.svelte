@@ -186,7 +186,7 @@
         padding-inline: 20px;
         padding-bottom: 20px;
         width: 400px;
-        border-radius: 0px;
+        border-radius: 8px;
         border-width: 2px;
         border-color: black;
         color: var(--secondary-color);
