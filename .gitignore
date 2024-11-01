@@ -5792,3 +5792,10 @@ build/_app/version.json
 build/index.html
 node_modules/.package-lock.json
 /target
+<<<<<<< Updated upstream
+=======
+/build
+/build
+/build
+/build
+>>>>>>> Stashed changes
