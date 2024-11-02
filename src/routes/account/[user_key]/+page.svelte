@@ -7,6 +7,7 @@
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import FlatButtonDarkSmall from "$lib/components/FlatButtonDarkSmall.svelte";
     import FollowersAndFollowingSection from "$lib/components/FollowersAndFollowingSection.svelte";
+    import IconButton from "$lib/components/IconButton.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsolut.svelte";
     import PageTabs from "$lib/components/PageTabs.svelte";
@@ -257,6 +258,7 @@
                     someFunction={() => {
                         save();
                     }}
+                    {userKey}
                 />
             </div>
             <div class="VerticallyAligned HorizontallyAligned">
@@ -270,10 +272,7 @@
                         </p>
                     </div>
 
-                    <FlatButtonDarkSmall
-                        someFunction={toggleEditing}
-                        msg={"Edit profile"}
-                    />
+                    <IconButton someFunction={toggleEditing} icon={"edit"} />
                 {:else}
                     <input
                         type="text"
@@ -286,13 +285,17 @@
                         class="VerticallyAligned"
                         style="position: relative;  "
                     >
-                        <CircledButtonDarkSmall
-                            someFunction={save}
-                            icon={"Save"}
+                        <IconButton
+                            icon={"check"}
+                            someFunction={async () => {
+                                save();
+                            }}
                         />
-                        <CircledButtonDarkSmall
-                            someFunction={toggleEditing}
-                            icon={"Cancel"}
+                        <IconButton
+                            someFunction={() => {
+                                toggleEditing();
+                            }}
+                            icon={"close"}
                         />
                     </div>
                 {/if}
