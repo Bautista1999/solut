@@ -2,7 +2,9 @@
     import { goto } from "$app/navigation";
     import BasicButtonBlackWhite from "./BasicButtonBlackWhite.svelte";
     import FlatButtonDarkSmall from "./FlatButtonDarkSmall.svelte";
+    import IconButton from "./IconButton.svelte";
     import Modal from "./modal.svelte";
+    import SingleImageUploader from "./SingleImageUploader.svelte";
 
     // You can pass the image source as a prop if it needs to be dynamic
     let open = false;
@@ -16,10 +18,13 @@
         event.stopPropagation();
         open = true;
     }
+    export let userKey = "";
+    let localUrl = src;
     export let someFunction = () => {};
 
     function onSave() {
         src = editUrl;
+
         someFunction();
         open = false;
     }
@@ -27,6 +32,7 @@
     function cancel() {
         open = false;
         editUrl = src;
+        localUrl = src;
     }
 </script>
 
@@ -36,7 +42,7 @@
     <!-- svelte-ignore a11y-img-redundant-alt -->
     <img
         class="profile-pic"
-        {src}
+        src={localUrl}
         alt="Profile Picture"
         on:click={handleProfileClick}
     />
@@ -50,34 +56,6 @@
         open = false;
     }}
 >
-    <div class="edit-profile-desktop">
-        <div class="VerticallyAligned HorizontallyAligned">
-            <div class="profile-pic-container-modal">
-                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-                <!-- svelte-ignore a11y-img-redundant-alt -->
-                <img
-                    class="profile-pic"
-                    src={editUrl}
-                    alt="Profile Picture"
-                    on:click={handleProfileClick}
-                />
-            </div>
-            <input type="text" class="InputText" bind:value={editUrl} />
-            <FlatButtonDarkSmall
-                msg={"Save"}
-                someFunction={() => {
-                    onSave();
-                }}
-            />
-            <FlatButtonDarkSmall
-                msg={"Cancel"}
-                someFunction={() => {
-                    cancel();
-                }}
-            />
-        </div>
-    </div>
     <div class="edit-profile-mobile">
         <div class="profile-pic-container-modal">
             <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -85,25 +63,31 @@
             <!-- svelte-ignore a11y-img-redundant-alt -->
             <img
                 class="profile-pic"
-                src={editUrl}
+                src={localUrl}
                 alt="Profile Picture"
                 on:click={handleProfileClick}
             />
         </div>
 
         <div class="VerticallyAligned HorizontallyAligned">
-            <input type="text" class="InputText" bind:value={editUrl} />
-            <FlatButtonDarkSmall
-                msg={"Save"}
-                someFunction={() => {
+            <!-- <input type="text" class="InputText" bind:value={editUrl} /> -->
+            <SingleImageUploader
+                bind:uploadedUrl={editUrl}
+                key={userKey}
+                collection={"user"}
+                bind:localUrl
+            />
+            <IconButton
+                icon={"check"}
+                someFunction={async () => {
                     onSave();
                 }}
             />
-            <FlatButtonDarkSmall
-                msg={"Cancel"}
+            <IconButton
                 someFunction={() => {
                     cancel();
                 }}
+                icon={"close"}
             />
         </div>
     </div>
@@ -111,7 +95,10 @@
 
 <style>
     .edit-profile-mobile {
-        display: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
     }
     .profile-pic-container {
         width: 60px; /* width and height should be the same */
@@ -172,16 +159,5 @@
         align-items: center; /* Centers vertically in the flex container */
         border: 2px solid var(--primary-color);
         margin-top: 20px;
-    }
-    @media (max-width: 480px) {
-        .edit-profile-desktop {
-            display: none;
-        }
-        .edit-profile-mobile {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
     }
 </style>
