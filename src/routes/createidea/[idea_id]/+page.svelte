@@ -122,7 +122,7 @@
         isLoading = true;
         try {
             let creation = await setFeature(ideaPost, parentIdeaKey, id); // Call to create a single feature
-
+            console.log(creation);
             if (typeof creation === "string" && creation.startsWith("ERROR:")) {
                 error = true;
                 errorMsg = creation; // Directly assign the error message
@@ -194,7 +194,7 @@
             message={"The creation of the idea failed."}
             error={errorMsg}
             someFunction={() => {
-                window.location.href = "/";
+                error = false;
             }}
         />
     {:else}

@@ -74,6 +74,7 @@
         // If any field is empty, return early
         if (noTitle || noSubtitle || noDescription) {
             isLoading = false;
+
             return;
         }
 
@@ -105,7 +106,6 @@
         isLoading = true;
         try {
             const creation = await setIdea(ideaPost, featuresPost, id);
-
             if (typeof creation === "string" && creation.startsWith("ERROR:")) {
                 error = true;
                 errorMsg = creation; // Directly assign the error message
