@@ -282,8 +282,8 @@
         let result = await updateSolution(key, solInfo, idea_id);
         console.log(result);
         if ("Ok" in result) {
-            oldImages = images;
             images = newImages.map((img) => img.uploadedUrl);
+            oldImages = newImages.map((img) => img.uploadedUrl);
         } else {
             alert(
                 "Something went wrong when updating the images: " + result.Err,
