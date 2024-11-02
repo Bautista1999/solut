@@ -43,7 +43,11 @@
     }
 </script>
 
-<ImageUploader addNewImage={(image) => addNewImage(image)} />
+<ImageUploader
+    {key}
+    collection={collection_db}
+    addNewImage={(image) => addNewImage(image)}
+/>
 
 <div class="image-carousel">
     {#each newImages as image, index (image.uploadedUrl)}
