@@ -206,7 +206,22 @@
 <svelte:head>
     <meta name="twitter:card" content="summary" />
     <meta charset="utf-8" />
-    <title>Create idea</title>
+    <title>Share an Idea!</title>
+    <meta name="description" content={"Share an Idea using Solutio"} />
+    <meta property="og:title" content={"Share an Idea"} />
+    <meta property="og:description" content={"Share an Idea using Solutio"} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={window.location.toString()} />
+    <meta
+        property="og:image"
+        content={"http://solutio.one/assets/LogoSol3.png"}
+    />
+    <meta name="twitter:title" content={"Share an Idea"} />
+    <meta name="twitter:description" content={"Share an Idea using Solutio"} />
+    <meta
+        name="twitter:image"
+        content={"http://solutio.one/assets/LogoSol3.png"}
+    />
 </svelte:head>
 
 <style>
