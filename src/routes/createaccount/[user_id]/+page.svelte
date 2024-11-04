@@ -305,7 +305,22 @@
 <svelte:head>
     <meta name="twitter:card" content="summary" />
     <meta charset="utf-8" />
-    <title>Create Account</title>
+    <title>Create an account</title>
+    <meta name="description" content={"CCreate an account in Solutio"} />
+    <meta property="og:title" content={"Create an account"} />
+    <meta property="og:description" content={"Create an account on Solutio"} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={window.location.toString()} />
+    <meta
+        property="og:image"
+        content={"http://solutio.one/assets/LogoSol3.png"}
+    />
+    <meta name="twitter:title" content={"Create an account"} />
+    <meta name="twitter:description" content={"Create an account on Solutio"} />
+    <meta
+        name="twitter:image"
+        content={"http://solutio.one/assets/LogoSol3.png"}
+    />
 </svelte:head>
 
 <style>
