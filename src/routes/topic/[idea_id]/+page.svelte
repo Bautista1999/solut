@@ -54,6 +54,7 @@
     import SubtitleSection from "$lib/components/SubtitleSection.svelte";
     import EditImagesSection from "$lib/components/EditImagesSection.svelte";
     import MagicalDots from "$lib/components/magicalDots.svelte";
+    import { browser } from "$app/environment";
 
     /** @type {import('./$types').PageData} */
     export let data;
@@ -73,6 +74,7 @@
     let newImages = []; // Used for image editing (objects)
 
     let title = "";
+    $: browserTitle = title;
     let subtitle = "";
     let description = "";
     let user = "";
@@ -495,7 +497,7 @@
     </div>
 </div>
 
-<head>
+<svelte:head>
     <meta name="twitter:card" content="summary" />
     <meta charset="utf-8" />
     <title>{title}</title>
@@ -508,7 +510,7 @@
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={subtitle} />
     <meta name="twitter:image" content={images[0]} />
-</head>
+</svelte:head>
 
 <style>
     .body {
