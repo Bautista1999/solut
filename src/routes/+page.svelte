@@ -9,6 +9,7 @@
     import SearchedIdeas from "$lib/components/SearchedIdeas.svelte";
     import MagicalDots from "$lib/components/magicalDots.svelte";
     import MagicalDotsAbsolut from "$lib/components/MagicalDotsAbsolut.svelte";
+    import { onMount } from "svelte";
     $: firstKeys = [""];
     let stats = [
         { label: "Ideas Created", count: 320, icon: "lightbulb" },
@@ -18,7 +19,7 @@
     $: searchText = "";
 
     /**
-     * @type {{ key: string; data: import("../data_objects/data_types").IndexDataReturn; }[]}
+     * @type {{ key: string; data: import("../lib/data_objects/data_types").IndexDataReturn; }[]}
      */
     let searchedIdeas = [];
 
@@ -128,6 +129,13 @@
     function openSearchPanel() {
         searchComponentOpen = true;
     }
+
+    onMount(() => {
+        window.addEventListener("popstate", () => {
+            // Logic to handle page state when navigating back or forward
+            location.reload(); // Basic approach to reload the current state
+        });
+    });
 </script>
 
 <main>
@@ -187,7 +195,7 @@
                     msg={"Tell us more."}
                     icon={"emoji_objects"}
                     someFunction={() => {
-                        goto("/createtopic");
+                        window.location.href = "/createtopic";
                     }}
                 />
             </div>
