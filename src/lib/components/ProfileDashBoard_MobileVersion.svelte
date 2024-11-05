@@ -24,6 +24,7 @@
     import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsolut.svelte";
     import ErrorMessage from "./ErrorMessage.svelte";
     import LoadingNew from "./LoadingNew.svelte";
+    import IconButton from "./IconButton.svelte";
 
     let activeTab = writable("Information");
 
@@ -245,6 +246,7 @@
                 someFunction={() => {
                     save();
                 }}
+                {userKey}
             />
             <div class="profile-info">
                 {#if !isEditing}
@@ -261,13 +263,18 @@
                             bind:value={editedUserName}
                             class="InputTextSmall"
                         />
-                        <CircledButtonDarkSmall
-                            someFunction={save}
-                            icon={"Save"}
+
+                        <IconButton
+                            icon={"check"}
+                            someFunction={async () => {
+                                save();
+                            }}
                         />
-                        <CircledButtonDarkSmall
-                            someFunction={toggleEditing}
-                            icon={"Cancel"}
+                        <IconButton
+                            someFunction={() => {
+                                toggleEditing();
+                            }}
+                            icon={"close"}
                         />
                     </div>
                 {/if}
@@ -288,10 +295,7 @@
                 />
             {/if}
             {#if !isEditing}
-                <FlatButtonDarkSmall
-                    someFunction={toggleEditing}
-                    msg={"Edit profile"}
-                />
+                <IconButton someFunction={toggleEditing} icon={"edit"} />
             {/if}
         </div>
 

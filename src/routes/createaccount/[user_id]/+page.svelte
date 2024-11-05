@@ -11,6 +11,7 @@
     import SuccessNew from "$lib/components/Success_New.svelte";
     import { getNames } from "country-list";
     import { usernameExists } from "$lib/data_functions/get_functions";
+    import SingleImageUploader from "$lib/components/SingleImageUploader.svelte";
 
     const countries = getNames();
 
@@ -26,6 +27,7 @@
     let interests = [];
     let interestInput = "";
     let profileUrl = "";
+    let localProfileUrl = "";
     let defaultUrl =
         "https://uxwing.com/wp-content/themes/uxwing/download/peoples-avatars/no-profile-picture-icon.png";
 
@@ -147,18 +149,29 @@
                 <!-- svelte-ignore a11y-img-redundant-alt -->
                 <img
                     class="profile-pic"
-                    src={profileUrl || defaultUrl}
+                    src={localProfileUrl || defaultUrl}
                     alt="Profile Picture"
                 />
             </div>
             <div class="form-section">
                 <label for="ideasSelected">Picture URL</label>
-                <input
+                <!-- <input
                     type="list"
                     bind:value={profileUrl}
                     placeholder="Profile picture URL"
                     class="InputText"
+                /> -->
+                <SingleImageUploader
+                    bind:uploadedUrl={profileUrl}
+                    bind:localUrl={localProfileUrl}
+                    key={userKey}
+                    collection={"user"}
                 />
+                {#if localProfileUrl != ""}
+                    <p style="margin-top:5px ; color:grey; font-style:italic;">
+                        (Click to change the profile picture)
+                    </p>
+                {/if}
             </div>
             <!-- <p>Your principal: {data.params.user_id}</p> -->
             <div class="form-section">
@@ -292,7 +305,22 @@
 <svelte:head>
     <meta name="twitter:card" content="summary" />
     <meta charset="utf-8" />
-    <title>Create Account</title>
+    <title>Create an account</title>
+    <meta name="description" content={"CCreate an account in Solutio"} />
+    <meta property="og:title" content={"Create an account"} />
+    <meta property="og:description" content={"Create an account on Solutio"} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={window.location.toString()} />
+    <meta
+        property="og:image"
+        content={"http://solutio.one/assets/LogoSol3.png"}
+    />
+    <meta name="twitter:title" content={"Create an account"} />
+    <meta name="twitter:description" content={"Create an account on Solutio"} />
+    <meta
+        name="twitter:image"
+        content={"http://solutio.one/assets/LogoSol3.png"}
+    />
 </svelte:head>
 
 <style>

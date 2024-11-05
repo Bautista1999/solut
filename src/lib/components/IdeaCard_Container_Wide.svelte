@@ -164,7 +164,17 @@
         margin: 0; /* Center the grid container */
         max-width: 1200px; /* Max width of the grid to avoid very wide cards */
     }
-    @media (max-width: 480px) {
+    @media (max-width: 800px) {
+        .features-container {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(100px, 0.5fr));
+            grid-gap: 1rem;
+            padding: 0rem; /* Add some padding around the grid if needed */
+            margin: 0; /* Center the grid container */
+            max-width: 600px; /* Max width of the grid to avoid very wide cards */
+        }
+    }
+    @media (max-width: 670px) {
         .features-container {
             display: grid;
             grid-template-columns: repeat(2, minmax(100px, 0.5fr));

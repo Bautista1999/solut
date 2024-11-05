@@ -6,7 +6,7 @@ use junobuild_shared::types::list::{
     ListMatcher, ListOrder, ListOrderField, ListParams, ListResults, TimestampMatcher,
 };
 use junobuild_storage::{http::types::HeaderField, types::interface::AssetNoContent};
-use std::cell::RefCell;
+use std::{cell::RefCell, fmt::format};
 
 thread_local! {
     static LAST_TIME: RefCell<u64> = RefCell::new(0); // Stores the last execution timestamp
@@ -24,10 +24,10 @@ pub fn delete_unused_images() -> Result<(), String> {
 
     // Set up filter parameters to retrieve only new images
     let filters = ListParams {
-        matcher: Some(ListMatcher {
-            created_at: Some(TimestampMatcher::GreaterThan(last_run)),
-            ..Default::default()
-        }),
+        matcher: None, // Some(ListMatcher {
+        //     created_at: Some(TimestampMatcher::GreaterThan(last_run)),
+        //     ..Default::default()
+        // })
         order: Some(ListOrder {
             desc: false,
             field: ListOrderField::CreatedAt,
@@ -53,11 +53,24 @@ pub fn delete_unused_images() -> Result<(), String> {
         // Parse description to extract document id and type
         if let Some((doc_id, doc_type)) = parse_description(description.as_str()) {
             // Check if the document exists
+
             match get_doc_store(controller.clone(), doc_type.clone(), doc_id.clone()) {
-                Ok(Some(_)) => continue, // Document exists, move to the next image
-                Ok(None) | Err(_) => {
+                Ok(Some(doc)) => {
+                    continue;
+                } // Document exists, move to the next image
+                Ok(None) => {
+                    // log(format!(
+                    //     "NEW IMAGE DELETED. Doc: {}, type: {}",
+                    //     doc_id, doc_type
+                    // ));
                     images_to_delete.push(filename); // Add the complete filename for deletion
                     deleted_images_count += 1;
+                }
+                Err(_) => {
+                    // log(format!(
+                    //     "ERROR FETCHING: Doc: {}, type: {}",
+                    //     doc_id, doc_type
+                    // ));
                 }
             }
         } else {

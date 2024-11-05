@@ -49,10 +49,7 @@
                             data: {
                                 title: feature.data.title,
                                 subtitle: feature.data.subtitle,
-                                images:
-                                    feature.data.images[0] == undefined
-                                        ? ""
-                                        : feature.data.images[0],
+                                images: feature.data.images,
                                 videos:
                                     feature.data.videos[0] == undefined
                                         ? ""

@@ -539,11 +539,11 @@ a:hover {
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
+/* @media (max-width: 1200px) {
     .idea-card {
         width: calc(100% / 2 - 20px);
     }
-}
+} */
 
 body {
     margin: 0px;

@@ -29,6 +29,7 @@
   import SearchBarLarger from "$lib/components/SearchBarLarger.svelte";
   import SearchBar from "$lib/components/SearchBar.svelte";
   import ImageUploader from "$lib/components/ImageUploader.svelte";
+  import QuillTextEditor from "$lib/components/QuillTextEditor.svelte";
 
   export let title;
   export let description;
@@ -496,6 +497,11 @@
       />
 
       <p>Task Status: {taskState}</p>
+    </div>
+
+    <div class="Field">
+      <h1 style="margin:0px;">Quill text editor</h1>
+      <QuillTextEditor />
     </div>
   {/if}
 </div>

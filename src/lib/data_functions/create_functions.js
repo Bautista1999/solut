@@ -16,9 +16,7 @@ import { createIdeas, createOrUpdateIdea, createOrUpdateSolution, createOrUpdate
  * @param {string} key
  */
 export async function setIdea(idea,features, key){
-    if(idea.description.length>3000 || idea.title.length>70 || idea.subtitle.length>200){
-        return "ERROR: Fields in idea does not fulfill length requirements";
-    };
+    
     if(idea.description.length==0 || idea.title.length==0 || idea.subtitle.length==0){
         let errorDetail = "";
         switch (true) {
@@ -38,6 +36,7 @@ export async function setIdea(idea,features, key){
     for(let i=0;i<features.length;i++){
         let feature = features[i];
         if(feature.description.length>3000 || feature.title.length>70 || feature.subtitle.length>200){
+            alert("ERROR: One of the fields of the ideas is exceeding its limits.")
             return "ERROR: Fields in feature -"+ feature.title +"- does not fulfill length requirements";
         };
         if(feature.title.length==0 || feature.subtitle.length==0){
@@ -77,7 +76,7 @@ export async function setIdea(idea,features, key){
     if ("Ok" in creationResult) {
         return idea_id; // Success: Return the key of the newly created topic
     } else if ("Err" in creationResult) {
-        return `ERROR: ${creationResult.Err}`; // Backend error
+        return "ERROR: " + creationResult.Err; // Backend error
     }
     
     return "ERROR: Unknown error occurred";
@@ -100,10 +99,7 @@ export async function updateTopic(key, idea){
  * @returns {Promise<string>} The feature ID if successful, or an error message if validation fails.
  */
 export async function setFeature(feature, parentIdeaId, key) {
-    // Check field length validation
-    if (feature.description.length > 3000 || feature.title.length > 70 || feature.subtitle.length > 200) {
-        return "ERROR: Fields in feature do not meet length requirements.";
-    }
+
 
     // Check required fields
     if (feature.description.length === 0 || feature.title.length === 0 || feature.subtitle.length === 0) {
@@ -127,7 +123,7 @@ export async function setFeature(feature, parentIdeaId, key) {
             return featureId;
         } else if ("Err" in result) {
             // If there's an error from the backend, return it directly
-            return result.Err;
+            return   "ERROR: " + result.Err; // Backend error result.Err;
         }
     } catch (e) {
         // Handle any other errors and return them for display
@@ -184,7 +180,7 @@ export async function setFeatures(features, parentIdea_id) {
         if ("Ok" in result) {
             return setIdeas.map(idea => (idea)); // Return an array of keys if successful
         } else if ("Err" in result) {
-            return result.Err; // Return the error message if failed
+            return   "ERROR: " + result.Err; // Return the error message if failed
         }
     } catch (e) {
         console.error("Failed to create ideas:", e);
@@ -199,9 +195,7 @@ export async function setFeatures(features, parentIdea_id) {
  * @param {string} key
  */
 export async function setSolution(solution, parentIdea_id, key) {
-    if (solution.description.length > 3000 || solution.title.length > 70 || solution.subtitle.length > 200) {
-        return "ERROR: Fields in solution do not fulfill length requirements";
-    }
+   
 
     if (solution.description.length === 0 || solution.title.length === 0 || solution.subtitle.length === 0 || solution.features.length === 0) {
         let errorDetail = "";
@@ -275,7 +269,7 @@ export async function setSolution(solution, parentIdea_id, key) {
 
             return sol_id; // Return the solution key if successful
         } else if ("Err" in result) {
-            return result.Err; // Return error message from the backend if failed
+            return   "ERROR: " + result.Err; ; // Return error message from the backend if failed
         }
     } catch (e) {
         console.error(e);

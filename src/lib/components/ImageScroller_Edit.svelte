@@ -8,6 +8,9 @@
      */
     let images = []; // Array of image URLs passed in as a prop
     export let currentImageIndex = images.length;
+    export let deleteScrollerImages = (
+        /** @type {number} */ currentIndex,
+    ) => {};
 
     /**
      * @param {number} direction
@@ -18,12 +21,12 @@
     }
     async function deleteImage() {
         if (images.length > 0 && currentImageIndex >= 0) {
-            console.log("Images: ", images);
             let imageName = images[currentImageIndex].uploadedUrl
                 .split("/")
                 .pop();
             images.splice(currentImageIndex, 1); // Remove the image at the current index
             images = [...images];
+            deleteScrollerImages(currentImageIndex);
             if (currentImageIndex > 0) {
                 currentImageIndex--; // Adjust the index if needed
             }

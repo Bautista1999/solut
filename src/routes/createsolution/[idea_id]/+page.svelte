@@ -311,10 +311,33 @@
         <LoadingNew message={loadingMsg} />
     {/if}
 </div>
+
 <svelte:head>
     <meta name="twitter:card" content="summary" />
     <meta charset="utf-8" />
     <title>Build Solution</title>
+
+    <meta name="description" content={"Build a Solution using Solutio"} />
+    <meta property="og:title" content={"Build a Solution"} />
+    <meta
+        property="og:description"
+        content={"Build a Solution using Solutio"}
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={window.location.toString()} />
+    <meta
+        property="og:image"
+        content={"http://solutio.one/assets/LogoSol3.png"}
+    />
+    <meta name="twitter:title" content={"Build a Solution"} />
+    <meta
+        name="twitter:description"
+        content={"Build a Solution using Solutio"}
+    />
+    <meta
+        name="twitter:image"
+        content={"http://solutio.one/assets/LogoSol3.png"}
+    />
 </svelte:head>
 
 <style>

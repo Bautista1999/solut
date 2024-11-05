@@ -74,6 +74,7 @@
         // If any field is empty, return early
         if (noTitle || noSubtitle || noDescription) {
             isLoading = false;
+
             return;
         }
 
@@ -105,7 +106,6 @@
         isLoading = true;
         try {
             const creation = await setIdea(ideaPost, featuresPost, id);
-
             if (typeof creation === "string" && creation.startsWith("ERROR:")) {
                 error = true;
                 errorMsg = creation; // Directly assign the error message
@@ -179,6 +179,26 @@
         <LoadingNew message={"Uploading data..."} />
     {/if}
 </div>
+<svelte:head>
+    <meta name="twitter:card" content="summary" />
+    <meta charset="utf-8" />
+    <title>Create a topic</title>
+    <meta name="description" content={"Create a topic using Solutio"} />
+    <meta property="og:title" content={"Create a topic"} />
+    <meta property="og:description" content={"Create a topic using Solutio"} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={window.location.toString()} />
+    <meta
+        property="og:image"
+        content={"http://solutio.one/assets/LogoSol3.png"}
+    />
+    <meta name="twitter:title" content={"Create a topic"} />
+    <meta name="twitter:description" content={"Create a topic using Solutio"} />
+    <meta
+        name="twitter:image"
+        content={"http://solutio.one/assets/LogoSol3.png"}
+    />
+</svelte:head>
 
 <style>
     @import "../createtopic/createtopic.styles.css";

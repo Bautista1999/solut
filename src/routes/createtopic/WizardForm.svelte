@@ -10,6 +10,7 @@
     import ProgressIndicator from "./ProgressIndicator.svelte";
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
     import ImageUploader from "$lib/components/ImageUploader.svelte";
+    import QuillTextEditor from "$lib/components/QuillTextEditor.svelte";
     /**
      * @type {ImageScrollerEdit}
      */
@@ -38,6 +39,15 @@
             return;
         }
         images = [...images, image.uploadedUrl]; // Use spread syntax to trigger reactivity
+        console.log(images);
+    }
+
+    /**
+     * @param {number} index
+     */
+    function deleteImage(index) {
+        images.splice(index, 1); // Remove the image at the current index
+        images = [...images];
     }
 
     /**
@@ -87,17 +97,26 @@
     }
 
     function submitForm() {
-        if (progress === 100) {
-            const formData = {
-                title: title,
-                subtitle: subtitle,
-                description: description,
-            };
-            dispatch("submit", formData);
-            PostElement();
-        } else {
-            alert("Please complete all fields before submitting.");
+        const formData = {
+            title: title,
+            subtitle: subtitle,
+            description: description,
+        };
+        dispatch("submit", formData);
+        if (
+            description.length > 3000 ||
+            title.length > 70 ||
+            subtitle.length > 200
+        ) {
+            alert("ERROR: One of the fields is exceeding its limits.");
+            return;
         }
+        if (images.length > 5) {
+            console.log(images);
+            alert("ERROR: You cant upload more than 5 images.");
+            return;
+        }
+        PostElement();
     }
     let newTag = "";
 
@@ -197,7 +216,10 @@
             >Images <span class="optionalText">(Optional field)</span></label
         >
         <div style="background-color: var(--secondary-color);">
-            <ImageScrollerEdit bind:this={imageScroller} />
+            <ImageScrollerEdit
+                bind:this={imageScroller}
+                deleteScrollerImages={(index) => deleteImage(index)}
+            />
         </div>
     </div>
 
@@ -224,14 +246,20 @@
     </div>
     <div class="form-section">
         <label for="description">Description</label>
-        <textarea
+        <!-- <textarea
             id="description"
             bind:value={description}
             placeholder="Enter your description..."
             maxlength={charLimit.description}
             on:input={updateProgress}
             class="InputText"
-        ></textarea>
+        ></textarea> -->
+
+        <QuillTextEditor
+            maxCharacters={charLimit.description}
+            bind:description
+        />
+
         <div class="field-info">
             {#if description.length === 0}
                 <span class="required-field">*Required field</span>
@@ -265,11 +293,7 @@
                 }}
                 class="InputText"
             />
-            <!-- <BasicRoundedButtonSmall
-                msg={"Add tag"}
-                someFunction={addTag}
-                disabledCondition={newTag.length == 0}
-            /> -->
+
             <BasicButtonDarkSmall msg="Add tag" someFunction={addTag} />
         </div>
         {#if tagsTooLong}
@@ -297,13 +321,6 @@
 
     <slot name="additional-fields" />
     <div class="form-actions">
-        <!-- <BasicRoundedButton
-            msg={"Submit"}
-            someFunction={submitForm}
-            disabledCondition={description.length === 0 ||
-                title.length === 0 ||
-                subtitle.length === 0}
-        /> -->
         <BasicButtonDark
             msg="Submit"
             someFunction={() => {
@@ -312,6 +329,9 @@
                     title.length === 0 ||
                     subtitle.length === 0
                 ) {
+                    alert(
+                        "Please complete all required fields before submitting.",
+                    );
                     return;
                 }
                 submitForm();

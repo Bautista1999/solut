@@ -29,18 +29,32 @@
     export let idea;
     export let padding = 7;
     $: displaySrc = idea.data.images[0];
-    onMount(async () => {
-        if (displaySrc != "" && displaySrc != undefined) {
-            console.log(displaySrc);
-            displaySrc = await validateImageUrl(
-                displaySrc,
-                "https://resource.rentcafe.com/image/upload/q_auto,f_auto,c_limit,w_576,h_500/s3/2/50552/image%20not%20available(12).jpg",
-            );
-        } else {
-            displaySrc =
-                "https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg";
-        }
-    });
+
+    let isLoading = true;
+
+    // Load the image when the component mounts
+
+    $: if (displaySrc) {
+        // debugger;
+        isLoading = true;
+        (async () => {
+            try {
+                displaySrc = await validateImageUrl(
+                    displaySrc,
+                    "https://resource.rentcafe.com/image/upload/q_auto,f_auto,c_limit,w_576,h_500/s3/2/50552/image%20not%20available(12).jpg",
+                );
+            } catch {
+                displaySrc =
+                    "https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg";
+            } finally {
+                isLoading = false;
+            }
+        })();
+    } else {
+        displaySrc =
+            "https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg";
+        isLoading = false;
+    }
 
     async function followingInformation() {
         let amount = await getTotalFollowers(idea.key);
@@ -58,7 +72,13 @@
     rel="noopener noreferrer"
 >
     <div class="idea-card-image-container">
-        <img src={displaySrc} alt="Idea Image" class="idea-card-image" />
+        {#if isLoading}
+            <div class="idea-card-image loadingHolder">
+                <div class="spinner"></div>
+            </div>
+        {:else}
+            <img src={displaySrc} alt="Idea Image" class="idea-card-image" />
+        {/if}
         <div
             class="featureFlag"
             style="position: absolute; margin:10px;top:0; right:0;"
@@ -166,3 +186,29 @@
         </div> -->
     </div>
 </a>
+
+<style>
+    .spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-top: 4px solid var(--primary-color);
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+    .loadingHolder {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%; /* Full height to match the image container */
+    }
+</style>

@@ -806,7 +806,12 @@ fn create_or_update_topic(key: String, topic: Topic) -> Result<(), String> {
     let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
 
     // Step 1: Basic field validation
-    match validate_basic_fields(&topic.title, &topic.subtitle, &topic.description) {
+    match validate_basic_fields(
+        &topic.title,
+        &topic.subtitle,
+        &topic.description,
+        &topic.images,
+    ) {
         Ok(_) => {
             //do nothing
         }
@@ -968,7 +973,7 @@ fn create_or_update_idea(key: String, idea: Idea, parent_idea_id: String) -> Res
     let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
 
     // Step 1: Basic field validation
-    match validate_basic_fields(&idea.title, &idea.subtitle, &idea.description) {
+    match validate_basic_fields(&idea.title, &idea.subtitle, &idea.description, &idea.images) {
         Ok(_) => {
             //do nothing
         }
@@ -1115,6 +1120,7 @@ fn create_ideas(set_ideas: Vec<SetIdea>, parent_topic_id: String) -> Result<(), 
             &set_idea.idea.title,
             &set_idea.idea.subtitle,
             &set_idea.idea.description,
+            &set_idea.idea.images,
         );
         if let Err(error) = validation_result {
             return Err(format!(
@@ -1144,6 +1150,7 @@ fn validate_basic_fields(
     title: &String,
     subtitle: &String,
     description: &String,
+    images: &Vec<String>,
 ) -> Result<(), String> {
     if title.len() > 70 {
         return Err("Title length exceeds 70 characters".to_string());
@@ -1151,8 +1158,11 @@ fn validate_basic_fields(
     if subtitle.len() > 200 {
         return Err("Subtitle length exceeds 200 characters".to_string());
     }
-    if description.len() > 5000 {
-        return Err("Description length exceeds 5000 characters".to_string());
+    if description.len() > 3000 {
+        return Err("Description length exceeds 3000 characters".to_string());
+    }
+    if images.len() > 5 {
+        return Err("They idea shouldnt have more than 5 images".to_string());
     }
     Ok(())
 }
@@ -1167,7 +1177,12 @@ fn create_or_update_solution(
     let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
 
     // Step 1: Basic field validation
-    match validate_basic_fields(&solution.title, &solution.subtitle, &solution.description) {
+    match validate_basic_fields(
+        &solution.title,
+        &solution.subtitle,
+        &solution.description,
+        &solution.images,
+    ) {
         Ok(_) => {
             //do nothing
         }
@@ -1392,7 +1407,6 @@ pub fn delete_many_images(collection: String, fullpaths: Vec<String>) -> Result<
     let caller_text = candid::Principal::to_text(&caller);
     let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
 
-    ic_cdk::print(format!("Caller of function: {}", caller_text.as_str()));
     // Loop through each image and attempt to delete it
     for name in fullpaths.iter() {
         // Construct the full path for the image

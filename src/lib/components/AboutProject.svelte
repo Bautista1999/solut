@@ -2,6 +2,7 @@
     import { UserKey } from "$lib/stores/other_stores";
     import IconButton from "./IconButton.svelte";
     import MagicalDotsSmall from "./MagicalDotsSmall.svelte";
+    import QuillTextEditor from "./QuillTextEditor.svelte";
 
     export let description = "";
 
@@ -24,7 +25,7 @@
 
 {#if !editDescription}
     <div class="descriptionSection">
-        <p class="descriptionText">{description}</p>
+        <p class="descriptionText">{@html description}</p>
         {#if owner == $UserKey}
             <div class="iconContainer">
                 <IconButton
@@ -38,7 +39,7 @@
     </div>
 {:else if !editDescriptionLoading}
     <div class="descriptionEditingSection">
-        <textarea
+        <!-- <textarea
             name="editedTitle"
             maxlength={maxLength}
             id="editedTitle"
@@ -46,7 +47,11 @@
             wrap="soft"
             bind:value={newDescription}
             placeholder={newDescription}
-        ></textarea>
+        ></textarea> -->
+        <QuillTextEditor
+            maxCharacters={maxLength}
+            bind:description={newDescription}
+        />
         {#if editDescription}
             <div class="field">
                 <span class="char"
@@ -60,6 +65,12 @@
                 someFunction={async () => {
                     if (newDescription == description) {
                         editDescription = false;
+                        return;
+                    }
+                    if (newDescription.length > maxLength) {
+                        alert(
+                            "ERROR: The description is exceeding the maximum amount of characters.",
+                        );
                         return;
                     }
                     editDescriptionLoading = true;
@@ -93,9 +104,6 @@
         flex-direction: column; /* Stack items vertically */
         gap: 10px;
         height: fit-content;
-        padding: 10px;
-        margin-top: 10px;
-        margin-bottom: 10px;
     }
 
     .descriptionText {
