@@ -1,0 +1,8 @@
+
+/.svelte-kit
+/build
+/node_modules
+/static/workers
+/target
+/static/assets
+/static
