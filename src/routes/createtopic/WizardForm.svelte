@@ -221,6 +221,14 @@
                 deleteScrollerImages={(index) => deleteImage(index)}
             />
         </div>
+        {#if images.length > 5}
+            <p
+                class="InputErrorMessage"
+                style="font-size: medium; margin-top:15px;"
+            >
+                ERROR: You are exceeding the limit of 5 images.
+            </p>
+        {/if}
     </div>
 
     <div

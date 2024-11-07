@@ -215,6 +215,11 @@
     async function saveImageChanges() {
         editImagesLoading = true;
         console.log(newImages.map((img) => img.uploadedUrl));
+        if (newImages.map((img) => img.uploadedUrl).length > 5) {
+            alert("You cant upload more than 5 images!");
+            editImagesLoading = false;
+            return;
+        }
         let ideaInfo = {
             title: title,
             subtitle: subtitle,

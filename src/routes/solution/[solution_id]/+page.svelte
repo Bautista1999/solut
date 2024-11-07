@@ -268,6 +268,11 @@
     async function saveImageChanges() {
         editImagesLoading = true;
         console.log(newImages.map((img) => img.uploadedUrl));
+        if (newImages.map((img) => img.uploadedUrl).length > 5) {
+            alert("You cant upload more than 5 images!");
+            editImagesLoading = false;
+            return;
+        }
         let solInfo = {
             title: title,
             subtitle: subtitle,
@@ -535,7 +540,7 @@
                 <div class="ActivitySection">
                     <div class="ActivityTabs">
                         {#await getSolutionStatus(key) then status}
-                            {#if status == "delivered"}
+                            {#if status == "delivered" || status == "completed"}
                                 <div class="approval-stats">
                                     {#await getApprovalsNumbers()}
                                         <div class="stat">
