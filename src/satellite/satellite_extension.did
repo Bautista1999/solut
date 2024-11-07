@@ -49,6 +49,8 @@ service : {
   query_scheduled_tasks_state : () -> (text) query;
   start_scheduled_tasks : () -> (text);
   stop_scheduled_tasks : () -> (text);
-  trying_log_function : () -> (Result);
+  trigger_delete_orphan_ideas : () -> (Result);
+  trigger_delete_orphan_solutions : () -> (Result);
+  trigger_delete_unused_images : () -> (Result);
   upload_image : (text, text, blob, text, text, text) -> (Result_1);
 }
