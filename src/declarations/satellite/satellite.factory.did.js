@@ -62,7 +62,9 @@ export const idlFactory = ({ IDL }) => {
     'query_scheduled_tasks_state' : IDL.Func([], [IDL.Text], ['query']),
     'start_scheduled_tasks' : IDL.Func([], [IDL.Text], []),
     'stop_scheduled_tasks' : IDL.Func([], [IDL.Text], []),
-    'trying_log_function' : IDL.Func([], [Result], []),
+    'trigger_delete_orphan_ideas' : IDL.Func([], [Result], []),
+    'trigger_delete_orphan_solutions' : IDL.Func([], [Result], []),
+    'trigger_delete_unused_images' : IDL.Func([], [Result], []),
     'upload_image' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Vec(IDL.Nat8), IDL.Text, IDL.Text, IDL.Text],
         [Result_1],

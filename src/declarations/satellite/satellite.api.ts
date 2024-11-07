@@ -114,12 +114,28 @@ export const stopScheduledTasks = async (): Promise<string> => {
 	return await stop_scheduled_tasks();
 }
 
-export const tryingLogFunction = async (): Promise<Result> => {
-	const {trying_log_function} = await getSatelliteExtendedActor<SatelliteActor>({
+export const triggerDeleteOrphanIdeas = async (): Promise<Result> => {
+	const {trigger_delete_orphan_ideas} = await getSatelliteExtendedActor<SatelliteActor>({
 		idlFactory
 	});
 
-	return await trying_log_function();
+	return await trigger_delete_orphan_ideas();
+}
+
+export const triggerDeleteOrphanSolutions = async (): Promise<Result> => {
+	const {trigger_delete_orphan_solutions} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await trigger_delete_orphan_solutions();
+}
+
+export const triggerDeleteUnusedImages = async (): Promise<Result> => {
+	const {trigger_delete_unused_images} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await trigger_delete_unused_images();
 }
 
 export const uploadImage = async (value0: string, value1: string, value2: unknown, value3: string, value4: string, value5: string): Promise<Result_1> => {

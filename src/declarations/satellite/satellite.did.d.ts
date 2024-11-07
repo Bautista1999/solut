@@ -55,7 +55,9 @@ export interface _SERVICE {
   'query_scheduled_tasks_state' : ActorMethod<[], string>,
   'start_scheduled_tasks' : ActorMethod<[], string>,
   'stop_scheduled_tasks' : ActorMethod<[], string>,
-  'trying_log_function' : ActorMethod<[], Result>,
+  'trigger_delete_orphan_ideas' : ActorMethod<[], Result>,
+  'trigger_delete_orphan_solutions' : ActorMethod<[], Result>,
+  'trigger_delete_unused_images' : ActorMethod<[], Result>,
   'upload_image' : ActorMethod<
     [string, string, Uint8Array | number[], string, string, string],
     Result_1
