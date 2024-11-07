@@ -59,6 +59,11 @@
         </div>
     {/each}
 </div>
+{#if newImages.length > 5}
+    <p class="InputErrorMessage" style="font-size: medium; margin-top:10px;">
+        ERROR: You are exceeding the limit of 5 images.
+    </p>
+{/if}
 
 <style>
     .image-carousel {
