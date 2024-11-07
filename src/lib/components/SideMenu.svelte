@@ -13,40 +13,63 @@
         getUserImages,
         validateImageUrl,
     } from "$lib/data_functions/get_functions";
+
     // @ts-ignore
-    import { path } from "$lib/stores/redirect_store";
-    // @ts-ignore
-    import { GetAmountNewNotifications } from "$lib/data_functions/notifications";
     import { notificationCount } from "$lib/stores/notifications";
     import AppMenuBar from "./AppMenuBar.svelte";
     // @ts-ignore
-    import ProfilePictureHeader from "./ProfilePicture_Header.svelte";
     import PledgerProfilePicture from "./PledgerProfilePicture.svelte";
     import { signOut } from "@junobuild/core-peer";
+
     let isOpen = false;
 
-    function toggleSidebar() {
-        isOpen = !isOpen;
-    }
     let seconds = 0.5;
 
     let maxChars = 17;
+    let smth = false;
+    function openClose() {
+        smth = !smth;
+        // Update the sidebar state class
+        const sidebarClass = smth ? "sidebar-open" : "sidebar-closed";
+        document.body.classList.toggle("sidebar-open", smth);
+        document.body.classList.toggle("sidebar-closed", !smth);
+    }
 
-    // Function to close the sidebar when clicking outside of it
-    document.addEventListener("click", function (event) {
-        const sidebar = document.querySelector(".SideBar.open");
+    // Function to open/close sidebar and toggle event listener
+    function toggleSidebar() {
+        isOpen = !isOpen;
+        const sidebarClass = isOpen ? "sidebar-open" : "sidebar-closed";
+        document.body.classList.toggle("sidebar-open", isOpen);
+        document.body.classList.toggle("sidebar-closed", !isOpen);
+        // Add or remove the click-outside listener based on sidebar state
         if (isOpen) {
-            // @ts-ignore
-            const isClickInside = sidebar.contains(event.target);
-
-            if (!isClickInside && isOpen) {
-                event.stopPropagation();
-                toggleSidebar();
-            }
+            document.addEventListener("click", handleClickOutside);
+        } else {
+            document.removeEventListener("click", handleClickOutside);
         }
-    });
+    }
+
+    // Handler for clicks outside sidebar
+    /**
+     * @param {any} event
+     */
+    function handleClickOutside(event) {
+        const sidebar = document.querySelector(".SideBar");
+        const toggleButton = document.querySelector(".SideBarToggle");
+
+        // Close sidebar if the click is outside both the sidebar and toggle button
+        // @ts-ignore
+        if (!sidebar.contains(event.target) && event.target !== toggleButton) {
+            isOpen = false;
+            const sidebarClass = isOpen ? "sidebar-open" : "sidebar-closed";
+            document.body.classList.toggle("sidebar-open", isOpen);
+            document.body.classList.toggle("sidebar-closed", !isOpen);
+            document.removeEventListener("click", handleClickOutside); // Clean up
+        }
+    }
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="SideBar {isOpen ? 'open' : ''}">
     {#await CheckIfSignedIn() then data}
         <div class="SideBarHead">
@@ -79,21 +102,16 @@
                 <!-- svelte-ignore a11y-no-static-element-interactions -->
                 <div class="SideBarElement">
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
-                    <span
-                        class="material-symbols-outlined"
-                        on:click={() => goto("/")}
-                    >
-                        home
-                    </span>
+                    <a class="material-symbols-outlined" href={"/"}> home </a>
                     <!-- svelte-ignore a11y-no-static-element-interactions -->
                     {#if isOpen}
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
-                        <span
+                        <a
                             class="label"
                             in:fade={{ duration: seconds * 1000 }}
                             out:fade={{ duration: seconds * 1000 }}
                             style="overflow-x: hidden; position:absolute;"
-                            on:click={() => goto("/")}>Home</span
+                            href={"/"}>Home</a
                         >
                     {/if}
                 </div>
@@ -123,12 +141,12 @@
                     <!-- svelte-ignore a11y-no-static-element-interactions -->
                     <div class="SideBarElement">
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
-                        <span
+                        <a
                             class="material-symbols-outlined"
-                            on:click={() => goto("/notifications/" + $UserKey)}
+                            href={"/notifications/" + $UserKey}
                         >
                             notifications
-                        </span>
+                        </a>
                         <!-- {#await GetAmountNewNotifications() then data} -->
                         {#if !isOpen && $notificationCount > 0}
                             <span class="notification-bell-number"
@@ -136,10 +154,11 @@
                             >
                         {/if}
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
-                        {#if isOpen}<span
+                        {#if isOpen}<a
                                 class="label"
                                 in:fade={{ duration: seconds * 1000 }}
                                 out:fade={{ duration: seconds * 1000 }}
+                                href={"/notifications/" + $UserKey}
                                 style="
 
                         display: flex;
@@ -151,35 +170,30 @@
                         position:absolute;
                         overflow: hidden;
                         max-width: 100%;"
-                                on:click={() =>
-                                    goto("/notifications/" + $UserKey)}
                                 >Notifications
                                 {#if $notificationCount > 0}
-                                    <span
+                                    <a
                                         style="display:flex; align-items:center; justify-content:center; align-self:center;
                              background-color:var(--primary-color); color: var(--tertiary-color); width: fit-content;
                              padding-inline:10px;
                              height: 18px;
                              flex-shrink: 0;"
-                                        on:click={() => goto("/notifications")}
+                                        href={"/notifications/" + $UserKey}
                                     >
                                         {$notificationCount}
-                                    </span>
+                                    </a>
                                 {/if}
-                            </span>
+                            </a>
                         {/if}
                         <!-- {/await} -->
                     </div>
                     <!-- svelte-ignore a11y-no-static-element-interactions -->
                     <div class="SideBarElement">
-                        <span
-                            class="material-symbols-outlined"
-                            on:click={() => goto("/myideas")}
-                        >
+                        <a class="material-symbols-outlined" href={"/myideas"}>
                             emoji_objects
-                        </span>
+                        </a>
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
-                        {#if isOpen}<span
+                        {#if isOpen}<a
                                 class="label"
                                 in:fade={{ duration: seconds * 1000 }}
                                 out:fade={{ duration: seconds * 1000 }}
@@ -187,21 +201,18 @@
                         display: block; 
                         max-width: 100%; position:absolute;
                         overflow: hidden; "
-                                on:click={() => goto("/myideas")}>My ideas</span
+                                href={"/myideas"}>My ideas</a
                             >{/if}
                     </div>
 
                     <!-- svelte-ignore a11y-no-static-element-interactions -->
                     <div class="SideBarElement">
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
-                        <span
-                            class="material-symbols-outlined"
-                            on:click={() => goto("/feed")}
-                        >
+                        <a class="material-symbols-outlined" href={"/feed"}>
                             batch_prediction
-                        </span>
+                        </a>
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
-                        {#if isOpen}<span
+                        {#if isOpen}<a
                                 class="label"
                                 in:fade={{ duration: seconds * 1000 }}
                                 out:fade={{ duration: seconds * 1000 }}
@@ -209,8 +220,7 @@
                         display: block; 
                         max-width: 100%; position:absolute;
                         overflow: hidden; "
-                                on:click={() => goto("/feed")}
-                                >Followed ideas</span
+                                href={"/feed"}>Followed ideas</a
                             >{/if}
                     </div>
 
@@ -290,22 +300,22 @@
                 <!-- svelte-ignore a11y-no-static-element-interactions -->
                 <div class="SideBarElement">
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
-                    <span
+                    <a
                         class="material-symbols-outlined"
-                        on:click={() =>
-                            goto("https://forum.solutio.one/categories")}
+                        href={"https://forum.solutio.one/categories"}
                     >
                         contact_support
-                    </span>
+                    </a>
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
-                    {#if isOpen}<span
+                    {#if isOpen}<a
                             class="label"
                             in:fade={{ duration: seconds * 1000 }}
                             out:fade={{ duration: seconds * 1000 }}
                             style="overflow-x: hidden; position:absolute;"
+                            href={"https://forum.solutio.one/categories"}
                             on:click={() =>
                                 goto("https://forum.solutio.one/categories")}
-                            >Forum</span
+                            >Forum</a
                         >{/if}
                 </div>
                 {#if $IsSignedIn}
@@ -320,7 +330,7 @@
                                 display: block; 
                                 max-width: 100%; position:absolute;
                                 overflow: hidden; 
-                                font-size: 12px;
+                                font-size: 15px;
                                 font-style: normal;
                                 font-weight: 500;
                                 line-height: 16px;
@@ -333,13 +343,12 @@
                         {#each ideas as idea}
                             <!-- svelte-ignore a11y-click-events-have-key-events -->
                             <!-- svelte-ignore a11y-no-static-element-interactions -->
-                            <div
+                            <a
                                 class="SideBarElement"
                                 style="padding-left: 22px;"
-                                on:click={async () => {
-                                    let pathOrigin = window.location.origin;
-                                    goto(pathOrigin + "/topic/" + idea.key);
-                                }}
+                                href={window.location.origin +
+                                    "/topic/" +
+                                    idea.key}
                             >
                                 {#await validateImageUrl(idea.data.images[0], "https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg")}
                                     <img
@@ -357,7 +366,7 @@
                                     />
                                 {/await}
                                 {#if isOpen}
-                                    <span
+                                    <a
                                         class="label"
                                         in:fade={{ duration: seconds * 1000 }}
                                         out:fade={{ duration: seconds * 1000 }}
@@ -365,27 +374,21 @@
                                             display: block; 
                                             max-width: 100%; position:absolute;
                                             overflow: hidden; "
+                                        href={window.location.origin +
+                                            "/topic/" +
+                                            idea.key}
                                         >{#if idea.data.title.length > maxChars}{idea.data.title.substring(
                                                 0,
                                                 maxChars,
                                             )}...{:else}{idea.data
-                                                .title}{/if}</span
+                                                .title}{/if}</a
                                     >
                                 {/if}
-                            </div>
+                            </a>
                         {/each}
                     {/await}
                 {/if}
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <span
-                    class="material-symbols-outlined"
-                    style="bottom:0px; padding: 7.5px 170px 6.5px 27px;"
-                    on:click={() => {
-                        toggleSidebar();
-                    }}
-                >
-                    {#if isOpen}arrow_circle_left{:else}arrow_circle_right{/if}
-                </span>
             </div>
         </div>
         <div class="SideBarFooter">
@@ -476,6 +479,18 @@
         </div>
     {/await}
 </div>
+<span
+    class="material-symbols-outlined SideBarToggle"
+    style=""
+    on:click={() => {
+        toggleSidebar();
+    }}
+>
+    {#if isOpen}chevron_left{:else}chevron_right{/if}
+</span>
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+
 <div class="AppMenuBar">
     <AppMenuBar />
 </div>
@@ -487,7 +502,7 @@
         overflow: hidden; /* Hide overflow to maintain the circular shape */
         width: 25px; /* Width of the images */
         height: 25px; /* Height of the images */
-        left: 21px;
+        left: 24px;
         border: 2px solid var(--primary-color);
         cursor: pointer;
         transition:
@@ -495,6 +510,41 @@
             width 0.1s ease,
             height 0.1s ease;
     }
+    .SideBarToggle {
+        position: absolute;
+        z-index: 5000; /* Ensure it's above the sidebar */
+        top: 70%;
+        max-width: 35px;
+        transition:
+            left 0.5s ease,
+            color 0.3s ease,
+            background-color 0.3s ease;
+        cursor: pointer;
+        background-color: var(--seventh-color);
+        border-radius: 50%;
+        padding: 2px;
+        font-size: 35px !important;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+
+        position: fixed; /* Fixed position */
+        left: 53px;
+    }
+    .SideBarToggle:hover {
+        background-color: var(--secondary-color);
+        color: var(--primary-color) !important;
+    }
+
+    /* Sidebar open state */
+    :global(.sidebar-open) .SideBarToggle {
+        left: 195px; /* Adjust for sidebar width */
+    }
+
+    /* Sidebar closed state */
+    :global(.sidebar-closed) .SideBarToggle {
+        left: 53px; /* Adjust for sidebar width */
+    }
+
     .recentIdeas {
         background-color: transparent;
         display: flex;
@@ -531,6 +581,7 @@
             "SideBarBody"
             "SideBarFooter";
         grid-area: Sidebar;
+        /* border-right: 2px solid var(--primary-color); */
         background-color: black;
         position: fixed; /* Fixed position */
         top: 0; /* Align to the top */
@@ -546,8 +597,9 @@
         transition: width 0.5s ease;
         gap: 10px;
         z-index: 3000;
-        overflow-x: hidden;
+        overflow-x: visible;
     }
+
     .SideBar.open {
         width: 220px; /* width of the opened sidebar */
         background-color: black;
@@ -578,7 +630,7 @@
             "GRAD" 0,
             "opsz" 48;
         cursor: pointer;
-        font-size: 16px;
+        font-size: 21px;
         font-style: normal;
     }
     .material-symbols-outlined:hover {
@@ -595,7 +647,7 @@
         justify-content: start;
         align-items: center;
         flex-direction: row;
-        font-size: 14px;
+        font-size: 16px;
         font-style: normal;
         font-weight: 700;
         line-height: 24px;
@@ -619,17 +671,7 @@
         overflow: hidden;
         transition: opacity 2s ease;
     }
-    .SidebarWrapper {
-        display: grid;
-        grid-template-columns: 1fr;
-        grid-template-rows: 0fr 0fr 0.3fr;
-        gap: 0px 0px;
-        grid-template-areas:
-            "SideBarHead"
-            "SideBarBody"
-            "SideBarFooter";
-        grid-area: Sidebar;
-    }
+
     .SideBarHead {
         grid-area: SideBarHead;
         height: fit-content;
@@ -638,6 +680,7 @@
         align-items: center;
         gap: 20px;
         padding-top: 20px;
+        overflow: hidden;
     }
     .SideBarHead img {
         width: 35px; /* Set a fixed width */
@@ -646,10 +689,11 @@
     }
     .SideBarBody {
         grid-area: SideBarBody;
+        overflow: hidden;
     }
     .SideBarFooter {
         grid-area: SideBarFooter;
-
+        overflow: hidden;
         padding: 11px 0px;
         gap: 20px;
         height: fit-content;
