@@ -5,6 +5,7 @@ use ic_cdk_timers::{clear_timer, set_timer_interval, TimerId};
 use junobuild_storage::http::types::HeaderField;
 use junobuild_storage::types::store::AssetKey;
 use mime::Mime;
+
 use serde_json::json;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -36,7 +37,7 @@ use junobuild_shared::types::list::ListParams;
 use junobuild_storage::well_known::update;
 use junobuild_utils::{decode_doc_data, encode_doc_data};
 use regex::Regex;
-use scheduled::delete_unused_images;
+use scheduled::{delete_orphan_ideas, delete_orphan_solutions, delete_unused_images};
 use types::interface::{
     Idea, IdeaRevenueCounter, IndexSearch, PledgeData, PledgeUser, Product, SetIdea, Solution,
     Topic, TotalPledging,
@@ -249,10 +250,9 @@ async fn eliminate_solution(key: String) -> Result<(), String> {
 }
 
 #[update]
-fn eliminate_idea(key: String) -> Result<(), String> {
+pub fn eliminate_idea(key: String) -> Result<(), String> {
     let caller = api::caller();
     let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
-
     // Step 1: Fetch the main solution document and check ownership
     let idea_doc = match get_doc_store(caller, "feature".to_string(), key.clone()) {
         Ok(Some(doc)) => {
@@ -820,8 +820,13 @@ fn create_or_update_topic(key: String, topic: Topic) -> Result<(), String> {
 
     // Step 2: Check if the topic document already exists in the database
     let is_update = match get_doc_store(caller, "idea".to_string(), key.clone()) {
-        Ok(Some(_)) => true, // Existing topic, proceed with update
-        Ok(None) => false,   // New topic, proceed with creation
+        Ok(Some(doc)) => {
+            if (doc.owner != caller) {
+                return Err(format!("Caller is not the owner of the document!"));
+            };
+            true
+        } // Existing topic, proceed with update
+        Ok(None) => false, // New topic, proceed with creation
         Err(err) => return Err(format!("Failed to retrieve topic: {}", err)),
     };
 
@@ -981,8 +986,13 @@ fn create_or_update_idea(key: String, idea: Idea, parent_idea_id: String) -> Res
     }
     // Step 2: Check if the idea document already exists in the database
     let is_update = match get_doc_store(caller, "feature".to_string(), key.clone()) {
-        Ok(Some(_)) => true, // Existing idea, proceed with update
-        Ok(None) => false,   // New idea, proceed with creation
+        Ok(Some(doc)) => {
+            if (doc.owner != caller) {
+                return Err(format!("Caller is not the owner of the document!"));
+            };
+            true
+        }
+        Ok(None) => false, // New idea, proceed with creation
         Err(err) => return Err(format!("Failed to retrieve idea: {}", err)),
     };
 
@@ -1191,8 +1201,13 @@ fn create_or_update_solution(
 
     // Step 2: Check if the solution document already exists in the database
     let is_update = match get_doc_store(caller, "solution".to_string(), key.clone()) {
-        Ok(Some(_)) => true, // Existing solution, proceed with update
-        Ok(None) => false,   // New solution, proceed with creation
+        Ok(Some(doc)) => {
+            if (doc.owner != caller) {
+                return Err(format!("Caller is not the owner of the document!"));
+            };
+            true
+        } // Existing solution, proceed with update
+        Ok(None) => false, // New solution, proceed with creation
         Err(err) => return Err(format!("Failed to retrieve solution: {}", err)),
     };
 
@@ -1431,16 +1446,33 @@ thread_local! {
 
 #[update]
 fn start_scheduled_tasks() -> String {
-    let image_deletion_interval = Duration::from_secs(86000); // 24 hours
+    let global_interval = Duration::from_secs(86_400); // 24 hours for all scheduled tasks
 
-    let timer_id = set_timer_interval(image_deletion_interval, || {
+    // Schedule delete_unused_images
+    let image_timer_id = set_timer_interval(global_interval, || {
         delete_unused_images();
     });
 
+    // Schedule delete_orphan_ideas
+    let orphan_ideas_timer_id = set_timer_interval(global_interval, || {
+        delete_orphan_ideas()
+            .unwrap_or_else(|e| ic_cdk::print(format!("Error deleting orphan ideas: {}", e)));
+    });
+
+    // Schedule delete_orphan_solutions
+    let orphan_solutions_timer_id = set_timer_interval(global_interval, || {
+        delete_orphan_solutions()
+            .unwrap_or_else(|e| ic_cdk::print(format!("Error deleting orphan solutions: {}", e)));
+    });
+
     SCHEDULED_TASKS.with(|tasks| {
-        tasks
-            .borrow_mut()
-            .insert("image_deletion".to_string(), timer_id);
+        let mut tasks = tasks.borrow_mut();
+        tasks.insert("image_deletion".to_string(), image_timer_id);
+        tasks.insert("orphan_idea_deletion".to_string(), orphan_ideas_timer_id);
+        tasks.insert(
+            "orphan_solution_deletion".to_string(),
+            orphan_solutions_timer_id,
+        );
     });
 
     "Scheduled tasks started".to_string()
@@ -1475,8 +1507,18 @@ fn query_scheduled_tasks_state() -> String {
 }
 
 #[update]
-fn trying_log_function() -> Result<(), String> {
+fn trigger_delete_unused_images() -> Result<(), String> {
     return delete_unused_images();
+}
+
+#[update]
+fn trigger_delete_orphan_ideas() -> Result<(), String> {
+    return delete_orphan_ideas();
+}
+
+#[update]
+fn trigger_delete_orphan_solutions() -> Result<(), String> {
+    return delete_orphan_solutions();
 }
 
 include_satellite!();
