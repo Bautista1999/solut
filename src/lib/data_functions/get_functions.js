@@ -686,6 +686,10 @@ Receives a username.
  * @param {string} userKey
  */
 export async function usernameExists(username,userKey) {
+    if(username==""){
+       
+        return false;
+    }
     let docs = await listDocs({
         collection: "user",
         filter: {
