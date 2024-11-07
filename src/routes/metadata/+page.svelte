@@ -23,7 +23,9 @@
     queryScheduledTasksState,
     startScheduledTasks,
     stopScheduledTasks,
-    tryingLogFunction,
+    triggerDeleteOrphanIdeas,
+    triggerDeleteOrphanSolutions,
+    triggerDeleteUnusedImages,
   } from "../../declarations/satellite/satellite.api";
   import { signIn, NFIDProvider, authSubscribe } from "@junobuild/core";
   import SearchBarLarger from "$lib/components/SearchBarLarger.svelte";
@@ -473,13 +475,13 @@
       <BasicRoundedButton
         disabledCondition={null}
         someFunction={startTasks}
-        msg={"Start Image Deletion Task"}
+        msg={"Schedule Daily Functions"}
       />
 
       <BasicRoundedButton
         disabledCondition={null}
         someFunction={stopTasks}
-        msg={"Stop Image Deletion Task"}
+        msg={"Stop Daily Functions"}
       />
 
       <BasicRoundedButton
@@ -491,9 +493,23 @@
       <BasicRoundedButton
         disabledCondition={null}
         someFunction={async () => {
-          console.log(await tryingLogFunction());
+          console.log(await triggerDeleteUnusedImages());
         }}
         msg={"Trigger delete unused images function"}
+      />
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          console.log(await triggerDeleteOrphanIdeas());
+        }}
+        msg={"Trigger delete orphan ideas function"}
+      />
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          console.log(await triggerDeleteOrphanSolutions());
+        }}
+        msg={"Trigger delete orphan solutions function"}
       />
 
       <p>Task Status: {taskState}</p>
