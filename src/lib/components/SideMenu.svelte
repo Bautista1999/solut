@@ -526,7 +526,7 @@
         font-size: 35px !important;
         color: var(--primary-color);
         border: 2px solid var(--primary-color);
-
+        overflow: hidden;
         position: fixed; /* Fixed position */
         left: 53px;
     }
@@ -726,6 +726,9 @@
         }
         .AppMenuBar {
             display: block;
+        }
+        .SideBarToggle {
+            display: none;
         }
     }
 </style>
