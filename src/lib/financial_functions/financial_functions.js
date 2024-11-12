@@ -13,7 +13,8 @@ import  {idlFactory as Escrow} from "$lib/declarations/escrow.declarations.did";
 import { getIdeaIdBySolution, getImplementedFeaturesOfSolution, getUserKey } from "$lib/data_functions/get_functions";
 import { createNotification, followElement, updateSolutionStatus } from "$lib/data_functions/create_functions";
 import { trackEvent } from "@junobuild/analytics";
-import { deletePledge } from "../../declarations/satellite/satellite.api";
+import { deletePledge, getPledgedBalance, getUserActivePledges } from "../../declarations/satellite/satellite.api";
+import { UserKey } from "$lib/stores/other_stores";
 
 // import("../declarations/juno.declarations.did.js")._SERVICE.set_doc;
 /**
@@ -846,4 +847,19 @@ export async function getAllowance(){
  */
 export async function deletePledgeFromProject(id){
     return await deletePledge(id);
+}
+
+export async function getTotalPledgedBalance(){
+    let key = await getUserKey(); // Extract the value of the store using $
+    let result = await getPledgedBalance(key);
+    if('Ok' in result){
+        return (Number(result.Ok)/1e8)
+    }else{
+        return result.Err;
+    }
+}
+
+export async function getActivePledges(){
+    let key = await getUserKey(); // Extract the value of the store using $
+    return await getUserActivePledges(key);
 }
