@@ -118,7 +118,7 @@ fn parse_description(description: &str) -> Option<(String, String)> {
 }
 
 // Helper function to extract the parent topic ID from the description
-fn extract_parent_topic_id(description: &str) -> Option<String> {
+pub fn extract_parent_topic_id(description: &str) -> Option<String> {
     // let prefix = "idea_id:";
     // if description.starts_with(prefix) {
     //     Some(description[prefix.len()..].to_string())
