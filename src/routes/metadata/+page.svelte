@@ -20,6 +20,7 @@
     eliminateIdea,
     eliminateSolution,
     eliminateTopic,
+    getUserActivePledges,
     queryScheduledTasksState,
     startScheduledTasks,
     stopScheduledTasks,
@@ -32,6 +33,10 @@
   import SearchBar from "$lib/components/SearchBar.svelte";
   import ImageUploader from "$lib/components/ImageUploader.svelte";
   import QuillTextEditor from "$lib/components/QuillTextEditor.svelte";
+  import {
+    getActivePledges,
+    getTotalPledgedBalance,
+  } from "$lib/financial_functions/financial_functions";
 
   export let title;
   export let description;
@@ -518,6 +523,24 @@
     <div class="Field">
       <h1 style="margin:0px;">Quill text editor</h1>
       <QuillTextEditor />
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">Active pledges</h1>
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          console.log(await getActivePledges());
+        }}
+        msg={"Get those active pledges!"}
+      />
+
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          console.log(await getTotalPledgedBalance());
+        }}
+        msg={"Get pledged balance!"}
+      />
     </div>
   {/if}
 </div>
