@@ -16,6 +16,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use url::Url;
 mod scheduled;
 mod types;
+mod user_information;
 use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
 use ic_cdk::api::{self, set_global_timer, time};
 use ic_cdk_macros::{query, update};
