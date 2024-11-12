@@ -16,6 +16,15 @@ export interface Milestone {
   'date' : bigint,
   'description' : string,
 }
+export interface PledgeData {
+  'feature_id' : [] | [string],
+  'expected_amount' : bigint,
+  'user' : string,
+  'idea_id' : string,
+  'target' : string,
+  'amount' : bigint,
+  'doc_key' : string,
+}
 export interface Product {
   'owner' : [] | [Principal],
   'link' : string,
@@ -28,6 +37,10 @@ export interface Product {
 export type Result = { 'Ok' : null } |
   { 'Err' : string };
 export type Result_1 = { 'Ok' : string } |
+  { 'Err' : string };
+export type Result_2 = { 'Ok' : bigint } |
+  { 'Err' : string };
+export type Result_3 = { 'Ok' : Array<PledgeData> } |
   { 'Err' : string };
 export interface SetIdea { 'key' : string, 'idea' : Idea }
 export interface Solution {
@@ -52,6 +65,8 @@ export interface _SERVICE {
   'eliminate_idea' : ActorMethod<[string], Result>,
   'eliminate_solution' : ActorMethod<[string], Result>,
   'eliminate_topic' : ActorMethod<[string], Result>,
+  'get_pledged_balance' : ActorMethod<[string], Result_2>,
+  'get_user_active_pledges' : ActorMethod<[string], Result_3>,
   'query_scheduled_tasks_state' : ActorMethod<[], string>,
   'start_scheduled_tasks' : ActorMethod<[], string>,
   'stop_scheduled_tasks' : ActorMethod<[], string>,

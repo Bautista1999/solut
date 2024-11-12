@@ -35,6 +35,20 @@ export const idlFactory = ({ IDL }) => {
     'images' : IDL.Vec(IDL.Text),
   });
   const Result_1 = IDL.Variant({ 'Ok' : IDL.Text, 'Err' : IDL.Text });
+  const Result_2 = IDL.Variant({ 'Ok' : IDL.Nat64, 'Err' : IDL.Text });
+  const PledgeData = IDL.Record({
+    'feature_id' : IDL.Opt(IDL.Text),
+    'expected_amount' : IDL.Nat64,
+    'user' : IDL.Text,
+    'idea_id' : IDL.Text,
+    'target' : IDL.Text,
+    'amount' : IDL.Nat64,
+    'doc_key' : IDL.Text,
+  });
+  const Result_3 = IDL.Variant({
+    'Ok' : IDL.Vec(PledgeData),
+    'Err' : IDL.Text,
+  });
   return IDL.Service({
     'build_version' : IDL.Func([], [IDL.Text], ['query']),
     'create_ideas' : IDL.Func([IDL.Vec(SetIdea), IDL.Text], [Result], []),
@@ -59,6 +73,8 @@ export const idlFactory = ({ IDL }) => {
     'eliminate_idea' : IDL.Func([IDL.Text], [Result], []),
     'eliminate_solution' : IDL.Func([IDL.Text], [Result], []),
     'eliminate_topic' : IDL.Func([IDL.Text], [Result], []),
+    'get_pledged_balance' : IDL.Func([IDL.Text], [Result_2], ['query']),
+    'get_user_active_pledges' : IDL.Func([IDL.Text], [Result_3], ['query']),
     'query_scheduled_tasks_state' : IDL.Func([], [IDL.Text], ['query']),
     'start_scheduled_tasks' : IDL.Func([], [IDL.Text], []),
     'stop_scheduled_tasks' : IDL.Func([], [IDL.Text], []),

@@ -1,4 +1,4 @@
-import type {_SERVICE as SatelliteActor, Idea, Milestone, Product, SetIdea, Solution, Result, Result_1} from './satellite.did';
+import type {_SERVICE as SatelliteActor, Idea, Milestone, PledgeData, Product, SetIdea, Solution, Result, Result_1, Result_2, Result_3} from './satellite.did';
 import {idlFactory} from './satellite.factory.did.js';
 import {getSatelliteExtendedActor} from '@junobuild/core-peer';
 
@@ -88,6 +88,22 @@ export const eliminateTopic = async (value0: string): Promise<Result> => {
 	});
 
 	return await eliminate_topic(value0);
+}
+
+export const getPledgedBalance = async (value0: string): Promise<Result_2> => {
+	const {get_pledged_balance} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await get_pledged_balance(value0);
+}
+
+export const getUserActivePledges = async (value0: string): Promise<Result_3> => {
+	const {get_user_active_pledges} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await get_user_active_pledges(value0);
 }
 
 export const queryScheduledTasksState = async (): Promise<string> => {
