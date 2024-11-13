@@ -855,7 +855,8 @@ export async function getTotalPledgedBalance(){
     if('Ok' in result){
         return (Number(result.Ok)/1e8)
     }else{
-        return result.Err;
+        alert(result.Err);
+        return 0;
     }
 }
 

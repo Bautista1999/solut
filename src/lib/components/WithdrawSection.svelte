@@ -152,6 +152,7 @@
         border: 2px solid var(--primary-color);
         padding: 10px;
         margin-block: 15px;
+        border-radius: 8px;
     }
     .errorPart {
         max-width: 250px;
