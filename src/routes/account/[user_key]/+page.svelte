@@ -483,24 +483,18 @@
             <Wallet {wallet_address} {user_name} principal={userKey} />
             <div class="Balance">
                 Balance
-                {#await getUserBalance(userKey)}
-                    <br />
-                    <br />
-                    <MagicalDotsAbsoluteSmall />
-                {:then data}
-                    <BalanceChart
-                        currencies={[
-                            {
-                                image: "https://cryptologos.cc/logos/internet-computer-icp-logo.png", // Replace with your image path
-                                name: "ICP",
-                                value: 12.98,
-                                balance: Number(data),
-                            },
-                        ]}
-                    />
-                {:catch error}
-                    <p>Error: {error.message}</p>
-                {/await}
+
+                <BalanceChart
+                    currencies={[
+                        {
+                            image: "https://cryptologos.cc/logos/internet-computer-icp-logo.png", // Replace with your image path
+                            name: "ICP",
+                            value: 12.98,
+                            balance: 0,
+                        },
+                    ]}
+                />
+
                 Withdraw your tokens
                 <WithdrawSection />
             </div>

@@ -1,30 +1,16 @@
 <script>
-    import { roundToFiveDecimals } from "$lib/financial_functions/financial_functions";
+    import {
+        getTotalPledgedBalance,
+        getUserBalance,
+        roundToFiveDecimals,
+    } from "$lib/financial_functions/financial_functions";
+    import { UserKey } from "$lib/stores/other_stores";
 
     // You would populate this with data, possibly from a backend API call
     /**
      * @type {string | any[]}
      */
-    export let currencies = [
-        // {
-        //     image: "https://media.istockphoto.com/id/1139020309/vector/bitcoin-internet-money-icon-vector.jpg?s=612x612&w=0&k=20&c=vcRUEDzhndMOctdM7PN1qmipo5rY_aOByWFW0IkW8bs=",
-        //     name: "BTC",
-        //     value: 62307.9,
-        //     balance: 0,
-        // },
-        // {
-        //     image: "https://cryptologos.cc/logos/internet-computer-icp-logo.png", // Replace with your image path
-        //     name: "ICP",
-        //     value: 12.98,
-        //     balance: 17.1,
-        // },
-        // {
-        //     image: "https://download.logo.wine/logo/Ethereum/Ethereum-Logo.wine.png", // Replace with your image path
-        //     name: "ETH",
-        //     value: 3459.42,
-        //     balance: 0,
-        // },
-    ];
+    export let currencies = [];
     let total = 0;
     for (let i = 0; i < currencies.length; i++) {
         total += roundToThreeDecimals(currencies[i].balance);
@@ -36,15 +22,50 @@
     function roundToThreeDecimals(number) {
         return Math.round(number * 100) / 100;
     }
+
+    let realBalance = 0;
+    let pledgedBalance = 0;
+    $: availableBalance = 0;
+    $: if (realBalance < pledgedBalance) {
+        availableBalance = 0;
+    } else {
+        availableBalance = realBalance - pledgedBalance;
+    }
+    async function getBalanceICP() {
+        realBalance = roundToThreeDecimals(await getUserBalance($UserKey));
+    }
+
+    async function getTotalPledgedICP() {
+        pledgedBalance = roundToThreeDecimals(await getTotalPledgedBalance());
+    }
 </script>
 
 <div class="BalanceSection">
     <div class="Balance">
-        <p>
-            {total + " ICP"}
+        <h3 class="BalanceTitle">Balance</h3>
+        {#await getBalanceICP()}
+            <p class="BalanceNumber">-- Loading... --</p>
+        {:then data}
+            <p class="BalanceNumber">
+                {roundToThreeDecimals(realBalance) + " ICP"}
+            </p>
+        {/await}
+    </div>
+    <div class="Balance PledgeHover">
+        <h3 class="BalanceTitle">Pledged Balance</h3>
+        <p class="BalanceNumber">
+            {#await getTotalPledgedICP()}
+                -- Loading... --
+            {:then data}
+                {roundToThreeDecimals(pledgedBalance) + " ICP"}
+            {/await}
         </p>
-        <p style="font-size: small; font-weight: 100;">
-            From all accounts in total.
+    </div>
+    <div class="Balance">
+        <h3 class="BalanceTitle">Available Balance</h3>
+
+        <p class="BalanceNumber">
+            {availableBalance + " ICP"}
         </p>
     </div>
 
@@ -63,13 +84,26 @@
                     {curr.name}</td
                 >
                 <!-- <td>{curr.value}</td> -->
-                <td>{roundToFiveDecimals(curr.balance)}</td>
+                <td>{roundToFiveDecimals(realBalance)}</td>
             </tr>
         {/each}
     </table>
 </div>
 
 <style>
+    .BalanceTitle {
+        margin: 0px;
+        font-size: large;
+        margin-bottom: 6px;
+    }
+
+    .BalanceNumber {
+        font-size: large;
+        /* background-color: var(--primary-color);
+        color: var(--tertiary-color); */
+        border-radius: 8px;
+        padding: 0px;
+    }
     .transaction-table {
         width: 100%;
         border-collapse: collapse;
@@ -104,14 +138,20 @@
     .Balance {
         text-align: left;
         font-size: larger;
-        width: 95%;
-        padding-block: 5px;
+        width: 100%;
+
+        padding: 5px;
+        transition:
+            background-color ease 0.3s,
+            color ease 0.3s;
     }
+
     .BalanceSection {
         width: 90%;
         background-color: var(--tertiary-color);
         border: 2px solid var(--primary-color);
         padding: 10px;
         margin-block: 15px;
+        border-radius: 8px;
     }
 </style>
