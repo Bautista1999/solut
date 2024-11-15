@@ -55,6 +55,8 @@
     import EditImagesSection from "$lib/components/EditImagesSection.svelte";
     import MagicalDots from "$lib/components/magicalDots.svelte";
     import { browser } from "$app/environment";
+    import FloatingHelpText from "$lib/components/FloatingHelpText.svelte";
+    import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
 
     /** @type {import('./$types').PageData} */
     export let data;
@@ -250,6 +252,14 @@
 <div class="body">
     <div class="content">
         {#if !isLoading && !$success && !ideaNonExistent}
+            <FloatingHelpText
+                msg={"What is Solutio?"}
+                videoUrl={"https://youtube.com/embed/l3j0_dh60-0"}
+                title={"What is Solutio?"}
+                description={"Solutio is a platform to find like-minded people that share a common issue and crowdfund a solution together."}
+                learnMoreLink={"https://home.solutio.one/"}
+                NotSignedInCondition={true}
+            />
             <div class="container">
                 <div class="Subtitle">
                     <SubtitleSection
