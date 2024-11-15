@@ -12,6 +12,7 @@
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import { nanoid } from "nanoid";
+    import FloatingHelpText from "$lib/components/FloatingHelpText.svelte";
 
     let category = "";
     /**
@@ -137,6 +138,16 @@
     });
 </script>
 
+<br />
+<FloatingHelpText
+    msg={"How to create a topic?"}
+    videoUrl={"https://youtube.com/embed/l3j0_dh60-0"}
+    title={"How to create a topic?"}
+    description={"Fundamentally, a topic is a challenge you are having and that could be easily be solved with the right software, or bug fix. So, in essence, here the objective is to describe the core issue you are facing."}
+    learnMoreLink={"https://home.solutio.one/"}
+    NotSignedInCondition={false}
+    minimumWidth={250}
+/>
 <div class="container-form">
     {#if !isLoading && !success && !error}
         <WizardForm

@@ -16,6 +16,7 @@
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { getUserKey } from "$lib/data_functions/get_functions";
     import WizardForm from "../../createtopic/WizardForm.svelte";
+    import FloatingHelpText from "$lib/components/FloatingHelpText.svelte";
 
     let key = "";
     /**
@@ -168,6 +169,16 @@
     let ideas = [];
 </script>
 
+<br />
+<FloatingHelpText
+    msg={"How to create an idea?"}
+    videoUrl={"https://youtube.com/embed/l3j0_dh60-0"}
+    title={"How to create an idea?"}
+    description={"An idea could be anything that contributes to the final solution of the topic. This could be an idea of how to fix it, UI images, feature requests, a requirement for the final solution, etc.  Users earn from ideas implemented in the final solution, so do your best! "}
+    learnMoreLink={"https://home.solutio.one/"}
+    NotSignedInCondition={false}
+    minimumWidth={250}
+/>
 <div class="container-form">
     {#if !isLoading && !success && !error}
         <WizardForm

@@ -22,6 +22,7 @@
         getUserKey,
     } from "$lib/data_functions/get_functions";
     import WizardForm from "../../createtopic/WizardForm.svelte";
+    import FloatingHelpText from "$lib/components/FloatingHelpText.svelte";
 
     /** @type {import('./$types').PageData} */
     export let data;
@@ -240,6 +241,16 @@
     let ideasTitle = [];
 </script>
 
+<br />
+<FloatingHelpText
+    msg={"How to create a solution?"}
+    videoUrl={"https://youtube.com/embed/l3j0_dh60-0"}
+    title={"How to create a solution?"}
+    description={"Fundamentally, a solution is an app or software fix that solves a certain issue proposed by the community. So here the job is to provide the software, giving details about the project itself."}
+    learnMoreLink={"https://home.solutio.one/"}
+    NotSignedInCondition={false}
+    minimumWidth={270}
+/>
 <div class="container-form">
     {#if !isLoading && !success && !error}
         <WizardForm
