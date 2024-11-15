@@ -34,6 +34,7 @@
         justify-content: center; /* Horizontally center the items in the container */
         align-items: center; /* Vertically align the items in the middle */
         gap: 5px;
+        border-radius: 8px;
     }
     .material-symbols-outlined {
         font-variation-settings:
