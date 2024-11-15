@@ -266,6 +266,7 @@
         <QuillTextEditor
             maxCharacters={charLimit.description}
             bind:description
+            {updateProgress}
         />
 
         <div class="field-info">
