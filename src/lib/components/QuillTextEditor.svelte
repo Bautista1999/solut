@@ -11,6 +11,7 @@
     let editor;
     let currentTextLength = 0;
     let showError = false;
+    export let updateProgress = () => {};
 
     onMount(() => {
         const editorContainer = document.getElementById("editor-container");
@@ -33,6 +34,9 @@
 
         editor.on("text-change", () => {
             const plainTextContent = editor.getText().trim();
+            if (plainTextContent != "") {
+                updateProgress();
+            }
             const htmlContent = editor.root.innerHTML;
 
             currentTextLength = plainTextContent.length;
