@@ -54,7 +54,11 @@
             document.removeEventListener("keydown", handleEscapeKey);
         } else {
             // Expand into modal dimensions
-            width.set(600);
+            if (window.innerWidth > 700) {
+                width.set(600);
+            } else {
+                width.set(400);
+            }
             height.set(450);
             borderRadius.set(12);
 
@@ -105,7 +109,7 @@
     {#if isModal}
         <div class="modal-content">
             <h2 style="margin: 0; color:var(--primary-color)">{title}</h2>
-            <p style="width: {550}px;">{description}</p>
+            <p style="">{description}</p>
             <iframe
                 src={videoUrl}
                 frameborder="0"
@@ -315,20 +319,5 @@
     }
 
     @media (max-width: 480px) {
-        .button {
-            width: fit-content;
-            height: fit-content;
-            padding-inline: 15px;
-            padding-block: 6px;
-
-            cursor: pointer;
-            font-size: medium;
-            font-family: Barlow;
-            display: flex; /* Set the display to flex to enable flexbox properties */
-            flex-direction: row; /* Align children in a row (horizontal alignment) */
-            justify-content: center; /* Horizontally center the items in the container */
-            align-items: center; /* Vertically align the items in the middle */
-            gap: 5px;
-        }
     }
 </style>
