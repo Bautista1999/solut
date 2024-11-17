@@ -140,7 +140,7 @@
 
 <main>
     <section class="visibilitySlogan slogan-section">
-        <h1 class="slogan">
+        <h1 class="slogan" style="margin: 0px;">
             A genius idea can come from <span
                 style="color: var(--primary-color);">anywhere.</span
             ><br />Welcome to Solutio.
@@ -156,9 +156,9 @@
                 {closeSearchPanel}
             />
         </div>
-        <div class="tagContainer">
+        <!-- <div class="tagContainer">
             <TagContainer bind:keywords bind:firstKeys />
-        </div>
+        </div> -->
     </section>
     <section class="search-bar">
         <SearchBar
@@ -296,7 +296,7 @@
     .slogan {
         animation: fadeInDown 2s ease-out forwards;
         font-size: 2.5em;
-        margin-bottom: 0.5em;
+        margin-bottom: 0em;
         color: var(
             --tertiary-color
         ); /* ensure it's readable on any background */
