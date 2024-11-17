@@ -35,13 +35,18 @@
         editor.on("text-change", () => {
             const plainTextContent = editor.getText().trim();
             if (plainTextContent != "") {
-                updateProgress();
-            }
-            const htmlContent = editor.root.innerHTML;
+                const htmlContent = editor.root.innerHTML;
 
-            currentTextLength = plainTextContent.length;
-            showError = htmlContent.length > maxCharacters;
-            description = htmlContent;
+                currentTextLength = plainTextContent.length;
+                showError = htmlContent.length > maxCharacters;
+                description = htmlContent;
+                updateProgress();
+                return;
+            } else {
+                description = "";
+                updateProgress();
+                return;
+            }
         });
     });
 </script>
