@@ -1,41 +1,22 @@
-use bytes::Bytes;
-use candid::{CandidType, Int, Nat, Principal};
-
+use candid::{CandidType, Principal};
 use ic_cdk_timers::{clear_timer, set_timer_interval, TimerId};
 use junobuild_storage::http::types::HeaderField;
 use junobuild_storage::types::store::AssetKey;
-use mime::Mime;
-
-use serde_json::json;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::convert::TryFrom;
-use std::iter::Filter;
-
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
-use url::Url;
+use std::time::{Duration};
 mod scheduled;
 mod types;
 mod user_information;
-use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
 use ic_cdk::api::{self, set_global_timer, time};
 use ic_cdk_macros::{query, update};
-use junobuild_macros::{
-    assert_delete_asset, assert_delete_doc, assert_set_doc, assert_upload_asset, on_delete_asset,
-    on_delete_doc, on_delete_many_assets, on_delete_many_docs, on_set_doc, on_set_many_docs,
-    on_upload_asset,
-};
+use junobuild_macros::{on_set_doc};
+use junobuild_satellite::{delete_asset_store, delete_doc_store, get_doc_store, log, set_asset_handler, set_doc_store, DelDoc, Key, SetDoc};
 use junobuild_satellite::{
-    count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, get_doc_store,
-    list_docs_store, log, set_asset_handler, set_doc_store, DelDoc, Key, SetDoc,
-};
-use junobuild_satellite::{
-    include_satellite, AssertDeleteAssetContext, AssertDeleteDocContext, AssertSetDocContext,
-    AssertUploadAssetContext, OnDeleteAssetContext, OnDeleteDocContext, OnDeleteManyAssetsContext,
-    OnDeleteManyDocsContext, OnSetDocContext, OnSetManyDocsContext, OnUploadAssetContext,
+    include_satellite, OnSetDocContext,
 };
 use junobuild_shared::types::list::ListParams;
-use junobuild_storage::well_known::update;
 use junobuild_utils::{decode_doc_data, encode_doc_data};
 use regex::Regex;
 use scheduled::{delete_orphan_ideas, delete_orphan_solutions, delete_unused_images};
@@ -53,56 +34,6 @@ async fn on_set_doc(_context: OnSetDocContext) -> Result<(), String> {
 fn create_pledge_validation_test() -> Result<(), String> {
     log("The thing executed.".to_string());
     return Err("We encountered an issue".to_string());
-}
-
-#[on_set_many_docs]
-async fn on_set_many_docs(_context: OnSetManyDocsContext) -> Result<(), String> {
-    Ok(())
-}
-
-#[on_delete_doc]
-async fn on_delete_doc(_context: OnDeleteDocContext) -> Result<(), String> {
-    Ok(())
-}
-
-#[on_delete_many_docs]
-async fn on_delete_many_docs(_context: OnDeleteManyDocsContext) -> Result<(), String> {
-    Ok(())
-}
-
-#[on_upload_asset]
-async fn on_upload_asset(_context: OnUploadAssetContext) -> Result<(), String> {
-    Ok(())
-}
-
-#[on_delete_asset]
-async fn on_delete_asset(_context: OnDeleteAssetContext) -> Result<(), String> {
-    Ok(())
-}
-
-#[on_delete_many_assets]
-async fn on_delete_many_assets(_context: OnDeleteManyAssetsContext) -> Result<(), String> {
-    Ok(())
-}
-
-#[assert_set_doc]
-fn assert_set_doc(_context: AssertSetDocContext) -> Result<(), String> {
-    Ok(())
-}
-
-#[assert_delete_doc]
-fn assert_delete_doc(_context: AssertDeleteDocContext) -> Result<(), String> {
-    Ok(())
-}
-
-#[assert_upload_asset]
-fn assert_upload_asset(_context: AssertUploadAssetContext) -> Result<(), String> {
-    Ok(())
-}
-
-#[assert_delete_asset]
-fn assert_delete_asset(_context: AssertDeleteAssetContext) -> Result<(), String> {
-    Ok(())
 }
 
 #[update]
@@ -1407,10 +1338,7 @@ pub fn upload_image(
 
     let headers = vec![HeaderField("content-type".to_string(), content_type)];
 
-    // Bypass UTF-8 check using from_utf8_unchecked
-    let binary_data_as_str = unsafe { str::from_utf8_unchecked(&image_data) };
-
-    match set_asset_handler(&asset_key, binary_data_as_str, &headers) {
+    match set_asset_handler(&asset_key, &image_data, &headers) {
         Ok(()) => Ok(format!("https://solutio.one{}", full_path)),
         Err(e) => Err(format!("Failed to upload image: {}", e)),
     }
