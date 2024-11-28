@@ -19,6 +19,7 @@
 <Modal
     bind:isOpen={$confirmationModal}
     close={() => {
+        error = false;
         confirmationModal.set(false);
     }}
     style={"width:350px;"}
@@ -29,13 +30,14 @@
         {:else if success}
             <SuccessModalNew message={successMsg} />
         {:else if error}
-            <ErrorModalNew
+            <!-- <ErrorModalNew
                 error={errorMsg}
                 someFunction={() => {
                     error = false;
                     confirmationModal.set(false);
                 }}
-            />
+            /> -->
+            <h3>Error!</h3>
         {:else}
             <div class="elements">
                 <p style="font-size: larger; ">{message}</p>
