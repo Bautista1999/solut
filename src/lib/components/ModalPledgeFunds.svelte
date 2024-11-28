@@ -6,6 +6,8 @@
     import BasicButtonDarkSmall from "./BasicButton_Dark_Small.svelte";
     import {
         CreatePledge,
+        CreatePledgeNew,
+        getUserAvailableBalance,
         getUserBalance,
     } from "$lib/financial_functions/financial_functions";
     import { onMount } from "svelte";
@@ -15,6 +17,7 @@
     import LoadingModalNew from "./LoadingModalNew.svelte";
     import ErrorModalNew from "./ErrorModalNew.svelte";
     import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsolut.svelte";
+    import { getAvailableBalance } from "../../declarations/satellite/satellite.api";
     let amount = 0;
     let max = 0;
     let isLoading = false;
@@ -45,14 +48,14 @@
     }}
 >
     <h2>Pledge funds</h2>
-    {#await getUserBalance(userKey)}
+    {#await getUserAvailableBalance()}
         <MagicalDotsAbsoluteSmall />
         <br />
         <p style="text-align: center;">Loading wallet...</p>
     {:then data}
         <p>
-            Right now, you have {data} ICP tokens in your wallet. If you wish to
-            add more, go to your
+            Right now, you have {data} available ICP tokens in your wallet. If you
+            wish to add more, go to your
             <a
                 href="/account/{$UserKey}"
                 style="color:blue; text-decoration:underline;">profile</a
@@ -97,7 +100,20 @@
                     someFunction={async () => {
                         isLoading = true;
                         try {
-                            let pledgeCreation = await CreatePledge(
+                            if (amount > data) {
+                                alert(
+                                    "ERROR: Cant pledge more than your available balance.",
+                                );
+                                isLoading = false;
+                                return;
+                            }
+                            // let pledgeCreation = await CreatePledge(
+                            //     idea_id,
+                            //     feature_id,
+                            //     amount,
+                            //     userKey,
+                            // );
+                            let pledgeCreation = await CreatePledgeNew(
                                 idea_id,
                                 feature_id,
                                 amount,
@@ -108,6 +124,16 @@
                                 window.location.reload();
                             }, 3000);
                         } catch (e) {
+                            if (
+                                String(e).includes(
+                                    "signature could not be verified",
+                                )
+                            ) {
+                                success = true;
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 3000);
+                            }
                             isLoading = false;
                             error = true;
                             errorMsg = String(e);
