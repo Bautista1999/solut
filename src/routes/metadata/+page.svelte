@@ -20,7 +20,10 @@
     eliminateIdea,
     eliminateSolution,
     eliminateTopic,
+    getAvailableBalance,
     getUserActivePledges,
+    getUserRealBalance,
+    getUserReputation,
     queryScheduledTasksState,
     startScheduledTasks,
     stopScheduledTasks,
@@ -37,6 +40,9 @@
     getActivePledges,
     getTotalPledgedBalance,
   } from "$lib/financial_functions/financial_functions";
+  import { UserKey } from "$lib/stores/other_stores";
+  import { AccountIdentifier } from "@dfinity/ledger-icp";
+  import { Principal } from "@dfinity/principal";
 
   export let title;
   export let description;
@@ -316,6 +322,16 @@
     taskState = state;
     console.log(state);
   }
+  $: principalInput = "";
+  $: hexOutput = "";
+  async function fromPrincipaltoHex() {
+    const principal = Principal.fromText(principalInput);
+    const accountIdentifier = AccountIdentifier.fromPrincipal({
+      principal: principal,
+    });
+    hexOutput = accountIdentifier.toHex();
+    return hexOutput;
+  }
 </script>
 
 <svelte:head>
@@ -541,6 +557,65 @@
         }}
         msg={"Get pledged balance!"}
       />
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">User balance</h1>
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          console.log(await getUserRealBalance($UserKey));
+        }}
+        msg={"Get Signed in user balance"}
+      />
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">User available balance</h1>
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          console.log(await getAvailableBalance($UserKey));
+        }}
+        msg={"Get Signed in user available balance"}
+      />
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">User reputation</h1>
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          let result = 0;
+          try {
+            let reputation = await getUserReputation(
+              Principal.fromText($UserKey),
+            );
+            if ("Ok" in reputation) {
+              result = Number(reputation.Ok);
+            } else {
+              alert("Error: " + String(reputation.Err));
+            }
+          } catch (e) {
+            alert("Error: " + String(e));
+          }
+          console.log(result);
+        }}
+        msg={"Get Signed in user reputation"}
+      />
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">From Principal to HEX</h1>
+      <input
+        class="InputTextSmall"
+        placeholder="Paste your principal here..."
+        bind:value={principalInput}
+      />
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          console.log(await fromPrincipaltoHex());
+        }}
+        msg={"Transform principal"}
+      />
+      <p>Output: {hexOutput}</p>
     </div>
   {/if}
 </div>
