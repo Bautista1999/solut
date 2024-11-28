@@ -2,8 +2,9 @@
     import { goto } from "$app/navigation";
     import { Confetti } from "svelte-canvas-confetti";
     import BasicButton from "./basicButton.svelte";
-    export let someFunction = () => {};
     export let message = "";
+    export let someFunction = () => {};
+    export let buttonText = "Check your new creation!";
 
     // Add any script logic needed for the under construction page
 </script>
@@ -15,7 +16,7 @@
     <br />
     <br />
     <BasicButton
-        msg={"Check your new creation"}
+        msg={buttonText}
         icon={"next_plan"}
         someFunction={() => {
             someFunction();
