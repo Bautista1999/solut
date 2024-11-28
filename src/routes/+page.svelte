@@ -11,11 +11,7 @@
     import MagicalDotsAbsolut from "$lib/components/MagicalDotsAbsolut.svelte";
     import { onMount } from "svelte";
     $: firstKeys = [""];
-    let stats = [
-        { label: "Ideas Created", count: 320, icon: "lightbulb" },
-        { label: "Projects Completed", count: 85, icon: "check_circle" },
-        { label: "Total Revenue", count: "150K", icon: "monetization_on" },
-    ];
+
     $: searchText = "";
 
     /**
