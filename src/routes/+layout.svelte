@@ -8,7 +8,7 @@
   import { onMount, onDestroy } from "svelte";
   import { updateNotificationCount } from "$lib/stores/notifications";
   import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
-  import { initOrbiter } from "@junobuild/analytics";
+  // import { initOrbiter } from "@junobuild/analytics";
   import { onLCP, onINP, onCLS } from "web-vitals";
 
   onCLS(console.log);
@@ -17,10 +17,10 @@
 
   const init = async () => {
     await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
-    await initOrbiter({
-      satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
-      orbiterId: "vwcao-hiaaa-aaaal-ajlpq-cai",
-    });
+    // await initOrbiter({
+    //   satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
+    //   orbiterId: "vwcao-hiaaa-aaaal-ajlpq-cai",
+    // });
   };
   import { afterNavigate } from "$app/navigation";
 
