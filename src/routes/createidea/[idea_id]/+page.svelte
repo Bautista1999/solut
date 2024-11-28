@@ -162,6 +162,7 @@
             parentIdeaKey = data.params.idea_id;
             parentIdeaTitle = parentDoc.data.title;
         }
+        loadingMsg = "Creating idea...";
     });
     /**
      * @type {never[]}

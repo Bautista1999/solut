@@ -297,6 +297,7 @@
         someFunction={() => {
             goto("/account/" + userKey);
         }}
+        buttonText={"Check your profile!"}
     />
 {:else}
     <!-- <Loading msg={"Uploading data"} width={30} /> -->

@@ -233,6 +233,7 @@
             parentIdeaKey = data.params.idea_id;
             parentIdeaTitle = parentDoc.data.title;
         }
+        loadingMsg = "Creating solution...";
     });
 
     /**
