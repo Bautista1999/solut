@@ -1,6 +1,8 @@
 import { UserKey } from "$lib/stores/other_stores";
 import { authSubscribe, getDoc,getManyDocs ,initJuno, listDocs } from "@junobuild/core-peer";
 import { setLastNotificationRead } from "./notifications";
+import { notificationCount, updateNotificationCount } from "$lib/stores/notifications";
+import { get } from "svelte/store";
 
 
 
@@ -779,6 +781,51 @@ export async function getUserNotifications(){
     return notifications.items;
 
 }
+
+/**
+ * @return {Promise <Array<import("@junobuild/core-peer").Doc<any>>>}
+ */
+export async function getUserNotificationsWithoutUpdatingLastSeen(){
+    let userKey = await getUserKey();
+    /**
+     * @type {Array<string>}
+     */
+    let followedElements = await getFollowedElements(userKey);
+    let regexInput = createOrRegexInput([userKey,...followedElements])
+    let notifications = await listDocs({
+        collection:"notification",
+        filter:{
+            matcher:{
+               description: regexInput, 
+            },
+            order:{
+                desc:true,
+                field:'created_at'
+            },
+            
+        },
+        
+    });
+    
+    return notifications.items;
+
+}
+/**
+ * @return {Promise<Array<import("@junobuild/core-peer").Doc<any>>>}
+ */
+export async function getUserNewNotifications(){
+    let allNotifications = await getUserNotificationsWithoutUpdatingLastSeen();
+    await updateNotificationCount();
+    let numberOfNewNotifications = get(notificationCount);
+    
+    let newNotifications = [];
+debugger;
+    for(let i = 0; newNotifications.length < numberOfNewNotifications; i++){
+        newNotifications.push(allNotifications[i]);
+    }
+    return newNotifications;
+}
+
 /**
  * @param {string} url
  * @param {string} documentTolookFor
