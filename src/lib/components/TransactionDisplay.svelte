@@ -65,7 +65,11 @@
                 class="rows hover-container"
                 on:click={() => {
                     if (transaction.trans_type != "Pledge") {
-                        checkTransaction(transaction.transaction_number[0]);
+                        checkTransaction(
+                            transaction.transaction_number[0]
+                                ? Number(transaction.transaction_number[0])
+                                : 0,
+                        );
                     }
                 }}
             >
@@ -165,10 +169,10 @@
                                 }}
                                 errorMsg={modalErrorMsg}
                                 successMsg={"Your pledge was canceled successfully."}
-                                loadingMsg={"Deleting message..."}
-                                {error}
-                                {loading}
-                                {success}
+                                loadingMsg={"Deleting pledge..."}
+                                bind:error
+                                bind:loading
+                                bind:success
                             />
                         {/if}
                     {/await}
