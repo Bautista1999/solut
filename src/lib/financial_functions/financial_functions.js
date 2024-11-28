@@ -12,8 +12,8 @@ import { admin_canister_id, escrow_canister_id } from "../data_functions/caniste
 import  {idlFactory as Escrow} from "$lib/declarations/escrow.declarations.did";
 import { getIdeaIdBySolution, getImplementedFeaturesOfSolution, getUserKey } from "$lib/data_functions/get_functions";
 import { createNotification, followElement, updateSolutionStatus } from "$lib/data_functions/create_functions";
-import { trackEvent } from "@junobuild/analytics";
-import { deletePledge, getPledgedBalance, getUserActivePledges } from "../../declarations/satellite/satellite.api";
+// import { trackEvent } from "@junobuild/analytics";
+import { deletePledge, getPledgedBalance, getUserActivePledges, pledgeCreate } from "../../declarations/satellite/satellite.api";
 import { UserKey } from "$lib/stores/other_stores";
 
 // import("../declarations/juno.declarations.did.js")._SERVICE.set_doc;
@@ -236,18 +236,69 @@ export async function CreatePledge(idea_id, feature_id, amount, userPrincipalTex
     // @ts-ignore
     let result = await admin.pledgeCreate(docKey, idea_id, feature_id, AmountInNat64, accountIdentifierInBlob);
     followElement(idea_id,"IDEA");
-    trackEvent({
-        name: "Pledges created",
-        metadata: {
-            idea_id: idea_id,
-            amount: amount.toString(),
-            user_key: userPrincipalText,
-        }
-      });
+    // trackEvent({
+    //     name: "Pledges created",
+    //     metadata: {
+    //         idea_id: idea_id,
+    //         amount: amount.toString(),
+    //         user_key: userPrincipalText,
+    //     }
+    //   });
     
     console.log("Result: ", result);
 }
 
+/**
+ * @param {string} [idea_id]
+ * @param {string} [feature_id]
+ * @param {number} [amount]
+ * @param {string } [userPrincipalText]
+ */
+export async function CreatePledgeNew(idea_id, feature_id, amount, userPrincipalText) {
+    if (!idea_id) {
+        alert("idea_id is required");
+        return;
+    }
+    if (amount === undefined) {
+        alert("amount is required");
+        return;
+    }
+    if (!userPrincipalText) {
+        alert("User id is required");
+        return;
+    }
+    if(amount==0){
+        alert("The pledge amount cant be 0");
+        return;
+    }
+
+    // let identity = await unsafeIdentity();
+    // const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
+    const accountIdentifierInBlob = (AccountIdentifier.fromPrincipal({ principal: Principal.fromText(userPrincipalText) })).toUint8Array();
+    let AmountInNat64 = BigInt(parseInt((amount* 1e8).toString()));
+    // const admin = Actor.createActor(Admin, {
+    //     agent,
+    //     canisterId: admin_canister_id,
+    // });
+
+    let docKey = nanoid();
+
+    /**
+    * @type {string} 
+    */
+    let result = await pledgeCreate(docKey, idea_id, feature_id?feature_id:"", AmountInNat64, accountIdentifierInBlob);
+    followElement(idea_id,"IDEA");
+    // trackEvent({
+    //     name: "Pledges created",
+    //     metadata: {
+    //         idea_id: idea_id,
+    //         amount: amount.toString(),
+    //         user_key: userPrincipalText,
+    //     }
+    //   });
+    
+    console.log("Result: ", result);
+}
 
 /**
  * @param {string} project_id
@@ -467,14 +518,14 @@ export async function approveProject(amount,project_id, approvals){
             canisterId:escrow_canister_id,
         });
         let result2 = await escrow.storeApprovals(project_id,newListApprovals);
-        trackEvent({
-            name: "Approvals created",
-            metadata: {
-                project_id: project_id,
-                amount: amount.toString(),
-                user_key: userKey,
-            }
-          });
+        // trackEvent({
+        //     name: "Approvals created",
+        //     metadata: {
+        //         project_id: project_id,
+        //         amount: amount.toString(),
+        //         user_key: userKey,
+        //     }
+        //   });
         console.log("Storing approvals: ", result);
     }catch(e){
         throw new Error(String(e));
@@ -640,13 +691,13 @@ export async function completeSolution(project_id,idea_id){
         let description = idea_id;
         createNotification(newNotification,description);
     };
-    trackEvent({
-        name: "Solutions completed",
-        metadata: {
-            project_id: project_id,
-            idea_id: idea_id
-        }
-      });
+    // trackEvent({
+    //     name: "Solutions completed",
+    //     metadata: {
+    //         project_id: project_id,
+    //         idea_id: idea_id
+    //     }
+    //   });
     console.log("Approvals: ", result);
 }
 /**
@@ -863,4 +914,16 @@ export async function getTotalPledgedBalance(){
 export async function getActivePledges(){
     let key = await getUserKey(); // Extract the value of the store using $
     return await getUserActivePledges(key);
+}
+
+export async function getUserAvailableBalance(){
+    let pledgedBalance = await getTotalPledgedBalance();
+    let realBalance = await getUserBalance(await getUserKey());
+    let availableBalance = 0;
+    if (realBalance < pledgedBalance) {
+        availableBalance = 0;
+    } else {
+        availableBalance = realBalance - pledgedBalance;
+    }
+    return availableBalance;
 }
