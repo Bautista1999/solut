@@ -5,7 +5,7 @@ use ic_cdk_timers::{clear_timer, set_timer_interval, TimerId};
 use junobuild_storage::http::types::HeaderField;
 use junobuild_storage::types::store::AssetKey;
 use mime::Mime;
-
+mod quickqueries;
 use serde_json::json;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -14,6 +14,10 @@ use std::iter::Filter;
 
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use url::Url;
+mod bindings;
+mod notifications;
+mod pledges;
+mod reputation;
 mod scheduled;
 mod types;
 mod user_information;
@@ -22,12 +26,13 @@ use ic_cdk::api::{self, set_global_timer, time};
 use ic_cdk_macros::{query, update};
 use junobuild_macros::{
     assert_delete_asset, assert_delete_doc, assert_set_doc, assert_upload_asset, on_delete_asset,
-    on_delete_doc, on_delete_many_assets, on_delete_many_docs, on_set_doc, on_set_many_docs,
-    on_upload_asset,
+    on_delete_doc, on_delete_filtered_assets, on_delete_filtered_docs, on_delete_many_assets,
+    on_delete_many_docs, on_set_doc, on_set_many_docs, on_upload_asset,
 };
 use junobuild_satellite::{
     count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, get_doc_store,
-    list_docs_store, log, set_asset_handler, set_doc_store, DelDoc, Key, SetDoc,
+    list_docs_store, log, set_asset_handler, set_doc_store, DelDoc, Key,
+    OnDeleteFilteredAssetsContext, OnDeleteFilteredDocsContext, SetDoc,
 };
 use junobuild_satellite::{
     include_satellite, AssertDeleteAssetContext, AssertDeleteDocContext, AssertSetDocContext,
@@ -43,6 +48,11 @@ use types::interface::{
     Idea, IdeaRevenueCounter, IndexSearch, PledgeData, PledgeUser, Product, SetIdea, Solution,
     Topic, TotalPledging,
 };
+
+#[on_delete_filtered_docs]
+async fn on_delete_filtered_docs(_context: OnDeleteFilteredDocsContext) -> Result<(), String> {
+    Ok(())
+}
 
 #[on_set_doc(collections = ["pledges_active"])]
 async fn on_set_doc(_context: OnSetDocContext) -> Result<(), String> {
@@ -406,7 +416,7 @@ fn get_document_version(collection: String, key: String) -> Result<u64, String> 
     }
 }
 
-fn get_document_version_or_default(collection: String, key: String) -> Result<u64, String> {
+pub fn get_document_version_or_default(collection: String, key: String) -> Result<u64, String> {
     let caller = api::caller();
     let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
 
@@ -423,6 +433,24 @@ fn get_document_version_or_default(collection: String, key: String) -> Result<u6
             return Ok(1);
         }
         Err(err) => return Err(format!("Failed get document's version: {}", err)),
+    }
+}
+
+/// Fetches the document's description or returns an empty string if not found or an error occurs.
+///
+/// # Parameters:
+/// - `collection`: The collection to search for the document.
+/// - `key`: The key of the document.
+///
+/// # Returns:
+/// - `String`: The document's description, or an empty string if not found or an error occurs.
+pub fn get_document_description_or_default(collection: String, key: String) -> String {
+    let caller = api::caller();
+    let controller = Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+
+    match get_doc_store(controller, collection, key) {
+        Ok(Some(doc)) => doc.description.unwrap_or_default(),
+        Ok(None) | Err(_) => "".to_string(),
     }
 }
 
@@ -663,8 +691,24 @@ fn delete_pledge(id: String) -> Result<(), String> {
                 },
             ));
 
-            // Execute the deletion using the controller
-            del_many_docs(docs_to_delete);
+            match delete_doc_store(
+                controller,
+                "pledges_active".to_string(), // Collection key
+                id.clone(),                   // Document key
+                DelDoc {
+                    version: version.clone(),
+                },
+            ) {
+                Ok(doc_context) => {
+                    // Successfully deleted the document
+                    ic_cdk::print(format!("Successfully deleted pledge!"));
+                }
+                Err(e) => {
+                    // Log the error if deletion failed
+                    ic_cdk::print(format!("Error deleting pledge: {}", e));
+                    return Err(format!("Error deleting pledge: {}", e));
+                }
+            };
 
             return Ok(());
         }
@@ -1410,7 +1454,7 @@ pub fn upload_image(
     // Bypass UTF-8 check using from_utf8_unchecked
     let binary_data_as_str = unsafe { str::from_utf8_unchecked(&image_data) };
 
-    match set_asset_handler(&asset_key, binary_data_as_str, &headers) {
+    match set_asset_handler(&asset_key, &image_data, &headers) {
         Ok(()) => Ok(format!("https://solutio.one{}", full_path)),
         Err(e) => Err(format!("Failed to upload image: {}", e)),
     }
