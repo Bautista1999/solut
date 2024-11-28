@@ -11,6 +11,9 @@
     import {
         getMostFollowedIdeas,
         getUserImages,
+        getUserNewNotifications,
+        getUserNotifications,
+        getUserNotificationsWithoutUpdatingLastSeen,
         validateImageUrl,
     } from "$lib/data_functions/get_functions";
 
@@ -20,6 +23,8 @@
     // @ts-ignore
     import PledgerProfilePicture from "./PledgerProfilePicture.svelte";
     import { signOut } from "@junobuild/core-peer";
+    import NotificationPopUp from "./NotificationPopUp.svelte";
+    import { onMount } from "svelte";
 
     let isOpen = false;
 
@@ -67,6 +72,15 @@
             document.removeEventListener("click", handleClickOutside); // Clean up
         }
     }
+    /**
+     * @type {any[]}
+     */
+    let notifications = [];
+    onMount(async () => {
+        notifications = await getUserNewNotifications();
+        console.log(notifications);
+    });
+    let notificationsPreview = false;
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -144,6 +158,12 @@
                         <a
                             class="material-symbols-outlined"
                             href={"/notifications/" + $UserKey}
+                            on:mouseenter={() => {
+                                notificationsPreview = true;
+                            }}
+                            on:mouseleave={() => {
+                                notificationsPreview = false;
+                            }}
                         >
                             notifications
                         </a>
@@ -153,6 +173,10 @@
                                 >{$notificationCount}</span
                             >
                         {/if}
+                        <NotificationPopUp
+                            bind:show={notificationsPreview}
+                            {notifications}
+                        />
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
                         {#if isOpen}<a
                                 class="label"
@@ -346,8 +370,9 @@
                             <a
                                 class="SideBarElement"
                                 style="padding-left: 22px;"
-                                href={window.location.origin +
-                                    "/topic/" +
+                                href={"/" +
+                                    idea.data.element_type +
+                                    "/" +
                                     idea.key}
                             >
                                 {#await validateImageUrl(idea.data.images[0], "https://t4.ftcdn.net/jpg/04/70/29/97/360_F_470299797_UD0eoVMMSUbHCcNJCdv2t8B2g1GVqYgs.jpg")}
@@ -374,8 +399,9 @@
                                             display: block; 
                                             max-width: 100%; position:absolute;
                                             overflow: hidden; "
-                                        href={window.location.origin +
-                                            "/topic/" +
+                                        href={"/" +
+                                            idea.data.element_type +
+                                            "/" +
                                             idea.key}
                                         >{#if idea.data.title.length > maxChars}{idea.data.title.substring(
                                                 0,
@@ -479,6 +505,7 @@
         </div>
     {/await}
 </div>
+
 <span
     class="material-symbols-outlined SideBarToggle"
     style=""
