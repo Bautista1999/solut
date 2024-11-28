@@ -3,6 +3,9 @@ use crate::{delete_many_images, eliminate_idea, get_document_version_or_default}
 use candid::Principal;
 use ic_cdk::api::{self, time};
 use ic_cdk_macros::{query, update};
+use ic_ledger_types::{
+    AccountBalanceArgs, AccountIdentifier, Subaccount, Tokens, DEFAULT_SUBACCOUNT,
+};
 use junobuild_satellite::delete_doc_store;
 use junobuild_satellite::{
     get_doc_store, list_assets_store, list_docs_store, log, DelDoc, Doc, Key,
@@ -13,6 +16,7 @@ use junobuild_shared::types::list::{
 use junobuild_storage::{http::types::HeaderField, types::interface::AssetNoContent};
 use junobuild_utils::decode_doc_data;
 use regex::Regex;
+use serde_bytes::ByteBuf;
 use std::{cell::RefCell, fmt::format};
 
 //TODO: Take into account that these pledges are inactive even if the solution hasnt implemented the IDEA targeted in the pledge.
@@ -180,4 +184,55 @@ pub fn get_pledged_balance(user_id: String) -> Result<u64, String> {
 
     // Step 3: Return the total pledged balance
     Ok(total_balance)
+}
+
+#[update] // Use #[update] for async functions
+async fn get_available_balance(user_id: String) -> Result<u64, String> {
+    use ic_cdk::api; // Ensure you have the correct import for `api::caller`
+
+    let caller = api::caller(); // Get the caller principal
+    let caller_text = Principal::to_text(&caller);
+
+    // Check if the caller is authorized
+    if caller_text != user_id {
+        return Err(format!("Permission denied!"));
+    }
+
+    // Call the asynchronous function to fetch the real balance
+    let balance = get_user_real_balance(user_id.clone())
+        .await
+        .map_err(|e| format!("Failed to retrieve user balance: {}", e))?;
+    let pledged_balance: u64 = match get_pledged_balance(user_id.clone()) {
+        Ok(b) => b,
+        Err(err) => 0,
+    };
+
+    if balance > pledged_balance {
+        return Ok(balance - pledged_balance);
+    } else {
+        return Ok(0);
+    }
+    Ok(balance)
+}
+
+#[update]
+pub async fn get_user_real_balance(user_id: String) -> Result<u64, String> {
+    // Implement the logic for fetching the user's real ICP token balance
+    // For example:
+    let caller_principal =
+        Principal::from_text(&user_id).map_err(|e| format!("Invalid principal: {}", e))?;
+    let default_subaccount = DEFAULT_SUBACCOUNT;
+    let account_identifier = AccountIdentifier::new(&caller_principal, &default_subaccount);
+
+    let ledger_canister = Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai")
+        .map_err(|e| format!("Invalid ledger canister ID: {}", e))?;
+    let args = ic_ledger_types::AccountBalanceArgs {
+        account: account_identifier,
+    };
+
+    let (balance,): (Tokens,) = ic_cdk::call(ledger_canister, "account_balance", (args,))
+        .await
+        .map_err(|(code, msg)| format!("Failed to call ledger: {:?} - {}", code, msg))?;
+
+    Ok(balance.e8s())
 }
