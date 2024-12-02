@@ -1,7 +1,7 @@
 import { UserKey } from "$lib/stores/other_stores";
 import { authSubscribe, getDoc,getManyDocs ,initJuno, listDocs } from "@junobuild/core-peer";
 import { setLastNotificationRead } from "./notifications";
-import { notificationCount, updateNotificationCount } from "$lib/stores/notifications";
+import { newNotificationsStore, notificationCount, updateNotificationCount } from "$lib/stores/notifications";
 import { get } from "svelte/store";
 
 
@@ -817,9 +817,7 @@ export async function getUserNewNotifications(){
     let allNotifications = await getUserNotificationsWithoutUpdatingLastSeen();
     await updateNotificationCount();
     let numberOfNewNotifications = get(notificationCount);
-    
     let newNotifications = [];
-debugger;
     for(let i = 0; newNotifications.length < numberOfNewNotifications; i++){
         newNotifications.push(allNotifications[i]);
     }

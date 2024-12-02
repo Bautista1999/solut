@@ -1,5 +1,6 @@
 import { getDoc, listDocs, setDoc } from "@junobuild/core-peer";
 import { createOrRegexInput, getFollowedElements, getUserKey } from "./get_functions";
+import { notificationCount, newNotificationsStore } from "$lib/stores/notifications";
 
 /**
  * @param {string} notificationKey
@@ -12,8 +13,9 @@ export async function setLastNotificationRead(notificationKey){
     });
     let newNotifications = await GetNewNotifications();
     let LastNotificationReadKey = (newNotifications)[newNotifications.length-1].key;
+    notificationCount.set(0)
+    newNotificationsStore.set([]);
     if(notificationReadDoc==undefined){
-
         await setDoc({
             collection: "last_notification_read",
             doc: {
@@ -34,6 +36,7 @@ export async function setLastNotificationRead(notificationKey){
         });
         return;
     };
+    
 };
 /**
  * 
