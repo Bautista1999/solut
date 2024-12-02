@@ -107,12 +107,7 @@
                                 isLoading = false;
                                 return;
                             }
-                            // let pledgeCreation = await CreatePledge(
-                            //     idea_id,
-                            //     feature_id,
-                            //     amount,
-                            //     userKey,
-                            // );
+
                             let pledgeCreation = await CreatePledgeNew(
                                 idea_id,
                                 feature_id,
