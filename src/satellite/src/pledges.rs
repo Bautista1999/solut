@@ -28,7 +28,6 @@ use std::convert::TryFrom;
 use std::iter::Filter;
 
 // Main pledge creation function
-//TODO: WORK IN PROGRESS. CURRENTLY NOT WORKING!
 #[update]
 pub fn pledge_create(
     doc_key: String,
@@ -573,7 +572,6 @@ fn create_pledge_active(
     ))
 }
 
-// TODO: Implement notification sending
 fn send_pledge_notifications(
     caller: &Principal,
     idea_id: &str,
