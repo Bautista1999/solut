@@ -15,6 +15,16 @@ type Milestone = record {
   date : nat64;
   description : text;
 };
+type Notification = record {
+  title : text;
+  linkURL : text;
+  read : bool;
+  typeOf : text;
+  description : text;
+  sender : text;
+  imageURL : text;
+  subtitle : text;
+};
 type PledgeData = record {
   feature_id : opt text;
   expected_amount : nat64;
@@ -63,14 +73,18 @@ service : {
   get_available_balance : (text) -> (Result_2);
   get_pledged_balance : (text) -> (Result_2) query;
   get_user_active_pledges : (text) -> (Result_3) query;
+  get_user_profile_pic : (text) -> (text) query;
   get_user_real_balance : (text) -> (Result_2);
   get_user_reputation : (principal) -> (Result_2) query;
+  get_user_username : (text) -> (text) query;
   pledge_create : (text, text, text, nat64, blob) -> (text);
   query_scheduled_tasks_state : () -> (text) query;
+  send_single_notification : (text, text, Notification) -> (Result);
   start_scheduled_tasks : () -> (text);
   stop_scheduled_tasks : () -> (text);
   trigger_delete_orphan_ideas : () -> (Result);
   trigger_delete_orphan_solutions : () -> (Result);
   trigger_delete_unused_images : () -> (Result);
   upload_image : (text, text, blob, text, text, text) -> (Result_1);
+  validate_user_balance_or_delete_pledge : (text, nat64, text) -> (Result);
 }
