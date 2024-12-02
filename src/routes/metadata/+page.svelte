@@ -24,12 +24,15 @@
     getUserActivePledges,
     getUserRealBalance,
     getUserReputation,
+    getUserUsername,
     queryScheduledTasksState,
+    sendSingleNotification,
     startScheduledTasks,
     stopScheduledTasks,
     triggerDeleteOrphanIdeas,
     triggerDeleteOrphanSolutions,
     triggerDeleteUnusedImages,
+    validateUserBalanceOrDeletePledge,
   } from "../../declarations/satellite/satellite.api";
   import { signIn, NFIDProvider, authSubscribe } from "@junobuild/core";
   import SearchBarLarger from "$lib/components/SearchBarLarger.svelte";
@@ -332,6 +335,8 @@
     hexOutput = accountIdentifier.toHex();
     return hexOutput;
   }
+
+  $: userId = "";
 </script>
 
 <svelte:head>
@@ -616,6 +621,70 @@
         msg={"Transform principal"}
       />
       <p>Output: {hexOutput}</p>
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">Send single notification</h1>
+
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          let sender =
+            "2dgol-6t7gr-wbceo-axkyn-3qinp-vxv32-zrqbv-oj6tr-ztuvk-el3ln-3ae";
+          let receiver =
+            "2dgol-6t7gr-wbceo-axkyn-3qinp-vxv32-zrqbv-oj6tr-ztuvk-el3ln-3ae";
+          let notification = {
+            title: "Notification's title",
+            subtitle:
+              "Notification's subtitle, which needs to be kind of long to test it.",
+            description:
+              "Notification's description, which needs to be kind of long to test it on the interface. That's why this field should be as loooong as possible.",
+            imageURL:
+              "https://img.freepik.com/premium-photo/cool-wallpaper-landscape-background_915164-76494.jpg",
+            linkURL: "/metadata",
+            sender: sender,
+            typeOf: "Test",
+            read: false,
+          };
+          console.log(
+            await sendSingleNotification(sender, receiver, notification),
+          );
+        }}
+        msg={"Send notification"}
+      />
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">Get user's username</h1>
+      <input
+        class="InputTextSmall"
+        placeholder="Paste the user id here..."
+        bind:value={userId}
+      />
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          console.log(await getUserUsername(userId));
+        }}
+        msg={"Query username"}
+      />
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">Validate user's pledge ability</h1>
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          // let sender =
+          //   "2dgol-6t7gr-wbceo-axkyn-3qinp-vxv32-zrqbv-oj6tr-ztuvk-el3ln-3ae";
+          // let pledge_id = "XHN0b1GYq0KrgKT2t3PVD";
+          // console.log(
+          //   await validateUserBalanceOrDeletePledge(
+          //     sender,
+          //     BigInt(9990002),
+          //     pledge_id,
+          //   ),
+          // );
+        }}
+        msg={"User's pledge ability"}
+      />
     </div>
   {/if}
 </div>
