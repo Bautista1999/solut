@@ -11,10 +11,6 @@
   // import { initOrbiter } from "@junobuild/analytics";
   import { onLCP, onINP, onCLS } from "web-vitals";
 
-  onCLS(console.log);
-  onINP(console.log);
-  onLCP(console.log);
-
   const init = async () => {
     await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
     // await initOrbiter({
