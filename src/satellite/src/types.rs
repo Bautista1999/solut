@@ -163,4 +163,23 @@ pub mod interface {
         pub linkPage: String,
         pub otherlinks: Vec<String>,
     }
+
+    #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct FollowData {
+        pub follower: String,  // ID of the follower
+        pub following: String, // ID of the entity being followed
+        pub r#type: String, // Type of the followed entity (e.g., "idea", "topic", "solution", "user")
+    }
+
+    #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct IndexResponse {
+        pub element_id: String,   // ID of the element
+        pub title: String,        // Title of the element
+        pub subtitle: String,     // Subtitle of the element
+        pub description: String,  // Description of the element
+        pub creation_date: u64,   // Unix timestamp for creation
+        pub total_pledged: u64,   // Total pledged amount
+        pub total_followers: u64, // Total number of followers
+        pub element_type: String, // Type of element (e.g., "topic", "idea", "solution")
+    }
 }
