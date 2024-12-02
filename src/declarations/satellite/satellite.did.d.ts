@@ -13,6 +13,16 @@ export interface Idea {
   'subtitle' : string,
   'images' : Array<string>,
 }
+export interface IndexResponse {
+  'title' : string,
+  'element_id' : string,
+  'description' : string,
+  'total_pledged' : bigint,
+  'element_type' : string,
+  'subtitle' : string,
+  'total_followers' : bigint,
+  'creation_date' : bigint,
+}
 export interface Milestone {
   'id' : bigint,
   'title' : string,
@@ -53,7 +63,11 @@ export type Result_1 = { 'Ok' : string } |
   { 'Err' : string };
 export type Result_2 = { 'Ok' : bigint } |
   { 'Err' : string };
-export type Result_3 = { 'Ok' : Array<PledgeData> } |
+export type Result_3 = {
+    'Ok' : [Array<IndexResponse>, bigint, bigint, bigint]
+  } |
+  { 'Err' : string };
+export type Result_4 = { 'Ok' : Array<PledgeData> } |
   { 'Err' : string };
 export interface SetIdea { 'key' : string, 'idea' : Idea }
 export interface Solution {
@@ -79,8 +93,14 @@ export interface _SERVICE {
   'eliminate_solution' : ActorMethod<[string], Result>,
   'eliminate_topic' : ActorMethod<[string], Result>,
   'get_available_balance' : ActorMethod<[string], Result_2>,
+  'get_paginated_topics' : ActorMethod<
+    [string, [] | [bigint], [] | [bigint]],
+    Result_3
+  >,
   'get_pledged_balance' : ActorMethod<[string], Result_2>,
-  'get_user_active_pledges' : ActorMethod<[string], Result_3>,
+  'get_total_followers' : ActorMethod<[string], bigint>,
+  'get_total_pledged' : ActorMethod<[string, string], Result_2>,
+  'get_user_active_pledges' : ActorMethod<[string], Result_4>,
   'get_user_profile_pic' : ActorMethod<[string], string>,
   'get_user_real_balance' : ActorMethod<[string], Result_2>,
   'get_user_reputation' : ActorMethod<[Principal], Result_2>,
