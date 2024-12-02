@@ -1,11 +1,14 @@
+use crate::notifications::send_single_notification;
 use crate::quickqueries::get_doc_owner;
 use crate::reputation::get_user_reputation;
-use crate::types::interface::{IndexSearch, PledgeData, PledgeUser, TotalPledging};
-use crate::{get_document_description_or_default, get_document_version_or_default};
+use crate::types::interface::{IndexSearch, Notification, PledgeData, PledgeUser, TotalPledging};
+use crate::user_information::{get_available_balance, get_user_profile_pic, get_user_username};
+use crate::{delete_pledge, get_document_description_or_default, get_document_version_or_default};
 use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
 use bytes::Bytes;
 use candid::{CandidType, Int, Nat, Principal};
-use ic_cdk::api::{self, set_global_timer, time};
+use ic_cdk::api::{self, call, set_global_timer, time};
+use ic_cdk::spawn;
 use ic_cdk_macros::{query, update};
 use junobuild_satellite::{
     count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, get_doc_store,
@@ -140,7 +143,20 @@ pub fn pledge_create(
     if let Err(err) = apply_updates(updates) {
         return format!("Failed to apply updates: {}", err);
     }
+    let user_id = Principal::to_text(&caller);
+    spawn(async move {
+        match validate_user_balance_or_delete_pledge(user_id, amount, doc_key.clone()).await {
+            Ok(_) => (),
+            Err(e) => {
+                log(format!(
+                    "Error in validate_user_balance_or_delete_pledge: {}",
+                    e
+                ));
+            }
+        }
+    });
 
+    send_pledge_notifications(&caller.clone(), &idea_id, Some(&feature_id), amount);
     "Pledge created successfully!".to_string()
 }
 
@@ -442,12 +458,25 @@ fn apply_updates(updates: Vec<(String, Key, SetDoc)>) -> Result<(), String> {
 }
 /// Validate user's balance
 /// TODO: Validate balance
-fn validate_user_balance(account_blob: &[u8], amount: u64) -> Result<(), String> {
-    // let balance = get_user_real_balance(account_blob.to_vec())
-    //     .map_err(|err| return format!("Failed to fetch balance: {}", err))?;
-    // if balance < amount {
-    //     return Err("User has insufficient funds.".to_string());
-    // }
+
+#[update]
+pub async fn validate_user_balance_or_delete_pledge(
+    user_id: String,
+    amount: u64,
+    pledge_id: String,
+) -> Result<(), String> {
+    let balance = match get_available_balance(user_id.clone()).await {
+        Ok(balance) => balance,
+        Err(err) => {
+            return Err(format!("Failed to fetch balance: {}", err));
+        }
+    };
+    if balance < amount {
+        log("User has not sufficient funds!".to_string());
+        delete_pledge(pledge_id.to_string());
+        return Err("User has insufficient funds.".to_string());
+    }
+    log("User has funds!".to_string());
     Ok(())
 }
 
@@ -545,12 +574,81 @@ fn create_pledge_active(
 }
 
 // TODO: Implement notification sending
-fn send_notifications(
-    _caller: &Principal,
-    _idea_id: &str,
-    _feature_id: &str,
-    _amount: u64,
+fn send_pledge_notifications(
+    caller: &Principal,
+    idea_id: &str,
+    feature_id: Option<&str>,
+    amount: u64,
 ) -> Result<(), String> {
+    let user_id = Principal::to_text(caller);
+    let username = get_user_username(user_id.clone());
+    let image = get_user_profile_pic(user_id.clone());
+    let amount_string = format!("{:.1}", amount as f64 / 100_000_000.0);
+    let title = "New pledge!".to_string();
+    let subtitle_idea = format!(
+        "{} has pledged {} ICP into your topic.",
+        username.clone(),
+        amount_string.clone()
+    );
+    let description = format!(
+        "{} has pledged {} ICP into your topic.",
+        username.clone(),
+        amount_string.clone()
+    );
+    let type_of = "Pledge".to_string();
+    let link_url_feature = match feature_id {
+        None => idea_id.to_string().clone(),
+        Some(feature) => feature.to_string().clone(),
+    };
+    let link_url_idea = idea_id.to_string().clone();
+    let sender = user_id.clone();
+    let idea_owner_notification: Notification = Notification {
+        title: title.clone(),
+        subtitle: subtitle_idea.clone(),
+        imageURL: image.clone(),
+        linkURL: link_url_idea.clone(),
+        sender: user_id.clone(),
+        description: description.clone(),
+        typeOf: type_of.clone(),
+        read: false,
+    };
+    let idea_owner = match get_doc_owner("idea".to_string(), idea_id.to_string()) {
+        Ok(owner) => owner,
+        Err(err) => idea_id.to_string().clone(),
+    };
+    send_single_notification(user_id.clone(), idea_owner, idea_owner_notification);
+
+    match feature_id {
+        None => {}
+        Some(feature) => {
+            let subtitle_feature = format!(
+                "{} has pledged {} ICP into your idea.",
+                username.clone(),
+                amount_string.clone()
+            );
+            let description_feature = format!(
+                "{} has pledged {} ICP into your idea.",
+                username.clone(),
+                amount_string.clone()
+            );
+            let feature_owner_notification: Notification = Notification {
+                title: title.clone(),
+                subtitle: subtitle_feature.clone(),
+                imageURL: image.clone(),
+                linkURL: link_url_feature.clone(),
+                sender: user_id.clone(),
+                description: description_feature.clone(),
+                typeOf: type_of.clone(),
+                read: false,
+            };
+            let feature_owner = match get_doc_owner("feature".to_string(), feature.to_string()) {
+                Ok(owner) => owner,
+                Err(err) => feature.to_string().clone(),
+            };
+            send_single_notification(user_id.clone(), feature_owner, feature_owner_notification);
+        }
+    };
+
     Ok(())
 }
 
