@@ -21,6 +21,9 @@
     eliminateSolution,
     eliminateTopic,
     getAvailableBalance,
+    getPaginatedTopics,
+    getTotalFollowers,
+    getTotalPledged,
     getUserActivePledges,
     getUserRealBalance,
     getUserReputation,
@@ -668,22 +671,34 @@
       />
     </div>
     <div class="Field">
-      <h1 style="margin:0px;">Validate user's pledge ability</h1>
+      <h1 style="margin:0px;">Get Topic's total funding</h1>
       <BasicRoundedButton
         disabledCondition={null}
         someFunction={async () => {
-          // let sender =
-          //   "2dgol-6t7gr-wbceo-axkyn-3qinp-vxv32-zrqbv-oj6tr-ztuvk-el3ln-3ae";
-          // let pledge_id = "XHN0b1GYq0KrgKT2t3PVD";
-          // console.log(
-          //   await validateUserBalanceOrDeletePledge(
-          //     sender,
-          //     BigInt(9990002),
-          //     pledge_id,
-          //   ),
-          // );
+          console.log(await getTotalPledged("idea", "pL3Uz6FpgqFn1Y-2ALRIe"));
         }}
-        msg={"User's pledge ability"}
+        msg={"Total funding!"}
+      />
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">Get Topic's total followers</h1>
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          console.log(await getTotalFollowers("5Yd5E2LTG76N9RYYr8oGV"));
+        }}
+        msg={"Total followers!"}
+      />
+    </div>
+
+    <div class="Field">
+      <h1 style="margin:0px;">Get paginated topics</h1>
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          console.log(await getPaginatedTopics("most_pledged", [], []));
+        }}
+        msg={"Most pledged topics!"}
       />
     </div>
   {/if}
