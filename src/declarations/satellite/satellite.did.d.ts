@@ -19,6 +19,16 @@ export interface Milestone {
   'date' : bigint,
   'description' : string,
 }
+export interface Notification {
+  'title' : string,
+  'linkURL' : string,
+  'read' : boolean,
+  'typeOf' : string,
+  'description' : string,
+  'sender' : string,
+  'imageURL' : string,
+  'subtitle' : string,
+}
 export interface PledgeData {
   'feature_id' : [] | [string],
   'expected_amount' : bigint,
@@ -71,13 +81,19 @@ export interface _SERVICE {
   'get_available_balance' : ActorMethod<[string], Result_2>,
   'get_pledged_balance' : ActorMethod<[string], Result_2>,
   'get_user_active_pledges' : ActorMethod<[string], Result_3>,
+  'get_user_profile_pic' : ActorMethod<[string], string>,
   'get_user_real_balance' : ActorMethod<[string], Result_2>,
   'get_user_reputation' : ActorMethod<[Principal], Result_2>,
+  'get_user_username' : ActorMethod<[string], string>,
   'pledge_create' : ActorMethod<
     [string, string, string, bigint, Uint8Array | number[]],
     string
   >,
   'query_scheduled_tasks_state' : ActorMethod<[], string>,
+  'send_single_notification' : ActorMethod<
+    [string, string, Notification],
+    Result
+  >,
   'start_scheduled_tasks' : ActorMethod<[], string>,
   'stop_scheduled_tasks' : ActorMethod<[], string>,
   'trigger_delete_orphan_ideas' : ActorMethod<[], Result>,
@@ -86,6 +102,10 @@ export interface _SERVICE {
   'upload_image' : ActorMethod<
     [string, string, Uint8Array | number[], string, string, string],
     Result_1
+  >,
+  'validate_user_balance_or_delete_pledge' : ActorMethod<
+    [string, bigint, string],
+    Result
   >,
 }
 export declare const idlFactory: IDL.InterfaceFactory;

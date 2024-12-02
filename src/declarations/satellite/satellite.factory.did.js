@@ -52,6 +52,16 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : IDL.Vec(PledgeData),
     'Err' : IDL.Text,
   });
+  const Notification = IDL.Record({
+    'title' : IDL.Text,
+    'linkURL' : IDL.Text,
+    'read' : IDL.Bool,
+    'typeOf' : IDL.Text,
+    'description' : IDL.Text,
+    'sender' : IDL.Text,
+    'imageURL' : IDL.Text,
+    'subtitle' : IDL.Text,
+  });
   return IDL.Service({
     'build_version' : IDL.Func([], [IDL.Text], ['query']),
     'create_ideas' : IDL.Func([IDL.Vec(SetIdea), IDL.Text], [Result], []),
@@ -79,14 +89,21 @@ export const idlFactory = ({ IDL }) => {
     'get_available_balance' : IDL.Func([IDL.Text], [Result_2], []),
     'get_pledged_balance' : IDL.Func([IDL.Text], [Result_2], ['query']),
     'get_user_active_pledges' : IDL.Func([IDL.Text], [Result_3], ['query']),
+    'get_user_profile_pic' : IDL.Func([IDL.Text], [IDL.Text], ['query']),
     'get_user_real_balance' : IDL.Func([IDL.Text], [Result_2], []),
     'get_user_reputation' : IDL.Func([IDL.Principal], [Result_2], ['query']),
+    'get_user_username' : IDL.Func([IDL.Text], [IDL.Text], ['query']),
     'pledge_create' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Nat64, IDL.Vec(IDL.Nat8)],
         [IDL.Text],
         [],
       ),
     'query_scheduled_tasks_state' : IDL.Func([], [IDL.Text], ['query']),
+    'send_single_notification' : IDL.Func(
+        [IDL.Text, IDL.Text, Notification],
+        [Result],
+        [],
+      ),
     'start_scheduled_tasks' : IDL.Func([], [IDL.Text], []),
     'stop_scheduled_tasks' : IDL.Func([], [IDL.Text], []),
     'trigger_delete_orphan_ideas' : IDL.Func([], [Result], []),
@@ -95,6 +112,11 @@ export const idlFactory = ({ IDL }) => {
     'upload_image' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Vec(IDL.Nat8), IDL.Text, IDL.Text, IDL.Text],
         [Result_1],
+        [],
+      ),
+    'validate_user_balance_or_delete_pledge' : IDL.Func(
+        [IDL.Text, IDL.Nat64, IDL.Text],
+        [Result],
         [],
       ),
   });
