@@ -14,7 +14,6 @@ use std::iter::Filter;
 
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use url::Url;
-mod bindings;
 mod notifications;
 mod pledges;
 mod reputation;
