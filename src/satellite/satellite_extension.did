@@ -9,6 +9,16 @@ type Idea = record {
   subtitle : text;
   images : vec text;
 };
+type IndexResponse = record {
+  title : text;
+  element_id : text;
+  description : text;
+  total_pledged : nat64;
+  element_type : text;
+  subtitle : text;
+  total_followers : nat64;
+  creation_date : nat64;
+};
 type Milestone = record {
   id : nat64;
   title : text;
@@ -46,7 +56,11 @@ type Product = record {
 type Result = variant { Ok; Err : text };
 type Result_1 = variant { Ok : text; Err : text };
 type Result_2 = variant { Ok : nat64; Err : text };
-type Result_3 = variant { Ok : vec PledgeData; Err : text };
+type Result_3 = variant {
+  Ok : record { vec IndexResponse; nat64; nat64; nat64 };
+  Err : text;
+};
+type Result_4 = variant { Ok : vec PledgeData; Err : text };
 type SetIdea = record { key : text; idea : Idea };
 type Solution = record {
   categories : vec text;
@@ -71,8 +85,11 @@ service : {
   eliminate_solution : (text) -> (Result);
   eliminate_topic : (text) -> (Result);
   get_available_balance : (text) -> (Result_2);
+  get_paginated_topics : (text, opt nat64, opt nat64) -> (Result_3) query;
   get_pledged_balance : (text) -> (Result_2) query;
-  get_user_active_pledges : (text) -> (Result_3) query;
+  get_total_followers : (text) -> (nat64) query;
+  get_total_pledged : (text, text) -> (Result_2) query;
+  get_user_active_pledges : (text) -> (Result_4) query;
   get_user_profile_pic : (text) -> (text) query;
   get_user_real_balance : (text) -> (Result_2);
   get_user_reputation : (principal) -> (Result_2) query;
