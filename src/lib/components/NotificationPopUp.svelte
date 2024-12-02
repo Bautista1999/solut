@@ -1,4 +1,6 @@
 <script>
+    import { notificationCount } from "$lib/stores/notifications";
+
     /**
      * @type {string | any[]}
      */
@@ -9,7 +11,7 @@
 </script>
 
 <div class="popup-container {show ? 'show' : ''}">
-    {#if notifications.length > 0}
+    {#if notifications.length > 0 || $notificationCount > 0}
         {#each notifications as notification}
             <div class="notification-item">
                 <img
