@@ -1,4 +1,4 @@
-use crate::types::interface::PledgeData;
+use crate::types::interface::{PledgeData, User};
 use crate::{delete_many_images, eliminate_idea, get_document_version_or_default};
 use candid::Principal;
 use ic_cdk::api::{self, time};
@@ -187,7 +187,7 @@ pub fn get_pledged_balance(user_id: String) -> Result<u64, String> {
 }
 
 #[update] // Use #[update] for async functions
-async fn get_available_balance(user_id: String) -> Result<u64, String> {
+pub async fn get_available_balance(user_id: String) -> Result<u64, String> {
     use ic_cdk::api; // Ensure you have the correct import for `api::caller`
 
     let caller = api::caller(); // Get the caller principal
@@ -235,4 +235,38 @@ pub async fn get_user_real_balance(user_id: String) -> Result<u64, String> {
         .map_err(|(code, msg)| format!("Failed to call ledger: {:?} - {}", code, msg))?;
 
     Ok(balance.e8s())
+}
+
+#[query]
+pub fn get_user_username(user_id: String) -> String {
+    let caller = api::caller();
+    let doc = match get_doc_store(caller, "user".to_string(), user_id.clone()) {
+        Ok(None) => return user_id.clone(),
+        Ok(Some(doc)) => {
+            let decoded_data: User = match decode_doc_data(&doc.data) {
+                Ok(data) => data,
+                Err(err) => return err,
+            };
+
+            return decoded_data.username;
+        }
+        Err(err) => return user_id.clone(),
+    };
+}
+
+#[query]
+pub fn get_user_profile_pic(user_id: String) -> String {
+    let caller = api::caller();
+    let doc = match get_doc_store(caller, "user".to_string(), user_id.clone()) {
+        Ok(None) => return "https://cdn-icons-png.freepik.com/512/8792/8792047.png".to_string(),
+        Ok(Some(doc)) => {
+            let decoded_data: User = match decode_doc_data(&doc.data) {
+                Ok(data) => data,
+                Err(err) => return user_id.clone(),
+            };
+
+            return decoded_data.profilePicture;
+        }
+        Err(err) => return "https://cdn-icons-png.freepik.com/512/8792/8792047.png".to_string(),
+    };
 }
