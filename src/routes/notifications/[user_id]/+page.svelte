@@ -19,6 +19,7 @@
     } from "$lib/data_functions/get_functions";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import { subtitle } from "$lib/data_objects/testing_objects";
+    import { notificationCount } from "$lib/stores/notifications";
 
     /** @type {import('./$types').PageData} */
     // @ts-ignore
