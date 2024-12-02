@@ -131,4 +131,36 @@ pub mod interface {
 
     // Followers is a simple u32 for follower count
     pub type Followers = u32;
+
+    //TODO: Notification's fields should have snake_case (e.g. imageURL ==> image_url).
+    //      We are not doing it, because this brings complications on the front end at the time.
+    #[derive(Default, CandidType, Serialize, Deserialize, Clone)]
+    pub struct Notification {
+        pub title: String,
+        pub subtitle: String,
+        pub imageURL: String,
+        pub linkURL: String,
+        pub sender: String,
+        pub description: String,
+        pub typeOf: String,
+        pub read: bool,
+    }
+
+    #[derive(Default, CandidType, Serialize, Deserialize, Clone)]
+    pub struct User {
+        pub username: String,
+        pub profilePicture: String,
+        pub images: Vec<String>,
+        pub videos: Vec<String>,
+        pub country: String,
+        pub sex: String,
+        pub categories: Vec<String>,
+        pub description: String,
+        pub xAccount: String,
+        pub GitHubAccount: String,
+        pub instaAccount: String,
+        pub linkedInAccount: String,
+        pub linkPage: String,
+        pub otherlinks: Vec<String>,
+    }
 }
