@@ -173,13 +173,15 @@ pub mod interface {
 
     #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
     pub struct IndexResponse {
-        pub element_id: String,   // ID of the element
-        pub title: String,        // Title of the element
-        pub subtitle: String,     // Subtitle of the element
-        pub description: String,  // Description of the element
-        pub creation_date: u64,   // Unix timestamp for creation
-        pub total_pledged: u64,   // Total pledged amount
-        pub total_followers: u64, // Total number of followers
-        pub element_type: String, // Type of element (e.g., "topic", "idea", "solution")
+        pub element_id: String,      // Unique ID for the element
+        pub title: String, // Title or username (e.g., "Blockchain for Healthcare" or "juanbautista")
+        pub subtitle: String, // Subtitle or short description (e.g., "Improving healthcare data sharing" or "Web3 Developer")
+        pub description: String, // Detailed description
+        pub profile_image: String, // Profile image or main image URL
+        pub creation_date: u64, // Creation date (for topics/ideas; not applicable to users)
+        pub total_pledged: u64, // Total pledged amount
+        pub total_followers: u64, // Total follower count
+        pub reputation: Option<u64>, // Reputation (only for users)
+        pub element_type: String, // Type of element (e.g., "topic", "idea", "user")
     }
 }
