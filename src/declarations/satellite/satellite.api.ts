@@ -101,12 +101,28 @@ export const getAvailableBalance = async (value0: string): Promise<Result_2> => 
 	return await get_available_balance(value0);
 }
 
-export const getPaginatedTopics = async (value0: string, value1: unknown, value2: unknown): Promise<Result_3> => {
+export const getPaginatedIdeas = async (value0: string, value1: unknown, value2: unknown, value3: unknown, value4: unknown): Promise<Result_3> => {
+	const {get_paginated_ideas} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await get_paginated_ideas(value0, value1, value2, value3, value4);
+}
+
+export const getPaginatedTopics = async (value0: string, value1: unknown, value2: unknown, value3: unknown): Promise<Result_3> => {
 	const {get_paginated_topics} = await getSatelliteExtendedActor<SatelliteActor>({
 		idlFactory
 	});
 
-	return await get_paginated_topics(value0, value1, value2);
+	return await get_paginated_topics(value0, value1, value2, value3);
+}
+
+export const getPaginatedUsers = async (value0: string, value1: unknown, value2: unknown, value3: unknown): Promise<Result_3> => {
+	const {get_paginated_users} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await get_paginated_users(value0, value1, value2, value3);
 }
 
 export const getPledgedBalance = async (value0: string): Promise<Result_2> => {

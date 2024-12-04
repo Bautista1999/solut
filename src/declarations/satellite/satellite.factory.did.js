@@ -41,9 +41,11 @@ export const idlFactory = ({ IDL }) => {
   const Result_2 = IDL.Variant({ 'Ok' : IDL.Nat64, 'Err' : IDL.Text });
   const IndexResponse = IDL.Record({
     'title' : IDL.Text,
+    'profile_image' : IDL.Text,
     'element_id' : IDL.Text,
     'description' : IDL.Text,
     'total_pledged' : IDL.Nat64,
+    'reputation' : IDL.Opt(IDL.Nat64),
     'element_type' : IDL.Text,
     'subtitle' : IDL.Text,
     'total_followers' : IDL.Nat64,
@@ -101,8 +103,24 @@ export const idlFactory = ({ IDL }) => {
     'eliminate_solution' : IDL.Func([IDL.Text], [Result], []),
     'eliminate_topic' : IDL.Func([IDL.Text], [Result], []),
     'get_available_balance' : IDL.Func([IDL.Text], [Result_2], []),
+    'get_paginated_ideas' : IDL.Func(
+        [
+          IDL.Text,
+          IDL.Opt(IDL.Nat64),
+          IDL.Opt(IDL.Nat64),
+          IDL.Opt(IDL.Text),
+          IDL.Opt(IDL.Text),
+        ],
+        [Result_3],
+        ['query'],
+      ),
     'get_paginated_topics' : IDL.Func(
-        [IDL.Text, IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Nat64)],
+        [IDL.Text, IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Text)],
+        [Result_3],
+        ['query'],
+      ),
+    'get_paginated_users' : IDL.Func(
+        [IDL.Text, IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Text)],
         [Result_3],
         ['query'],
       ),

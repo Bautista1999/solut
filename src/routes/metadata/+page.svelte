@@ -21,7 +21,9 @@
     eliminateSolution,
     eliminateTopic,
     getAvailableBalance,
+    getPaginatedIdeas,
     getPaginatedTopics,
+    getPaginatedUsers,
     getTotalFollowers,
     getTotalPledged,
     getUserActivePledges,
@@ -696,9 +698,41 @@
       <BasicRoundedButton
         disabledCondition={null}
         someFunction={async () => {
-          console.log(await getPaginatedTopics("most_pledged", [], []));
+          console.log(await getPaginatedTopics("most_pledged", [], [], []));
         }}
         msg={"Most pledged topics!"}
+      />
+    </div>
+
+    <div class="Field">
+      <h1 style="margin:0px;">Get paginated users</h1>
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          console.log(
+            await getPaginatedUsers("most_followed", [], [], ["Coti"]),
+          );
+        }}
+        msg={"Most followed users!"}
+      />
+    </div>
+
+    <div class="Field">
+      <h1 style="margin:0px;">Get paginated ideas</h1>
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          console.log(
+            await getPaginatedIdeas(
+              "most_followed",
+              [],
+              [],
+              [],
+              ["m5kdiwwt7iecnqnTHbdlt"],
+            ),
+          );
+        }}
+        msg={"Most followed ideas!"}
       />
     </div>
   {/if}

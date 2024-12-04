@@ -15,9 +15,11 @@ export interface Idea {
 }
 export interface IndexResponse {
   'title' : string,
+  'profile_image' : string,
   'element_id' : string,
   'description' : string,
   'total_pledged' : bigint,
+  'reputation' : [] | [bigint],
   'element_type' : string,
   'subtitle' : string,
   'total_followers' : bigint,
@@ -93,8 +95,16 @@ export interface _SERVICE {
   'eliminate_solution' : ActorMethod<[string], Result>,
   'eliminate_topic' : ActorMethod<[string], Result>,
   'get_available_balance' : ActorMethod<[string], Result_2>,
+  'get_paginated_ideas' : ActorMethod<
+    [string, [] | [bigint], [] | [bigint], [] | [string], [] | [string]],
+    Result_3
+  >,
   'get_paginated_topics' : ActorMethod<
-    [string, [] | [bigint], [] | [bigint]],
+    [string, [] | [bigint], [] | [bigint], [] | [string]],
+    Result_3
+  >,
+  'get_paginated_users' : ActorMethod<
+    [string, [] | [bigint], [] | [bigint], [] | [string]],
     Result_3
   >,
   'get_pledged_balance' : ActorMethod<[string], Result_2>,
