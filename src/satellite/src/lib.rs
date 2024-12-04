@@ -14,11 +14,11 @@ use std::iter::Filter;
 
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use url::Url;
+mod indexed_queries;
 mod notifications;
 mod pledges;
 mod reputation;
 mod scheduled;
-mod topics_service;
 mod types;
 mod user_information;
 use crate::types::interface::IndexResponse;
