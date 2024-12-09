@@ -59,10 +59,15 @@ type Result = variant { Ok; Err : text };
 type Result_1 = variant { Ok : text; Err : text };
 type Result_2 = variant { Ok : nat64; Err : text };
 type Result_3 = variant {
+  Ok : record { nat64; nat64; nat64; vec record { text; text } };
+  Err : text;
+};
+type Result_4 = variant {
   Ok : record { vec IndexResponse; nat64; nat64; nat64 };
   Err : text;
 };
-type Result_4 = variant { Ok : vec PledgeData; Err : text };
+type Result_5 = variant { Ok : record { nat64; nat64 }; Err : text };
+type Result_6 = variant { Ok : vec PledgeData; Err : text };
 type SetIdea = record { key : text; idea : Idea };
 type Solution = record {
   categories : vec text;
@@ -87,19 +92,31 @@ service : {
   eliminate_solution : (text) -> (Result);
   eliminate_topic : (text) -> (Result);
   get_available_balance : (text) -> (Result_2);
+  get_funding_details : (text, text) -> (Result_3) query;
   get_paginated_ideas : (text, opt nat64, opt nat64, opt text, opt text) -> (
-      Result_3,
+      Result_4,
     ) query;
+  get_paginated_ideas_by_solution : (
+      text,
+      opt nat64,
+      opt nat64,
+      opt text,
+      text,
+    ) -> (Result_4) query;
   get_paginated_topics : (text, opt nat64, opt nat64, opt text) -> (
-      Result_3,
+      Result_4,
+    ) query;
+  get_paginated_topics_ideas : (text, opt nat64, opt nat64, opt text) -> (
+      Result_4,
     ) query;
   get_paginated_users : (text, opt nat64, opt nat64, opt text) -> (
-      Result_3,
+      Result_4,
     ) query;
   get_pledged_balance : (text) -> (Result_2) query;
   get_total_followers : (text) -> (nat64) query;
   get_total_pledged : (text, text) -> (Result_2) query;
-  get_user_active_pledges : (text) -> (Result_4) query;
+  get_total_pledged_and_expected : (text, text) -> (Result_5) query;
+  get_user_active_pledges : (text) -> (Result_6) query;
   get_user_profile_pic : (text) -> (text) query;
   get_user_real_balance : (text) -> (Result_2);
   get_user_reputation : (principal) -> (Result_2) query;
