@@ -92,16 +92,22 @@
     .descriptionSection {
         border: 1px solid var(--secondary-color);
         display: flex;
-        flex-direction: column; /* Stack items vertically */
+        flex-direction: column;
         gap: 10px;
         height: fit-content;
         padding: 10px;
         margin-top: 10px;
         margin-bottom: 10px;
+        max-width: 100%;
+        overflow-x: hidden;
+
+        /* Add these two lines to handle long words */
+        word-wrap: break-word; /* Older version, ensures long words are broken */
+        word-break: break-word; /* Modern browsers, ensures words break */
     }
     .descriptionEditingSection {
         display: flex;
-        flex-direction: column; /* Stack items vertically */
+        flex-direction: column;
         gap: 10px;
         height: fit-content;
     }
