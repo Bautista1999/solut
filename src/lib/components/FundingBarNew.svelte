@@ -1,9 +1,9 @@
 <script>
     import { onMount } from "svelte";
 
-    export let expected = 100000;
+    export let approved = 100000;
     export let card = false;
-    let exp = formatNumber(expected);
+    let exp = formatNumber(approved);
     export let total = 1200000;
     let tot = formatNumber(total);
     onMount(() => {});
@@ -26,7 +26,7 @@
         if (total == 0) {
             return 50;
         }
-        let perc = (expected / total) * 100;
+        let perc = (approved / total) * 100;
         if (perc < 20) {
             return defaultMin;
         } else if (perc == 100) {
@@ -61,9 +61,9 @@
             class="progress"
             style="width: {getBarPercentage()}%; color:var(--tertiary-color); text-align:center; font-size:small "
         >
-            Expected: {exp} ICP
+            Approved: {exp} ICP
         </div>
-        {#if window.innerWidth < 500}
+        {#if window.innerWidth < 500 && getBarPercentage() < 100}
             <div class="progress2" style="text-align:center; font-size:small ">
                 Total: {tot} ICP
             </div>
