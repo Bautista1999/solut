@@ -13,7 +13,7 @@ import  {idlFactory as Escrow} from "$lib/declarations/escrow.declarations.did";
 import { getIdeaIdBySolution, getImplementedFeaturesOfSolution, getUserKey } from "$lib/data_functions/get_functions";
 import { createNotification, followElement, updateSolutionStatus } from "$lib/data_functions/create_functions";
 // import { trackEvent } from "@junobuild/analytics";
-import { deletePledge, getPledgedBalance, getUserActivePledges, pledgeCreate } from "../../declarations/satellite/satellite.api";
+import { deletePledge, getFundingDetails, getPledgedBalance, getUserActivePledges, pledgeCreate } from "../../declarations/satellite/satellite.api";
 import { UserKey } from "$lib/stores/other_stores";
 
 // import("../declarations/juno.declarations.did.js")._SERVICE.set_doc;
@@ -135,6 +135,7 @@ export async function getTotalPledges(idea_id,type) {
         collection: "idea_feature_pledge",
         key: "PLG_"+type+"_"+idea_id,
     });
+    
     if(doc==undefined){
         return {
             pledges: 0 ,
@@ -927,3 +928,54 @@ export async function getUserAvailableBalance(){
     }
     return availableBalance;
 }
+
+
+
+/**
+ * Fetch funding details for a given type and element ID.
+ * @param {string} type - The type of the element (e.g., "idea", "feature", "solution").
+ * @param {string} element_id - The ID of the element to fetch funding details for.
+ * @returns {Promise<{ 
+*   total_pledged: number, 
+*   total_expected: number, 
+*   total_pledgers: number, 
+*   users: Array<{ key: string; image: string; }> 
+* }>} A promise that resolves to the funding details.
+*/
+export async function getFundingInformation(type, element_id) {
+ try {
+   const result = await getFundingDetails(type, element_id);
+
+   if ("Err" in result) {
+     console.error("Error fetching funding details:", result.Err);
+     return {
+       total_pledged: 0,
+       total_expected: 0,
+       total_pledgers: 0,
+       users: [],
+     };
+   }
+
+   const { Ok } = result;
+
+   // Transform users from tuples to objects
+   const users = (Ok[3] || []).map(([key, image]) => ({ key, image }));
+
+   return {
+     total_pledged: parseFloat((Number(Ok[0])/100000000).toFixed(3)),
+     total_expected: parseFloat((Number(Ok[1])/100000000).toFixed(3)),
+     total_pledgers: (Number(Ok[2])/100000000),
+     users,
+   };
+ } catch (error) {
+   console.error("Unexpected error fetching funding information:", error);
+   return {
+     total_pledged: 0,
+     total_expected: 0,
+     total_pledgers: 0,
+     users: [],
+   };
+ }
+}
+
+

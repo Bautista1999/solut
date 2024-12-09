@@ -21,11 +21,14 @@
     eliminateSolution,
     eliminateTopic,
     getAvailableBalance,
+    getFundingDetails,
     getPaginatedIdeas,
+    getPaginatedIdeasBySolution,
     getPaginatedTopics,
     getPaginatedUsers,
     getTotalFollowers,
     getTotalPledged,
+    getTotalPledgedAndExpected,
     getUserActivePledges,
     getUserRealBalance,
     getUserReputation,
@@ -673,13 +676,15 @@
       />
     </div>
     <div class="Field">
-      <h1 style="margin:0px;">Get Topic's total funding</h1>
+      <h1 style="margin:0px;">Get Topic's total funding information</h1>
       <BasicRoundedButton
         disabledCondition={null}
         someFunction={async () => {
-          console.log(await getTotalPledged("idea", "pL3Uz6FpgqFn1Y-2ALRIe"));
+          console.log(
+            await getFundingDetails("solution", "Ggpkso6QiqjK0LhJn1Er0"),
+          );
         }}
-        msg={"Total funding!"}
+        msg={"Total funding information!"}
       />
     </div>
     <div class="Field">
@@ -718,21 +723,21 @@
     </div>
 
     <div class="Field">
-      <h1 style="margin:0px;">Get paginated ideas</h1>
+      <h1 style="margin:0px;">Get paginated ideas by solution</h1>
       <BasicRoundedButton
         disabledCondition={null}
         someFunction={async () => {
           console.log(
-            await getPaginatedIdeas(
+            await getPaginatedIdeasBySolution(
               "most_followed",
               [],
               [],
               [],
-              ["m5kdiwwt7iecnqnTHbdlt"],
+              "-cv1BN9Zvs4g4--mpu4Cp",
             ),
           );
         }}
-        msg={"Most followed ideas!"}
+        msg={"Implemented ideas by solution"}
       />
     </div>
   {/if}

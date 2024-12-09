@@ -35,9 +35,11 @@
         getTotalFollowers,
         getUserImages,
     } from "$lib/data_functions/get_functions";
+    import FundingDetails from "$lib/components/FundingDetails.svelte";
     import {
         getTotalPledges,
         getTransactionsAndPledges,
+        getFundingInformation,
     } from "$lib/financial_functions/financial_functions";
     import { getDoc } from "@junobuild/core-peer";
     import NotFound from "$lib/components/NotFound.svelte";
@@ -301,11 +303,13 @@
                     {#if editImagesLoading}
                         <MagicalDotsSmall />
                     {:else if $editImages}
-                        <EditImagesSection
-                            {key}
-                            collection_db={"feature"}
-                            bind:images={newImages}
-                        />
+                        <div style=" margin-top: 0px; ">
+                            <EditImagesSection
+                                {key}
+                                collection_db={"feature"}
+                                bind:images={newImages}
+                            />
+                        </div>
                     {/if}
                 </div>
 
@@ -359,15 +363,23 @@
                 </div>
 
                 <div class="FundingSection">
-                    {#await getTotalPledges(key, "IDEA")}
+                    {#await getFundingInformation("feature", key)}
                         <div class="Funding-bar">
                             <MagicalDotsAbsoluteSmall />
                         </div>
                     {:then data}
                         <div class="Funding-bar">
-                            <FundingBarNew
+                            <!-- <FundingBarNew
                                 expected={data.expected}
                                 total={data.pledges}
+                            /> -->
+                            <FundingDetails
+                                element_id={key}
+                                users={data.users}
+                                element_type={"feature"}
+                                amount_expected={data.total_expected}
+                                amount_pledged={data.total_pledged}
+                                amount_peldgers={data.total_pledgers}
                             />
                         </div>
                         <div class="Funding-info">
@@ -623,7 +635,6 @@
             "EditImages EditImages EditImages"
             "FundingSection FundingSection FundingSection"
             "PledgingSection PledgingSection PledgingSection"
-            "Solution-section Solution-section Solution-section"
             "PledgeSectionMobile PledgeSectionMobile PledgeSectionMobile"
             "ActivitySection ActivitySection ActivitySection";
     }
@@ -691,7 +702,8 @@
             "Funding-bar Funding-bar Funding-bar"
             ". Funding-info .";
         grid-area: FundingSection;
-        height: 80px;
+        height: fit-content;
+        margin-top: -13px;
     }
 
     .Funding-bar {
@@ -849,8 +861,8 @@
                 ". Funding-bar ."
                 ". Funding-info .";
             grid-area: FundingSection;
-            height: 80px;
-            padding-inline: 10px;
+            height: fit-content;
+            padding-inline: 0px;
         }
         .PledgingSection {
             display: grid;

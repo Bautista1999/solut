@@ -1,21 +1,19 @@
 <script>
-    import {
-        getIdeasByKeyWords,
-        getMostRecentTopics,
-    } from "$lib/data_functions/get_functions";
-    import { key } from "$lib/data_objects/testing_objects";
     import CardPreview from "./CardPreview.svelte";
     import CardScroller from "./CardScroller.svelte";
 
     export let amountDisplayed = 12;
 
     /**
-     * @type {{ key: string; data: import("../data_objects/data_types").IndexDataReturn; }[]}
+     * @type {Array<import("../../declarations/satellite/satellite.did").IndexResponse>}[]}
      */
     export let ideas; // Initialize the promise
 
     export let disableLeftButton = true;
     export let disableRightButton = false;
+
+    export let offset = 0;
+    export let total = 0;
 
     export let forwardPage = async (/** @type {string} */ lastKey) => {};
     export let backwardsPage = async () => {};
@@ -43,13 +41,15 @@
                 if (ideas.length < amountDisplayed) {
                     return;
                 }
-                forwardPage(ideas[ideas.length - 1].key);
+                forwardPage(ideas[ideas.length - 1].element_id);
             }}
             backFunction={() => {
                 backwardsPage();
             }}
             {disableLeftButton}
             {disableRightButton}
+            {offset}
+            {total}
         />
     </div>
 {/if}

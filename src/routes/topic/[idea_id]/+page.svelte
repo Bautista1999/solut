@@ -28,8 +28,11 @@
     import NotFound from "$lib/components/NotFound.svelte";
     import {
         getTotalPledges,
+        getTotalPledgesOfSolution,
         getTransactionsAndPledges,
+        getFundingInformation,
     } from "$lib/financial_functions/financial_functions";
+    import FuindingDetails from "$lib/components/FundingDetails.svelte";
     import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsolut.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import {
@@ -296,11 +299,13 @@
                     {#if editImagesLoading}
                         <MagicalDotsSmall />
                     {:else if $editImages}
-                        <EditImagesSection
-                            {key}
-                            collection_db={"idea"}
-                            bind:images={newImages}
-                        />
+                        <div style=" margin-top: 0px; ">
+                            <EditImagesSection
+                                {key}
+                                collection_db={"idea"}
+                                bind:images={newImages}
+                            />
+                        </div>
                     {/if}
                 </div>
 
@@ -314,17 +319,26 @@
                 </div>
 
                 <div class="FundingSection">
-                    {#await getTotalPledges(key, "TOPIC")}
+                    {#await getFundingInformation("idea", key)}
                         <div class="Funding-bar">
                             <MagicalDotsAbsoluteSmall />
                         </div>
                     {:then data}
                         <div class="Funding-bar">
-                            <FundingBarNew
+                            <!-- <FundingBarNew
                                 expected={data.expected}
                                 total={data.pledges}
+                            /> -->
+                            <FuindingDetails
+                                element_id={key}
+                                users={data.users}
+                                element_type={"idea"}
+                                amount_expected={data.total_expected}
+                                amount_pledged={data.total_pledged}
+                                amount_peldgers={data.total_pledgers}
                             />
                         </div>
+
                         <div class="Funding-info">
                             <p
                                 style="font-size:small; display:flex; justify-content:center;align-items:center;"
@@ -548,7 +562,6 @@
             "EditImages EditImages EditImages"
             "FundingSection FundingSection FundingSection"
             "PledgingSection PledgingSection PledgingSection"
-            "Solution-section Solution-section Solution-section"
             "FeaturesSection FeaturesSection FeaturesSection"
             "ActivitySection ActivitySection ActivitySection";
     }
@@ -598,7 +611,8 @@
             "Funding-bar Funding-bar Funding-bar"
             ". Funding-info .";
         grid-area: FundingSection;
-        height: 80px;
+        height: fit-content;
+        margin-top: -13px;
     }
 
     .Funding-bar {
@@ -766,8 +780,8 @@
                 ". Funding-bar ."
                 ". Funding-info .";
             grid-area: FundingSection;
-            height: 80px;
-            padding-inline: 10px;
+            height: fit-content;
+            padding-inline: 0px;
         }
         .PledgingSection {
             display: grid;
