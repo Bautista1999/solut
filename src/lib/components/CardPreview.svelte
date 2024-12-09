@@ -21,14 +21,12 @@
     import { formatNumber } from "$lib/data_functions/user.functions";
 
     /**
-     * @type {{
-    key: string;
-    data: import("$lib/data_objects/data_types").IndexDataReturn;
-}}
+     * @type {import("../../declarations/satellite/satellite.did").IndexResponse}[]}
+
      */
     export let idea;
     export let padding = 7;
-    $: displaySrc = idea.data.images[0];
+    $: displaySrc = idea.profile_image;
 
     let isLoading = true;
 
@@ -57,8 +55,8 @@
     }
 
     async function followingInformation() {
-        let amount = await getTotalFollowers(idea.key);
-        let follow = await CheckIfFollow(idea.key);
+        let amount = await getTotalFollowers(idea.element_id);
+        let follow = await CheckIfFollow(idea.element_id);
         return {
             amount: formatNumber(amount),
             follow: follow,
@@ -67,7 +65,7 @@
 </script>
 
 <a
-    href={"/" + idea.data.type + "/" + idea.key}
+    href={"/" + idea.element_type + "/" + idea.element_id}
     class="idea-card"
     rel="noopener noreferrer"
 >
@@ -83,7 +81,7 @@
             class="featureFlag"
             style="position: absolute; margin:10px;top:0; right:0;"
         >
-            {idea.data.type}
+            {idea.element_type}
         </div>
 
         <!-- {#await getUserImages([idea.data.owner])}
@@ -95,7 +93,7 @@
     <div class="idea-card-content">
         <div class="idea-title-subtitle">
             <div class="idea-card-header">
-                <h3 class="idea-card-title">{idea.data.title}</h3>
+                <h3 class="idea-card-title">{idea.title}</h3>
                 <div class="idea-card-followers">
                     {#await followingInformation()}
                         <span
@@ -103,7 +101,6 @@
                             style="color:var(--primary-color);font-variation-settings: 'FILL'0"
                             >favorite</span
                         >
-                        <span style="color:var(--primary-color);">{"0"}</span>
                     {:then data}
                         <span
                             class="material-symbols-outlined"
@@ -111,17 +108,17 @@
                                 ? '1'
                                 : '0'};">favorite</span
                         >
-                        <span style="color:var(--primary-color);"
-                            >{data.amount}</span
-                        >
                     {/await}
+                    <span style="color:var(--primary-color);"
+                        >{idea.total_followers}</span
+                    >
                 </div>
             </div>
-            <p class="idea-card-subtitle">{idea.data.subtitle}</p>
+            <p class="idea-card-subtitle">{idea.subtitle}</p>
         </div>
         <div class="idea-card-pledgers-followers">
             <div class="idea-card-pledgers" style="width:60%;">
-                {#await getAmountPledgersAndImages(idea.key)}
+                {#await getAmountPledgersAndImages(idea.element_id)}
                     <!-- <MagicalDotsAbsoluteSmall /> -->
                     Pledgers: {0}
                     <PledgersOverview
@@ -143,7 +140,6 @@
                         style="color:var(--primary-color);font-variation-settings: 'FILL'0"
                         >favorite</span
                     >
-                    <span style="color:var(--primary-color);">{"0"}</span>
                 {:then data}
                     <span
                         class="material-symbols-outlined"
@@ -151,35 +147,17 @@
                             ? '1'
                             : '0'};">favorite</span
                     >
-                    <span style="color:var(--primary-color);"
-                        >{data.amount}</span
-                    >
                 {/await}
+                <span style="color:var(--primary-color);"
+                    >{idea.total_followers}</span
+                >
             </div>
         </div>
 
         <div class="idea-card-funding-bar">
-            {#if idea.data.type == "feature"}
-                {#await getTotalPledges(idea.key, "FEA")}
-                    <MagicalDotsAbsoluteSmall />
-                {:then data}
-                    <FundingBarNew
-                        card={false}
-                        expected={data.expected}
-                        total={data.pledges}
-                    />
-                {/await}
-            {:else}
-                {#await getTotalPledges(idea.key, idea.data.type.toUpperCase())}
-                    <MagicalDotsAbsoluteSmall />
-                {:then data}
-                    <FundingBarNew
-                        card={false}
-                        expected={data.expected}
-                        total={data.pledges}
-                    />
-                {/await}
-            {/if}
+            Pledged: <span class="funding-amount"
+                >{(Number(idea.total_pledged) / 100000000).toFixed(1)} ICP</span
+            >
         </div>
         <!-- <div class="idea-card-created-at">
             ~ <span>{idea_example.createdAt}</span>
@@ -188,6 +166,33 @@
 </a>
 
 <style>
+    .idea-card-funding-bar {
+        display: flex;
+        flex-direction: row;
+        color: var(
+            --seventh-color
+        ); /* Ensure text is readable against the gradient */
+        font-size: 1rem; /* Adjust font size for emphasis */
+        font-weight: 300;
+        text-align: center;
+        padding-block: 5px;
+        padding-right: 5px;
+        border-radius: 8px; /* Smooth edges for better aesthetics */
+        text-align: center;
+        justify-content: left;
+        gap: 10px;
+    }
+
+    .funding-amount {
+        display: block; /* Ensure it centers properly */
+        background-color: var(--primary-color);
+        color: var(--tertiary-color);
+        font-size: 1rem; /* Adjust font size for emphasis */
+        font-weight: 400;
+        text-align: center;
+        border-radius: 8px;
+        padding: 5px 9px;
+    }
     .spinner {
         border: 4px solid rgba(0, 0, 0, 0.1);
         border-top: 4px solid var(--primary-color);
