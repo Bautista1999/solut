@@ -52,6 +52,7 @@
         ICPtoDecimal,
         getAmountOfUsersThatApproved,
         getApprovalsByProject,
+        getFundingInformation,
         getPledgesOfSignedInUserInProject,
         getTotalAmountApprovedByProject,
         getTotalPledges,
@@ -78,6 +79,7 @@
     import TitleSection from "$lib/components/TitleSection.svelte";
     import MagicalDotsSmall from "$lib/components/MagicalDotsSmall.svelte";
     import FloatingHelpText from "$lib/components/FloatingHelpText.svelte";
+    import FuindingDetails from "$lib/components/FundingDetails.svelte";
 
     let userKey = "";
     let ownerKey = "";
@@ -191,6 +193,14 @@
         return {
             approved: roundUpToThreeDecimalPlaces(ICPtoDecimal(BigInt(total))),
             amountApprovals: approvals,
+        };
+    }
+    async function getApprovalsAndPledgingNumbers() {
+        let total = await getTotalAmountApprovedByProject(key);
+        let totalPossible = await getTotalPledgesOfSolution(key);
+        return {
+            approved: roundUpToThreeDecimalPlaces(ICPtoDecimal(BigInt(total))),
+            totalPossible: totalPossible.pledges,
         };
     }
 
@@ -359,11 +369,13 @@
                     {#if editImagesLoading}
                         <MagicalDotsSmall />
                     {:else if $editImages}
-                        <EditImagesSection
-                            {key}
-                            collection_db={"solution"}
-                            bind:images={newImages}
-                        />
+                        <div style=" margin-top: 0px; ">
+                            <EditImagesSection
+                                {key}
+                                collection_db={"solution"}
+                                bind:images={newImages}
+                            />
+                        </div>
                     {/if}
                 </div>
 
@@ -417,16 +429,24 @@
                 </div>
 
                 <div class="FundingSection">
-                    {#await getTotalPledgesOfSolution(key)}
+                    {#await getApprovalsAndPledgingNumbers()}
                         <div class="Funding-bar">
                             <MagicalDotsAbsoluteSmall />
                         </div>
                     {:then data}
                         <div class="Funding-bar">
                             <FundingBarNew
-                                expected={data.expected}
-                                total={data.pledges}
+                                total={data.totalPossible}
+                                approved={data.approved}
                             />
+                            <!-- <FuindingDetails
+                                element_id={key}
+                                users={data.users}
+                                element_type={"solution"}
+                                amount_expected={data.total_expected}
+                                amount_pledged={data.total_pledged}
+                                amount_peldgers={data.total_pledgers}
+                            /> -->
                         </div>
                         <div class="Funding-info">
                             <p
@@ -811,7 +831,6 @@
             "EditImages EditImages EditImages"
             "FundingSection FundingSection FundingSection"
             "PledgingSection PledgingSection PledgingSection"
-            "Solution-section Solution-section Solution-section"
             "FeaturesSection FeaturesSection FeaturesSection"
             "ActivitySection ActivitySection ActivitySection";
     }
@@ -898,13 +917,15 @@
         display: grid;
         grid-template-columns: 0fr 1fr 0fr;
         grid-template-rows: 0fr 0fr;
+
         gap: 10px 0px;
         grid-auto-flow: row;
         grid-template-areas:
             "Funding-bar Funding-bar Funding-bar"
             ". Funding-info .";
         grid-area: FundingSection;
-        height: 80px;
+        height: fit-content;
+        margin-top: -13px; /* Adjusts specific spacing here */
     }
 
     .Funding-bar {
@@ -1033,8 +1054,8 @@
                 ". Funding-bar ."
                 ". Funding-info .";
             grid-area: FundingSection;
-            height: 80px;
-            padding-inline: 10px;
+            height: fit-content;
+            padding-inline: 0px;
         }
         .PledgingSection {
             display: grid;
