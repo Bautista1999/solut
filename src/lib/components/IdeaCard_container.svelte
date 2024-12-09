@@ -3,28 +3,16 @@
         getFeaturesOfIdea,
         getFeaturesOfSolution,
     } from "$lib/data_functions/get_functions";
+    import {
+        getPaginatedIdeas,
+        getPaginatedIdeasBySolution,
+    } from "../../declarations/satellite/satellite.api";
     import CardPreview from "./CardPreview.svelte";
     import IdeaCard from "./IdeaCard.svelte";
     import LoadingNew from "./LoadingNew.svelte";
     import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsolut.svelte";
     import MagicalDots from "./magicalDots.svelte";
     export let type = "idea";
-    let featureExample = {
-        title: "title",
-        subtitle: "subtitle",
-        description: "description",
-        expected: 100,
-        total: 100,
-        image: "",
-        user: "user",
-        userPicture: "",
-        createdAt: "17 August, 2023",
-        key: "",
-        /**
-         * @type {string[]}
-         */
-        pledgersImages: [],
-    };
     /**
      * @type {string}
      */
@@ -32,39 +20,26 @@
     export let solution_id = "";
 </script>
 
-{#await type == "idea" ? getFeaturesOfIdea(idea_id) : getFeaturesOfSolution(idea_id, solution_id)}
+{#await type == "idea" ? getPaginatedIdeas("most_pledged", [0], [12], [], [idea_id]) : getPaginatedIdeasBySolution("most_pledged", [0], [12], [], solution_id)}
     <div>
         <MagicalDots />
     </div>
 {:then data}
-    {#if data.length > 0}
-        <!-- IndexDataReturn = { title: string, subtitle: string, images: string, videos: string, owner: string, type: string }; -->
-        <div class="features-container">
-            {#each data as feature}
-                <div class="">
-                    <!-- <IdeaCard {feature} /> -->
-                    <CardPreview
-                        idea={{
-                            key: feature.key.substring(6, feature.key.length),
-                            data: {
-                                title: feature.data.title,
-                                subtitle: feature.data.subtitle,
-                                images: feature.data.images,
-                                videos:
-                                    feature.data.videos[0] == undefined
-                                        ? ""
-                                        : feature.data.videos[0],
-                                owner: feature.owner,
-                                type: "idea",
-                            },
-                        }}
-                        padding={10}
-                    />
-                </div>
-            {/each}
-        </div>
-    {:else}
-        <p>No features added</p>
+    {#if "Ok" in data}
+        {#if data.Ok?.[1] > 0n}
+            <!-- IndexDataReturn = { title: string, subtitle: string, images: string, videos: string, owner: string, type: string }; -->
+            <div class="features-container">
+                {#each data.Ok?.[0] as idea}
+                    <div class="">
+                        <!-- <IdeaCard {feature} /> -->
+
+                        <CardPreview {idea} padding={10} />
+                    </div>
+                {/each}
+            </div>
+        {:else}
+            <p>No features added</p>
+        {/if}
     {/if}
 {/await}
 

@@ -101,14 +101,15 @@
 
     .image-scroller_card {
         display: flex;
-        /* Removed justify-content: center; to allow starting from the beginning */
         margin-top: 0px;
         margin-block: 4px;
-        height: fit-content;
+        height: 30px;
+        position: relative;
+        min-height: 30px; /* Height of the images */
     }
 
     .image-container_card {
-        /* Removed position: absolute; to keep images in the flow of the document */
+        position: absolute;
         margin-right: -20px; /* Adjust space between images */
         border-radius: 50%; /* Make images round */
         overflow: hidden; /* Hide overflow to maintain the circular shape */

@@ -12,7 +12,7 @@
     <div class="PledgersAmount" style="margin:0px;">
         <span class="material-symbols-outlined"> people </span> Pledgers: {pledgersAmount}
     </div>
-    <div class="PledgersPictures"><UsersOverview {users} /></div>
+    <!-- <div class="PledgersPictures"><UsersOverview {users} /></div> -->
 </div>
 
 <style>
