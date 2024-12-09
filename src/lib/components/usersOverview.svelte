@@ -36,10 +36,11 @@
 
 <style>
     .image-scroller {
-        margin-top: 15px;
+        /* margin-top: 15px; */
         position: absolute;
         height: 0px; /* Adjust if necessary */
         display: flex;
+        margin: auto;
         /* Removed justify-content: center; to allow starting from the beginning */
         flex-wrap: nowrap; /* Prevent images from wrapping onto multiple lines */
     }
@@ -128,15 +129,27 @@
             margin-right: -25px; /* Adjust space between images */
             border-radius: 50%; /* Make images round */
             overflow: hidden; /* Hide overflow to maintain the circular shape */
-            transform: translateY(-5px);
-            width: 30px; /* Width of the images */
-            height: 30px; /* Height of the images */
+
+            width: 40px; /* Width of the images */
+            height: 40px; /* Height of the images */
             border: 2px solid var(--secondary-color);
             cursor: pointer;
             transition:
                 border-color 0.3s ease,
                 width 0.1s ease,
                 height 0.1s ease;
+        }
+        .image-scroller {
+            /* margin-top: 15px; */
+            position: absolute;
+
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            display: flex;
+            transform: translateY(27px);
+            align-items: center;
+            /* Removed justify-content: center; to allow starting from the beginning */
+            flex-wrap: nowrap; /* Prevent images from wrapping onto multiple lines */
         }
     }
 </style>
