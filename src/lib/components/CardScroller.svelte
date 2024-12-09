@@ -3,23 +3,32 @@
     export let forwardFunction = () => {};
     export let disableLeftButton = true;
     export let disableRightButton = true;
+    export let offset = 0;
+    export let total = 0;
 </script>
 
-<div class="ButtonSection">
-    <div class="buttons">
-        <button on:click={backFunction} disabled={disableLeftButton}>
-            <link
-                rel="stylesheet"
-                href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-            />
-            <span class="material-symbols-outlined"> arrow_back </span>
-        </button>
-        <img src="/assets/LogoSol3.png" alt="Solutio Logo" />
-        <button on:click={forwardFunction} disabled={disableRightButton}>
-            <span class="material-symbols-outlined">
-                arrow_forward
-            </span></button
-        >
+<div class="ScrollerSection">
+    <h3 style="margin: 0; font-weight:400;">
+        <span class="currentPage">{offset}</span>
+        {#if total != offset}...
+            {total}{/if}
+    </h3>
+    <div class="ButtonSection">
+        <div class="buttons">
+            <button on:click={backFunction} disabled={disableLeftButton}>
+                <link
+                    rel="stylesheet"
+                    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+                />
+                <span class="material-symbols-outlined"> arrow_back </span>
+            </button>
+            <img src="/assets/LogoSol3.png" alt="Solutio Logo" />
+            <button on:click={forwardFunction} disabled={disableRightButton}>
+                <span class="material-symbols-outlined">
+                    arrow_forward
+                </span></button
+            >
+        </div>
     </div>
 </div>
 
@@ -30,6 +39,18 @@
             "wght" 400,
             "GRAD" 0,
             "opsz" 48;
+    }
+
+    .currentPage {
+        text-decoration: underline;
+    }
+
+    .ScrollerSection {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        color: var(--primary-color);
+        font-weight: 500;
     }
 
     .ButtonSection {
