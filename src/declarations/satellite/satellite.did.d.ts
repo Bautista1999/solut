@@ -66,10 +66,16 @@ export type Result_1 = { 'Ok' : string } |
 export type Result_2 = { 'Ok' : bigint } |
   { 'Err' : string };
 export type Result_3 = {
+    'Ok' : [bigint, bigint, bigint, Array<[string, string]>]
+  } |
+  { 'Err' : string };
+export type Result_4 = {
     'Ok' : [Array<IndexResponse>, bigint, bigint, bigint]
   } |
   { 'Err' : string };
-export type Result_4 = { 'Ok' : Array<PledgeData> } |
+export type Result_5 = { 'Ok' : [bigint, bigint] } |
+  { 'Err' : string };
+export type Result_6 = { 'Ok' : Array<PledgeData> } |
   { 'Err' : string };
 export interface SetIdea { 'key' : string, 'idea' : Idea }
 export interface Solution {
@@ -95,22 +101,32 @@ export interface _SERVICE {
   'eliminate_solution' : ActorMethod<[string], Result>,
   'eliminate_topic' : ActorMethod<[string], Result>,
   'get_available_balance' : ActorMethod<[string], Result_2>,
+  'get_funding_details' : ActorMethod<[string, string], Result_3>,
   'get_paginated_ideas' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string], [] | [string]],
-    Result_3
+    Result_4
+  >,
+  'get_paginated_ideas_by_solution' : ActorMethod<
+    [string, [] | [bigint], [] | [bigint], [] | [string], string],
+    Result_4
   >,
   'get_paginated_topics' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string]],
-    Result_3
+    Result_4
+  >,
+  'get_paginated_topics_ideas' : ActorMethod<
+    [string, [] | [bigint], [] | [bigint], [] | [string]],
+    Result_4
   >,
   'get_paginated_users' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string]],
-    Result_3
+    Result_4
   >,
   'get_pledged_balance' : ActorMethod<[string], Result_2>,
   'get_total_followers' : ActorMethod<[string], bigint>,
   'get_total_pledged' : ActorMethod<[string, string], Result_2>,
-  'get_user_active_pledges' : ActorMethod<[string], Result_4>,
+  'get_total_pledged_and_expected' : ActorMethod<[string, string], Result_5>,
+  'get_user_active_pledges' : ActorMethod<[string], Result_6>,
   'get_user_profile_pic' : ActorMethod<[string], string>,
   'get_user_real_balance' : ActorMethod<[string], Result_2>,
   'get_user_reputation' : ActorMethod<[Principal], Result_2>,

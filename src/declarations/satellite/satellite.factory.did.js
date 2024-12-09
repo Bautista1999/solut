@@ -39,6 +39,15 @@ export const idlFactory = ({ IDL }) => {
   });
   const Result_1 = IDL.Variant({ 'Ok' : IDL.Text, 'Err' : IDL.Text });
   const Result_2 = IDL.Variant({ 'Ok' : IDL.Nat64, 'Err' : IDL.Text });
+  const Result_3 = IDL.Variant({
+    'Ok' : IDL.Tuple(
+      IDL.Nat64,
+      IDL.Nat64,
+      IDL.Nat64,
+      IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
+    ),
+    'Err' : IDL.Text,
+  });
   const IndexResponse = IDL.Record({
     'title' : IDL.Text,
     'profile_image' : IDL.Text,
@@ -51,8 +60,12 @@ export const idlFactory = ({ IDL }) => {
     'total_followers' : IDL.Nat64,
     'creation_date' : IDL.Nat64,
   });
-  const Result_3 = IDL.Variant({
+  const Result_4 = IDL.Variant({
     'Ok' : IDL.Tuple(IDL.Vec(IndexResponse), IDL.Nat64, IDL.Nat64, IDL.Nat64),
+    'Err' : IDL.Text,
+  });
+  const Result_5 = IDL.Variant({
+    'Ok' : IDL.Tuple(IDL.Nat64, IDL.Nat64),
     'Err' : IDL.Text,
   });
   const PledgeData = IDL.Record({
@@ -64,7 +77,7 @@ export const idlFactory = ({ IDL }) => {
     'amount' : IDL.Nat64,
     'doc_key' : IDL.Text,
   });
-  const Result_4 = IDL.Variant({
+  const Result_6 = IDL.Variant({
     'Ok' : IDL.Vec(PledgeData),
     'Err' : IDL.Text,
   });
@@ -103,6 +116,11 @@ export const idlFactory = ({ IDL }) => {
     'eliminate_solution' : IDL.Func([IDL.Text], [Result], []),
     'eliminate_topic' : IDL.Func([IDL.Text], [Result], []),
     'get_available_balance' : IDL.Func([IDL.Text], [Result_2], []),
+    'get_funding_details' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [Result_3],
+        ['query'],
+      ),
     'get_paginated_ideas' : IDL.Func(
         [
           IDL.Text,
@@ -111,23 +129,44 @@ export const idlFactory = ({ IDL }) => {
           IDL.Opt(IDL.Text),
           IDL.Opt(IDL.Text),
         ],
-        [Result_3],
+        [Result_4],
+        ['query'],
+      ),
+    'get_paginated_ideas_by_solution' : IDL.Func(
+        [
+          IDL.Text,
+          IDL.Opt(IDL.Nat64),
+          IDL.Opt(IDL.Nat64),
+          IDL.Opt(IDL.Text),
+          IDL.Text,
+        ],
+        [Result_4],
         ['query'],
       ),
     'get_paginated_topics' : IDL.Func(
         [IDL.Text, IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Text)],
-        [Result_3],
+        [Result_4],
+        ['query'],
+      ),
+    'get_paginated_topics_ideas' : IDL.Func(
+        [IDL.Text, IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Text)],
+        [Result_4],
         ['query'],
       ),
     'get_paginated_users' : IDL.Func(
         [IDL.Text, IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Text)],
-        [Result_3],
+        [Result_4],
         ['query'],
       ),
     'get_pledged_balance' : IDL.Func([IDL.Text], [Result_2], ['query']),
     'get_total_followers' : IDL.Func([IDL.Text], [IDL.Nat64], ['query']),
     'get_total_pledged' : IDL.Func([IDL.Text, IDL.Text], [Result_2], ['query']),
-    'get_user_active_pledges' : IDL.Func([IDL.Text], [Result_4], ['query']),
+    'get_total_pledged_and_expected' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [Result_5],
+        ['query'],
+      ),
+    'get_user_active_pledges' : IDL.Func([IDL.Text], [Result_6], ['query']),
     'get_user_profile_pic' : IDL.Func([IDL.Text], [IDL.Text], ['query']),
     'get_user_real_balance' : IDL.Func([IDL.Text], [Result_2], []),
     'get_user_reputation' : IDL.Func([IDL.Principal], [Result_2], ['query']),
