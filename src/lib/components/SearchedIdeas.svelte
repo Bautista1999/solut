@@ -63,6 +63,20 @@
         margin: 0; /* Center the grid container */
         max-width: 1200px; /* Max width of the grid to avoid very wide cards */
     }
+    @media (max-width: 1000px) {
+        .features-container {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(200px, 0.5fr));
+            max-width: 800px;
+        }
+    }
+    @media (max-width: 900px) {
+        .features-container {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(200px, 0.5fr));
+            max-width: 600px; /* Max width of the grid to avoid very wide cards */
+        }
+    }
     @media (max-width: 480px) {
         .features-container {
             display: grid;
@@ -70,7 +84,7 @@
             grid-gap: 1rem;
             padding: 0rem; /* Add some padding around the grid if needed */
             margin: 0; /* Center the grid container */
-            max-width: 600px; /* Max width of the grid to avoid very wide cards */
+            max-width: 400px; /* Max width of the grid to avoid very wide cards */
         }
     }
 </style>
