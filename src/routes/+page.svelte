@@ -197,11 +197,19 @@
 
 <main>
     <section class="visibilitySlogan slogan-section">
-        <h1 class="slogan" style="margin: 0px;">
-            A genius idea can come from <span
-                style="color: var(--primary-color);">anywhere.</span
-            ><br />Welcome to Solutio.
+        <h1
+            class="slogan"
+            style="margin: 0px;font-weight:500;font-size: xx-large;"
+        >
+            <span style="font-size: 150%;">
+                Welcome to <span style="color: var(--primary-color);"
+                    >Solutio</span
+                ></span
+            >. <br /> Request software
+            <span style="color: var(--primary-color);">you need</span> and share
+            the costs with others
         </h1>
+
         <div style="display: flex; justify-content:center; align-items:center;">
             <SearchBar
                 someFunction={() => {
