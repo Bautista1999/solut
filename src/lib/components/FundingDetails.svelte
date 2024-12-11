@@ -24,13 +24,13 @@
 
 <div class="funding-section">
     <!-- Placeholder for pledgers' images -->
-    <div class="pledgers">
-        <UsersOverview {users} />
-    </div>
 
     <div class="funding-info">
         <div class="amount">{amount_pledged} ICP</div>
-        <div class="label">Total Contributions So Far</div>
+        <div class="label">Total Raised</div>
+    </div>
+    <div class="pledgers">
+        <UsersOverview {users} />
     </div>
 </div>
 <button class="expand-button" on:click={toggleExpand}>
@@ -67,7 +67,7 @@
         border-radius: 8px;
 
         /* background-color: var(--tertiary-color); */
-        background: linear-gradient(to right, orange, orangered);
+        background: linear-gradient(to right, orangered, orange);
 
         transition: box-shadow 0.3s ease;
     }
@@ -91,6 +91,7 @@
         display: flex;
         flex-direction: column;
         align-items: flex-start;
+        margin-left: 10px;
     }
 
     .amount {
@@ -147,5 +148,16 @@
         font-size: 0.9rem;
         display: flex;
         line-height: 1.5;
+    }
+
+    @media (max-width: 480px) {
+        /* Funding Information Section */
+        .funding-info {
+            margin-left: 0px;
+        }
+        .pledgers {
+            width: 30%;
+            max-width: 30%;
+        }
     }
 </style>
