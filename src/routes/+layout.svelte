@@ -127,10 +127,13 @@
       padding-top: 0px; /* Padding at the top */
       padding-left: 0px; /* Padding to the left */
       padding-bottom: 0px; /* Adjust as needed */
-      margin-left: 10px;
-      margin-right: 10px;
     }
-
+    .Body-content {
+      padding-top: 0px; /* Padding at the top */
+      padding-left: 0px; /* Padding to the left */
+      padding-bottom: 0px; /* Adjust as needed */
+      margin-inline: 10px;
+    }
     .Footer {
       padding: 0px; /* Padding to the left */
       visibility: hidden;
