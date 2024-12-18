@@ -43,7 +43,7 @@
             name: "Account",
             icon: "person",
             label: "Account",
-            path: `/account/${$UserKey}`,
+            path: `/profile/`,
         },
     ];
 </script>
@@ -72,7 +72,7 @@
                 class="menu-item"
                 on:click={() => {
                     // active = item.name;
-                    goto(item.path + "" + $UserKey);
+                    window.location.href = item.path + "" + $UserKey;
                 }}
             >
                 <span class="material-symbols-outlined">{item.icon}</span>
@@ -90,7 +90,7 @@
                 class="menu-item"
                 on:click={() => {
                     // active = item.name;
-                    goto(item.path + "" + $UserKey);
+                    window.location.href = item.path + "" + $UserKey;
                 }}
             >
                 <span class="material-symbols-outlined">{item.icon}</span>
@@ -103,7 +103,7 @@
                 class="menu-item"
                 on:click={() => {
                     // active = item.name;
-                    goto(item.path);
+                    window.location.href = item.path;
                 }}
             >
                 <span class="material-symbols-outlined">{item.icon}</span>
