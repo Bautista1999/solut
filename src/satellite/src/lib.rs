@@ -21,7 +21,9 @@ mod reputation;
 mod scheduled;
 mod types;
 mod user_information;
-use crate::types::interface::IndexResponse;
+use crate::types::interface::{UserBasicInfo, UserProfileBasicInfo};
+
+use crate::types::interface::{Activity, IndexResponse, IndexResponseBasicInfo};
 use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
 use ic_cdk::api::{self, set_global_timer, time};
 use ic_cdk_macros::{query, update};
