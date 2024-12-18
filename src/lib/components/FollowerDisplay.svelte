@@ -21,6 +21,8 @@
      */
     export let key;
 
+    export let type;
+
     async function follow() {
         if (!(await CheckIfSignedIn())) {
             path.set(window.location.toString());
@@ -46,11 +48,14 @@
 
 <div class=" HorizontallyAligned" style="justify-content: space-between;">
     <div class=" HorizontallyAligned">
-        <div class="userSmallProfilePicture">
+        <!-- <div class="">
             <PledgerProfilePicture image={profilePicture} index={1} />
-        </div>
-
-        <a href="/profile/{key}" style="text-decoration:none">{username}</a>
+        </div> -->
+        <img src={profilePicture} alt="Profile" class="profile-image" />
+        <a
+            href="/{type.length > 0 ? type : 'profile'}/{key}"
+            style="text-decoration:none; font-family: 'Barlow'">{username}</a
+        >
     </div>
     {#if key != $UserKey}
         {#if follows}
@@ -60,3 +65,15 @@
         {/if}
     {/if}
 </div>
+
+<style>
+    .profile-image {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+</style>

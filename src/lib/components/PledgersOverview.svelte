@@ -16,7 +16,7 @@
         {#each users as user, index (user)}
             <div
                 class="image-container_card"
-                style="left: {index * 15}px; z-index: {100 -
+                style="left: {index * 7}px; z-index: {5 -
                     index}; background-color:red;"
             >
                 <PledgerProfilePicture image={user.image} {index} />
@@ -57,10 +57,9 @@
     .image-scroller {
         margin-top: 15px;
         position: absolute;
-        height: 0px; /* Adjust if necessary */
+        height: 0px;
         display: flex;
-        /* Removed justify-content: center; to allow starting from the beginning */
-        flex-wrap: nowrap; /* Prevent images from wrapping onto multiple lines */
+        flex-wrap: nowrap;
     }
 
     .image-container {
@@ -104,15 +103,14 @@
         margin-top: 0px;
         margin-block: 4px;
         height: 30px;
-        position: relative;
-        min-height: 30px; /* Height of the images */
+        min-height: 30px;
     }
 
     .image-container_card {
-        position: absolute;
-        margin-right: -20px; /* Adjust space between images */
-        border-radius: 50%; /* Make images round */
-        overflow: hidden; /* Hide overflow to maintain the circular shape */
+        position: relative;
+        margin-right: -20px;
+        border-radius: 50%;
+        overflow: hidden;
 
         border: 1px solid var(--tertiary-color);
         width: 30px;

@@ -184,4 +184,48 @@ pub mod interface {
         pub reputation: Option<u64>, // Reputation (only for users)
         pub element_type: String, // Type of element (e.g., "topic", "idea", "user")
     }
+
+    #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct IndexResponseBasicInfo {
+        pub element_id: String,    // Unique ID for the element
+        pub title: String, // Title or username (e.g., "Blockchain for Healthcare" or "juanbautista")
+        pub profile_image: String, // Profile image or main image URL
+        pub creation_date: u64, // Creation date (for topics/ideas; not applicable to users)
+        pub element_type: String, // Type of element (e.g., "topic", "idea", "user")
+    }
+
+    #[derive(Default, CandidType, Serialize, Deserialize, Clone)]
+    pub struct UserProfileBasicInfo {
+        pub username: String,
+        pub profile_picture: String,
+        pub user_id: String,
+    }
+
+    #[derive(Default, CandidType, Serialize, Deserialize, Debug, Clone)]
+    pub struct UserBasicInfo {
+        pub user_id: String,
+        pub username: String,
+        pub profile_picture: String,
+        pub background_image: String,
+        pub description: String,
+        pub followers_count: u64,
+        pub followings_count: u64,
+        pub total_pledged: u64,
+        pub active_pledged: u64,
+        pub reputation: u64,
+    }
+
+    #[derive(Default, CandidType, Serialize, Deserialize, Debug, Clone)]
+    pub struct Activity {
+        pub creator_username: String,
+        pub creator_id: String,
+        pub profile_image: String,
+        pub activity_image: Option<String>, // Optional image (None for pledges)
+        pub activity_title: String,         // Title of the topic, idea, or solution
+        pub created_at: u64,                // Timestamp of activity creation
+        pub description: String,            // Description message for the activity
+        pub element_id: String,             // The element ID
+        pub element_type: String,           // "topic", "idea", "solution", or "pledge"
+        pub link: String,                   // Link for navigation
+    }
 }

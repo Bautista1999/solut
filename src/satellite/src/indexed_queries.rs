@@ -9,7 +9,7 @@ use crate::{delete_pledge, get_document_description_or_default, get_document_ver
 use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
 use bytes::Bytes;
 use candid::{CandidType, Int, Nat, Principal};
-use ic_cdk::api::{self, call, set_global_timer, time};
+use ic_cdk::api::{self, call, canister_balance128, set_global_timer, time};
 use ic_cdk::spawn;
 use ic_cdk_macros::{query, update};
 use junobuild_satellite::{
@@ -27,7 +27,7 @@ use serde_json::json;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::convert::TryFrom;
-use std::iter::Filter;
+use std::iter::{Cycle, Filter};
 
 use std::sync::LazyLock; // For Rust 1.63 and later
 
@@ -164,6 +164,7 @@ pub fn get_paginated_topics(
     limit: Option<usize>,
     search_term: Option<String>,
 ) -> Result<(Vec<IndexResponse>, usize, usize, usize), String> {
+    let amount = canister_balance128();
     let offset = offset.unwrap_or(0);
     let limit = limit.unwrap_or(12);
 
@@ -252,7 +253,11 @@ pub fn get_paginated_topics(
         .take(limit)
         .collect::<Vec<_>>();
     let total_pages = (total_items + limit - 1) / limit; // Round up for total pages
-
+    let cycles_consumed = amount - canister_balance128();
+    log(format!(
+        "This function has spent:{}",
+        cycles_consumed.to_string()
+    ));
     Ok((
         paginated_elements,
         total_items,
@@ -799,4 +804,9 @@ pub fn get_funding_details(
 
     // Return the result
     Ok((total_pledged, total_expected, pledgers.len(), top_pledgers))
+}
+
+#[query]
+pub fn check_cycles() -> u128 {
+    return canister_balance128();
 }

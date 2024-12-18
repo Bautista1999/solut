@@ -13,7 +13,7 @@ import  {idlFactory as Escrow} from "$lib/declarations/escrow.declarations.did";
 import { getIdeaIdBySolution, getImplementedFeaturesOfSolution, getUserKey } from "$lib/data_functions/get_functions";
 import { createNotification, followElement, updateSolutionStatus } from "$lib/data_functions/create_functions";
 // import { trackEvent } from "@junobuild/analytics";
-import { deletePledge, getFundingDetails, getPledgedBalance, getUserActivePledges, pledgeCreate } from "../../declarations/satellite/satellite.api";
+import { checkCycles, deletePledge, getFundingDetails, getPledgedBalance, getUserActivePledges, pledgeCreate } from "../../declarations/satellite/satellite.api";
 import { UserKey } from "$lib/stores/other_stores";
 
 // import("../declarations/juno.declarations.did.js")._SERVICE.set_doc;
@@ -283,6 +283,9 @@ export async function CreatePledgeNew(idea_id, feature_id, amount, userPrincipal
     // });
 
     let docKey = nanoid();
+            // Default state: Fetch only topics
+            
+            
 
     /**
     * @type {string} 

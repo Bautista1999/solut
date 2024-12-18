@@ -78,7 +78,6 @@
     let notifications = [];
     onMount(async () => {
         notifications = await getUserNewNotifications();
-        console.log(notifications);
     });
     let notificationsPreview = false;
 </script>
@@ -456,7 +455,7 @@
                         class="material-symbols-outlined"
                         href={$UserKey == ""
                             ? "/signin"
-                            : "/account/" + $UserKey}
+                            : "/profile/" + $UserKey}
                     >
                         account_circle
                     </a>
@@ -467,7 +466,7 @@
                             style="width: fit-content;position:absolute;"
                             href={$UserKey == ""
                                 ? "/signin"
-                                : "/account/" + $UserKey}
+                                : "/profile/" + $UserKey}
                         >
                             <PledgerProfilePicture
                                 image={data[0].image}
@@ -483,7 +482,7 @@
                             class="material-symbols-outlined"
                             href={$UserKey == ""
                                 ? "/signin"
-                                : "/account/" + $UserKey}
+                                : "/profile/" + $UserKey}
                         >
                             account_circle
                         </a>
@@ -499,7 +498,7 @@
                         style="overflow-x: hidden; position:absolute;"
                         href={$UserKey == ""
                             ? "/signin"
-                            : "/account/" + $UserKey}>Account</a
+                            : "/profile/" + $UserKey}>Account</a
                     >{/if}
             </div>
         </div>
