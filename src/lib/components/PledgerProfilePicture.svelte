@@ -29,6 +29,6 @@
     img {
         width: 100%;
         height: 100%;
-        object-fit: cover; /* Ensure images cover the container without distortion */
+        object-fit: cover;
     }
 </style>
