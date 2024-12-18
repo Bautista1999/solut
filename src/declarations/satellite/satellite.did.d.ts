@@ -5,6 +5,18 @@ import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 import type { IDL } from '@dfinity/candid';
 
+export interface Activity {
+  'profile_image' : string,
+  'element_id' : string,
+  'activity_title' : string,
+  'creator_id' : string,
+  'link' : string,
+  'creator_username' : string,
+  'description' : string,
+  'created_at' : bigint,
+  'element_type' : string,
+  'activity_image' : [] | [string],
+}
 export interface Idea {
   'categories' : Array<string>,
   'title' : string,
@@ -23,6 +35,13 @@ export interface IndexResponse {
   'element_type' : string,
   'subtitle' : string,
   'total_followers' : bigint,
+  'creation_date' : bigint,
+}
+export interface IndexResponseBasicInfo {
+  'title' : string,
+  'profile_image' : string,
+  'element_id' : string,
+  'element_type' : string,
   'creation_date' : bigint,
 }
 export interface Milestone {
@@ -63,19 +82,29 @@ export type Result = { 'Ok' : null } |
   { 'Err' : string };
 export type Result_1 = { 'Ok' : string } |
   { 'Err' : string };
+export type Result_10 = { 'Ok' : UserBasicInfo } |
+  { 'Err' : string };
 export type Result_2 = { 'Ok' : bigint } |
   { 'Err' : string };
 export type Result_3 = {
     'Ok' : [bigint, bigint, bigint, Array<[string, string]>]
   } |
   { 'Err' : string };
-export type Result_4 = {
+export type Result_4 = { 'Ok' : Array<UserProfileBasicInfo> } |
+  { 'Err' : string };
+export type Result_5 = {
+    'Ok' : [Array<IndexResponseBasicInfo>, bigint, bigint, bigint]
+  } |
+  { 'Err' : string };
+export type Result_6 = {
     'Ok' : [Array<IndexResponse>, bigint, bigint, bigint]
   } |
   { 'Err' : string };
-export type Result_5 = { 'Ok' : [bigint, bigint] } |
+export type Result_7 = { 'Ok' : [Array<Activity>, bigint, bigint, bigint] } |
   { 'Err' : string };
-export type Result_6 = { 'Ok' : Array<PledgeData> } |
+export type Result_8 = { 'Ok' : [bigint, bigint] } |
+  { 'Err' : string };
+export type Result_9 = { 'Ok' : Array<PledgeData> } |
   { 'Err' : string };
 export interface SetIdea { 'key' : string, 'idea' : Idea }
 export interface Solution {
@@ -88,8 +117,26 @@ export interface Solution {
   'milestones' : Array<Milestone>,
   'images' : Array<string>,
 }
+export interface UserBasicInfo {
+  'username' : string,
+  'profile_picture' : string,
+  'active_pledged' : bigint,
+  'background_image' : string,
+  'description' : string,
+  'total_pledged' : bigint,
+  'followings_count' : bigint,
+  'reputation' : bigint,
+  'user_id' : string,
+  'followers_count' : bigint,
+}
+export interface UserProfileBasicInfo {
+  'username' : string,
+  'profile_picture' : string,
+  'user_id' : string,
+}
 export interface _SERVICE {
   'build_version' : ActorMethod<[], string>,
+  'check_cycles' : ActorMethod<[], bigint>,
   'create_ideas' : ActorMethod<[Array<SetIdea>, string], Result>,
   'create_new_product' : ActorMethod<[Product, string], Result>,
   'create_or_update_idea' : ActorMethod<[string, Idea, string], Result>,
@@ -102,34 +149,53 @@ export interface _SERVICE {
   'eliminate_topic' : ActorMethod<[string], Result>,
   'get_available_balance' : ActorMethod<[string], Result_2>,
   'get_funding_details' : ActorMethod<[string, string], Result_3>,
+  'get_historical_pledged_balance' : ActorMethod<[string], Result_2>,
+  'get_paginated_common_users' : ActorMethod<
+    [string, string, [] | [bigint], [] | [bigint]],
+    Result_4
+  >,
+  'get_paginated_followers' : ActorMethod<
+    [string, [] | [bigint], [] | [bigint]],
+    Result_5
+  >,
+  'get_paginated_following_elements' : ActorMethod<
+    [string, [] | [bigint], [] | [bigint]],
+    Result_5
+  >,
   'get_paginated_ideas' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string], [] | [string]],
-    Result_4
+    Result_6
   >,
   'get_paginated_ideas_by_solution' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string], string],
-    Result_4
+    Result_6
+  >,
+  'get_paginated_most_recent_activities' : ActorMethod<
+    [string, [] | [bigint], [] | [bigint]],
+    Result_7
   >,
   'get_paginated_topics' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string]],
-    Result_4
+    Result_6
   >,
   'get_paginated_topics_ideas' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string]],
-    Result_4
+    Result_6
   >,
   'get_paginated_users' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string]],
-    Result_4
+    Result_6
   >,
   'get_pledged_balance' : ActorMethod<[string], Result_2>,
   'get_total_followers' : ActorMethod<[string], bigint>,
   'get_total_pledged' : ActorMethod<[string, string], Result_2>,
-  'get_total_pledged_and_expected' : ActorMethod<[string, string], Result_5>,
-  'get_user_active_pledges' : ActorMethod<[string], Result_6>,
+  'get_total_pledged_and_expected' : ActorMethod<[string, string], Result_8>,
+  'get_user_active_pledges' : ActorMethod<[string], Result_9>,
+  'get_user_basic_information' : ActorMethod<[string], Result_10>,
   'get_user_profile_pic' : ActorMethod<[string], string>,
   'get_user_real_balance' : ActorMethod<[string], Result_2>,
   'get_user_reputation' : ActorMethod<[Principal], Result_2>,
+  'get_user_total_pledges' : ActorMethod<[string], Result_9>,
   'get_user_username' : ActorMethod<[string], string>,
   'pledge_create' : ActorMethod<
     [string, string, string, bigint, Uint8Array | number[]],
