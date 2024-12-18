@@ -11,6 +11,7 @@
     import MagicalDotsAbsolut from "$lib/components/MagicalDotsAbsolut.svelte";
     import { onMount } from "svelte";
     import {
+        checkCycles,
         getPaginatedIdeas,
         getPaginatedTopics,
         getPaginatedTopicsIdeas,
@@ -93,6 +94,7 @@
             searchLoading = false;
         } else {
             // Search state: Fetch topics and ideas
+
             const [results] = await Promise.all([
                 getPaginatedTopicsIdeas(
                     "most_pledged",
