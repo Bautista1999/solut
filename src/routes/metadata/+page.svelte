@@ -22,6 +22,8 @@
     eliminateTopic,
     getAvailableBalance,
     getFundingDetails,
+    getPaginatedCommonUsers,
+    getPaginatedFollowingElements,
     getPaginatedIdeas,
     getPaginatedIdeasBySolution,
     getPaginatedTopics,
@@ -688,11 +690,17 @@
       />
     </div>
     <div class="Field">
-      <h1 style="margin:0px;">Get Topic's total followers</h1>
+      <h1 style="margin:0px;">Get User's total followers</h1>
       <BasicRoundedButton
         disabledCondition={null}
         someFunction={async () => {
-          console.log(await getTotalFollowers("5Yd5E2LTG76N9RYYr8oGV"));
+          console.log(
+            await getPaginatedFollowingElements(
+              "2dgol-6t7gr-wbceo-axkyn-3qinp-vxv32-zrqbv-oj6tr-ztuvk-el3ln-3ae",
+              [],
+              [],
+            ),
+          );
         }}
         msg={"Total followers!"}
       />
