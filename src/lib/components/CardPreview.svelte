@@ -33,7 +33,6 @@
     // Load the image when the component mounts
 
     $: if (displaySrc) {
-        // debugger;
         isLoading = true;
         (async () => {
             try {
