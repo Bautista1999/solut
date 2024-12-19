@@ -16,6 +16,7 @@
     import MagicalDotsAbsolut from "$lib/components/MagicalDotsAbsolut.svelte";
     import MagicalDots from "$lib/components/magicalDots.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
+    import NotFound from "$lib/components/NotFound.svelte";
 
     /** @type {import('./$types').PageData} */
     // @ts-ignore
@@ -41,6 +42,10 @@
     let error = false;
     let isLoading = false;
     onMount(async () => {
+        window.addEventListener("popstate", () => {
+            // Logic to handle page state when navigating back or forward
+            location.reload(); // Basic approach to reload the current state
+        });
         let callerPrincipal = get(UserKey);
         isOwner = callerPrincipal == user_id;
         isLoading = true;
@@ -86,7 +91,7 @@
 </script>
 
 <div class="profile-page">
-    {#if !isLoading}
+    {#if !isLoading && !error}
         <!-- Username Section with Background -->
         <div class="username-section {isShrunk ? 'shrink' : ''}">
             <ProfilePageHeader
@@ -117,6 +122,8 @@
                 <ProfileActivitySection {posts} />
             </div>
         </div>
+    {:else if error}
+        <NotFound />
     {:else}
         <LoadingNew />
     {/if}

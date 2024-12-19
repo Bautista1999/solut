@@ -1,4 +1,5 @@
 <script>
+    import { validateImageUrl } from "$lib/data_functions/get_functions";
     import { formatDistanceToNow } from "date-fns";
 
     /**
@@ -32,13 +33,37 @@
     if (!activityImage) {
         activityImage = "https://solutio.one/solutio-images/logo-01.png";
     }
+
+    $: displaySrc = activity.profile_image;
+    let isLoading = true;
+    // validation of profile picture
+    $: if (displaySrc) {
+        // debugger;
+        isLoading = true;
+        (async () => {
+            try {
+                displaySrc = await validateImageUrl(
+                    displaySrc,
+                    "https://cdn-icons-png.freepik.com/512/8792/8792047.png",
+                );
+            } catch {
+                displaySrc =
+                    "https://cdn-icons-png.freepik.com/512/8792/8792047.png";
+            } finally {
+                isLoading = false;
+            }
+        })();
+    } else {
+        displaySrc = "https://cdn-icons-png.freepik.com/512/8792/8792047.png";
+        isLoading = false;
+    }
 </script>
 
 <a class="activity-card" href={link}>
     <!-- Top Section: Profile Image, Username, Time Ago -->
     <div class="activity-header">
         <a href={"/profile/" + username}
-            ><img src={profileImage} alt="Profile" class="profile-image" /></a
+            ><img src={displaySrc} alt="Profile" class="profile-image" /></a
         >
         <div class="user-info">
             <a href={"/profile/" + username} class="username">@{username}</a>

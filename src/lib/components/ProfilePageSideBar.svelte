@@ -20,7 +20,7 @@
 
     export let user_id = "";
     export let followers = 0;
-    export let user_id_profile = "";
+    export let user_id_profile = user_id;
     export let following = 0;
     export let bio =
         "I am the founder of Solutio, the biggest crowdfunding platform in the world. I also like videogames, especially Sim Racing, and hanging out with my family. I only pledge to topics that have potential, not scams.";
@@ -145,11 +145,11 @@
                             class="followers"
                             style="text-decoration: underline;"
                             href={"/profile/" + user.user_id}
+                            rel="external"
                         >
                             @{user.username}
-                        </a>{i === 0 && users.length > 1 ? ", " : ""}
+                        </a>{i === 0 && users.length > 1 ? " and " : ""}
                     {/each}
-                    and by other {followers} people
                 {/if}
             </p>
         </div>

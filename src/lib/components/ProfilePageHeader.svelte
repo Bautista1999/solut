@@ -11,6 +11,7 @@
     import { onDestroy, onMount } from "svelte";
     import IconButton from "./IconButton.svelte";
     import UserProfilePicture from "./UserProfilePicture.svelte";
+    import { validateImageUrl } from "$lib/data_functions/get_functions";
     // Sample data for the username section
     export let isOwner = false; // Change to false to simulate non-owner view
     export let followers = 0;
@@ -18,6 +19,7 @@
     let follows = false;
     export let userPrincipal = "";
     export let profileImage = ""; // Placeholder image URL
+    $: displaySrc = profileImage;
     export let backgroundImage = "";
     async function CheckIfUserFollows() {
         follows = await CheckIfFollow(userPrincipal);
@@ -42,11 +44,35 @@
     // Add a scroll event listener when the component mounts
     onMount(() => {
         window.addEventListener("scroll", handleScroll);
+        CheckIfUserFollows();
     });
 
     onDestroy(() => {
         window.removeEventListener("scroll", handleScroll);
     });
+
+    let isLoading = true;
+    // validation of profile picture
+    $: if (displaySrc) {
+        // debugger;
+        isLoading = true;
+        (async () => {
+            try {
+                displaySrc = await validateImageUrl(
+                    displaySrc,
+                    "https://cdn-icons-png.freepik.com/512/8792/8792047.png",
+                );
+            } catch {
+                displaySrc =
+                    "https://cdn-icons-png.freepik.com/512/8792/8792047.png";
+            } finally {
+                isLoading = false;
+            }
+        })();
+    } else {
+        displaySrc = "https://cdn-icons-png.freepik.com/512/8792/8792047.png";
+        isLoading = false;
+    }
 </script>
 
 <!-- Background Image -->
@@ -58,7 +84,13 @@
 <div class="profile-content {isShrunk ? 'shrink' : ''}">
     <!-- Profile Image -->
     <div class="profile-image">
-        <img src={profileImage} alt="Profile Picture" />
+        {#if isLoading}
+            <div class=" loadingHolder">
+                <div class="spinner"></div>
+            </div>
+        {:else}
+            <img src={displaySrc} alt="Profile Picture" />
+        {/if}
     </div>
 
     <!-- User Information -->
@@ -87,16 +119,20 @@
         {:else if !follows}
             <BasicButtonDark
                 msg={"Follow"}
-                someFunction={() => {
+                someFunction={async () => {
+                    await followUser();
                     follows = true;
+
                     followers++;
                 }}
             />
         {:else}
             <BasicButtonDark
                 msg={"Unfollow"}
-                someFunction={() => {
+                someFunction={async () => {
+                    await unFollowUser();
                     follows = false;
+
                     followers--;
                 }}
             />
@@ -112,6 +148,31 @@
         left: 0;
         width: 100%;
         height: 100%;
+    }
+    .spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-top: 4px solid var(--primary-color);
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+    .loadingHolder {
+        width: 100px;
+        height: 100px; /* Full height to match the image container */
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--tertiary-color);
     }
 
     .background-overlay img {
@@ -239,6 +300,10 @@
 
         .actions {
             gap: 5px;
+        }
+        .loadingHolder {
+            width: 80px;
+            height: 80px;
         }
     }
 </style>
