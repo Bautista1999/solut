@@ -527,6 +527,7 @@
 
         overflow: hidden; /* Hide overflow to maintain the circular shape */
         width: 25px; /* Width of the images */
+        max-width: 25px; /* Width of the images */
         height: 25px; /* Height of the images */
         left: 24px;
         border: 2px solid var(--primary-color);

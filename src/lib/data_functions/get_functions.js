@@ -1,34 +1,16 @@
 import { UserKey } from "$lib/stores/other_stores";
-import { authSubscribe, getDoc,getManyDocs ,initJuno, listDocs } from "@junobuild/core-peer";
+import { authSubscribe, getDoc, getManyDocs, initJuno, listDocs } from "@junobuild/core-peer";
 import { setLastNotificationRead } from "./notifications";
 import { newNotificationsStore, notificationCount, updateNotificationCount } from "$lib/stores/notifications";
 import { get } from "svelte/store";
-
-
+import { getTotalFollowers as getTotalFollowersApi , getTotalFollowing as getTotalFollowingApi } from "../../declarations/satellite/satellite.api";
 
 /**
  * @param {string} element_id
  * @return {Promise<number>}
  */
 export async function getTotalFollowers(element_id) {
-   
-    let doc = await getDoc({
-        collection: "followers",
-        key: "FOLL_"+element_id,
-    });
-    let docs = await listDocs({
-        collection:"follow",
-        filter:{
-            matcher:{
-                key:"_"+element_id
-            }
-        }
-    })
-    if(doc==undefined){
-        return 0;
-    }else{
-        return Number(docs.items_length);
-    }
+    return Number(await getTotalFollowersApi(element_id));
 }
 
 /**
@@ -36,19 +18,7 @@ export async function getTotalFollowers(element_id) {
  * @return {Promise<number>}
  */
 export async function getTotalFollowing(element_id) {
-   
-
-    let docs = await listDocs({
-        collection:"follow",
-        filter:{
-            matcher:{
-                key:element_id+"_"
-            }
-        }
-    })
-    
-        return Number(docs.items_length);
-    
+    return Number(await getTotalFollowingApi(element_id));
 }
 
 /**

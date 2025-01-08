@@ -316,17 +316,7 @@ export async function setUser(user, userKey){
         }
     };
 
-    let followersCounterDoc = [
-        "followers", "FOLL_"+userKey,
-        {
-            
-            description:[(0).toString()],
-            version:versionGen,
-            data:await toArray({
-                followers:0,
-            }),
-        }
-    ];
+    
 
     let reputationDoc = [
         "reputation", "REP_"+userKey,
@@ -349,7 +339,7 @@ export async function setUser(user, userKey){
         }
     ];
     let arrayDocs = [userDoc,indexSearchDoc];
-    let arrayDocsAdmin=[followersCounterDoc,reputationDoc,userRevenueCounterDoc];
+    let arrayDocsAdmin=[reputationDoc,userRevenueCounterDoc];
     let newDocs = await setManyDocs({docs:arrayDocs});
     let identity = await unsafeIdentity();
     const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 

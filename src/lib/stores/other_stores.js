@@ -118,4 +118,5 @@ export let confirmationModal = writable(false);
 
 export let editImages = writable(false);
 
+export let DeleteModal = writable(false);
 
