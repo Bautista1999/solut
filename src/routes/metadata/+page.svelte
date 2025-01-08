@@ -57,9 +57,16 @@
   import { AccountIdentifier } from "@dfinity/ledger-icp";
   import { Principal } from "@dfinity/principal";
 
+  import Graph from "$lib/components/Graph.svelte";
+
+  // Example data
+  const xData = [1, 2, 3, 4, 5, 6, 7];
+  const yData = [65, 59, 80, 81, 56, 55, 40];
+
   export let title;
   export let description;
   export let image;
+
   let msg = "";
   let loading = false;
   async function triggerServerlessFunction() {
@@ -662,92 +669,14 @@
         msg={"Send notification"}
       />
     </div>
-    <div class="Field">
-      <h1 style="margin:0px;">Get user's username</h1>
-      <input
-        class="InputTextSmall"
-        placeholder="Paste the user id here..."
-        bind:value={userId}
-      />
-      <BasicRoundedButton
-        disabledCondition={null}
-        someFunction={async () => {
-          console.log(await getUserUsername(userId));
-        }}
-        msg={"Query username"}
-      />
-    </div>
-    <div class="Field">
-      <h1 style="margin:0px;">Get Topic's total funding information</h1>
-      <BasicRoundedButton
-        disabledCondition={null}
-        someFunction={async () => {
-          console.log(
-            await getFundingDetails("solution", "Ggpkso6QiqjK0LhJn1Er0"),
-          );
-        }}
-        msg={"Total funding information!"}
-      />
-    </div>
-    <div class="Field">
-      <h1 style="margin:0px;">Get User's total followers</h1>
-      <BasicRoundedButton
-        disabledCondition={null}
-        someFunction={async () => {
-          console.log(
-            await getPaginatedFollowingElements(
-              "2dgol-6t7gr-wbceo-axkyn-3qinp-vxv32-zrqbv-oj6tr-ztuvk-el3ln-3ae",
-              [],
-              [],
-            ),
-          );
-        }}
-        msg={"Total followers!"}
-      />
-    </div>
 
-    <div class="Field">
-      <h1 style="margin:0px;">Get paginated topics</h1>
-      <BasicRoundedButton
-        disabledCondition={null}
-        someFunction={async () => {
-          console.log(await getPaginatedTopics("most_pledged", [], [], []));
-        }}
-        msg={"Most pledged topics!"}
-      />
-    </div>
-
-    <div class="Field">
-      <h1 style="margin:0px;">Get paginated users</h1>
-      <BasicRoundedButton
-        disabledCondition={null}
-        someFunction={async () => {
-          console.log(
-            await getPaginatedUsers("most_followed", [], [], ["Coti"]),
-          );
-        }}
-        msg={"Most followed users!"}
-      />
-    </div>
-
-    <div class="Field">
-      <h1 style="margin:0px;">Get paginated ideas by solution</h1>
-      <BasicRoundedButton
-        disabledCondition={null}
-        someFunction={async () => {
-          console.log(
-            await getPaginatedIdeasBySolution(
-              "most_followed",
-              [],
-              [],
-              [],
-              "-cv1BN9Zvs4g4--mpu4Cp",
-            ),
-          );
-        }}
-        msg={"Implemented ideas by solution"}
-      />
-    </div>
+    <Graph
+      title="Users Registered"
+      xAxisLabel="Time (days)"
+      yAxisLabel="Users Registered"
+      {xData}
+      {yData}
+    />
   {/if}
 </div>
 
