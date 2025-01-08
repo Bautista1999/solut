@@ -22,3 +22,7 @@ build/_app/version.json
 build/index.html
 node_modules/.package-lock.json
 node_modules/.package-lock.json
+build/_app/version.json
+build/index.html
+build_log.txt
+node_modules/.package-lock.json
