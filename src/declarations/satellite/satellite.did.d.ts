@@ -17,6 +17,14 @@ export interface Activity {
   'element_type' : string,
   'activity_image' : [] | [string],
 }
+export interface EnrichedPledgeData {
+  'feature' : [] | [IndexResponseBasicInfo],
+  'idea' : IndexResponseBasicInfo,
+  'expected_amount' : bigint,
+  'pledge_id' : string,
+  'created_at' : bigint,
+  'amount' : bigint,
+}
 export interface Idea {
   'categories' : Array<string>,
   'title' : string,
@@ -82,7 +90,9 @@ export type Result = { 'Ok' : null } |
   { 'Err' : string };
 export type Result_1 = { 'Ok' : string } |
   { 'Err' : string };
-export type Result_10 = { 'Ok' : UserBasicInfo } |
+export type Result_10 = { 'Ok' : Array<EnrichedPledgeData> } |
+  { 'Err' : string };
+export type Result_11 = { 'Ok' : UserBasicInfo } |
   { 'Err' : string };
 export type Result_2 = { 'Ok' : bigint } |
   { 'Err' : string };
@@ -188,10 +198,12 @@ export interface _SERVICE {
   >,
   'get_pledged_balance' : ActorMethod<[string], Result_2>,
   'get_total_followers' : ActorMethod<[string], bigint>,
+  'get_total_following' : ActorMethod<[string], bigint>,
   'get_total_pledged' : ActorMethod<[string, string], Result_2>,
   'get_total_pledged_and_expected' : ActorMethod<[string, string], Result_8>,
   'get_user_active_pledges' : ActorMethod<[string], Result_9>,
-  'get_user_basic_information' : ActorMethod<[string], Result_10>,
+  'get_user_active_pledges_enriched' : ActorMethod<[string], Result_10>,
+  'get_user_basic_information' : ActorMethod<[string], Result_11>,
   'get_user_profile_pic' : ActorMethod<[string], string>,
   'get_user_real_balance' : ActorMethod<[string], Result_2>,
   'get_user_reputation' : ActorMethod<[Principal], Result_2>,
