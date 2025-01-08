@@ -1,7 +1,6 @@
 <script>
     import { confirmationModal } from "$lib/stores/other_stores";
     import BasicButtonDarkSmall from "./BasicButton_Dark_Small.svelte";
-    import ErrorModalNew from "./ErrorModalNew.svelte";
     import LoadingModalNew from "./LoadingModalNew.svelte";
     import Modal from "./modal.svelte";
     import SuccessModalNew from "./SuccessModalNew.svelte";
@@ -20,36 +19,34 @@
     bind:isOpen={$confirmationModal}
     close={() => {
         error = false;
+        loading = false;
+        success = false;
         confirmationModal.set(false);
     }}
-    style={"width:350px;"}
 >
-    <div class="deleteModal">
+    <div class="confirmation-content">
         {#if loading}
             <LoadingModalNew message={loadingMsg} />
         {:else if success}
             <SuccessModalNew message={successMsg} />
         {:else if error}
-            <!-- <ErrorModalNew
-                error={errorMsg}
-                someFunction={() => {
-                    error = false;
-                    confirmationModal.set(false);
-                }}
-            /> -->
-            <h3>Error!</h3>
+            <div class="error-container">
+                <span class="material-symbols-outlined error-icon">error</span>
+                <h3>Error</h3>
+                <p>{errorMsg}</p>
+            </div>
         {:else}
-            <div class="elements">
-                <p style="font-size: larger; ">{message}</p>
-                <div class="VerticallyAligned">
+            <div class="content">
+                <p>{message}</p>
+                <div class="button-container">
                     <BasicButtonDarkSmall
-                        msg="Yes"
+                        msg="Confirm"
                         someFunction={async () => {
                             await someFunction();
                         }}
                     />
                     <BasicButtonDarkSmall
-                        msg="No"
+                        msg="Cancel"
                         someFunction={() => {
                             confirmationModal.set(false);
                         }}
@@ -61,24 +58,38 @@
 </Modal>
 
 <style>
-    .deleteModal {
-        margin: 5px;
-        margin-top: 50px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        font-size: large;
-        gap: 30px;
-        height: 100%;
+    .confirmation-content {
+        padding: 20px;
+        text-align: center;
     }
-    .elements {
+
+    .content {
         display: flex;
         flex-direction: column;
         align-items: center;
+        gap: 20px;
+    }
+
+    .button-container {
+        display: flex;
+        gap: 10px;
         justify-content: center;
-        font-size: large;
-        gap: 30px;
-        height: 100%;
+    }
+
+    .error-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        color: var(--red-wine);
+    }
+
+    p {
+        margin: 0;
+        font-size: 1.1em;
+    }
+
+    h3 {
+        margin: 0;
     }
 </style>

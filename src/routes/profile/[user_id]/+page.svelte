@@ -17,6 +17,7 @@
     import MagicalDots from "$lib/components/magicalDots.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import NotFound from "$lib/components/NotFound.svelte";
+    import TableForPledges from "$lib/components/TableForPledges.svelte";
 
     /** @type {import('./$types').PageData} */
     // @ts-ignore

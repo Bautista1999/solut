@@ -209,7 +209,6 @@
                 },
             },
         });
-        console.log("plegdes: ", pledges);
         if (Number(pledges.items_length) == 0) {
             return transactions;
         } else {
@@ -232,7 +231,7 @@
                     trans_type: "Pledge",
                     to: [],
                     from: [],
-                    message: "",
+                    message: pledges.items[i].key,
                     project_id: pledges.items[i].data.idea_id,
                     transaction_number: _number,
                     created_at: _number[0],
@@ -611,39 +610,6 @@
         padding: 5px;
     }
 
-    .Badges {
-        display: grid;
-        grid-template-columns: 0fr 1fr 0fr;
-        grid-template-rows: 0fr 0fr 0fr;
-        gap: 0px 0px;
-        grid-auto-flow: row;
-        grid-template-areas:
-            "BudgesTitle BudgesTitle BudgesTitle"
-            "BadgesSection BadgesSection BadgesSection"
-            "BadgesSection BadgesSection BadgesSection";
-        grid-area: 3 / 1 / 4 / 2;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .BudgesTitle {
-        grid-area: BudgesTitle;
-        text-align: center;
-        padding-block: 15px;
-        font-size: larger;
-    }
-
-    .BadgesSection {
-        grid-area: BadgesSection;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-    }
-
     .Social-Section {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
@@ -690,19 +656,13 @@
             "UserInfo Transactions Wallet"
             "UserInfo Transactions Balance"
             "UserInfo Transactions Balance";
+        position: relative;
+        z-index: 0;
     }
 
     .Description {
         grid-area: Description;
         padding: 0px;
-    }
-
-    .Badges {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        grid-area: Badges;
     }
 
     .Reputation {

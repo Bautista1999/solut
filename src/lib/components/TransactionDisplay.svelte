@@ -12,9 +12,9 @@
         roundToFiveDecimals,
         roundUpToThreeDecimalPlaces,
     } from "$lib/financial_functions/financial_functions";
-    import { confirmationModal, UserKey } from "$lib/stores/other_stores";
+    import { DeleteModal, UserKey } from "$lib/stores/other_stores";
     import { Principal } from "@dfinity/principal";
-    import ModalConfirmation from "./ModalConfirmation.svelte";
+    import ModalConfirmationNew from "./ModalConfirmationNew.svelte";
 
     // You would populate this with data, possibly from a backend API call
     /**
@@ -33,10 +33,11 @@
         );
     }
 
+    let selectedTransactionId = "";
     let modalErrorMsg = "Something went wrong when canceling the pledge.";
-    $: error = false;
-    $: loading = false;
-    $: success = false;
+    let error = false;
+    let loading = false;
+    let success = false;
 </script>
 
 <table class="transaction-table">
@@ -136,44 +137,18 @@
                 {#if transaction.trans_type == "Pledge" && transaction.sender.toString() == $UserKey}
                     {#await getSolutionStatusFromIdeaId(transaction.project_id) then data}
                         {#if data.toLowerCase() != "delivered"}
-                            <span
-                                class="material-symbols-outlined"
-                                style=""
-                                on:click={() => {
-                                    confirmationModal.set(true);
-                                }}
-                            >
-                                delete
-                            </span>
-
-                            <ModalConfirmation
-                                message={"Are you sure you want to cancel this pledge?"}
-                                someFunction={async () => {
-                                    loading = true;
-                                    error = false;
-                                    success = false;
-                                    const result =
-                                        await deletePledgeFromProject(
-                                            transaction.message,
-                                        );
-                                    loading = false;
-                                    if ("Ok" in result) {
-                                        success = true;
-                                        setTimeout(() => {
-                                            window.location.reload();
-                                        }, 4000);
-                                    } else {
-                                        error = true;
-                                        modalErrorMsg = result.Err;
-                                    }
-                                }}
-                                errorMsg={modalErrorMsg}
-                                successMsg={"Your pledge was canceled successfully."}
-                                loadingMsg={"Deleting pledge..."}
-                                bind:error
-                                bind:loading
-                                bind:success
-                            />
+                            <td class="delete-field">
+                                <span
+                                    class="material-symbols-outlined"
+                                    on:click|stopPropagation={() => {
+                                        selectedTransactionId =
+                                            transaction.message;
+                                        DeleteModal.set(true);
+                                    }}
+                                >
+                                    delete
+                                </span>
+                            </td>
                         {/if}
                     {/await}
                 {/if}
@@ -181,6 +156,32 @@
         {/each}
     </tbody>
 </table>
+
+<ModalConfirmationNew
+    message="Are you sure you want to cancel this pledge?"
+    someFunction={async () => {
+        loading = true;
+        error = false;
+        success = false;
+        const result = await deletePledgeFromProject(selectedTransactionId);
+        loading = false;
+        if ("Ok" in result) {
+            success = true;
+            setTimeout(() => {
+                window.location.reload();
+            }, 4000);
+        } else {
+            error = true;
+            modalErrorMsg = result.Err;
+        }
+    }}
+    {error}
+    {loading}
+    {success}
+    errorMsg={modalErrorMsg}
+    successMsg="Your pledge was canceled successfully."
+    loadingMsg="Deleting pledge..."
+/>
 
 <style>
     .material-symbols-outlined {

@@ -17,6 +17,8 @@
     import FollowingsModal from "./FollowingsModal.svelte";
     import { onDestroy, onMount } from "svelte";
     import FollowersModal from "./FollowersModal.svelte";
+    import FlatButtonSmall from "./FlatButtonSmall.svelte";
+    import FlatButtonDarkSmall from "./FlatButtonDarkSmall.svelte";
 
     export let user_id = "";
     export let followers = 0;
@@ -187,6 +189,17 @@
                 <span class="green-circle"></span>
                 {activePledges} ICP
             </div>
+            {#if isOwner}
+                <div class="view-details-button" style="margin-left: 10px;">
+                    <FlatButtonDarkSmall
+                        icon={"arrow_right_alt"}
+                        msg={"Check your pledges "}
+                        someFunction={() => {
+                            window.location.href = "/mypledges";
+                        }}
+                    />
+                </div>
+            {/if}
         </div>
     </div>
     <div class="divider"></div>
