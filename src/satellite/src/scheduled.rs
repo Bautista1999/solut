@@ -318,16 +318,6 @@ fn eliminate_idea_without_permission(key: String) -> Result<(), String> {
         };
 
     let foll_key = format!("FOLL_{}", key.clone());
-    let foll_version =
-        match get_document_version_or_default("followers".to_string(), foll_key.clone()) {
-            Ok(version) => version,
-            Err(err) => {
-                return Err(format!(
-                    "Failed to get version for followers document: {}",
-                    err
-                ))
-            }
-        };
 
     let feature_pledge_document = format!("PLG_FEA_{}", key.clone());
     let pledge_version = match get_document_version_or_default(
@@ -380,13 +370,6 @@ fn eliminate_idea_without_permission(key: String) -> Result<(), String> {
     ));
 
     // 3. Delete the followers document
-    docs_to_delete.push((
-        "followers".to_string(),
-        foll_key,
-        DelDoc {
-            version: Some(foll_version),
-        },
-    ));
 
     // 4. Delete the amount funded document
     docs_to_delete.push((
@@ -437,16 +420,6 @@ fn eliminate_solution_without_permission(key: String) -> Result<(), String> {
         };
 
     let foll_key = format!("FOLL_{}", key.clone());
-    let foll_version =
-        match get_document_version_or_default("followers".to_string(), foll_key.clone()) {
-            Ok(version) => version,
-            Err(err) => {
-                return Err(format!(
-                    "Failed to get version for followers document: {}",
-                    err
-                ))
-            }
-        };
 
     let sol_appr_key = format!("SOL_APPR_{}", key.clone());
     let sol_appr_version = match get_document_version_or_default(
@@ -499,13 +472,6 @@ fn eliminate_solution_without_permission(key: String) -> Result<(), String> {
     ));
 
     // 3. Delete the followers document
-    docs_to_delete.push((
-        "followers".to_string(),
-        foll_key,
-        DelDoc {
-            version: Some(foll_version),
-        },
-    ));
 
     // 4. Delete the solution_approved document
     docs_to_delete.push((

@@ -2,9 +2,13 @@ use crate::notifications::send_single_notification;
 use crate::quickqueries::get_doc_owner;
 use crate::reputation::get_user_reputation;
 use crate::types::interface::{
-    FollowData, IndexResponse, IndexSearch, Notification, PledgeData, PledgeUser, TotalPledging,
+    EnrichedPledgeData, FollowData, Idea, IndexResponse, IndexResponseBasicInfo, IndexSearch,
+    Notification, PledgeData, PledgeUser, TotalPledging,
 };
-use crate::user_information::{get_available_balance, get_user_profile_pic, get_user_username};
+use crate::user_information::{
+    get_available_balance, get_paginated_following_elements, get_user_profile_pic,
+    get_user_username,
+};
 use crate::{delete_pledge, get_document_description_or_default, get_document_version_or_default};
 use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
 use bytes::Bytes;
@@ -809,4 +813,109 @@ pub fn get_funding_details(
 #[query]
 pub fn check_cycles() -> u128 {
     return canister_balance128();
+}
+
+#[query]
+pub fn get_user_active_pledges_enriched(
+    user_id: String,
+) -> Result<Vec<EnrichedPledgeData>, String> {
+    let caller = api::caller();
+
+    // Filter to find pledges for the specific user
+    let filter = ListParams {
+        matcher: Some(ListMatcher {
+            description: Some(format!("pledger:{}", user_id)),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let collection = "pledges_active".to_string();
+    let pledges_result = list_docs_store(caller.clone(), collection, &filter)?;
+
+    // Process each pledge to enrich it with related data
+    let enriched_pledges: Result<Vec<EnrichedPledgeData>, String> = pledges_result
+        .items
+        .into_iter()
+        .map(|(key, doc)| {
+            let pledge_data: PledgeData = decode_doc_data(&doc.data)
+                .map_err(|e| format!("Failed to decode pledge data: {}", e))?;
+
+            // Get idea information with fallback for deleted ideas
+            let idea_info = match get_doc_store(
+                caller.clone(),
+                "idea".to_string(),
+                pledge_data.idea_id.clone(),
+            ) {
+                Ok(Some(idea_doc)) => {
+                    let idea_data: Idea = decode_doc_data(&idea_doc.data)
+                        .map_err(|e| format!("Failed to decode idea data: {}", e))?;
+                    IndexResponseBasicInfo {
+                        element_id: pledge_data.idea_id.clone(),
+                        title: idea_data.title,
+                        profile_image: idea_data.images.first().cloned().unwrap_or_else(|| {
+                            "https://solutio.one/solutio-images/logo-01.png".to_string()
+                        }),
+                        creation_date: idea_doc.created_at,
+                        element_type: "idea".to_string(),
+                    }
+                }
+                _ => IndexResponseBasicInfo {
+                    element_id: pledge_data.idea_id.clone(),
+                    title: "Unknown or deleted topic".to_string(),
+                    profile_image: "https://solutio.one/solutio-images/logo-01.png".to_string(),
+                    creation_date: doc.created_at,
+                    element_type: "idea".to_string(),
+                },
+            };
+
+            // Get feature information with fallback for deleted features
+            let feature_info = if let Some(feature_id) = pledge_data.feature_id {
+                match get_doc_store(caller.clone(), "feature".to_string(), feature_id.clone()) {
+                    Ok(Some(feature_doc)) => {
+                        let feature_data: Idea = decode_doc_data(&feature_doc.data)
+                            .map_err(|e| format!("Failed to decode feature data: {}", e))?;
+                        Some(IndexResponseBasicInfo {
+                            element_id: feature_id,
+                            title: feature_data.title,
+                            profile_image: feature_data.images.first().cloned().unwrap_or_else(
+                                || "https://solutio.one/solutio-images/logo-01.png".to_string(),
+                            ),
+                            creation_date: feature_doc.created_at,
+                            element_type: "feature".to_string(),
+                        })
+                    }
+                    _ => Some(IndexResponseBasicInfo {
+                        element_id: feature_id,
+                        title: "Unknown or deleted idea".to_string(),
+                        profile_image: "https://solutio.one/solutio-images/logo-01.png".to_string(),
+                        creation_date: doc.created_at,
+                        element_type: "feature".to_string(),
+                    }),
+                }
+            } else {
+                None
+            };
+
+            Ok(EnrichedPledgeData {
+                pledge_id: key,
+                amount: pledge_data.amount,
+                expected_amount: pledge_data.expected_amount,
+                idea: idea_info,
+                feature: feature_info,
+                created_at: doc.created_at,
+            })
+        })
+        .collect();
+
+    enriched_pledges
+}
+
+#[query]
+pub fn get_total_following(user_id: String) -> u64 {
+    // Use the existing paginated function and return the total_items field
+    match get_paginated_following_elements(user_id, None, None) {
+        Ok((_, total_items, _, _)) => total_items as u64,
+        Err(_) => 0,
+    }
 }

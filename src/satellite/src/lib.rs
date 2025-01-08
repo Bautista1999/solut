@@ -23,7 +23,9 @@ mod types;
 mod user_information;
 use crate::types::interface::{UserBasicInfo, UserProfileBasicInfo};
 
-use crate::types::interface::{Activity, IndexResponse, IndexResponseBasicInfo};
+use crate::types::interface::{
+    Activity, EnrichedPledgeData, IndexResponse, IndexResponseBasicInfo,
+};
 use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
 use ic_cdk::api::{self, set_global_timer, time};
 use ic_cdk_macros::{query, update};
@@ -171,15 +173,6 @@ async fn eliminate_solution(key: String) -> Result<(), String> {
     };
 
     let foll_key = format!("FOLL_{}", key.clone());
-    let foll_version = match get_document_version("followers".to_string(), foll_key.clone()) {
-        Ok(version) => version,
-        Err(err) => {
-            return Err(format!(
-                "Failed to get version for followers document: {}",
-                err
-            ))
-        }
-    };
 
     let sol_appr_key = format!("SOL_APPR_{}", key.clone());
     let sol_appr_version =
@@ -228,13 +221,6 @@ async fn eliminate_solution(key: String) -> Result<(), String> {
     ));
 
     // 3. Delete the followers document
-    docs_to_delete.push((
-        "followers".to_string(),
-        foll_key,
-        DelDoc {
-            version: Some(foll_version),
-        },
-    ));
 
     // 4. Delete the solution_approved document
     docs_to_delete.push((
@@ -289,15 +275,6 @@ pub fn eliminate_idea(key: String) -> Result<(), String> {
     };
 
     let foll_key = format!("FOLL_{}", key.clone());
-    let foll_version = match get_document_version("followers".to_string(), foll_key.clone()) {
-        Ok(version) => version,
-        Err(err) => {
-            return Err(format!(
-                "Failed to get version for followers document: {}",
-                err
-            ))
-        }
-    };
 
     let feature_pledge_document = format!("PLG_FEA_{}", key.clone());
     let pledge_version = match get_document_version(
@@ -348,13 +325,6 @@ pub fn eliminate_idea(key: String) -> Result<(), String> {
     ));
 
     // 3. Delete the followers document
-    docs_to_delete.push((
-        "followers".to_string(),
-        foll_key,
-        DelDoc {
-            version: Some(foll_version),
-        },
-    ));
 
     // 4. Delete the amount funded document
     docs_to_delete.push((
@@ -488,7 +458,13 @@ fn delete_pledge(id: String) -> Result<(), String> {
             // Step 3: Decode the data field to extract the idea_id, feature_id, pledged_amount, and expected_amount
             let pledge_data: PledgeData = match decode_doc_data(&doc.data) {
                 Ok(data) => data,
-                Err(err) => return Err(format!("Failed to decode pledge data: {}", err)),
+                Err(_) => {
+                    // Try decoding as old format
+                    match decode_doc_data::<OldPledgeData>(&doc.data) {
+                        Ok(old_data) => old_data.into(), // Convert to new format
+                        Err(err) => return Err(format!("Failed to decode pledge data: {}", err)),
+                    }
+                }
             };
             let idea_id = pledge_data.idea_id;
             let feature_id = pledge_data.feature_id;
@@ -558,13 +534,18 @@ fn delete_pledge(id: String) -> Result<(), String> {
                         },
                     )?;
                 }
-                Ok(None) => return Err("Solution pledge document not found.".to_string()),
+                Ok(None) => {
+                    // Continue even if solution pledge document is not found
+                    ic_cdk::print(format!(
+                        "Solution pledge document not found, continuing with deletion."
+                    ));
+                }
                 Err(err) => {
                     return Err(format!("Error fetching solution pledge document: {}", err))
                 }
             }
 
-            // Step 5: Update the `idea_feature_pledge` document for the idea (PLG_IDEA_ + idea_id)
+            // Step 5: Update the `idea_feature_pledge` document for the idea
             let idea_pledge_doc_key = format!("PLG_IDEA_{}", idea_id);
             match get_doc_store(
                 controller,
@@ -617,7 +598,12 @@ fn delete_pledge(id: String) -> Result<(), String> {
                         },
                     )?;
                 }
-                Ok(None) => return Err("Idea pledge document not found.".to_string()),
+                Ok(None) => {
+                    // Continue even if idea pledge document is not found
+                    ic_cdk::print(format!(
+                        "Idea pledge document not found, continuing with deletion."
+                    ));
+                }
                 Err(err) => return Err(format!("Error fetching idea pledge document: {}", err)),
             }
 
@@ -747,10 +733,6 @@ fn eliminate_topic(key: String) -> Result<(), String> {
     };
 
     let foll_key = format!("FOLL_{}", key.clone());
-    let foll_version = match get_document_version("followers".to_string(), foll_key.clone()) {
-        Ok(version) => version,
-        Err(err) => 1,
-    };
 
     let idea_pledge_document = format!("PLG_IDEA_{}", key.clone());
     let pledge_version = match get_document_version(
@@ -804,13 +786,6 @@ fn eliminate_topic(key: String) -> Result<(), String> {
     ));
 
     // 3. Delete the followers document
-    docs_to_delete.push((
-        "followers".to_string(),
-        foll_key,
-        DelDoc {
-            version: Some(foll_version),
-        },
-    ));
 
     // 4. Delete the amount funded document
     docs_to_delete.push((
@@ -935,10 +910,7 @@ fn create_or_update_topic(key: String, topic: Topic) -> Result<(), String> {
         "idea_revenue_counter".to_string(),
         format!("REV_IDEA_{}", key),
     )?);
-    let followers_version = Some(get_document_version_or_default(
-        "followers".to_string(),
-        format!("FOLL_{}", key),
-    )?);
+
     let pledges_solution_version = Some(get_document_version_or_default(
         "pledges_solution".to_string(),
         format!("SOL_PL_{}", key),
@@ -964,15 +936,6 @@ fn create_or_update_topic(key: String, topic: Topic) -> Result<(), String> {
                     data: idea_revenue_data.clone(),
                     description: idea_revenue_description.clone(),
                     version: idea_revenue_version,
-                },
-            ),
-            (
-                "followers".to_string(),
-                format!("FOLL_{}", key),
-                SetDoc {
-                    data: followers_data.clone(),
-                    description: followers_description.clone(),
-                    version: followers_version,
                 },
             ),
             (
@@ -1098,10 +1061,6 @@ fn create_or_update_idea(key: String, idea: Idea, parent_idea_id: String) -> Res
         "idea_revenue_counter".to_string(),
         format!("REV_FEA_{}", key),
     )?);
-    let followers_version = Some(get_document_version_or_default(
-        "followers".to_string(),
-        format!("FOLL_{}", key),
-    )?);
 
     // Step 5: Perform validation only (skip doc creation if errors exist)
     if !is_update {
@@ -1123,15 +1082,6 @@ fn create_or_update_idea(key: String, idea: Idea, parent_idea_id: String) -> Res
                     data: idea_revenue_data.clone(),
                     description: idea_revenue_description.clone(),
                     version: idea_revenue_version,
-                },
-            ),
-            (
-                "followers".to_string(),
-                format!("FOLL_{}", key),
-                SetDoc {
-                    data: followers_data.clone(),
-                    description: followers_description.clone(),
-                    version: followers_version,
                 },
             ),
         ];
@@ -1303,10 +1253,7 @@ fn create_or_update_solution(
         "index_search".to_string(),
         format!("INDEX_{}", key),
     )?);
-    let followers_version = Some(get_document_version_or_default(
-        "followers".to_string(),
-        format!("FOLL_{}", key),
-    )?);
+
     let solution_approved_version = Some(get_document_version_or_default(
         "solution_approved".to_string(),
         format!("SOL_APPR_{}", key),
@@ -1351,15 +1298,6 @@ fn create_or_update_solution(
     // Step 7: Create additional docs that require admin access only if this is a new solution
     if !is_update {
         let docs_to_create_admin = vec![
-            (
-                "followers".to_string(),
-                format!("FOLL_{}", key),
-                SetDoc {
-                    data: followers_data,
-                    description: followers_description.clone(),
-                    version: followers_version,
-                },
-            ),
             (
                 "solution_approved".to_string(),
                 format!("SOL_APPR_{}", key),

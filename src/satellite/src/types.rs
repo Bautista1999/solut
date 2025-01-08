@@ -31,15 +31,46 @@ pub mod interface {
             self.0
         }
     }
-    #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
+    #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
+    pub struct OldPledgeData {
+        pub amount: u64,
+        pub doc_key: String,
+        pub expected_amount: u64,
+        pub feature_id: Option<String>,
+        pub idea_id: String,
+        pub target: String,
+        pub user: String,
+    }
+
+    #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
     pub struct PledgeData {
         pub amount: u64,
         pub doc_key: String,
         pub expected_amount: u64,
-        pub feature_id: Option<String>, // Feature might be optional
+        pub feature_id: Option<String>,
         pub idea_id: String,
         pub target: String,
         pub user: String,
+        pub status: String,
+        pub amount_paid: u64,
+        pub payment_type: String,
+    }
+
+    impl From<OldPledgeData> for PledgeData {
+        fn from(old: OldPledgeData) -> Self {
+            PledgeData {
+                amount: old.amount,
+                doc_key: old.doc_key,
+                expected_amount: old.expected_amount,
+                feature_id: old.feature_id,
+                idea_id: old.idea_id,
+                target: old.target,
+                user: old.user,
+                status: "active".to_string(),
+                amount_paid: 0,
+                payment_type: "one_time".to_string(),
+            }
+        }
     }
 
     #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
@@ -227,5 +258,17 @@ pub mod interface {
         pub element_id: String,             // The element ID
         pub element_type: String,           // "topic", "idea", "solution", or "pledge"
         pub link: String,                   // Link for navigation
+    }
+    #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct EnrichedPledgeData {
+        pub pledge_id: String,                       // The pledge document key
+        pub amount: u64,                             // Amount pledged
+        pub expected_amount: u64,                    // Expected amount
+        pub idea: IndexResponseBasicInfo,            // Basic info about the idea
+        pub feature: Option<IndexResponseBasicInfo>, // Optional basic info about the feature
+        pub created_at: u64,
+        pub status: String,
+        pub amount_paid: u64,
+        pub payment_type: String,
     }
 }

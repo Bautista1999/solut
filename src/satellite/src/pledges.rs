@@ -549,6 +549,9 @@ fn create_pledge_active(
         idea_id: idea_id.to_string(),
         target,
         user: caller.to_text(),
+        status: "ACTIVE".to_string(),
+        amount_paid: 0,
+        payment_type: "CRYPTO".to_string(),
     };
 
     // Encode the pledge data
