@@ -700,7 +700,7 @@ fn cancel_pledge(id: String) -> Result<(), String> {
 
             // Update the pledge document instead of deleting it
             set_doc_store(
-                caller,
+                controller,
                 "pledges_active".to_string(),
                 id.clone(),
                 SetDoc {
