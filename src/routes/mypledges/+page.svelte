@@ -5,7 +5,7 @@
     import { onMount } from "svelte";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { path } from "$lib/stores/redirect_store";
-    import { getUserActivePledgesEnriched } from "../../declarations/satellite/satellite.api";
+    import { getUserPledgesEnriched } from "../../declarations/satellite/satellite.api";
     /**
      * @type {import("../../declarations/satellite/satellite.did").EnrichedPledgeData[]}
      */
@@ -18,7 +18,7 @@
             return;
         }
 
-        const activePledges = await getUserActivePledgesEnriched($UserKey);
+        const activePledges = await getUserPledgesEnriched($UserKey);
         console.log(activePledges);
         if ("Ok" in activePledges) {
             pledges = activePledges.Ok;
