@@ -44,7 +44,7 @@ const DEFAULT_LIMIT: usize = 12;
 pub fn get_total_pledged(element: String, id: String) -> Result<u64, String> {
     let caller = api::caller();
     // Filter to find documents where the description contains the given element and id
-    let mut description_of_filter = format!("_{}:{}", element, id); // Make it mutable
+    let mut description_of_filter = format!("_{}:{}", element, id);
     if element == "user" {
         description_of_filter = format!("pledger:{}", id); // Reassign the variable
     }
@@ -56,21 +56,29 @@ pub fn get_total_pledged(element: String, id: String) -> Result<u64, String> {
         ..Default::default()
     };
 
-    let collection = "pledges_active".to_string(); // Directly use the collection name as a string
+    let collection = "pledges_active".to_string();
     let pledges_result = list_docs_store(caller, collection, &filter)?;
 
-    // Sum the total amount by decoding the data field
+    // Sum the total amount using serde_json
     let total_pledged: u64 = pledges_result
         .items
         .iter()
         .map(|(_key, doc)| {
-            // Decode the `data` field into a `PledgeData` struct
-            let pledge_data: PledgeData = match decode_doc_data(&doc.data) {
-                Ok(data) => data,
-                Err(_) => return 0, // Skip if decoding fails
-            };
-
-            pledge_data.amount
+            // Decode the data field into a JSON Value
+            match decode_doc_data::<serde_json::Value>(&doc.data) {
+                Ok(data) => {
+                    let status = data
+                        .get("status")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("active");
+                    if status == "active" {
+                        data.get("amount").and_then(|v| v.as_u64()).unwrap_or(0)
+                    } else {
+                        0
+                    }
+                }
+                Err(_) => 0, // Skip if decoding fails
+            }
         })
         .sum();
 
@@ -82,9 +90,9 @@ pub fn get_total_pledged_and_expected(element: String, id: String) -> Result<(u6
     let caller = api::caller();
 
     // Determine the description filter based on the element type
-    let mut description_of_filter = format!("_{}:{}", element, id); // Default for "idea" or "feature"
+    let mut description_of_filter = format!("_{}:{}", element, id);
     if element == "user" {
-        description_of_filter = format!("pledger:{}", id); // Special case for "user"
+        description_of_filter = format!("pledger:{}", id);
     }
 
     let filter = ListParams {
@@ -95,29 +103,39 @@ pub fn get_total_pledged_and_expected(element: String, id: String) -> Result<(u6
         ..Default::default()
     };
 
-    let collection = "pledges_active".to_string(); // Directly use the collection name
+    let collection = "pledges_active".to_string();
     let pledges_result = match list_docs_store(caller, collection, &filter) {
         Ok(result) => result,
-        Err(err) => {
-            // Return 0 for both fields if there's an error
-            return Err(format!("Failed to fetch documents: {}", err));
-        }
+        Err(err) => return Err(format!("Failed to fetch documents: {}", err)),
     };
 
-    // Sum up the total pledged and expected amounts
+    // Sum up the total pledged and expected amounts using serde_json
     let (total_pledged, total_expected) = pledges_result.items.iter().fold(
         (0u64, 0u64),
         |(sum_pledged, sum_expected), (_key, doc)| {
-            // Decode the `data` field into a `PledgeData` struct
-            let pledge_data: PledgeData = match decode_doc_data(&doc.data) {
-                Ok(data) => data,
-                Err(_) => return (sum_pledged, sum_expected), // Skip if decoding fails
-            };
+            match decode_doc_data::<serde_json::Value>(&doc.data) {
+                Ok(pledge_json) => {
+                    let amount = pledge_json
+                        .get("amount")
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or(0);
+                    let expected = pledge_json
+                        .get("expected_amount")
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or(0);
+                    let status = pledge_json
+                        .get("status")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("active");
 
-            (
-                sum_pledged + pledge_data.amount,
-                sum_expected + pledge_data.expected_amount,
-            )
+                    if status == "active" {
+                        (sum_pledged + amount, sum_expected + expected)
+                    } else {
+                        (sum_pledged, sum_expected)
+                    }
+                }
+                Err(_) => (sum_pledged, sum_expected), // Skip if decoding fails
+            }
         },
     );
 
@@ -679,7 +697,7 @@ pub fn get_funding_details(
     id: String,
 ) -> Result<(u64, u64, usize, Vec<(String, String)>), String> {
     let caller = api::caller();
-    let mut pledges: Vec<Doc> = vec![]; // Store pledges here
+    let mut pledges: Vec<Doc> = vec![];
     let collection = match element_type.as_str() {
         "idea" | "feature" => "pledges_active".to_string(),
         "solution" => "solution".to_string(),
@@ -693,7 +711,7 @@ pub fn get_funding_details(
             Ok(Some(doc)) => doc,
             Ok(None) => {
                 log(format!("Solution with ID '{}' not found.", id));
-                return Ok((0, 0, 0, vec![])); // No solution, return default
+                return Ok((0, 0, 0, vec![]));
             }
             Err(err) => {
                 log(format!("Error fetching solution: {}", err));
@@ -701,7 +719,7 @@ pub fn get_funding_details(
             }
         };
 
-        // Decode the solution data to extract features
+        // Decode the solution data using serde_json
         let solution_data: serde_json::Value = match decode_doc_data(&solution_doc.data) {
             Ok(data) => data,
             Err(err) => {
@@ -710,24 +728,29 @@ pub fn get_funding_details(
             }
         };
 
-        let feature_ids = match solution_data.get("features").and_then(|f| f.as_array()) {
-            Some(ids) => ids
-                .iter()
-                .filter_map(|id| id.as_str().map(String::from))
-                .collect::<Vec<_>>(),
+        let feature_ids = match solution_data.get("features") {
+            Some(features) => match features.as_array() {
+                Some(arr) => arr
+                    .iter()
+                    .filter_map(|v| v.as_str().map(String::from))
+                    .collect::<Vec<_>>(),
+                None => {
+                    log("Features field is not an array.".to_string());
+                    return Ok((0, 0, 0, vec![]));
+                }
+            },
             None => {
                 log("Solution has no associated features.".to_string());
-                return Ok((0, 0, 0, vec![])); // No features, return default
+                return Ok((0, 0, 0, vec![]));
             }
         };
 
         if feature_ids.is_empty() {
             log("No features extracted.".to_string());
-            return Ok((0, 0, 0, vec![])); // No features, return default
+            return Ok((0, 0, 0, vec![]));
         }
 
         // Create regex pattern for feature IDs
-        // Construct a description filter using feature IDs
         let description_filter = feature_ids
             .iter()
             .map(|id| format!("_feature:{}", id))
@@ -742,15 +765,8 @@ pub fn get_funding_details(
             ..Default::default()
         };
 
-        // Fetch pledges for features
-        let pledges_result = list_docs_store(caller.clone(), "pledges_active".to_string(), &filter);
-        pledges = match pledges_result {
-            Ok(result) => {
-                // Extract and log the keys (first element of the tuples in the vector)
-                let keys: Vec<_> = result.items.iter().map(|(key, _)| key).collect();
-
-                result.items.into_iter().map(|(_, doc)| doc).collect()
-            }
+        pledges = match list_docs_store(caller.clone(), "pledges_active".to_string(), &filter) {
+            Ok(result) => result.items.into_iter().map(|(_, doc)| doc).collect(),
             Err(err) => {
                 log(format!("Error fetching pledges for solution: {}", err));
                 return Err(format!("Error fetching pledges for solution: {}", err));
@@ -778,20 +794,44 @@ pub fn get_funding_details(
         };
     }
 
-    // Step 2: Aggregate data
+    // Step 2: Aggregate data using serde_json
     let mut total_pledged: u64 = 0;
     let mut total_expected: u64 = 0;
     let mut pledgers: Vec<String> = vec![];
 
     for pledge in pledges.iter() {
-        // Decode pledge data
-        let pledge_data: PledgeData = match decode_doc_data(&pledge.data) {
-            Ok(data) => data,
+        match decode_doc_data::<serde_json::Value>(&pledge.data) {
+            Ok(pledge_json) => {
+                // Extract amount and expected_amount with defaults
+                let amount = pledge_json
+                    .get("amount")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(0);
+                let expected = pledge_json
+                    .get("expected_amount")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(0);
+                let user = pledge_json
+                    .get("user")
+                    .and_then(|v| v.as_str())
+                    .map(String::from)
+                    .unwrap_or_default();
+                let status = pledge_json
+                    .get("status")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("active");
+
+                // Skip inactive pledges
+                if status == "inactive" {
+                    continue;
+                }
+
+                total_pledged += amount;
+                total_expected += expected;
+                pledgers.push(user);
+            }
             Err(_) => continue, // Skip invalid pledges
-        };
-        total_pledged += pledge_data.amount;
-        total_expected += pledge_data.expected_amount;
-        pledgers.push(pledge_data.user);
+        }
     }
 
     // Step 3: Deduplicate pledgers and get top 5
@@ -806,7 +846,6 @@ pub fn get_funding_details(
         })
         .collect::<Vec<_>>();
 
-    // Return the result
     Ok((total_pledged, total_expected, pledgers.len(), top_pledgers))
 }
 
@@ -838,20 +877,48 @@ pub fn get_user_active_pledges_enriched(
         .items
         .into_iter()
         .map(|(key, doc)| {
-            let pledge_data: PledgeData = decode_doc_data(&doc.data)
+            let pledge_json: serde_json::Value = decode_doc_data(&doc.data)
                 .map_err(|e| format!("Failed to decode pledge data: {}", e))?;
 
-            // Get idea information with fallback for deleted ideas
-            let idea_info = match get_doc_store(
-                caller.clone(),
-                "idea".to_string(),
-                pledge_data.idea_id.clone(),
-            ) {
+            let amount = pledge_json
+                .get("amount")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0);
+            let expected_amount = pledge_json
+                .get("expected_amount")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0);
+            let idea_id = pledge_json
+                .get("idea_id")
+                .and_then(|v| v.as_str())
+                .ok_or("Missing idea_id in pledge")?
+                .to_string();
+            let feature_id = pledge_json
+                .get("feature_id")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string());
+            let status = pledge_json
+                .get("status")
+                .and_then(|v| v.as_str())
+                .unwrap_or("active")
+                .to_string();
+            let amount_paid = pledge_json
+                .get("amount_paid")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0);
+            let payment_type = pledge_json
+                .get("payment_type")
+                .and_then(|v| v.as_str())
+                .unwrap_or("Crypto")
+                .to_string();
+
+            let idea_info = match get_doc_store(caller.clone(), "idea".to_string(), idea_id.clone())
+            {
                 Ok(Some(idea_doc)) => {
                     let idea_data: Idea = decode_doc_data(&idea_doc.data)
                         .map_err(|e| format!("Failed to decode idea data: {}", e))?;
                     IndexResponseBasicInfo {
-                        element_id: pledge_data.idea_id.clone(),
+                        element_id: idea_id.clone(),
                         title: idea_data.title,
                         profile_image: idea_data.images.first().cloned().unwrap_or_else(|| {
                             "https://solutio.one/solutio-images/logo-01.png".to_string()
@@ -861,7 +928,7 @@ pub fn get_user_active_pledges_enriched(
                     }
                 }
                 _ => IndexResponseBasicInfo {
-                    element_id: pledge_data.idea_id.clone(),
+                    element_id: idea_id.clone(),
                     title: "Unknown or deleted topic".to_string(),
                     profile_image: "https://solutio.one/solutio-images/logo-01.png".to_string(),
                     creation_date: doc.created_at,
@@ -869,8 +936,7 @@ pub fn get_user_active_pledges_enriched(
                 },
             };
 
-            // Get feature information with fallback for deleted features
-            let feature_info = if let Some(feature_id) = pledge_data.feature_id {
+            let feature_info = if let Some(feature_id) = feature_id {
                 match get_doc_store(caller.clone(), "feature".to_string(), feature_id.clone()) {
                     Ok(Some(feature_doc)) => {
                         let feature_data: Idea = decode_doc_data(&feature_doc.data)
@@ -899,11 +965,14 @@ pub fn get_user_active_pledges_enriched(
 
             Ok(EnrichedPledgeData {
                 pledge_id: key,
-                amount: pledge_data.amount,
-                expected_amount: pledge_data.expected_amount,
+                amount,
+                expected_amount,
                 idea: idea_info,
                 feature: feature_info,
                 created_at: doc.created_at,
+                status,
+                amount_paid,
+                payment_type,
             })
         })
         .collect();

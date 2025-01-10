@@ -59,10 +59,56 @@ pub fn get_user_active_pledges(user_id: String) -> Result<Vec<PledgeData>, Strin
     // Step 2: Iterate over each pledge, filter out inactive ones, and decode the data
     for (_pledge_key, pledge_doc) in user_pledges.items.iter() {
         // Decode pledge data
-        let pledge_data: PledgeData = match decode_doc_data(&pledge_doc.data) {
-            Ok(data) => data,
-            Err(e) => return Err(format!("Failed to decode pledge data: {}", e)),
+        let pledge_data: PledgeData = {
+            let json: serde_json::Value =
+                decode_doc_data(&pledge_doc.data).unwrap_or(serde_json::json!({}));
+
+            PledgeData {
+                amount: json.get("amount").and_then(|v| v.as_u64()).unwrap_or(0),
+                doc_key: _pledge_key.clone(),
+                expected_amount: json
+                    .get("expected_amount")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(0),
+                feature_id: json
+                    .get("feature_id")
+                    .and_then(|v| v.as_str())
+                    .map(String::from),
+                idea_id: json
+                    .get("idea_id")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string(),
+                target: json
+                    .get("target")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string(),
+                user: json
+                    .get("user")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string(),
+                status: json
+                    .get("status")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("active")
+                    .to_string(),
+                amount_paid: json
+                    .get("amount_paid")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(0),
+                payment_type: json
+                    .get("payment_type")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("Crypto")
+                    .to_string(),
+            }
         };
+        // Skip inactive pledges since this is get_user_active_pledges()
+        if pledge_data.status != "active" {
+            continue; // Skip any non-active pledges
+        }
 
         // Extract `idea_id` from the description
         let description = pledge_doc.description.clone().unwrap_or_default();
@@ -184,9 +230,51 @@ pub fn get_user_total_pledges(user_id: String) -> Result<Vec<PledgeData>, String
     // Step 2: Iterate over each pledge, filter out inactive ones, and decode the data
     for (_pledge_key, pledge_doc) in user_pledges.items.iter() {
         // Decode pledge data
-        let pledge_data: PledgeData = match decode_doc_data(&pledge_doc.data) {
-            Ok(data) => data,
-            Err(e) => return Err(format!("Failed to decode pledge data: {}", e)),
+        let pledge_data: PledgeData = {
+            let json: serde_json::Value =
+                decode_doc_data(&pledge_doc.data).unwrap_or(serde_json::json!({}));
+
+            PledgeData {
+                amount: json.get("amount").and_then(|v| v.as_u64()).unwrap_or(0),
+                doc_key: _pledge_key.clone(),
+                expected_amount: json
+                    .get("expected_amount")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(0),
+                feature_id: json
+                    .get("feature_id")
+                    .and_then(|v| v.as_str())
+                    .map(String::from),
+                idea_id: json
+                    .get("idea_id")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string(),
+                target: json
+                    .get("target")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string(),
+                user: json
+                    .get("user")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string(),
+                status: json
+                    .get("status")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("active")
+                    .to_string(),
+                amount_paid: json
+                    .get("amount_paid")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(0),
+                payment_type: json
+                    .get("payment_type")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("Crypto")
+                    .to_string(),
+            }
         };
 
         active_pledges.push(pledge_data);

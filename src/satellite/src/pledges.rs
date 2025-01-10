@@ -529,8 +529,13 @@ fn create_pledge_active(
     amount: u64,
     expected_amount: u64,
     caller: &Principal,
-    docs: &[(String, Option<Doc>)], // Updated to use Vec<(String, Option<Doc>)>
+    docs: &[(String, Option<Doc>)],
 ) -> Result<(String, String, SetDoc), String> {
+    // Check if feature_id is empty
+    if feature_id.trim().is_empty() {
+        return Err("Feature ID is required for pledging".to_string());
+    }
+
     let owner = match get_doc_owner("feature".to_string(), feature_id.to_string()) {
         Ok(doc_owner) => doc_owner,
         Err(err) => return Err(err),
@@ -541,17 +546,13 @@ fn create_pledge_active(
         amount,
         doc_key: doc_key.to_string(),
         expected_amount,
-        feature_id: if feature_id.is_empty() {
-            None
-        } else {
-            Some(feature_id.to_string())
-        },
+        feature_id: Some(feature_id.to_string()), // Always Some since we validated it's not empty
         idea_id: idea_id.to_string(),
         target,
         user: caller.to_text(),
-        status: "ACTIVE".to_string(),
+        status: "active".to_string(),
         amount_paid: 0,
-        payment_type: "CRYPTO".to_string(),
+        payment_type: "Crypto".to_string(),
     };
 
     // Encode the pledge data

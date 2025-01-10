@@ -14,11 +14,14 @@ type Activity = record {
   activity_image : opt text;
 };
 type EnrichedPledgeData = record {
+  status : text;
   feature : opt IndexResponseBasicInfo;
+  payment_type : text;
   idea : IndexResponseBasicInfo;
   expected_amount : nat64;
   pledge_id : text;
   created_at : nat64;
+  amount_paid : nat64;
   amount : nat64;
 };
 type Idea = record {
@@ -65,11 +68,14 @@ type Notification = record {
   subtitle : text;
 };
 type PledgeData = record {
+  status : text;
   feature_id : opt text;
+  payment_type : text;
   expected_amount : nat64;
   user : text;
   idea_id : text;
   target : text;
+  amount_paid : nat64;
   amount : nat64;
   doc_key : text;
 };
@@ -136,6 +142,7 @@ type UserProfileBasicInfo = record {
 };
 service : {
   build_version : () -> (text) query;
+  cancel_pledge : (text) -> (Result);
   check_cycles : () -> (nat) query;
   create_ideas : (vec SetIdea, text) -> (Result);
   create_new_product : (Product, text) -> (Result);
