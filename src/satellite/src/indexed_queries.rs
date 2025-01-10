@@ -6,8 +6,8 @@ use crate::types::interface::{
     Notification, PledgeData, PledgeUser, TotalPledging,
 };
 use crate::user_information::{
-    get_available_balance, get_paginated_following_elements, get_user_profile_pic,
-    get_user_username,
+    get_available_balance, get_historical_pledged_balance, get_paginated_following_elements,
+    get_user_profile_pic, get_user_username,
 };
 use crate::{delete_pledge, get_document_description_or_default, get_document_version_or_default};
 use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
@@ -440,7 +440,7 @@ pub fn get_paginated_users(
                 .unwrap_or_else(|| "https://solutio.one/solutio-images/logo-01.png".to_string()); // Default image if not present
             let creation_date = doc.created_at; // Use the creation date from the document
             let reputation = get_user_reputation(doc.owner).unwrap_or(0); // Fetch reputation
-            let total_pledged = get_total_pledged("user".to_string(), key.clone()).unwrap_or(0); // Fetch total pledged
+            let total_pledged = get_historical_pledged_balance(key.clone()).unwrap_or(0); // Fetch total pledged
             let total_followers = get_total_followers(key.clone()); // Fetch total followers
 
             let element = IndexResponse {
@@ -855,9 +855,7 @@ pub fn check_cycles() -> u128 {
 }
 
 #[query]
-pub fn get_user_active_pledges_enriched(
-    user_id: String,
-) -> Result<Vec<EnrichedPledgeData>, String> {
+pub fn get_user_pledges_enriched(user_id: String) -> Result<Vec<EnrichedPledgeData>, String> {
     let caller = api::caller();
 
     // Filter to find pledges for the specific user
