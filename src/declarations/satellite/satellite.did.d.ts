@@ -18,11 +18,14 @@ export interface Activity {
   'activity_image' : [] | [string],
 }
 export interface EnrichedPledgeData {
+  'status' : string,
   'feature' : [] | [IndexResponseBasicInfo],
+  'payment_type' : string,
   'idea' : IndexResponseBasicInfo,
   'expected_amount' : bigint,
   'pledge_id' : string,
   'created_at' : bigint,
+  'amount_paid' : bigint,
   'amount' : bigint,
 }
 export interface Idea {
@@ -69,11 +72,14 @@ export interface Notification {
   'subtitle' : string,
 }
 export interface PledgeData {
+  'status' : string,
   'feature_id' : [] | [string],
+  'payment_type' : string,
   'expected_amount' : bigint,
   'user' : string,
   'idea_id' : string,
   'target' : string,
+  'amount_paid' : bigint,
   'amount' : bigint,
   'doc_key' : string,
 }
@@ -146,6 +152,7 @@ export interface UserProfileBasicInfo {
 }
 export interface _SERVICE {
   'build_version' : ActorMethod<[], string>,
+  'cancel_pledge' : ActorMethod<[string], Result>,
   'check_cycles' : ActorMethod<[], bigint>,
   'create_ideas' : ActorMethod<[Array<SetIdea>, string], Result>,
   'create_new_product' : ActorMethod<[Product, string], Result>,

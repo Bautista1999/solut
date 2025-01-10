@@ -13,6 +13,14 @@ export const buildVersion = async (): Promise<string> => {
 	return await build_version();
 }
 
+export const cancelPledge = async (value0: string): Promise<Result> => {
+	const {cancel_pledge} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await cancel_pledge(value0);
+}
+
 export const checkCycles = async (): Promise<bigint> => {
 	const {check_cycles} = await getSatelliteExtendedActor<SatelliteActor>({
 		idlFactory

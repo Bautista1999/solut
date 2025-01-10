@@ -2,6 +2,7 @@
 // Any modifications may be overwritten.
 
 export const idlFactory = ({ IDL }) => {
+  const Result = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Text });
   const Idea = IDL.Record({
     'categories' : IDL.Vec(IDL.Text),
     'title' : IDL.Text,
@@ -11,7 +12,6 @@ export const idlFactory = ({ IDL }) => {
     'images' : IDL.Vec(IDL.Text),
   });
   const SetIdea = IDL.Record({ 'key' : IDL.Text, 'idea' : Idea });
-  const Result = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Text });
   const Product = IDL.Record({
     'owner' : IDL.Opt(IDL.Principal),
     'link' : IDL.Text,
@@ -110,11 +110,14 @@ export const idlFactory = ({ IDL }) => {
     'Err' : IDL.Text,
   });
   const PledgeData = IDL.Record({
+    'status' : IDL.Text,
     'feature_id' : IDL.Opt(IDL.Text),
+    'payment_type' : IDL.Text,
     'expected_amount' : IDL.Nat64,
     'user' : IDL.Text,
     'idea_id' : IDL.Text,
     'target' : IDL.Text,
+    'amount_paid' : IDL.Nat64,
     'amount' : IDL.Nat64,
     'doc_key' : IDL.Text,
   });
@@ -123,11 +126,14 @@ export const idlFactory = ({ IDL }) => {
     'Err' : IDL.Text,
   });
   const EnrichedPledgeData = IDL.Record({
+    'status' : IDL.Text,
     'feature' : IDL.Opt(IndexResponseBasicInfo),
+    'payment_type' : IDL.Text,
     'idea' : IndexResponseBasicInfo,
     'expected_amount' : IDL.Nat64,
     'pledge_id' : IDL.Text,
     'created_at' : IDL.Nat64,
+    'amount_paid' : IDL.Nat64,
     'amount' : IDL.Nat64,
   });
   const Result_10 = IDL.Variant({
@@ -159,6 +165,7 @@ export const idlFactory = ({ IDL }) => {
   });
   return IDL.Service({
     'build_version' : IDL.Func([], [IDL.Text], ['query']),
+    'cancel_pledge' : IDL.Func([IDL.Text], [Result], []),
     'check_cycles' : IDL.Func([], [IDL.Nat], ['query']),
     'create_ideas' : IDL.Func([IDL.Vec(SetIdea), IDL.Text], [Result], []),
     'create_new_product' : IDL.Func([Product, IDL.Text], [Result], []),
