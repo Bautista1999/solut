@@ -10,7 +10,7 @@
         roundUpToThreeDecimalPlaces,
     } from "$lib/financial_functions/financial_functions";
     import { onDestroy, onMount } from "svelte";
-    import { getUserActivePledgesEnriched } from "../../declarations/satellite/satellite.api";
+    import { getUserPledgesEnriched } from "../../declarations/satellite/satellite.api";
 
     /**
      * @type {import("../../declarations/satellite/satellite.did").EnrichedPledgeData[]}
@@ -185,8 +185,7 @@
             loading = false;
             if ("Ok" in result) {
                 success = true;
-                const activePledges =
-                    await getUserActivePledgesEnriched($UserKey);
+                const activePledges = await getUserPledgesEnriched($UserKey);
                 if ("Ok" in activePledges) {
                     pledges = activePledges.Ok;
                 }
