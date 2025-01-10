@@ -428,6 +428,297 @@ pub fn get_document_description_or_default(collection: String, key: String) -> S
 }
 
 #[update]
+fn cancel_pledge(id: String) -> Result<(), String> {
+    let caller = api::caller();
+    let caller_text = caller.to_text();
+    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+
+    // Step 2: Fetch the pledges_active document for the given id
+    match get_doc_store(caller, "pledges_active".to_string(), id.clone()) {
+        Ok(None) => return Err("Pledge not found.".to_string()),
+        Err(err) => return Err(format!("Error retrieving pledge: {}", err)),
+        Ok(Some(doc)) => {
+            // Verify caller is in description
+            if let Some(description) = &doc.description {
+                if !description.contains(&caller_text) {
+                    return Err("Caller is not mentioned in the pledge description.".to_string());
+                }
+            } else {
+                return Err("Pledge description not found.".to_string());
+            }
+
+            // Decode current pledge data and update status
+            let mut pledge_data: PledgeData = {
+                let json: serde_json::Value =
+                    decode_doc_data(&doc.data).unwrap_or(serde_json::json!({}));
+
+                let mut pledge_data = PledgeData {
+                    amount: json.get("amount").and_then(|v| v.as_u64()).unwrap_or(0),
+                    doc_key: id.clone(),
+                    expected_amount: json
+                        .get("expected_amount")
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or(0),
+                    feature_id: json
+                        .get("feature_id")
+                        .and_then(|v| v.as_str())
+                        .map(String::from),
+                    idea_id: json
+                        .get("idea_id")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    target: json
+                        .get("target")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    user: json
+                        .get("user")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    status: "inactive".to_string(), // Change status to inactive
+                    amount_paid: json
+                        .get("amount_paid")
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or(0),
+                    payment_type: json
+                        .get("payment_type")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("Crypto")
+                        .to_string(),
+                };
+                pledge_data
+            };
+            let idea_id = pledge_data.idea_id.clone();
+            let feature_id = pledge_data.feature_id.clone();
+            let pledged_amount = pledge_data.amount.clone();
+            let expected_amount = pledge_data.expected_amount.clone();
+
+            // Update the pledge document with new status
+            let updated_data = match encode_doc_data(&pledge_data.clone()) {
+                Ok(data) => data,
+                Err(err) => return Err(format!("Failed to encode updated pledge data: {}", err)),
+            };
+
+            // Step 4: Update the `pledges_solution` document for this idea
+            let sol_doc_key = format!("SOL_PL_{}", idea_id); // solution pledge document
+            match get_doc_store(
+                controller,
+                "pledges_solution".to_string(),
+                sol_doc_key.clone(),
+            ) {
+                Ok(Some(mut sol_doc)) => {
+                    // Decode the solution pledge data
+                    let mut pledge_list: Vec<PledgeUser> = match decode_doc_data(&sol_doc.data) {
+                        Ok(list) => list,
+                        Err(err) => {
+                            return Err(format!("Failed to decode solution pledge data: {}", err))
+                        }
+                    };
+
+                    // Find the user's pledge and subtract the pledged and expected amounts
+                    for (i, user_pledge) in pledge_list.iter_mut().enumerate() {
+                        if user_pledge.user == caller_text {
+                            // Ensure the amount doesn't go below zero
+                            if user_pledge.amount_pledged >= pledged_amount {
+                                user_pledge.amount_pledged -= pledged_amount;
+                            } else {
+                                user_pledge.amount_pledged = 0;
+                            }
+
+                            if user_pledge.amount_paid >= expected_amount {
+                                user_pledge.amount_paid -= expected_amount;
+                            } else {
+                                user_pledge.amount_paid = 0;
+                            }
+
+                            // If the user's total pledge is now zero, remove them from the list
+                            if user_pledge.amount_pledged == 0 {
+                                pledge_list.remove(i);
+                            }
+                            break;
+                        }
+                    }
+
+                    // Encode the updated pledges list back into the solution document
+                    sol_doc.data = match encode_doc_data(&pledge_list) {
+                        Ok(encoded) => encoded,
+                        Err(err) => {
+                            return Err(format!("Failed to encode updated pledges: {}", err))
+                        }
+                    };
+
+                    // Use `set_doc_store` to update the `pledges_solution` document using the controller
+                    set_doc_store(
+                        controller,
+                        "pledges_solution".to_string(),
+                        sol_doc_key.clone(),
+                        SetDoc {
+                            data: sol_doc.data,
+                            description: sol_doc.description.clone(),
+                            version: sol_doc.version.clone(),
+                        },
+                    )?;
+                }
+                Ok(None) => {
+                    // Continue even if solution pledge document is not found
+                    ic_cdk::print(format!(
+                        "Solution pledge document not found, continuing with deletion."
+                    ));
+                }
+                Err(err) => {
+                    return Err(format!("Error fetching solution pledge document: {}", err))
+                }
+            }
+
+            // Step 5: Update the `idea_feature_pledge` document for the idea
+            let idea_pledge_doc_key = format!("PLG_IDEA_{}", idea_id);
+            match get_doc_store(
+                controller,
+                "idea_feature_pledge".to_string(),
+                idea_pledge_doc_key.clone(),
+            ) {
+                Ok(Some(mut idea_doc)) => {
+                    // Decode the idea pledge data
+                    let mut total_idea_pledge: TotalPledging = match decode_doc_data(&idea_doc.data)
+                    {
+                        Ok(data) => data,
+                        Err(err) => {
+                            return Err(format!("Failed to decode idea pledge data: {}", err))
+                        }
+                    };
+
+                    // Ensure subtraction doesn't go below zero
+                    if total_idea_pledge.pledges >= pledged_amount {
+                        total_idea_pledge.pledges -= pledged_amount;
+                    } else {
+                        total_idea_pledge.pledges = 0;
+                    }
+
+                    if total_idea_pledge.expected >= expected_amount {
+                        total_idea_pledge.expected -= expected_amount;
+                    } else {
+                        total_idea_pledge.expected = 0;
+                    }
+
+                    // Encode the updated totals back into the document
+                    idea_doc.data = match encode_doc_data(&total_idea_pledge) {
+                        Ok(encoded) => encoded,
+                        Err(err) => {
+                            return Err(format!(
+                                "Failed to encode updated idea pledge data: {}",
+                                err
+                            ))
+                        }
+                    };
+
+                    // Use `set_doc_store` to update the `idea_feature_pledge` document for the idea using the controller
+                    set_doc_store(
+                        controller,
+                        "idea_feature_pledge".to_string(),
+                        idea_pledge_doc_key,
+                        SetDoc {
+                            data: idea_doc.data,
+                            description: idea_doc.description.clone(),
+                            version: idea_doc.version.clone(),
+                        },
+                    )?;
+                }
+                Ok(None) => {
+                    // Continue even if idea pledge document is not found
+                    ic_cdk::print(format!(
+                        "Idea pledge document not found, continuing with deletion."
+                    ));
+                }
+                Err(err) => return Err(format!("Error fetching idea pledge document: {}", err)),
+            }
+
+            // Step 6: Update the `idea_feature_pledge` document for the feature if it exists (PLG_FEA_ + feature_id)
+            if let Some(feature_id) = feature_id {
+                let feature_pledge_doc_key = format!("PLG_FEA_{}", feature_id);
+                match get_doc_store(
+                    controller,
+                    "idea_feature_pledge".to_string(),
+                    feature_pledge_doc_key.clone(),
+                ) {
+                    Ok(Some(mut feature_doc)) => {
+                        let mut total_feature_pledge: TotalPledging =
+                            match decode_doc_data(&feature_doc.data) {
+                                Ok(data) => data,
+                                Err(err) => {
+                                    return Err(format!(
+                                        "Failed to decode feature pledge data: {}",
+                                        err
+                                    ))
+                                }
+                            };
+
+                        // Ensure subtraction doesn't go below zero
+                        if total_feature_pledge.pledges >= pledged_amount {
+                            total_feature_pledge.pledges -= pledged_amount;
+                        } else {
+                            total_feature_pledge.pledges = 0;
+                        }
+
+                        if total_feature_pledge.expected >= expected_amount {
+                            total_feature_pledge.expected -= expected_amount;
+                        } else {
+                            total_feature_pledge.expected = 0;
+                        }
+
+                        // Encode the updated feature pledge data back into the document
+                        feature_doc.data = match encode_doc_data(&total_feature_pledge) {
+                            Ok(encoded) => encoded,
+                            Err(err) => {
+                                return Err(format!(
+                                    "Failed to encode updated feature pledge data: {}",
+                                    err
+                                ))
+                            }
+                        };
+
+                        // Use `set_doc_store` to update the `idea_feature_pledge` document for the feature using the controller
+                        set_doc_store(
+                            controller,
+                            "idea_feature_pledge".to_string(),
+                            feature_pledge_doc_key,
+                            SetDoc {
+                                data: feature_doc.data,
+                                description: feature_doc.description.clone(),
+                                version: feature_doc.version.clone(),
+                            },
+                        )?;
+                    }
+                    Ok(None) => (), // It's fine if the feature pledge doc is not found (some pledges don’t have features)
+                    Err(err) => {
+                        return Err(format!("Error fetching feature pledge document: {}", err))
+                    }
+                }
+            }
+
+            // Update the pledge document instead of deleting it
+            set_doc_store(
+                caller,
+                "pledges_active".to_string(),
+                id.clone(),
+                SetDoc {
+                    data: updated_data,
+                    description: doc.description.clone(),
+                    version: Some(get_document_version_or_default(
+                        "pledges_active".to_string(),
+                        id.clone(),
+                    )?),
+                },
+            )?;
+
+            Ok(())
+        }
+    }
+}
+
+#[update]
 fn delete_pledge(id: String) -> Result<(), String> {
     // Step 1: Get the caller and transform it into text
     let caller = api::caller();
@@ -740,97 +1031,6 @@ fn delete_pledge(id: String) -> Result<(), String> {
     }
 
     return Ok(());
-}
-
-#[update]
-fn delete_pledge(id: String) -> Result<(), String> {
-    // Step 1: Get the caller and transform it into text
-    let caller = api::caller();
-    let caller_text = caller.to_text();
-    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
-
-    // Fetch the pledges_active document
-    match get_doc_store(caller, "pledges_active".to_string(), id.clone()) {
-        Ok(None) => return Err("Pledge not found.".to_string()),
-        Err(err) => return Err(format!("Error retrieving pledge: {}", err)),
-        Ok(Some(doc)) => {
-            // Verify caller is in description
-            if let Some(description) = &doc.description {
-                if !description.contains(&caller_text) {
-                    return Err("Caller is not mentioned in the pledge description.".to_string());
-                }
-            } else {
-                return Err("Pledge description not found.".to_string());
-            }
-
-            // Decode current pledge data
-            let mut pledge_data: PledgeData = {
-                let json: serde_json::Value =
-                    decode_doc_data(&doc.data).unwrap_or(serde_json::json!({}));
-
-                PledgeData {
-                    amount: json.get("amount").and_then(|v| v.as_u64()).unwrap_or(0),
-                    doc_key: id.clone(),
-                    expected_amount: json
-                        .get("expected_amount")
-                        .and_then(|v| v.as_u64())
-                        .unwrap_or(0),
-                    feature_id: json
-                        .get("feature_id")
-                        .and_then(|v| v.as_str())
-                        .map(String::from),
-                    idea_id: json
-                        .get("idea_id")
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("")
-                        .to_string(),
-                    target: json
-                        .get("target")
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("")
-                        .to_string(),
-                    user: json
-                        .get("user")
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("")
-                        .to_string(),
-                    status: "inactive".to_string(), // Set status to inactive
-                    amount_paid: json
-                        .get("amount_paid")
-                        .and_then(|v| v.as_u64())
-                        .unwrap_or(0),
-                    payment_type: json
-                        .get("payment_type")
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("Crypto")
-                        .to_string(),
-                }
-            };
-
-            // Update the pledge document with new status
-            let updated_data = match encode_doc_data(&pledge_data) {
-                Ok(data) => data,
-                Err(err) => return Err(format!("Failed to encode updated pledge data: {}", err)),
-            };
-
-            // Update the pledge document
-            set_doc_store(
-                caller,
-                "pledges_active".to_string(),
-                id.clone(),
-                SetDoc {
-                    data: updated_data,
-                    description: doc.description.clone(),
-                    version: doc.version.clone(),
-                },
-            )?;
-
-            // The rest of the function (updating other documents) remains the same
-            // ... (keep all the existing logic for updating pledges_solution, idea_feature_pledge, etc.)
-
-            Ok(())
-        }
-    }
 }
 
 #[update]
