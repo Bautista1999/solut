@@ -253,20 +253,20 @@ export const getUserActivePledges = async (value0: string): Promise<Result_9> =>
 	return await get_user_active_pledges(value0);
 }
 
-export const getUserActivePledgesEnriched = async (value0: string): Promise<Result_10> => {
-	const {get_user_active_pledges_enriched} = await getSatelliteExtendedActor<SatelliteActor>({
-		idlFactory
-	});
-
-	return await get_user_active_pledges_enriched(value0);
-}
-
-export const getUserBasicInformation = async (value0: string): Promise<Result_11> => {
+export const getUserBasicInformation = async (value0: string): Promise<Result_10> => {
 	const {get_user_basic_information} = await getSatelliteExtendedActor<SatelliteActor>({
 		idlFactory
 	});
 
 	return await get_user_basic_information(value0);
+}
+
+export const getUserPledgesEnriched = async (value0: string): Promise<Result_11> => {
+	const {get_user_pledges_enriched} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await get_user_pledges_enriched(value0);
 }
 
 export const getUserProfilePic = async (value0: string): Promise<string> => {

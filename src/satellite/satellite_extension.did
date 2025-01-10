@@ -90,8 +90,8 @@ type Product = record {
 };
 type Result = variant { Ok; Err : text };
 type Result_1 = variant { Ok : text; Err : text };
-type Result_10 = variant { Ok : vec EnrichedPledgeData; Err : text };
-type Result_11 = variant { Ok : UserBasicInfo; Err : text };
+type Result_10 = variant { Ok : UserBasicInfo; Err : text };
+type Result_11 = variant { Ok : vec EnrichedPledgeData; Err : text };
 type Result_2 = variant { Ok : nat64; Err : text };
 type Result_3 = variant {
   Ok : record { nat64; nat64; nat64; vec record { text; text } };
@@ -192,8 +192,8 @@ service : {
   get_total_pledged : (text, text) -> (Result_2) query;
   get_total_pledged_and_expected : (text, text) -> (Result_8) query;
   get_user_active_pledges : (text) -> (Result_9) query;
-  get_user_active_pledges_enriched : (text) -> (Result_10) query;
-  get_user_basic_information : (text) -> (Result_11) query;
+  get_user_basic_information : (text) -> (Result_10) query;
+  get_user_pledges_enriched : (text) -> (Result_11) query;
   get_user_profile_pic : (text) -> (text) query;
   get_user_real_balance : (text) -> (Result_2);
   get_user_reputation : (principal) -> (Result_2) query;

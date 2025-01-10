@@ -125,21 +125,6 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : IDL.Vec(PledgeData),
     'Err' : IDL.Text,
   });
-  const EnrichedPledgeData = IDL.Record({
-    'status' : IDL.Text,
-    'feature' : IDL.Opt(IndexResponseBasicInfo),
-    'payment_type' : IDL.Text,
-    'idea' : IndexResponseBasicInfo,
-    'expected_amount' : IDL.Nat64,
-    'pledge_id' : IDL.Text,
-    'created_at' : IDL.Nat64,
-    'amount_paid' : IDL.Nat64,
-    'amount' : IDL.Nat64,
-  });
-  const Result_10 = IDL.Variant({
-    'Ok' : IDL.Vec(EnrichedPledgeData),
-    'Err' : IDL.Text,
-  });
   const UserBasicInfo = IDL.Record({
     'username' : IDL.Text,
     'profile_picture' : IDL.Text,
@@ -152,7 +137,22 @@ export const idlFactory = ({ IDL }) => {
     'user_id' : IDL.Text,
     'followers_count' : IDL.Nat64,
   });
-  const Result_11 = IDL.Variant({ 'Ok' : UserBasicInfo, 'Err' : IDL.Text });
+  const Result_10 = IDL.Variant({ 'Ok' : UserBasicInfo, 'Err' : IDL.Text });
+  const EnrichedPledgeData = IDL.Record({
+    'status' : IDL.Text,
+    'feature' : IDL.Opt(IndexResponseBasicInfo),
+    'payment_type' : IDL.Text,
+    'idea' : IndexResponseBasicInfo,
+    'expected_amount' : IDL.Nat64,
+    'pledge_id' : IDL.Text,
+    'created_at' : IDL.Nat64,
+    'amount_paid' : IDL.Nat64,
+    'amount' : IDL.Nat64,
+  });
+  const Result_11 = IDL.Variant({
+    'Ok' : IDL.Vec(EnrichedPledgeData),
+    'Err' : IDL.Text,
+  });
   const Notification = IDL.Record({
     'title' : IDL.Text,
     'linkURL' : IDL.Text,
@@ -267,12 +267,8 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'get_user_active_pledges' : IDL.Func([IDL.Text], [Result_9], ['query']),
-    'get_user_active_pledges_enriched' : IDL.Func(
-        [IDL.Text],
-        [Result_10],
-        ['query'],
-      ),
-    'get_user_basic_information' : IDL.Func([IDL.Text], [Result_11], ['query']),
+    'get_user_basic_information' : IDL.Func([IDL.Text], [Result_10], ['query']),
+    'get_user_pledges_enriched' : IDL.Func([IDL.Text], [Result_11], ['query']),
     'get_user_profile_pic' : IDL.Func([IDL.Text], [IDL.Text], ['query']),
     'get_user_real_balance' : IDL.Func([IDL.Text], [Result_2], []),
     'get_user_reputation' : IDL.Func([IDL.Principal], [Result_2], ['query']),
