@@ -332,6 +332,15 @@ a:hover {
     text-align: center;
 }
 
+.inactiveStatusFlag {
+    background-color: gray;
+    color: white;
+    border-radius: 4px;
+    font-weight: normal;
+    height: fit-content;
+    text-align: center;
+}
+
 .hover-message {
     visibility: hidden;
     width: 200px;
