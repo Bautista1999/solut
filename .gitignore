@@ -26,3 +26,5 @@ build/_app/version.json
 build/index.html
 build_log.txt
 node_modules/.package-lock.json
+output.txt
+build_output.txt
