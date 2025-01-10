@@ -113,9 +113,16 @@
                     {roundToFiveDecimals(ICPtoDecimal(transaction.amount))}
                 </td>
                 <td class="status-field">
-                    {#if transaction.status == "Success"}
+                    {#if transaction.status == "Success" || transaction.status === "active"}
                         <div
                             class="successStatusFlag"
+                            style="margin-inline:5px;"
+                        >
+                            {transaction.status}
+                        </div>
+                    {:else if transaction.status === "inactive"}
+                        <div
+                            class="inactiveStatusFlag"
                             style="margin-inline:5px;"
                         >
                             {transaction.status}
@@ -136,7 +143,7 @@
                 {/if}
                 {#if transaction.trans_type == "Pledge" && transaction.sender.toString() == $UserKey}
                     {#await getSolutionStatusFromIdeaId(transaction.project_id) then data}
-                        {#if data.toLowerCase() != "delivered"}
+                        {#if data.toLowerCase() != "delivered" && transaction.status === "active"}
                             <td class="delete-field">
                                 <span
                                     class="material-symbols-outlined"

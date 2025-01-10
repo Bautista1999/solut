@@ -86,7 +86,12 @@
                                             alt={pledge.feature[0]?.title}
                                             class="feature-image"
                                         />
-                                        <span>{pledge.feature[0]?.title}</span>
+                                        <span
+                                            class="truncate-text"
+                                            title={pledge.feature[0]?.title}
+                                        >
+                                            {pledge.feature[0]?.title}
+                                        </span>
                                     {:else}
                                         <span>N/A</span>
                                     {/if}
@@ -109,6 +114,29 @@
                                 </span>
                             </div>
                             <div class="info-item">
+                                <span class="label">Amount Paid</span>
+                                <span class="value">
+                                    {roundUpToThreeDecimalPlaces(
+                                        ICPtoDecimal(pledge.amount_paid),
+                                    )} ICP
+                                </span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Status</span>
+                                <span
+                                    class="value status-tag"
+                                    class:active={pledge.status === "active"}
+                                >
+                                    {pledge.status}
+                                </span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Payment Type</span>
+                                <span class="value payment-tag">
+                                    {pledge.payment_type}
+                                </span>
+                            </div>
+                            <div class="info-item">
                                 <span class="label">Created</span>
                                 <span class="value"
                                     >{new Date(
@@ -119,15 +147,15 @@
                         </div>
                         <div class="card-actions">
                             <BasicButtonDarkSmall
-                                msg="View Details"
+                                msg="Check idea"
                                 someFunction={() =>
-                                    (window.location.href = `/idea/${pledge.idea.element_id}`)}
+                                    (window.location.href = `/idea/${pledge.feature[0]?.element_id}`)}
                             />
 
                             {#await getSolutionStatusFromIdeaId(pledge.idea.element_id)}
                                 <!-- Loading state -->
                             {:then status}
-                                {#if status.toLowerCase() !== "delivered"}
+                                {#if status.toLowerCase() !== "delivered" && pledge.status === "active"}
                                     <BasicButtonDarkSmall
                                         msg="Cancel Pledge"
                                         someFunction={() => {
@@ -225,10 +253,11 @@
 
     .idea-image,
     .feature-image {
-        width: 40px;
-        height: 40px;
+        width: 30px;
+        height: 30px;
         border-radius: 8px;
         object-fit: cover;
+        flex-shrink: 0;
     }
 
     .card-content {
@@ -265,6 +294,8 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        min-width: 0;
+        padding: 0.25rem 0;
     }
 
     .card-actions {
@@ -295,5 +326,45 @@
         .pledge-card {
             border-radius: 8px;
         }
+    }
+
+    .truncate-text {
+        max-width: 150px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        white-space: normal;
+        line-height: 1.2em;
+        height: 2.4em;
+        font-size: 0.9rem;
+    }
+
+    .idea-image,
+    .feature-image {
+        margin-top: 0;
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+    }
+
+    .status-tag {
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        text-transform: capitalize;
+        background: gray;
+        color: white;
+    }
+
+    .status-tag.active {
+        background: var(--green);
+    }
+
+    .payment-tag {
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        text-transform: capitalize;
+        background: var(--primary-color);
+        color: white;
     }
 </style>

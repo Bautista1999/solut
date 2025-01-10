@@ -13,7 +13,7 @@ import  {idlFactory as Escrow} from "$lib/declarations/escrow.declarations.did";
 import { getIdeaIdBySolution, getImplementedFeaturesOfSolution, getUserKey } from "$lib/data_functions/get_functions";
 import { createNotification, followElement, updateSolutionStatus } from "$lib/data_functions/create_functions";
 // import { trackEvent } from "@junobuild/analytics";
-import { checkCycles, deletePledge, getFundingDetails, getPledgedBalance, getUserActivePledges, pledgeCreate } from "../../declarations/satellite/satellite.api";
+import { cancelPledge, checkCycles, deletePledge, getFundingDetails, getPledgedBalance, getUserActivePledges, pledgeCreate } from "../../declarations/satellite/satellite.api";
 import { UserKey } from "$lib/stores/other_stores";
 
 // import("../declarations/juno.declarations.did.js")._SERVICE.set_doc;
@@ -333,7 +333,7 @@ export async function getTransactionsAndPledges(project_id){
             }
             /** @type {import("$lib/declarations/escrow_declarations").Transaction} */
             let newTransaction = {
-                status: "Success",
+                status: pledges.items[i].data.status?pledges.items[i].data.status:"active",
                 sender: pledges.items[i].data.user,
                 target:
                     pledges.items[i].data.feature_id ||
@@ -901,7 +901,8 @@ export async function getAllowance(){
  * @param {string} id
  */
 export async function deletePledgeFromProject(id){
-    return await deletePledge(id);
+    // return await deletePledge(id);
+    return await cancelPledge(id);
 }
 
 export async function getTotalPledgedBalance(){
@@ -920,7 +921,7 @@ export async function getActivePledges(){
     return await getUserActivePledges(key);
 }
 
-export async function getUserAvailableBalance(){
+export async function getUserAvailableBalance(){ 
     let pledgedBalance = await getTotalPledgedBalance();
     let realBalance = await getUserBalance(await getUserKey());
     let availableBalance = 0;
