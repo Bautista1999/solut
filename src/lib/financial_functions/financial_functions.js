@@ -7,7 +7,7 @@ import { idlFactory as Admin } from "$lib/declarations/admin.declarations.did";
 import { nanoid } from "nanoid";
 
 import { IcrcLedgerCanister } from "@dfinity/ledger-icrc";
-import { AccountIdentifier, LedgerCanister } from "@dfinity/ledger-icp";
+import { AccountIdentifier, LedgerCanister, SubAccount } from "@dfinity/ledger-icp";
 import { admin_canister_id, escrow_canister_id } from "../data_functions/canisters";
 import  {idlFactory as Escrow} from "$lib/declarations/escrow.declarations.did";
 import { getIdeaIdBySolution, getImplementedFeaturesOfSolution, getUserKey } from "$lib/data_functions/get_functions";
@@ -771,7 +771,7 @@ export async function storeTransactionInCanister(transaction_number,type, destin
 passed as a parameter.
 
 * PRE-CONDITIONS: User needs to be signed in to do this, and have enough balance. 
-Receives a destination and an amount.
+Receives a destination (in hex format) and an amount.
 
 * POST-CONDITIONS: Returns dfinity's transfer response. 
 
@@ -980,6 +980,71 @@ export async function getFundingInformation(type, element_id) {
      users: [],
    };
  }
+}
+
+/**
+ * @param {any} pledgeId
+ */
+export async function getPledgeFeatureId(pledgeId) {
+    const pledgeDoc = await getDoc({
+        collection: "pledges_active",
+        key: pledgeId,
+    });
+    if (!pledgeDoc) throw new Error("Pledge not found");
+    return pledgeDoc.data.feature_id;
+}
+
+// Helper function to calculate SHA256 hash for subaccount
+/**
+ * @param {string} message
+ */
+async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    return new Uint8Array(hashBuffer);
+}
+
+/**
+ * Transfer tokens to a specific principal's subaccount
+ * @param {bigint} amount - Amount to transfer in e8s
+ * @param {string} destinationPrincipal - Principal ID of the destination
+ * @param {string} subaccountId - String to generate subaccount from
+ * @returns {Promise<bigint>} Transaction number
+ */
+export async function transferToSubaccount(amount, destinationPrincipal, subaccountId) {
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" });
+    const canister = await LedgerCanister.create({
+        agent: agent,
+        canisterId: Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai"),
+    });
+    
+    try {
+        // Convert subaccountId to bytes for subaccount
+        const subaccountBytes = await sha256(subaccountId);
+        const subaccount = new Uint8Array(subaccountBytes);
+        const subaccountResult = SubAccount.fromBytes(subaccount);
+        if (subaccountResult instanceof Error) {
+            throw new Error("Invalid subaccount");
+        }
+        
+        // Create account identifier with principal and subaccount
+        const account = AccountIdentifier.fromPrincipal({
+            principal: Principal.fromText(destinationPrincipal),
+            subAccount: subaccountResult
+        });
+        
+        const response = await canister.transfer({
+            to: account,
+            amount: amount,
+        });
+        
+        console.log("Transfer response:", response);
+        return response;
+    } catch(e) {
+        console.error("Transfer error:", e);
+        throw new Error(String(e));
+    }
 }
 
 

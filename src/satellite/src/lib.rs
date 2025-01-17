@@ -14,6 +14,8 @@ use std::iter::Filter;
 
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use url::Url;
+mod ApprovalFunctions;
+mod Funding;
 mod indexed_queries;
 mod notifications;
 mod pledges;
@@ -24,7 +26,7 @@ mod user_information;
 use crate::types::interface::{UserBasicInfo, UserProfileBasicInfo};
 
 use crate::types::interface::{
-    Activity, EnrichedPledgeData, IndexResponse, IndexResponseBasicInfo,
+    Activity, EnrichedPledgeData, IndexResponse, IndexResponseBasicInfo, PledgeApproval,
 };
 use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
 use ic_cdk::api::{self, set_global_timer, time};
@@ -50,7 +52,8 @@ use junobuild_utils::{decode_doc_data, encode_doc_data};
 use regex::Regex;
 use scheduled::{delete_orphan_ideas, delete_orphan_solutions, delete_unused_images};
 use types::interface::{
-    Idea, IdeaRevenueCounter, IndexSearch, Notification, PledgeData, PledgeUser, Product, SetIdea,
+    Approval, ApprovalStatus, ClaimerInfo, Claimers, Discount, Idea, IdeaRevenueCounter,
+    IndexSearch, Notification, PaymentType, PledgeData, PledgeUser, Product, Referral, SetIdea,
     Solution, Topic, TotalPledging,
 };
 
@@ -1509,7 +1512,8 @@ fn create_or_update_solution(
     parent_idea_id: String,
 ) -> Result<(), String> {
     let caller = api::caller();
-    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+    let controller: Principal =
+        candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
 
     // Step 1: Basic field validation
     match validate_basic_fields(

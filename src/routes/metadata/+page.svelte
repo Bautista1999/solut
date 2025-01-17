@@ -14,6 +14,7 @@
   import { onMount } from "svelte";
   import { compile } from "svelte/compiler"; // Import the Svelte compiler
   import {
+    approveSolutionPledges,
     createNewProduct,
     deleteManyImages,
     deletePledge,
@@ -36,6 +37,7 @@
     getUserReputation,
     getUserUsername,
     queryScheduledTasksState,
+    reverseApproval,
     sendSingleNotification,
     startScheduledTasks,
     stopScheduledTasks,
@@ -43,6 +45,9 @@
     triggerDeleteOrphanSolutions,
     triggerDeleteUnusedImages,
     validateUserBalanceOrDeletePledge,
+    verifyTransactionDetails,
+    getFeatureSubaccountBalance,
+    withdrawFromFeatureSubaccount,
   } from "../../declarations/satellite/satellite.api";
   import { signIn, NFIDProvider, authSubscribe } from "@junobuild/core";
   import SearchBarLarger from "$lib/components/SearchBarLarger.svelte";
@@ -51,7 +56,10 @@
   import QuillTextEditor from "$lib/components/QuillTextEditor.svelte";
   import {
     getActivePledges,
+    getPledgeFeatureId,
     getTotalPledgedBalance,
+    transferTo,
+    transferToSubaccount,
   } from "$lib/financial_functions/financial_functions";
   import { UserKey } from "$lib/stores/other_stores";
   import { AccountIdentifier } from "@dfinity/ledger-icp";
@@ -354,6 +362,50 @@
   }
 
   $: userId = "";
+  $: transactionAmount = 0;
+  $: transactionNumber = 0;
+  $: paymentType = "Crypto";
+  $: pledgeApprovals = [
+    {
+      pledge_id: "",
+      amount: 0,
+    },
+  ];
+
+  function addPledgeApproval() {
+    pledgeApprovals = [...pledgeApprovals, { pledge_id: "", amount: 0 }];
+  }
+
+  /**
+   * @param {number} index
+   */
+  function removePledgeApproval(index) {
+    pledgeApprovals = pledgeApprovals.filter((_, i) => i !== index);
+  }
+
+  /**
+   * @param {number} index
+   * @param {any} field
+   * @param {any} value
+   */
+  function updatePledgeApproval(index, field, value) {
+    pledgeApprovals = pledgeApprovals.map((approval, i) => {
+      if (i === index) {
+        return { ...approval, [field]: value };
+      }
+      return approval;
+    });
+  }
+  $: totalAmount = pledgeApprovals.reduce(
+    (sum, approval) => sum + approval.amount,
+    0,
+  );
+
+  let approvalId = "";
+  let featureIdToCheck = "";
+  let featureIdToWithdraw = "";
+  let withdrawAmount = 0;
+  let withdrawDestination = "";
 </script>
 
 <svelte:head>
@@ -669,14 +721,319 @@
         msg={"Send notification"}
       />
     </div>
+    <div class="Field">
+      <h1 style="margin:0px;">Verify Transaction Details</h1>
+      <p style="margin:0px; font-weight:bold;">
+        Transaction Amount (in decimals):
+      </p>
+      <input
+        class="InputTextSmall"
+        type="number"
+        placeholder="Amount (e8s)"
+        bind:value={transactionAmount}
+      />
+      <p style="margin:0px; font-weight:bold;">Transaction Block Number:</p>
+      <input
+        class="InputTextSmall"
+        type="number"
+        placeholder="Transaction Number"
+        bind:value={transactionNumber}
+      />
+      <p style="margin:0px; font-weight:bold;">Payment Type:</p>
+      <select class="InputTextSmall" bind:value={paymentType}>
+        <option value="Crypto">Crypto</option>
+      </select>
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          try {
+            const result = await verifyTransactionDetails(
+              BigInt(transactionAmount * 100000000),
+              BigInt(transactionNumber),
+              { Crypto: null },
+            );
+            console.log("Transaction verification result:", result);
+          } catch (error) {
+            console.error("Transaction verification failed:", error);
+          }
+        }}
+        msg={"Verify Transaction"}
+      />
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">Approve Solution Pledges</h1>
 
-    <Graph
+      <!-- Available Balance -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="margin:10px 0;">Available Balance</h2>
+        {#await getAvailableBalance($UserKey)}
+          <MagicalDotsSmall />
+        {:then result}
+          {#if "Ok" in result}
+            <p style="margin:0px; font-weight:bold;">
+              Balance: {Number(result.Ok) / 100000000} ICP
+            </p>
+          {:else}
+            <p style="margin:0px; color: red;">Error fetching balance</p>
+          {/if}
+        {:catch error}
+          <p style="margin:0px; color: red;">Error: {error.message}</p>
+        {/await}
+      </div>
+
+      <!-- Solution Details -->
+      <div style="margin-bottom: 20px;">
+        <h2 style="margin:10px 0;">Solution Details</h2>
+        <div class="input-group">
+          <label for="solution-id">Solution ID:</label>
+          <input
+            id="solution-id"
+            class="InputTextSmall"
+            type="text"
+            bind:value={solutionId}
+            placeholder="Enter solution ID"
+          />
+        </div>
+        <!-- <div class="input-group">
+          <label for="transaction-number">Transaction Number:</label>
+          <input
+            id="transaction-number"
+            class="InputTextSmall"
+            type="number"
+            bind:value={transactionNumber}
+            placeholder="Enter transaction number (not in decimals)"
+          />
+        </div> -->
+        <div class="input-group">
+          <label for="total-amount">Total Amount:</label>
+          <input
+            id="total-amount"
+            class="InputTextSmall"
+            type="number"
+            step="0.00000001"
+            bind:value={totalAmount}
+            placeholder="Enter total amount (in decimals)"
+          />
+        </div>
+      </div>
+
+      <!-- Pledge Management -->
+      <div>
+        <h2 style="margin:10px 0;">Add Pledges</h2>
+        {#each pledgeApprovals as approval, index}
+          <div class="pledge-item">
+            <div class="input-group">
+              <label for="pledge-id-{index}">Pledge ID:</label>
+              <input
+                id="pledge-id-{index}"
+                class="InputTextSmall"
+                type="text"
+                bind:value={approval.pledge_id}
+                placeholder="Enter pledge ID"
+              />
+            </div>
+            <div class="input-group">
+              <label for="pledge-amount-{index}">Amount:</label>
+              <input
+                id="pledge-amount-{index}"
+                class="InputTextSmall"
+                type="number"
+                step="0.00000001"
+                bind:value={approval.amount}
+                placeholder="Enter amount (in decimals)"
+              />
+            </div>
+            <BasicRoundedButton
+              disabledCondition={null}
+              someFunction={() => removePledgeApproval(index)}
+              msg={"Remove"}
+            />
+          </div>
+        {/each}
+
+        <BasicRoundedButton
+          disabledCondition={null}
+          someFunction={addPledgeApproval}
+          msg={"Add New Pledge"}
+        />
+      </div>
+
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          try {
+            const satelliteId = "svftd-daaaa-aaaal-adr3a-cai";
+
+            // Create array of transfer promises
+            const transferPromises = await Promise.all(
+              pledgeApprovals.map(async (pledge) => {
+                const featureId = await getPledgeFeatureId(pledge.pledge_id);
+                const amount = BigInt(pledge.amount * 100000000);
+                return {
+                  promise: transferToSubaccount(amount, satelliteId, featureId),
+                  pledge_id: pledge.pledge_id,
+                  amount: Number(amount),
+                };
+              }),
+            );
+
+            // Execute all transfers atomically
+            const results = await Promise.all(
+              transferPromises.map((t) => t.promise),
+            );
+
+            // Create feature transfers with transaction numbers
+            const featureTransfers = transferPromises.map(
+              (transfer, index) => ({
+                pledge_id: transfer.pledge_id,
+                amount: transfer.amount,
+                transaction_number: Number(results[index]),
+              }),
+            );
+
+            // Call approve_solution_pledges with the results
+            const result = await approveSolutionPledges(
+              solutionId,
+              { Crypto: null },
+              featureTransfers,
+            );
+
+            console.log("Approval result:", result);
+          } catch (e) {
+            console.error("Error in transfer process:", String(e));
+          }
+        }}
+        msg={"Approve Solution Pledges"}
+      />
+    </div>
+
+    <div class="Field">
+      <h1 style="margin:0px;">Reverse Approval</h1>
+      <input
+        class="InputTextSmall"
+        placeholder="Enter approval ID"
+        bind:value={approvalId}
+      />
+      <BasicRoundedButton
+        disabledCondition={!approvalId}
+        someFunction={async () => {
+          try {
+            await reverseApproval(approvalId);
+            console.log("Approval successfully reversed!");
+            approvalId = ""; // Clear input after success
+          } catch (error) {
+            console.log("Error reversing approval: " + error);
+          }
+        }}
+        msg={"Reverse Approval"}
+      />
+    </div>
+
+    <div class="Field">
+      <h1 style="margin:0px;">Check Feature Balance</h1>
+      <input
+        class="InputTextSmall"
+        placeholder="Enter feature ID"
+        bind:value={featureIdToCheck}
+      />
+      <BasicRoundedButton
+        disabledCondition={!featureIdToCheck}
+        someFunction={async () => {
+          try {
+            const result = await getFeatureSubaccountBalance(featureIdToCheck);
+            if ("Ok" in result) {
+              console.log(`Balance: ${Number(result.Ok) / 100000000} ICP`);
+            } else {
+              console.log(`Error: ${result.Err}`);
+            }
+          } catch (error) {
+            console.error("Error checking balance:", error);
+          }
+        }}
+        msg={"Check Balance"}
+      />
+    </div>
+
+    <div class="Field">
+      <h1 style="margin:0px;">Withdraw From Feature</h1>
+      <div class="input-group">
+        <label>Feature ID:</label>
+        <input
+          class="InputTextSmall"
+          placeholder="Enter feature ID"
+          bind:value={featureIdToWithdraw}
+        />
+      </div>
+      <div class="input-group">
+        <label>Amount (ICP):</label>
+        <input
+          class="InputTextSmall"
+          type="number"
+          step="0.00000001"
+          placeholder="Enter amount in ICP"
+          bind:value={withdrawAmount}
+        />
+      </div>
+      <div class="input-group">
+        <label>Destination Principal:</label>
+        <input
+          class="InputTextSmall"
+          placeholder="Enter destination principal"
+          bind:value={withdrawDestination}
+        />
+      </div>
+      <BasicRoundedButton
+        disabledCondition={!featureIdToWithdraw || !withdrawAmount}
+        someFunction={async () => {
+          try {
+            const result = await withdrawFromFeatureSubaccount(
+              BigInt(withdrawAmount * 100000000) - BigInt(10000),
+              featureIdToWithdraw,
+              Principal.fromText($UserKey),
+            );
+            if ("Ok" in result) {
+              alert(`Successfully withdrawn! Transaction number: ${result.Ok}`);
+            } else {
+              alert(`Error: ${result.Err}`);
+            }
+          } catch (error) {
+            console.error("Error withdrawing:", error);
+            alert(`Error: ${error}`);
+          }
+        }}
+        msg={"Withdraw"}
+      />
+    </div>
+
+    <style>
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 10px;
+      }
+
+      .input-group label {
+        font-weight: bold;
+        color: var(--text-color);
+      }
+
+      .pledge-item {
+        margin-bottom: 15px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: var(--secondary-color);
+      }
+    </style>
+
+    <!-- <Graph
       title="Users Registered"
       xAxisLabel="Time (days)"
       yAxisLabel="Users Registered"
       {xData}
       {yData}
-    />
+    /> -->
   {/if}
 </div>
 
@@ -720,5 +1077,24 @@
   .horizontalCard p {
     text-align: center;
     width: 25%;
+  }
+  .params-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+  }
+
+  .params-table td {
+    padding: 5px;
+  }
+
+  .params-table td:first-child {
+    width: 40%;
+    font-weight: bold;
+  }
+
+  .params-table input,
+  .params-table select {
+    width: 100%;
   }
 </style>
