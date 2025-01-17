@@ -271,4 +271,72 @@ pub mod interface {
         pub amount_paid: u64,
         pub payment_type: String,
     }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct ClaimerInfo {
+        pub principal: Principal,
+        pub amount: u64,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct Claimers {
+        pub solution_provider: ClaimerInfo,
+        pub topic_owner: ClaimerInfo,
+        pub feature_creator: ClaimerInfo,
+        pub platform_fee: ClaimerInfo,
+        pub referral_reward: Option<ClaimerInfo>, // Optional referral reward
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct Approval {
+        pub approval_id: String,
+        pub solution_id: String,
+        pub pledge_id: String,
+        pub user_principal: Principal,
+        pub amount: u64,
+        pub transaction_number: u64,
+        pub payment_type: PaymentType,
+        pub timestamp: u64,
+        pub status: ApprovalStatus,
+        pub claimers: Claimers,
+        pub subaccount: Option<[u8; 32]>,
+    }
+
+    #[derive(CandidType, Deserialize)]
+    pub struct PledgeApproval {
+        pub pledge_id: String,
+        pub amount: u64,
+        pub transaction_number: u64,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
+    pub enum PaymentType {
+        Crypto,
+        Fiat,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub enum ApprovalStatus {
+        Pending,
+        Completed,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct Discount {
+        pub beneficiary: Principal,
+        pub percentage: f64,
+        pub context_id: String,   // Topic/Feature/Solution ID
+        pub context_type: String, // "topic", "feature", or "solution"
+        pub active: bool,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct Referral {
+        pub inviter: Principal,
+        pub invitee: Principal,
+        pub percentage: f64,
+        pub start_date: u64,
+        pub expiration_date: u64,
+        pub active: bool,
+    }
 }
