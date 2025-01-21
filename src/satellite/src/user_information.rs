@@ -62,6 +62,11 @@ pub fn get_user_active_pledges(user_id: String) -> Result<Vec<PledgeData>, Strin
         let pledge_data: PledgeData = {
             let json: serde_json::Value =
                 decode_doc_data(&pledge_doc.data).unwrap_or(serde_json::json!({}));
+            let is_active = json
+                .get("status")
+                .and_then(|v| v.as_str())
+                .unwrap_or("active")
+                == "active";
 
             PledgeData {
                 amount: json.get("amount").and_then(|v| v.as_u64()).unwrap_or(0),
@@ -178,15 +183,15 @@ pub fn get_user_active_pledges(user_id: String) -> Result<Vec<PledgeData>, Strin
             };
 
             // Check the description for the status: if it contains "completed" or "delivered", skip this pledge
-            if let Some(status_doc) = solution_status_doc {
-                let status_description = status_doc.description.unwrap_or_default().to_lowercase();
+            // if let Some(status_doc) = solution_status_doc {
+            //     let status_description = status_doc.description.unwrap_or_default().to_lowercase();
 
-                if status_description.contains("completed")
-                    || status_description.contains("delivered")
-                {
-                    continue; // Skip pledge if target solution is inactive
-                }
-            }
+            //     if status_description.contains("completed")
+            //         || status_description.contains("delivered")
+            //     {
+            //         continue; // Skip pledge if target solution is inactive
+            //     }
+            // }
 
             // If solution is active, add pledge to active pledges
             active_pledges.push(pledge_data);
