@@ -26,7 +26,8 @@ mod user_information;
 use crate::types::interface::{UserBasicInfo, UserProfileBasicInfo};
 
 use crate::types::interface::{
-    Activity, EnrichedPledgeData, IndexResponse, IndexResponseBasicInfo, PledgeApproval,
+    Activity, EnrichedApprovalData, EnrichedPledgeData, IndexResponse, IndexResponseBasicInfo,
+    PledgeApproval, PledgeBasicInfo,
 };
 use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
 use ic_cdk::api::{self, set_global_timer, time};
