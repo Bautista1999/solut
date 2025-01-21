@@ -908,8 +908,9 @@ export async function deletePledgeFromProject(id){
 export async function getTotalPledgedBalance(){
     let key = await getUserKey(); // Extract the value of the store using $
     let result = await getPledgedBalance(key);
+    console.log("Result pledged balance:", result);
     if('Ok' in result){
-        return (Number(result.Ok)/1e8)
+        return (Number(result.Ok)/100000000)
     }else{
         alert(result.Err);
         return 0;
