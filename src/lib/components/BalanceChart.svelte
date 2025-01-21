@@ -20,11 +20,11 @@
      * @param {number} number
      */
     function roundToThreeDecimals(number) {
-        return Math.round(number * 100) / 100;
+        return Math.round(number * 1000000) / 1000000;
     }
 
     let realBalance = 0;
-    let pledgedBalance = 0;
+    $: pledgedBalance = 0;
     $: availableBalance = 0;
     $: if (realBalance < pledgedBalance) {
         availableBalance = 0;
@@ -36,7 +36,8 @@
     }
 
     async function getTotalPledgedICP() {
-        pledgedBalance = roundToThreeDecimals(await getTotalPledgedBalance());
+        pledgedBalance = await getTotalPledgedBalance();
+        pledgedBalance = roundToThreeDecimals(pledgedBalance);
     }
 </script>
 
@@ -57,7 +58,7 @@
             {#await getTotalPledgedICP()}
                 -- Loading... --
             {:then data}
-                {roundToThreeDecimals(pledgedBalance) + " ICP"}
+                {pledgedBalance + " ICP"}
             {/await}
         </p>
     </div>
