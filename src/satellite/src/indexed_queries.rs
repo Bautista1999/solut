@@ -2,8 +2,9 @@ use crate::notifications::send_single_notification;
 use crate::quickqueries::get_doc_owner;
 use crate::reputation::get_user_reputation;
 use crate::types::interface::{
-    EnrichedPledgeData, FollowData, Idea, IndexResponse, IndexResponseBasicInfo, IndexSearch,
-    Notification, PledgeData, PledgeUser, TotalPledging,
+    EnrichedApprovalData, EnrichedPledgeData, FollowData, Idea, IndexResponse,
+    IndexResponseBasicInfo, IndexSearch, Notification, PledgeBasicInfo, PledgeData, PledgeUser,
+    TotalPledging,
 };
 use crate::user_information::{
     get_available_balance, get_historical_pledged_balance, get_paginated_following_elements,
@@ -985,4 +986,168 @@ pub fn get_total_following(user_id: String) -> u64 {
         Ok((_, total_items, _, _)) => total_items as u64,
         Err(_) => 0,
     }
+}
+
+#[query]
+pub fn get_user_approvals_enriched(user_id: String) -> Result<Vec<EnrichedApprovalData>, String> {
+    let caller = api::caller();
+
+    // Filter to find approvals for the specific user
+    let filter = ListParams {
+        // matcher: Some(ListMatcher {
+        //     description: Some(format!("user:{}", user_id)),
+        //     ..Default::default()
+        // }),
+        matcher: None,
+        ..Default::default()
+    };
+
+    let collection = "approval".to_string();
+    let approvals_result = list_docs_store(caller.clone(), collection, &filter)?;
+
+    // Process each approval to enrich it with related data
+    let enriched_approvals: Result<Vec<EnrichedApprovalData>, String> = approvals_result
+        .items
+        .into_iter()
+        .filter_map(|(key, doc)| {
+            // First decode the approval data
+            let approval_json: serde_json::Value = match decode_doc_data(&doc.data) {
+                Ok(data) => data,
+                Err(_) => return None, // Skip if we can't decode
+            };
+
+            // Check if this approval belongs to the user
+            let approval_user = approval_json
+                .get("user_principal")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
+
+            if approval_user != user_id {
+                return None; // Skip if not the user's approval
+            }
+
+            // Continue with the rest of the data extraction
+            let amount = approval_json
+                .get("amount")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0);
+            let solution_id = match approval_json
+                .get("solution_id")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+            {
+                Some(id) => id,
+                None => return None, // Skip if no solution_id
+            };
+            let pledge_id = match approval_json
+                .get("pledge_id")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+            {
+                Some(id) => id,
+                None => return None, // Skip if no pledge_id
+            };
+            let status = approval_json
+                .get("status")
+                .and_then(|v| v.as_str())
+                .unwrap_or("Pending")
+                .to_string();
+            let payment_type = approval_json
+                .get("payment_type")
+                .and_then(|v| v.as_str())
+                .unwrap_or("Crypto")
+                .to_string();
+            let transaction_number = approval_json
+                .get("transaction_number")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0);
+
+            // Get solution info
+            let solution_info =
+                match get_doc_store(caller.clone(), "solution".to_string(), solution_id.clone()) {
+                    Ok(Some(solution_doc)) => {
+                        let solution_data: serde_json::Value =
+                            match decode_doc_data(&solution_doc.data) {
+                                Ok(data) => data,
+                                Err(_) => return None, // Skip if we can't decode solution data
+                            };
+
+                        IndexResponseBasicInfo {
+                            element_id: solution_id.clone(),
+                            title: solution_data
+                                .get("title")
+                                .and_then(|v| v.as_str())
+                                .unwrap_or("Unknown solution")
+                                .to_string(),
+                            profile_image: solution_data
+                                .get("images")
+                                .and_then(|images| images.as_array())
+                                .and_then(|arr| arr.get(0))
+                                .and_then(|img| img.as_str())
+                                .unwrap_or("https://solutio.one/solutio-images/logo-01.png")
+                                .to_string(),
+                            creation_date: solution_doc.created_at,
+                            element_type: "solution".to_string(),
+                        }
+                    }
+                    _ => IndexResponseBasicInfo {
+                        element_id: solution_id.clone(),
+                        title: "Unknown or deleted solution".to_string(),
+                        profile_image: "https://solutio.one/solutio-images/logo-01.png".to_string(),
+                        creation_date: doc.created_at,
+                        element_type: "solution".to_string(),
+                    },
+                };
+
+            // Get pledge info
+            let pledge_info = match get_doc_store(
+                caller.clone(),
+                "pledges_active".to_string(),
+                pledge_id.clone(),
+            ) {
+                Ok(Some(pledge_doc)) => {
+                    let pledge_data: serde_json::Value = match decode_doc_data(&pledge_doc.data) {
+                        Ok(data) => data,
+                        Err(_) => return None, // Skip if we can't decode pledge data
+                    };
+
+                    Some(PledgeBasicInfo {
+                        pledge_id: pledge_id.clone(),
+                        amount: pledge_data
+                            .get("amount")
+                            .and_then(|v| v.as_u64())
+                            .unwrap_or(0),
+                        feature_id: pledge_data
+                            .get("feature_id")
+                            .and_then(|v| v.as_str())
+                            .map(|s| s.to_string()),
+                        idea_id: pledge_data
+                            .get("idea_id")
+                            .and_then(|v| v.as_str())
+                            .map(|s| s.to_string())
+                            .unwrap_or_default(),
+                        status: pledge_data
+                            .get("status")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("active")
+                            .to_string(),
+                    })
+                }
+                _ => None,
+            };
+
+            Some(Ok(EnrichedApprovalData {
+                approval_id: key,
+                amount,
+                solution: solution_info,
+                pledge: pledge_info,
+                created_at: doc.created_at,
+                status,
+                payment_type,
+                transaction_number,
+            }))
+        })
+        .collect();
+
+    enriched_approvals
 }
