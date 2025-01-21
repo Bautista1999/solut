@@ -10,7 +10,10 @@ use crate::user_information::{
     get_available_balance, get_historical_pledged_balance, get_paginated_following_elements,
     get_user_profile_pic, get_user_username,
 };
-use crate::ApprovalFunctions::{approve_pledge, reverse_approval};
+use crate::ApprovalFunctions::{
+    approve_pledge, get_feature_id_from_pledge, reverse_approval, validate_pledge_ownership,
+    validate_solution_status,
+};
 use crate::{delete_pledge, get_document_description_or_default, get_document_version_or_default};
 use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
 use bytes::Bytes;
@@ -24,11 +27,12 @@ use ic_ledger_types::{
     TransferArgs, DEFAULT_FEE, MAINNET_LEDGER_CANISTER_ID,
 };
 use junobuild_satellite::{
-    count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, get_doc_store,
-    get_many_docs, list_docs_store, log, set_asset_handler, set_doc_store, DelDoc, Doc, Key,
-    SetDoc,
+    count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, error_with_data,
+    get_doc_store, get_many_docs, list_docs_store, log, set_asset_handler, set_doc_store, DelDoc,
+    Doc, Key, SetDoc,
 };
 use junobuild_shared::types::list::{ListMatcher, ListParams};
+use junobuild_storage::http::response::error_response;
 use junobuild_storage::http::types::HeaderField;
 use junobuild_storage::types::store::AssetKey;
 use junobuild_storage::well_known::update;
@@ -416,4 +420,71 @@ pub async fn get_feature_subaccount_balance(feature_id: String) -> Result<u64, S
         .map_err(|e| format!("Failed to query balance: {:?}", e))?;
 
     Ok(balance.e8s())
+}
+
+#[update]
+pub async fn withdraw_approval(approval_id: String) -> Result<u64, String> {
+    let caller = api::caller();
+
+    // Get approval details
+    let approval = get_approval_details(&approval_id)?;
+
+    // Validate solution status
+    validate_solution_status(&approval.solution_id)?;
+    // Validate pledge ownership
+    validate_pledge_ownership(&approval.pledge_id, caller)?;
+
+    // Check if approval is still pending
+    match approval.status {
+        ApprovalStatus::Pending => (),
+        _ => return Err("Cannot withdraw approval: approval is not in pending status".to_string()),
+    }
+
+    // Get feature_id and generate subaccount
+    let feature_id = get_feature_id_from_pledge(&approval.pledge_id)?;
+
+    // Transfer funds back to user
+    let transfer_result = withdraw_from_feature_subaccount(
+        approval.amount - (DEFAULT_FEE.e8s()),
+        feature_id.clone(),
+        approval.user_principal,
+    )
+    .await?;
+
+    // If transfer successful, reverse approval in database
+    if let Err(e) = reverse_approval(approval_id.clone()).await {
+        // CRITICAL ERROR: Transfer succeeded but approval reversal failed
+        let error_data = json!({
+            "approval_id": approval_id,
+            "feature_id": feature_id,
+            "amount": approval.amount,
+            "user": approval.user_principal.to_string(),
+            "transfer_block": transfer_result,
+            "error": e
+        });
+
+        error_with_data(
+            "CRITICAL: Transfer succeeded but approval reversal failed. Manual intervention required.".to_string(),
+            &error_data
+        )?;
+
+        return Err("Critical error: Transfer completed but approval reversal failed. Manual intervention required.".to_string());
+    }
+
+    Ok(transfer_result)
+}
+
+fn get_approval_details(approval_id: &str) -> Result<Approval, String> {
+    let controller = *CONTROLLER;
+
+    // Get the approval document
+    let approval_doc = get_doc_store(controller, "approval".to_string(), approval_id.to_string())
+        .map_err(|e| format!("Error fetching approval: {}", e))?
+        .ok_or("Approval not found")?;
+
+    // Decode the approval data
+    let approval: Approval = decode_doc_data(&approval_doc.data)
+        .map_err(|e| format!("Error decoding approval data: {}", e))?;
+
+    Ok(approval)
 }
