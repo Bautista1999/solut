@@ -13,6 +13,16 @@ type Activity = record {
   element_type : text;
   activity_image : opt text;
 };
+type EnrichedApprovalData = record {
+  status : text;
+  approval_id : text;
+  payment_type : text;
+  pledge : opt PledgeBasicInfo;
+  created_at : nat64;
+  solution : IndexResponseBasicInfo;
+  transaction_number : nat64;
+  amount : nat64;
+};
 type EnrichedPledgeData = record {
   status : text;
   feature : opt IndexResponseBasicInfo;
@@ -73,6 +83,13 @@ type PledgeApproval = record {
   transaction_number : nat64;
   amount : nat64;
 };
+type PledgeBasicInfo = record {
+  status : text;
+  feature_id : opt text;
+  pledge_id : text;
+  idea_id : text;
+  amount : nat64;
+};
 type PledgeData = record {
   status : text;
   feature_id : opt text;
@@ -97,8 +114,9 @@ type Product = record {
 type Result = variant { Ok : text; Err : text };
 type Result_1 = variant { Ok : vec text; Err : text };
 type Result_10 = variant { Ok : vec PledgeData; Err : text };
-type Result_11 = variant { Ok : UserBasicInfo; Err : text };
-type Result_12 = variant { Ok : vec EnrichedPledgeData; Err : text };
+type Result_11 = variant { Ok : vec EnrichedApprovalData; Err : text };
+type Result_12 = variant { Ok : UserBasicInfo; Err : text };
+type Result_13 = variant { Ok : vec EnrichedPledgeData; Err : text };
 type Result_2 = variant { Ok; Err : text };
 type Result_3 = variant { Ok : nat64; Err : text };
 type Result_4 = variant {
@@ -204,8 +222,9 @@ service : {
   get_total_pledged : (text, text) -> (Result_3) query;
   get_total_pledged_and_expected : (text, text) -> (Result_9) query;
   get_user_active_pledges : (text) -> (Result_10) query;
-  get_user_basic_information : (text) -> (Result_11) query;
-  get_user_pledges_enriched : (text) -> (Result_12) query;
+  get_user_approvals_enriched : (text) -> (Result_11) query;
+  get_user_basic_information : (text) -> (Result_12) query;
+  get_user_pledges_enriched : (text) -> (Result_13) query;
   get_user_profile_pic : (text) -> (text) query;
   get_user_real_balance : (text) -> (Result_3);
   get_user_reputation : (principal) -> (Result_3) query;
@@ -223,5 +242,6 @@ service : {
   upload_image : (text, text, blob, text, text, text) -> (Result);
   validate_user_balance_or_delete_pledge : (text, nat64, text) -> (Result_2);
   verify_transaction_details : (nat64, nat64, PaymentType) -> (Result_2);
+  withdraw_approval : (text) -> (Result_3);
   withdraw_from_feature_subaccount : (nat64, text, principal) -> (Result_3);
 }
