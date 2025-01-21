@@ -167,7 +167,7 @@ pub async fn reverse_approval(approval_id: String) -> Result<(), String> {
 ///*** HELPER FUNCTIONS */
 
 // Solution Validation
-fn validate_solution_status(solution_id: &str) -> Result<(), String> {
+pub fn validate_solution_status(solution_id: &str) -> Result<(), String> {
     // Get controller principal
     let controller = *CONTROLLER;
 
@@ -331,8 +331,12 @@ fn store_approval_record(approval: &Approval) -> Result<(), String> {
 
     // Create a description that includes key information
     let description = format!(
-        "Approval for pledge {} and solution {}. Amount: {}. Status: {:?}",
-        approval.pledge_id, approval.solution_id, approval.amount, approval.status
+        "Approval for pledge {} and solution {}. Amount: {}. Status: {:?}. User: {}",
+        approval.pledge_id,
+        approval.solution_id,
+        approval.amount,
+        approval.status,
+        approval.user_principal.to_text()
     );
 
     // Get the version (handles both new and existing documents)
@@ -442,7 +446,7 @@ fn update_pledge_status(pledge_id: &str, amount: u64) -> Result<(), String> {
 
 // Reputation Management
 
-fn validate_pledge_ownership(pledge_id: &str, caller: Principal) -> Result<(), String> {
+pub fn validate_pledge_ownership(pledge_id: &str, caller: Principal) -> Result<(), String> {
     // Get controller principal
     let controller = *CONTROLLER;
 
@@ -657,7 +661,7 @@ fn calculate_and_store_accuracy(expected_amount: u64, amount_paid: u64) -> Resul
 }
 
 // Helper function to extract feature_id from pledge
-fn get_feature_id_from_pledge(pledge_id: &str) -> Result<String, String> {
+pub fn get_feature_id_from_pledge(pledge_id: &str) -> Result<String, String> {
     let pledge_doc = get_doc_store(
         *CONTROLLER,
         "pledges_active".to_string(),
