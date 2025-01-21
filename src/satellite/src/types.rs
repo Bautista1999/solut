@@ -339,4 +339,25 @@ pub mod interface {
         pub expiration_date: u64,
         pub active: bool,
     }
+
+    #[derive(CandidType, Deserialize, Clone, Debug)]
+    pub struct PledgeBasicInfo {
+        pub pledge_id: String,
+        pub amount: u64,
+        pub feature_id: Option<String>,
+        pub idea_id: String,
+        pub status: String,
+    }
+
+    #[derive(CandidType, Deserialize, Clone, Debug)]
+    pub struct EnrichedApprovalData {
+        pub approval_id: String,
+        pub amount: u64,
+        pub solution: IndexResponseBasicInfo,
+        pub pledge: Option<PledgeBasicInfo>,
+        pub created_at: u64,
+        pub status: String,
+        pub payment_type: String,
+        pub transaction_number: u64,
+    }
 }
