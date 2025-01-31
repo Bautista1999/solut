@@ -22,5 +22,9 @@ export default defineConfig({
 				global: 'globalThis'
 			},
 		}
+	},
+	server: {
+		host: 'localhost',
+		port: 5173
 	}
 });
