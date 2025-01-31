@@ -45,9 +45,10 @@
     triggerDeleteOrphanSolutions,
     triggerDeleteUnusedImages,
     validateUserBalanceOrDeletePledge,
-    verifyTransactionDetails,
     getFeatureSubaccountBalance,
     withdrawFromFeatureSubaccount,
+    rejectApproval,
+    claimTokens,
   } from "../../declarations/satellite/satellite.api";
   import { signIn, NFIDProvider, authSubscribe } from "@junobuild/core";
   import SearchBarLarger from "$lib/components/SearchBarLarger.svelte";
@@ -406,6 +407,13 @@
   let featureIdToWithdraw = "";
   let withdrawAmount = 0;
   let withdrawDestination = "";
+
+  let rejectPledgeId = "";
+  let rejectSolutionId = "";
+  let rejectMessage = "";
+
+  let solutionIdForClaim = "";
+  let claimResult = null;
 </script>
 
 <svelte:head>
@@ -721,7 +729,7 @@
         msg={"Send notification"}
       />
     </div>
-    <div class="Field">
+    <!-- <div class="Field">
       <h1 style="margin:0px;">Verify Transaction Details</h1>
       <p style="margin:0px; font-weight:bold;">
         Transaction Amount (in decimals):
@@ -759,7 +767,7 @@
         }}
         msg={"Verify Transaction"}
       />
-    </div>
+    </div> -->
     <div class="Field">
       <h1 style="margin:0px;">Approve Solution Pledges</h1>
 
@@ -1005,6 +1013,96 @@
       />
     </div>
 
+    <div class="Field">
+      <h1 style="margin:0px;">Reject Approval</h1>
+      <div class="input-group">
+        <label>Pledge ID:</label>
+        <input
+          class="InputTextSmall"
+          placeholder="Enter pledge ID"
+          bind:value={rejectPledgeId}
+        />
+      </div>
+      <div class="input-group">
+        <label>Solution ID:</label>
+        <input
+          class="InputTextSmall"
+          placeholder="Enter solution ID"
+          bind:value={rejectSolutionId}
+        />
+      </div>
+      <div class="input-group">
+        <label>Rejection Message (optional):</label>
+        <input
+          class="InputTextSmall"
+          placeholder="Enter rejection message"
+          bind:value={rejectMessage}
+        />
+      </div>
+      <BasicRoundedButton
+        disabledCondition={!rejectPledgeId || !rejectSolutionId}
+        someFunction={async () => {
+          try {
+            const result = await rejectApproval(
+              rejectPledgeId,
+              rejectSolutionId,
+              rejectMessage ? [rejectMessage] : [],
+            );
+            if ("Ok" in result) {
+              alert("Successfully rejected approval!");
+              // Clear inputs after success
+              rejectPledgeId = "";
+              rejectSolutionId = "";
+              rejectMessage = "";
+            } else {
+              alert(`Error: ${result.Err}`);
+            }
+          } catch (error) {
+            console.error("Error rejecting approval:", error);
+            alert(`Error: ${error}`);
+          }
+        }}
+        msg={"Reject Approval"}
+      />
+    </div>
+
+    <div class="Field">
+      <h1 style="margin:0px;">Test Claim Tokens</h1>
+
+      <input
+        class="InputTextSmall"
+        placeholder="Enter solution ID"
+        bind:value={solutionIdForClaim}
+      />
+
+      <BasicRoundedButton
+        disabledCondition={!solutionIdForClaim}
+        someFunction={async () => {
+          try {
+            const result = await claimTokens(solutionIdForClaim);
+            console.log("Claim tokens result:", result);
+            if ("Ok" in result) {
+              alert(
+                `Successfully claimed tokens! Block numbers: ${result.Ok.join(", ")}`,
+              );
+            } else {
+              alert(`Some error ocurred on claiming tokens!  ${result.Err}`);
+            }
+          } catch (error) {
+            console.error("Error claiming tokens:", error);
+            alert(`Error: ${error}`);
+          }
+        }}
+        msg={"Claim Tokens"}
+      />
+
+      {#if claimResult}
+        <div class="result-box">
+          <p>Block Numbers: {claimResult}</p>
+        </div>
+      {/if}
+    </div>
+
     <style>
       .input-group {
         display: flex;
@@ -1024,6 +1122,13 @@
         border: 1px solid #ddd;
         border-radius: 8px;
         background-color: var(--secondary-color);
+      }
+
+      .result-box {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: var(--secondary-color);
+        border-radius: 4px;
       }
     </style>
 
