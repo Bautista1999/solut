@@ -26,8 +26,9 @@ mod user_information;
 use crate::types::interface::{UserBasicInfo, UserProfileBasicInfo};
 
 use crate::types::interface::{
-    Activity, EnrichedApprovalData, EnrichedPledgeData, IndexResponse, IndexResponseBasicInfo,
-    PledgeApproval, PledgeBasicInfo,
+    Activity, ClaimTransfer, EnrichedApprovalData, EnrichedPledgeData, IndexResponse,
+    IndexResponseBasicInfo, OrderedClaimTransfer, PledgeApproval, PledgeBasicInfo, RejectionData,
+    Transaction,
 };
 use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
 use ic_cdk::api::{self, set_global_timer, time};
@@ -53,9 +54,9 @@ use junobuild_utils::{decode_doc_data, encode_doc_data};
 use regex::Regex;
 use scheduled::{delete_orphan_ideas, delete_orphan_solutions, delete_unused_images};
 use types::interface::{
-    Approval, ApprovalStatus, ClaimerInfo, Claimers, Discount, Idea, IdeaRevenueCounter,
-    IndexSearch, Notification, PaymentType, PledgeData, PledgeUser, Product, Referral, SetIdea,
-    Solution, Topic, TotalPledging,
+    Approval, ApprovalStatus, ClaimerInfo, ClaimerType, Claimers, Discount, Idea,
+    IdeaRevenueCounter, IndexSearch, Notification, PaymentType, PledgeData, PledgeUser, Product,
+    Referral, SetIdea, Solution, Topic, TotalPledging,
 };
 
 #[on_delete_filtered_docs]

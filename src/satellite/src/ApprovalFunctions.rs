@@ -38,8 +38,8 @@ use sha2::{Digest, Sha256};
 use std::sync::LazyLock;
 
 // Constants for payment distribution
-const TOPIC_OWNER_PERCENTAGE: f64 = 0.01; // 1%
-const FEATURE_CREATOR_PERCENTAGE: f64 = 0.14; // 14%
+const TOPIC_OWNER_PERCENTAGE: f64 = 0.05; // 5%
+const FEATURE_CREATOR_PERCENTAGE: f64 = 0.10; // 10%
 const SOLUTION_PROVIDER_PERCENTAGE: f64 = 0.80; // 80%
 const PLATFORM_FEE_PERCENTAGE: f64 = 0.05; // 5%
 
@@ -64,6 +64,104 @@ fn string_to_subaccount(input: &str) -> [u8; 32] {
     subaccount
 }
 
+async fn send_approval_notifications(
+    solution_id: &str,
+    pledge_id: &str,
+    amount: u64,
+    caller: Principal,
+) -> Result<(), String> {
+    // Get pledge data to find idea_id and feature_id
+    let pledge_doc = get_doc_store(
+        *CONTROLLER,
+        "pledges_active".to_string(),
+        pledge_id.to_string(),
+    )?
+    .ok_or("Pledge not found")?;
+
+    // Decode as generic JSON Value
+    let pledge_data: serde_json::Value = serde_json::from_slice(&pledge_doc.data)
+        .map_err(|e| format!("Error parsing pledge JSON data: {}", e))?;
+
+    // Extract ids from JSON
+    let idea_id = pledge_data["idea_id"]
+        .as_str()
+        .ok_or("Missing or invalid idea_id")?;
+    let feature_id = pledge_data["feature_id"]
+        .as_str()
+        .ok_or("Missing or invalid feature_id")?;
+
+    // Get owners directly
+    let solution_owner = get_doc_owner("solution".to_string(), solution_id.to_string())?;
+    let idea_owner = get_doc_owner("idea".to_string(), idea_id.to_string())?;
+    let feature_owner = get_doc_owner("feature".to_string(), feature_id.to_string())?;
+
+    // Format amount for display
+    let amount_string = format!("{} ICP", amount as f64 / 100_000_000.0);
+    let caller_username: String = get_user_username(caller.to_text());
+
+    // Create base notification
+    let base_notification = Notification {
+        title: "Pledge Approved".to_string(),
+        subtitle: format!(
+            "A pledge of {} has been approved by {}",
+            amount_string, caller_username
+        ),
+        imageURL: "".to_string(),
+        linkURL: format!("/solution/{}", solution_id),
+        sender: caller.to_text(),
+        description: format!(
+            "{} has approved a pledge for your solution",
+            caller_username
+        ),
+        typeOf: "pledge approval".to_string(),
+        read: false,
+    };
+
+    // Send to solution owner
+    let mut solution_notification = base_notification.clone();
+    solution_notification.description = format!(
+        "{} has approved a pledge for your solution",
+        caller_username
+    );
+    send_single_notification(
+        caller.to_text(),
+        solution_owner.clone(),
+        solution_notification,
+    )?;
+
+    // Send to idea owner
+    let mut idea_notification = base_notification.clone();
+    idea_notification.description = format!(
+        "{} has approved a pledge for a solution in your idea",
+        caller_username
+    );
+    send_single_notification(caller.to_text(), idea_owner, idea_notification)?;
+
+    // Send to feature owner
+    let mut feature_notification = base_notification.clone();
+    feature_notification.description = format!(
+        "{} has approved a pledge for a solution in your feature",
+        caller_username
+    );
+    send_single_notification(caller.to_text(), feature_owner, feature_notification)?;
+
+    // Check for referral and send notification if exists
+    if let Ok(Some(referral_data)) = check_referral_reward(caller) {
+        let mut referral_notification = base_notification.clone();
+        referral_notification.description = format!(
+            "You earned a referral reward from {}'s approved pledge",
+            caller_username
+        );
+        send_single_notification(
+            caller.to_text(),
+            referral_data.inviter.to_text(),
+            referral_notification,
+        )?;
+    }
+
+    Ok(())
+}
+
 #[update]
 pub async fn approve_pledge(
     solution_id: String,
@@ -75,7 +173,7 @@ pub async fn approve_pledge(
     let caller = api::caller();
 
     // 1. Validate all conditions using ? operator
-    validate_solution_status(&solution_id)?;
+    validate_solution_status(&solution_id, "delivered")?;
     validate_pledge_ownership(&pledge_id, caller)?;
     validate_pledge_is_active(&pledge_id)?;
     check_existing_approval(&pledge_id, &solution_id)?;
@@ -99,6 +197,7 @@ pub async fn approve_pledge(
         status: ApprovalStatus::Pending,
         claimers,
         subaccount: Some(subaccount),
+        feature_id,
     };
 
     let amount_promised = get_pledge_amount_promised(&pledge_id)?;
@@ -106,6 +205,9 @@ pub async fn approve_pledge(
     store_approval_record(&approval)?;
     update_pledge_status(&pledge_id, amount)?;
     update_user_reputation(caller, amount, amount_promised)?;
+
+    // 5. Send notifications to all relevant parties
+    send_approval_notifications(&solution_id, &pledge_id, amount, caller).await?;
 
     Ok(approval.approval_id)
 }
@@ -145,7 +247,7 @@ pub async fn reverse_approval(approval_id: String) -> Result<(), String> {
     .map_err(|e| format!("Invalid principal format: {}", e))?;
 
     // 2. Validate solution status
-    validate_solution_status(&solution_id)?;
+    validate_solution_status(&solution_id, "delivered")?;
 
     // 3. Reverse changes in order (reputation first, then pledge, then delete approval)
     // Reverse reputation changes
@@ -167,7 +269,7 @@ pub async fn reverse_approval(approval_id: String) -> Result<(), String> {
 ///*** HELPER FUNCTIONS */
 
 // Solution Validation
-pub fn validate_solution_status(solution_id: &str) -> Result<(), String> {
+pub fn validate_solution_status(solution_id: &str, status: &str) -> Result<(), String> {
     // Get controller principal
     let controller = *CONTROLLER;
 
@@ -191,7 +293,7 @@ pub fn validate_solution_status(solution_id: &str) -> Result<(), String> {
     // Format: "status:COMPLETED , owner:principal_id"
 
     // Verify the solution is in 'delivered' status (case insensitive)
-    if description.to_uppercase().contains("DELIVERED") {
+    if description.to_uppercase().contains(&status.to_uppercase()) {
         Ok(())
     } else {
         Err(format!(

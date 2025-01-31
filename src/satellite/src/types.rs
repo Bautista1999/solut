@@ -1,7 +1,9 @@
 pub mod interface {
     use bytes::Bytes;
     use candid::CandidType; // Renaming the Candid `Deserialize`
-    use candid::{Int, Principal}; // Candid for Internet Computer serialization
+    use candid::{Int, Principal};
+    use ic_ledger_types::AccountIdentifier;
+    // Candid for Internet Computer serialization
     use serde::{Deserialize, Serialize}; // Renaming the Serde `Deserialize`
     #[derive(Default, CandidType, Serialize, Deserialize, Clone)]
     pub struct Product {
@@ -300,6 +302,7 @@ pub mod interface {
         pub status: ApprovalStatus,
         pub claimers: Claimers,
         pub subaccount: Option<[u8; 32]>,
+        pub feature_id: String,
     }
 
     #[derive(CandidType, Deserialize)]
@@ -359,5 +362,52 @@ pub mod interface {
         pub status: String,
         pub payment_type: String,
         pub transaction_number: u64,
+    }
+
+    #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
+    pub struct RejectionData {
+        pub amount: u64,
+        pub message: Option<String>,
+        pub user_principal: Principal,
+        pub solution_id: String,
+        pub feature_id: String,
+        pub pledge_id: String,
+        pub timestamp: u64,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+    pub struct ClaimTransfer {
+        pub principal: Principal,
+        pub amount: u64,
+        pub feature_id: String,
+        pub subaccount: [u8; 32],
+        pub claimer_type: ClaimerType,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct Transaction {
+        pub sender: AccountIdentifier,
+        pub target: AccountIdentifier,
+        pub amount: u64,
+        pub transaction_number: Option<u64>,
+        pub status: String,
+        pub message: String,
+        pub solution_id: String,
+        pub created_at: u64,
+    }
+
+    #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, CandidType, Serialize, Deserialize, Clone)]
+    pub enum ClaimerType {
+        Developer = 1,
+        Ideator = 2,
+        TopicOwner = 3,
+        Referral = 4,
+        Solutio = 5,
+    }
+
+    #[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
+    pub struct OrderedClaimTransfer {
+        pub claimer_type: ClaimerType,
+        pub transfer: ClaimTransfer,
     }
 }
