@@ -2,10 +2,10 @@ use crate::notifications::send_single_notification;
 use crate::quickqueries::get_doc_owner;
 use crate::reputation::{get_user_reputation, update_user_reputation};
 use crate::types::interface::{
-    Approval, ApprovalStatus, ClaimTransfer, ClaimerInfo, ClaimerType, Claimers, Discount,
-    EnrichedPledgeData, FollowData, Idea, IndexResponse, IndexResponseBasicInfo, IndexSearch,
-    Notification, OrderedClaimTransfer, PaymentType, PledgeApproval, PledgeData, PledgeUser,
-    Referral, RejectionData, TotalPledging, Transaction,
+    Approval, ApprovalStatus, ClaimTransfer, ClaimerInfo, ClaimerType, Claimers, CompletionResult,
+    Discount, EnrichedPledgeData, FollowData, Idea, IndexResponse, IndexResponseBasicInfo,
+    IndexSearch, Notification, OrderedClaimTransfer, PaymentType, PledgeApproval, PledgeData,
+    PledgeUser, Referral, RejectionData, TotalPledging, Transaction,
 };
 
 use crate::user_information::{
@@ -138,54 +138,6 @@ pub async fn approve_solution_pledges(
     });
 
     Ok(approval_ids)
-}
-
-// Transaction Validation
-
-async fn verify_transaction_details(
-    amount: u64,
-    transaction_number: u64,
-    payment_type: PaymentType,
-) -> Result<(), String> {
-    // Get the ledger canister ID
-    let ledger_canister = Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai")
-        .map_err(|e| format!("Invalid ledger canister ID: {}", e))?;
-
-    // Query blocks to find the transaction
-    let args = GetBlocksArgs {
-        start: transaction_number,
-        length: 1u64,
-    };
-
-    let blocks_result = query_blocks(ledger_canister, args.clone())
-        .await
-        .map_err(|e: (call::RejectionCode, String)| format!("Failed to query blocks: {:?}", e))?;
-
-    log(format!("Blocks result: {:?}", blocks_result));
-
-    // First check regular blocks
-    if let Some(block) = blocks_result.blocks.first() {
-        return verify_block_operation(block, amount);
-    }
-
-    // If not found in regular blocks, check archived blocks
-    if let Some(archived) = blocks_result
-        .archived_blocks
-        .iter()
-        .find(|b| b.start <= transaction_number && (transaction_number - b.start) < b.length)
-    {
-        // Query the archived blocks
-        match query_archived_blocks(&archived.callback, args).await {
-            Ok(Ok(range)) => {
-                if let Some(block) = range.blocks.first() {
-                    return verify_block_operation(block, amount);
-                }
-            }
-            Ok(Err(e)) => return Err(format!("Error querying archived blocks: {}", e)),
-            Err(e) => return Err(format!("Failed to call archived blocks: {:?}", e)),
-        }
-    }
-    Err("Transaction not found in blocks or archives".to_string())
 }
 
 #[update]
@@ -370,6 +322,73 @@ pub async fn reject_approval(
     send_single_notification(caller.to_text(), solution_owner, notification)?;
 
     Ok(())
+}
+
+// Modify claim_tokens to update approval status
+#[update]
+pub async fn claim_tokens(solution_id: String) -> Result<Vec<u64>, String> {
+    validate_claim_requirements(&solution_id)?;
+
+    let approvals = get_solution_approvals(&solution_id)?;
+    let ordered_transfers = aggregate_claimer_amounts(&approvals)?;
+
+    // Extract just the ClaimTransfer parts
+    let transfers: Vec<ClaimTransfer> = ordered_transfers
+        .into_iter()
+        .map(|ot| ot.transfer)
+        .collect();
+
+    // Process in batches of 10
+    let block_numbers = process_transfers_in_batches(&transfers, solution_id.as_str()).await?;
+
+    // Update approval statuses after successful transfers
+    for approval in approvals {
+        if matches!(approval.status, ApprovalStatus::Pending) {
+            update_approval_status(&approval.approval_id, ApprovalStatus::Completed).await?;
+        }
+    }
+
+    Ok(block_numbers)
+}
+
+#[update]
+pub async fn complete_solution(solution_id: String) -> Result<CompletionResult, String> {
+    // Step 1: Validate minimum time and other requirements
+    validate_minimum_time_passed(&solution_id)?;
+    validate_claim_requirements(&solution_id)?;
+
+    // Step 2: Claim Tokens
+    let transaction_blocks = match claim_tokens(solution_id.clone()).await {
+        Ok(blocks) => blocks,
+        Err(e) => return Err(format!("Failed to claim tokens: {}", e)),
+    };
+
+    // Step 3: Update Solution Status
+    update_solution_status(&solution_id, "completed")?;
+    let completion_timestamp = ic_cdk::api::time();
+
+    // Step 4: Reputation Management
+    let approval_rate = calculate_approval_rate(&solution_id)?;
+
+    if approval_rate >= 60.0 {
+        match update_users_reputation(&solution_id) {
+            Ok(_) => log(format!(
+                "Updated reputation for users for solution {}",
+                solution_id
+            )),
+            Err(e) => log(format!(
+                "Failed to update reputation for users: {} for solution {}",
+                e, solution_id
+            )),
+        };
+    };
+
+    // Return completion result
+    Ok(CompletionResult {
+        transaction_blocks,
+        approval_rate,
+        completion_timestamp,
+    })
 }
 
 //***** HELPER FUNCTIONS *****//
@@ -597,33 +616,6 @@ async fn update_approval_status(approval_id: &str, status: ApprovalStatus) -> Re
     )
     .map_err(|e| format!("Failed to update approval status: {}", e))
     .map(|_| ())
-}
-
-// Modify claim_tokens to update approval status
-#[update]
-pub async fn claim_tokens(solution_id: String) -> Result<Vec<u64>, String> {
-    validate_claim_requirements(&solution_id)?;
-
-    let approvals = get_solution_approvals(&solution_id)?;
-    let ordered_transfers = aggregate_claimer_amounts(&approvals)?;
-
-    // Extract just the ClaimTransfer parts
-    let transfers: Vec<ClaimTransfer> = ordered_transfers
-        .into_iter()
-        .map(|ot| ot.transfer)
-        .collect();
-
-    // Process in batches of 10
-    let block_numbers = process_transfers_in_batches(&transfers, solution_id.as_str()).await?;
-
-    // Update approval statuses after successful transfers
-    for approval in approvals {
-        if matches!(approval.status, ApprovalStatus::Pending) {
-            update_approval_status(&approval.approval_id, ApprovalStatus::Completed).await?;
-        }
-    }
-
-    Ok(block_numbers)
 }
 
 fn validate_claim_requirements(solution_id: &str) -> Result<(), String> {
@@ -888,12 +880,15 @@ fn record_successful_transfer(
         ClaimerType::Ideator => "Ideator",
         ClaimerType::TopicOwner => "Topic Owner",
         ClaimerType::Referral => "Referral",
-        ClaimerType::Solutio => "Solution Provider", // Note: might want to fix this typo in the enum
+        ClaimerType::Solutio => "Solutio Fee", // Note: might want to fix this typo in the enum
     };
     let transaction = Transaction {
         sender: AccountIdentifier::new(&api::id(), &Subaccount(claim.subaccount)),
-        target: AccountIdentifier::new(&claim.principal, &DEFAULT_SUBACCOUNT),
+        target: AccountIdentifier::new(&claim.principal.clone(), &DEFAULT_SUBACCOUNT),
         amount: claim.amount,
+        feature_id: claim.feature_id.clone(),
+        claimer_id: claim.principal.clone(),
+        claimer_type: claim.claimer_type.clone(),
         transaction_number: Some(block_number),
         status: "completed".to_string(),
         message: format!(
@@ -941,12 +936,15 @@ fn record_failed_transfer(
         ClaimerType::Ideator => "Ideator",
         ClaimerType::TopicOwner => "Topic Owner",
         ClaimerType::Referral => "Referral",
-        ClaimerType::Solutio => "Solution Provider", // Note: might want to fix this typo in the enum
+        ClaimerType::Solutio => "Solutio Fee", // Note: might want to fix this typo in the enum
     };
     let transaction = Transaction {
         sender: AccountIdentifier::new(&api::id(), &Subaccount(claim.subaccount)),
-        target: AccountIdentifier::new(&claim.principal, &DEFAULT_SUBACCOUNT),
+        target: AccountIdentifier::new(&claim.principal.clone(), &DEFAULT_SUBACCOUNT),
         amount: claim.amount,
+        feature_id: claim.feature_id.clone(),
+        claimer_id: claim.principal.clone(),
+        claimer_type: claim.claimer_type.clone(),
         transaction_number: None, // No block number for failed transfers
         status: "failed".to_string(),
         message: format!(
@@ -986,4 +984,268 @@ fn record_failed_transfer(
     .map_err(|e| format!("Failed to store failed transaction: {}", e))?;
 
     Ok(())
+}
+
+// Transaction Validation
+async fn verify_transaction_details(
+    amount: u64,
+    transaction_number: u64,
+    payment_type: PaymentType,
+) -> Result<(), String> {
+    // Get the ledger canister ID
+    let ledger_canister = Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai")
+        .map_err(|e| format!("Invalid ledger canister ID: {}", e))?;
+
+    // Query blocks to find the transaction
+    let args = GetBlocksArgs {
+        start: transaction_number,
+        length: 1u64,
+    };
+
+    let blocks_result = query_blocks(ledger_canister, args.clone())
+        .await
+        .map_err(|e: (call::RejectionCode, String)| format!("Failed to query blocks: {:?}", e))?;
+
+    log(format!("Blocks result: {:?}", blocks_result));
+
+    // First check regular blocks
+    if let Some(block) = blocks_result.blocks.first() {
+        return verify_block_operation(block, amount);
+    }
+
+    // If not found in regular blocks, check archived blocks
+    if let Some(archived) = blocks_result
+        .archived_blocks
+        .iter()
+        .find(|b| b.start <= transaction_number && (transaction_number - b.start) < b.length)
+    {
+        // Query the archived blocks
+        match query_archived_blocks(&archived.callback, args).await {
+            Ok(Ok(range)) => {
+                if let Some(block) = range.blocks.first() {
+                    return verify_block_operation(block, amount);
+                }
+            }
+            Ok(Err(e)) => return Err(format!("Error querying archived blocks: {}", e)),
+            Err(e) => return Err(format!("Failed to call archived blocks: {:?}", e)),
+        }
+    }
+    Err("Transaction not found in blocks or archives".to_string())
+}
+
+fn validate_minimum_time_passed(solution_id: &String) -> Result<(), String> {
+    // TODO: Implement time validation
+    Ok(())
+}
+
+fn update_solution_status(solution_id: &String, new_status: &str) -> Result<(), String> {
+    let controller = *CONTROLLER;
+    let status_key = format!("SOL_STAT_{}", solution_id);
+
+    // Get the current status document
+    let current_status_doc = get_doc_store(
+        controller,
+        "solution_status".to_string(),
+        status_key.clone(),
+    )
+    .map_err(|e| format!("Failed to fetch solution status: {}", e))?
+    .ok_or("Solution status not found")?;
+
+    // Extract the owner from the current description
+    let current_description = current_status_doc
+        .description
+        .ok_or("Status document has no description")?;
+
+    // Use regex to extract the owner part
+    let re = Regex::new(r"owner:([^,\s]+)").map_err(|e| format!("Regex error: {}", e))?;
+    let owner = re
+        .captures(&current_description)
+        .ok_or("Could not find owner in status description")?
+        .get(1)
+        .ok_or("Owner capture group not found")?
+        .as_str();
+
+    // Create new description with updated status but same owner
+    let new_description = format!("status:{} , owner:{}", new_status.to_uppercase(), owner);
+
+    // Create updated document
+    let doc = SetDoc {
+        data: current_status_doc.data, // Keep the same data
+        description: Some(new_description),
+        version: current_status_doc.version, // Keep the same version
+    };
+
+    // Update the document
+    set_doc_store(controller, "solution_status".to_string(), status_key, doc)
+        .map_err(|e| format!("Failed to update solution status: {}", e))?;
+
+    Ok(())
+}
+
+fn calculate_approval_rate(solution_id: &String) -> Result<f64, String> {
+    // Create matcher for documents containing solution_id
+    let matcher = ListMatcher {
+        key: Some(format!("_{}", solution_id)),
+        ..Default::default()
+    };
+    let params = ListParams {
+        matcher: Some(matcher),
+        ..Default::default()
+    };
+
+    // Get approvals
+    let approval_docs = list_docs_store(*CONTROLLER, "approval".to_string(), &params)
+        .map_err(|e| format!("Failed to fetch approvals: {}", e))?;
+    let approval_count = approval_docs.items.len();
+
+    // Get rejections
+    let rejection_docs = list_docs_store(*CONTROLLER, "rejection".to_string(), &params)
+        .map_err(|e| format!("Failed to fetch rejections: {}", e))?;
+    let rejection_count = rejection_docs.items.len();
+
+    // Calculate total decisions
+    let total_decisions = approval_count + rejection_count;
+
+    // Avoid division by zero
+    if total_decisions == 0 {
+        return Err("No decisions (approvals or rejections) found for this solution".to_string());
+    }
+
+    // Calculate approval rate as percentage
+    let approval_rate = (approval_count as f64 / total_decisions as f64) * 100.0;
+
+    Ok(approval_rate)
+}
+
+fn update_users_reputation(solution_id: &String) -> Result<String, String> {
+    // Step 1: Get implemented features
+    let implemented_features = get_solution_implemented_features(solution_id)?;
+
+    // Step 2: Get inactive pledges for these features
+    let defaulted_pledges = get_active_pledges_for_features(&implemented_features)?;
+
+    // Step 3: Update reputation for each defaulting user
+    for pledge in defaulted_pledges {
+        // Convert string user to Principal
+        let user_principal = Principal::from_text(&pledge.user)
+            .map_err(|e| format!("Invalid principal format: {}", e))?;
+
+        // Update reputation with promised amount (expected_amount) and 0 paid
+        match update_user_reputation(user_principal, 0, pledge.expected_amount) {
+            Ok(_) => {
+                // Create notification for the user
+                let notification = Notification {
+                    title: "Reputation Update".to_string(),
+                    subtitle: "Your reputation has been updated".to_string(),
+                    imageURL: "".to_string(), // No image needed for this notification
+                    linkURL: "".to_string(),  // Could add a link to user profile if needed
+                    sender: "System".to_string(),
+                    description: format!(
+                        "Your reputation has been updated due to an unfulfilled pledge of {} tokens in solution {}",
+                        pledge.amount, solution_id
+                    ),
+                    typeOf: "reputation_update".to_string(),
+                    read: false,
+                };
+
+                // Send notification
+                if let Err(e) = send_single_notification(
+                    "System".to_string(),
+                    pledge.user.clone(),
+                    notification,
+                ) {
+                    error_with_data(
+                        format!(
+                            "Failed to send notification to user {} and solution {}",
+                            pledge.user, solution_id
+                        ),
+                        &json!({ "error": e.to_string(), "timestamp": ic_cdk::api::time() }),
+                    )?;
+                }
+            }
+            Err(e) => {
+                error_with_data(
+                    format!(
+                        "Failed to update reputation for user {} and solution {}",
+                        pledge.user, solution_id
+                    ),
+                    &json!({
+                        "error": e.to_string(),
+                        "timestamp": ic_cdk::api::time(),
+                    }),
+                )?;
+            }
+        }
+    }
+
+    Ok("Successfully updated reputations for defaulting users".to_string())
+}
+
+// Helper function to get features implemented by a solution
+fn get_solution_implemented_features(solution_id: &String) -> Result<Vec<String>, String> {
+    // Get solution document
+    let solution_doc = get_doc_store(*CONTROLLER, "solution".to_string(), solution_id.clone())
+        .map_err(|e| format!("Failed to fetch solution: {}", e))?
+        .ok_or("Solution not found")?;
+
+    // Decode solution data
+    let solution_data: serde_json::Value = decode_doc_data(&solution_doc.data)
+        .map_err(|e| format!("Failed to decode solution data: {}", e))?;
+
+    // Extract features array
+    let features = solution_data["features"]
+        .as_array()
+        .ok_or("Features field not found or not an array")?
+        .iter()
+        .filter_map(|v| v.as_str())
+        .map(|s| s.to_string())
+        .collect();
+
+    Ok(features)
+}
+
+// Helper function to get inactive pledges for specific features
+fn get_active_pledges_for_features(feature_ids: &Vec<String>) -> Result<Vec<PledgeData>, String> {
+    let mut active_pledges = Vec::new();
+
+    // Create a regex pattern that matches any of our feature IDs
+    let feature_pattern = feature_ids
+        .iter()
+        .map(|id| format!("_feature:{}", regex::escape(id)))
+        .collect::<Vec<String>>()
+        .join("|");
+
+    // Create matcher for documents containing our feature pattern
+    let matcher = ListMatcher {
+        description: Some(feature_pattern), // Use our regex pattern in the matcher
+        ..Default::default()
+    };
+    let params = ListParams {
+        matcher: Some(matcher),
+        ..Default::default()
+    };
+
+    // Get all pledges
+    let pledge_docs = list_docs_store(*CONTROLLER, "pledges_active".to_string(), &params)
+        .map_err(|e| format!("Failed to fetch pledges: {}", e))?;
+
+    // Process each pledge
+    for doc in pledge_docs.items {
+        // First decode to JSON Value
+        let pledge_json: serde_json::Value = decode_doc_data(&doc.1.data)
+            .map_err(|e| format!("Failed to decode pledge data: {}", e))?;
+
+        // Check status field, default to "inactive" if not found
+        let status = pledge_json["status"].as_str().unwrap_or("inactive");
+
+        // Only include if status is "active"
+        if status == "active" {
+            // Now we can safely try to decode into PledgeData
+            if let Ok(pledge_data) = serde_json::from_value::<PledgeData>(pledge_json.clone()) {
+                active_pledges.push(pledge_data);
+            }
+        }
+    }
+
+    Ok(active_pledges)
 }

@@ -17,6 +17,11 @@ export interface Activity {
   'element_type' : string,
   'activity_image' : [] | [string],
 }
+export interface CompletionResult {
+  'completion_timestamp' : bigint,
+  'transaction_blocks' : BigUint64Array | bigint[],
+  'approval_rate' : number,
+}
 export interface EnrichedApprovalData {
   'status' : string,
   'approval_id' : string,
@@ -120,37 +125,39 @@ export type Result = { 'Ok' : string } |
   { 'Err' : string };
 export type Result_1 = { 'Ok' : Array<string> } |
   { 'Err' : string };
-export type Result_10 = { 'Ok' : [bigint, bigint] } |
+export type Result_10 = { 'Ok' : [Array<Activity>, bigint, bigint, bigint] } |
   { 'Err' : string };
-export type Result_11 = { 'Ok' : Array<PledgeData> } |
+export type Result_11 = { 'Ok' : [bigint, bigint] } |
   { 'Err' : string };
-export type Result_12 = { 'Ok' : Array<EnrichedApprovalData> } |
+export type Result_12 = { 'Ok' : Array<PledgeData> } |
   { 'Err' : string };
-export type Result_13 = { 'Ok' : UserBasicInfo } |
+export type Result_13 = { 'Ok' : Array<EnrichedApprovalData> } |
   { 'Err' : string };
-export type Result_14 = { 'Ok' : Array<EnrichedPledgeData> } |
+export type Result_14 = { 'Ok' : UserBasicInfo } |
+  { 'Err' : string };
+export type Result_15 = { 'Ok' : Array<EnrichedPledgeData> } |
   { 'Err' : string };
 export type Result_2 = { 'Ok' : null } |
   { 'Err' : string };
 export type Result_3 = { 'Ok' : BigUint64Array | bigint[] } |
   { 'Err' : string };
-export type Result_4 = { 'Ok' : bigint } |
+export type Result_4 = { 'Ok' : CompletionResult } |
   { 'Err' : string };
-export type Result_5 = {
+export type Result_5 = { 'Ok' : bigint } |
+  { 'Err' : string };
+export type Result_6 = {
     'Ok' : [bigint, bigint, bigint, Array<[string, string]>]
   } |
   { 'Err' : string };
-export type Result_6 = { 'Ok' : Array<UserProfileBasicInfo> } |
+export type Result_7 = { 'Ok' : Array<UserProfileBasicInfo> } |
   { 'Err' : string };
-export type Result_7 = {
+export type Result_8 = {
     'Ok' : [Array<IndexResponseBasicInfo>, bigint, bigint, bigint]
   } |
   { 'Err' : string };
-export type Result_8 = {
+export type Result_9 = {
     'Ok' : [Array<IndexResponse>, bigint, bigint, bigint]
   } |
-  { 'Err' : string };
-export type Result_9 = { 'Ok' : [Array<Activity>, bigint, bigint, bigint] } |
   { 'Err' : string };
 export interface SetIdea { 'key' : string, 'idea' : Idea }
 export interface Solution {
@@ -193,6 +200,7 @@ export interface _SERVICE {
   'cancel_pledge' : ActorMethod<[string], Result_2>,
   'check_cycles' : ActorMethod<[], bigint>,
   'claim_tokens' : ActorMethod<[string], Result_3>,
+  'complete_solution' : ActorMethod<[string], Result_4>,
   'create_ideas' : ActorMethod<[Array<SetIdea>, string], Result_2>,
   'create_new_product' : ActorMethod<[Product, string], Result_2>,
   'create_or_update_idea' : ActorMethod<[string, Idea, string], Result_2>,
@@ -206,59 +214,59 @@ export interface _SERVICE {
   'eliminate_idea' : ActorMethod<[string], Result_2>,
   'eliminate_solution' : ActorMethod<[string], Result_2>,
   'eliminate_topic' : ActorMethod<[string], Result_2>,
-  'get_available_balance' : ActorMethod<[string], Result_4>,
-  'get_feature_subaccount_balance' : ActorMethod<[string], Result_4>,
-  'get_funding_details' : ActorMethod<[string, string], Result_5>,
-  'get_historical_pledged_balance' : ActorMethod<[string], Result_4>,
+  'get_available_balance' : ActorMethod<[string], Result_5>,
+  'get_feature_subaccount_balance' : ActorMethod<[string], Result_5>,
+  'get_funding_details' : ActorMethod<[string, string], Result_6>,
+  'get_historical_pledged_balance' : ActorMethod<[string], Result_5>,
   'get_paginated_common_users' : ActorMethod<
     [string, string, [] | [bigint], [] | [bigint]],
-    Result_6
+    Result_7
   >,
   'get_paginated_followers' : ActorMethod<
     [string, [] | [bigint], [] | [bigint]],
-    Result_7
+    Result_8
   >,
   'get_paginated_following_elements' : ActorMethod<
     [string, [] | [bigint], [] | [bigint]],
-    Result_7
+    Result_8
   >,
   'get_paginated_ideas' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string], [] | [string]],
-    Result_8
+    Result_9
   >,
   'get_paginated_ideas_by_solution' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string], string],
-    Result_8
+    Result_9
   >,
   'get_paginated_most_recent_activities' : ActorMethod<
     [string, [] | [bigint], [] | [bigint]],
-    Result_9
+    Result_10
   >,
   'get_paginated_topics' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string]],
-    Result_8
+    Result_9
   >,
   'get_paginated_topics_ideas' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string]],
-    Result_8
+    Result_9
   >,
   'get_paginated_users' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string]],
-    Result_8
+    Result_9
   >,
-  'get_pledged_balance' : ActorMethod<[string], Result_4>,
+  'get_pledged_balance' : ActorMethod<[string], Result_5>,
   'get_total_followers' : ActorMethod<[string], bigint>,
   'get_total_following' : ActorMethod<[string], bigint>,
-  'get_total_pledged' : ActorMethod<[string, string], Result_4>,
-  'get_total_pledged_and_expected' : ActorMethod<[string, string], Result_10>,
-  'get_user_active_pledges' : ActorMethod<[string], Result_11>,
-  'get_user_approvals_enriched' : ActorMethod<[string], Result_12>,
-  'get_user_basic_information' : ActorMethod<[string], Result_13>,
-  'get_user_pledges_enriched' : ActorMethod<[string], Result_14>,
+  'get_total_pledged' : ActorMethod<[string, string], Result_5>,
+  'get_total_pledged_and_expected' : ActorMethod<[string, string], Result_11>,
+  'get_user_active_pledges' : ActorMethod<[string], Result_12>,
+  'get_user_approvals_enriched' : ActorMethod<[string], Result_13>,
+  'get_user_basic_information' : ActorMethod<[string], Result_14>,
+  'get_user_pledges_enriched' : ActorMethod<[string], Result_15>,
   'get_user_profile_pic' : ActorMethod<[string], string>,
-  'get_user_real_balance' : ActorMethod<[string], Result_4>,
-  'get_user_reputation' : ActorMethod<[Principal], Result_4>,
-  'get_user_total_pledges' : ActorMethod<[string], Result_11>,
+  'get_user_real_balance' : ActorMethod<[string], Result_5>,
+  'get_user_reputation' : ActorMethod<[Principal], Result_5>,
+  'get_user_total_pledges' : ActorMethod<[string], Result_12>,
   'get_user_username' : ActorMethod<[string], string>,
   'pledge_create' : ActorMethod<
     [string, string, string, bigint, Uint8Array | number[]],
@@ -284,10 +292,10 @@ export interface _SERVICE {
     [string, bigint, string],
     Result_2
   >,
-  'withdraw_approval' : ActorMethod<[string], Result_4>,
+  'withdraw_approval' : ActorMethod<[string], Result_5>,
   'withdraw_from_feature_subaccount' : ActorMethod<
     [bigint, string, Principal],
-    Result_4
+    Result_5
   >,
 }
 export declare const idlFactory: IDL.InterfaceFactory;

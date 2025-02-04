@@ -49,6 +49,7 @@
     withdrawFromFeatureSubaccount,
     rejectApproval,
     claimTokens,
+    completeSolution,
   } from "../../declarations/satellite/satellite.api";
   import { signIn, NFIDProvider, authSubscribe } from "@junobuild/core";
   import SearchBarLarger from "$lib/components/SearchBarLarger.svelte";
@@ -414,6 +415,9 @@
 
   let solutionIdForClaim = "";
   let claimResult = null;
+
+  $: solutionIdToComplete = "";
+  $: completionResult = null;
 </script>
 
 <svelte:head>
@@ -1101,6 +1105,36 @@
           <p>Block Numbers: {claimResult}</p>
         </div>
       {/if}
+    </div>
+
+    <div class="Field">
+      <h1 style="margin:0px;">Complete Solution</h1>
+
+      <input
+        class="InputTextSmall"
+        placeholder="Enter solution ID"
+        bind:value={solutionIdToComplete}
+      />
+
+      <BasicRoundedButton
+        disabledCondition={!solutionIdToComplete}
+        someFunction={async () => {
+          try {
+            const result = await completeSolution(solutionIdToComplete);
+            if ("Ok" in result) {
+              alert(
+                `Successfully completed solution! Transaction blocks: ${result.Ok.transaction_blocks.join(", ")}\nApproval rate: ${result.Ok.approval_rate}%\nCompleted at: ${new Date(Number(result.Ok.completion_timestamp) / 1000000).toLocaleString()}`,
+              );
+            } else {
+              alert(`Error completing solution: ${result.Err}`);
+            }
+          } catch (error) {
+            console.error("Error completing solution:", error);
+            alert(`Error: ${error}`);
+          }
+        }}
+        msg={"Complete Solution"}
+      />
     </div>
 
     <style>
