@@ -312,6 +312,13 @@ pub mod interface {
         pub transaction_number: u64,
     }
 
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct CompletionResult {
+        pub transaction_blocks: Vec<u64>,
+        pub approval_rate: f64,
+        pub completion_timestamp: u64,
+    }
+
     #[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
     pub enum PaymentType {
         Crypto,
@@ -388,6 +395,9 @@ pub mod interface {
     pub struct Transaction {
         pub sender: AccountIdentifier,
         pub target: AccountIdentifier,
+        pub feature_id: String,
+        pub claimer_id: Principal,
+        pub claimer_type: ClaimerType,
         pub amount: u64,
         pub transaction_number: Option<u64>,
         pub status: String,
