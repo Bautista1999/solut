@@ -407,14 +407,16 @@
                 </div>
 
                 <div class="FeaturesSection">
-                    <div class="FeaturesTitle" style="margin-bottom: 20px;">
+                    <div class="FeaturesTitle">
                         {#if user == $UserKey}
-                            <BasicButtonDark
-                                msg={"Delete topic"}
-                                someFunction={() => {
-                                    confirmationModal.set(true);
-                                }}
-                            />
+                            <div style="margin-bottom: 20px">
+                                <BasicButtonDark
+                                    msg={"Delete topic"}
+                                    someFunction={() => {
+                                        confirmationModal.set(true);
+                                    }}
+                                />
+                            </div>
                             <ModalConfirmation
                                 message={"This action is irreversible. Are you sure you want to delete the topic?"}
                                 someFunction={async () => {
