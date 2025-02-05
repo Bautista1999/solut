@@ -407,7 +407,7 @@
                 </div>
 
                 <div class="FeaturesSection">
-                    <div class="FeaturesTitle">
+                    <div class="FeaturesTitle" style="margin-bottom: 20px;">
                         {#if user == $UserKey}
                             <BasicButtonDark
                                 msg={"Delete topic"}
@@ -441,7 +441,6 @@
                                 success={modalSuccess}
                             />
                         {/if}
-                        <h3>Ideas from the community</h3>
                     </div>
                     <div>
                         <IdeaCardContainer idea_id={key} />
@@ -456,6 +455,14 @@
                     <div class="ActivityTabs">
                         <div class="CommentsTab">
                             <div class="Add_Solution_Idea_Section">
+                                <BasicButtonDark
+                                    msg={"Contribute idea"}
+                                    icon={"emoji_objects"}
+                                    someFunction={() => {
+                                        goto("/createidea/" + key);
+                                    }}
+                                />
+                                <br />
                                 {#await SolutionLink(key)}
                                     <MagicalDotsAbsoluteSmall />
                                 {:then data}
@@ -477,15 +484,6 @@
                                         />
                                     {/if}
                                 {/await}
-
-                                <br />
-                                <BasicButtonDark
-                                    msg={"Contribute idea"}
-                                    icon={"emoji_objects"}
-                                    someFunction={() => {
-                                        goto("/createidea/" + key);
-                                    }}
-                                />
                             </div>
                         </div>
                         <div class="PledgersTab"></div>
@@ -627,7 +625,7 @@
         display: grid;
         grid-template-columns: 1fr 1fr 1fr 0fr;
         grid-template-rows: 0.5fr 0.5fr;
-        gap: 15px 0px;
+        gap: 0px 0px;
         grid-auto-flow: row;
 
         grid-template-areas:
@@ -757,7 +755,7 @@
             display: grid;
             grid-template-columns: auto auto auto;
             grid-template-rows: auto auto;
-            gap: 0px 15px;
+            gap: 0px 0px;
             grid-auto-flow: row;
 
             grid-template-areas:
