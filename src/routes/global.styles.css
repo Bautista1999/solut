@@ -58,29 +58,46 @@ p {
 
 h1 {
     font-family: 'Barlow';
-    font-size: x-large;
+    font-size: 30px;
     font-style: normal;
     font-weight: 600;
+
 }
 
 h2 {
     font-family: 'Barlow';
-    font-weight: 500;
+    font-size: 20px;
+    font-weight: 400;
+
 
 }
 
 h3 {
     font-family: 'Barlow';
     font-weight: 400;
-    margin-bottom: 30px;
-
 }
 
 h4 {
     font-family: 'Barlow';
     font-weight: 300;
+}
 
+@media (max-width: 768px) {
+    h1 {
+        font-size: 22px;
+    }
 
+    h2 {
+        font-size: 16px;
+    }
+
+    h3 {
+        font-size: 14px;
+    }
+
+    h4 {
+        font-size: 12px;
+    }
 }
 
 
@@ -99,6 +116,7 @@ h4 {
     --sixth-color: #FFA559;
     /*white-orange*/
     --seventh-color: black;
+    --eighth-color: #2e2e2e;
     /*black*/
     --red-wine: #D42160;
     --sky-blue: #6bc9e1;
