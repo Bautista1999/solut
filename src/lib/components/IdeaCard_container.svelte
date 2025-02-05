@@ -20,6 +20,7 @@
     export let solution_id = "";
 </script>
 
+<h2 style="margin-top:0px; margin-bottom: 20px;">Ideas from the community</h2>
 {#await type == "idea" ? getPaginatedIdeas("most_pledged", [0], [12], [], [idea_id]) : getPaginatedIdeasBySolution("most_pledged", [0], [12], [], solution_id)}
     <div>
         <MagicalDots />
@@ -38,7 +39,38 @@
                 {/each}
             </div>
         {:else}
-            <p>No features added</p>
+            <p class="empty-state">
+                No ideas contributed yet.
+                <br /><br />
+                Add ideas to:
+                <li>Describe feature requests</li>
+                <li>Suggest alternatives to existing ideas</li>
+                <li>Report bugs that need fixing</li>
+                <li>Share anything that could improve the project</li>
+            </p>
+
+            <style>
+                .empty-state {
+                    text-align: left;
+                    color: #666;
+                    font-size: 1.1em;
+                    line-height: 1.6;
+
+                    padding: 2em;
+                    background: #f9f9f9;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                }
+
+                .empty-state ul {
+                    text-align: left;
+                    margin: 1em 0 0 2em;
+                }
+
+                .empty-state li {
+                    margin: 0.5em 0;
+                }
+            </style>
         {/if}
     {/if}
 {/await}
