@@ -21,6 +21,7 @@ type CompletionResult = record {
 type EnrichedApprovalData = record {
   status : text;
   approval_id : text;
+  feature : IndexResponseBasicInfo;
   payment_type : text;
   pledge : opt PledgeBasicInfo;
   created_at : nat64;
@@ -234,6 +235,7 @@ service : {
   get_user_approvals_enriched : (text) -> (Result_13) query;
   get_user_basic_information : (text) -> (Result_14) query;
   get_user_pledges_enriched : (text) -> (Result_15) query;
+  get_user_pledges_for_solution : (text, text) -> (Result_15) query;
   get_user_profile_pic : (text) -> (text) query;
   get_user_real_balance : (text) -> (Result_5);
   get_user_reputation : (principal) -> (Result_5) query;

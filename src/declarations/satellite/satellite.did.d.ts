@@ -25,6 +25,7 @@ export interface CompletionResult {
 export interface EnrichedApprovalData {
   'status' : string,
   'approval_id' : string,
+  'feature' : IndexResponseBasicInfo,
   'payment_type' : string,
   'pledge' : [] | [PledgeBasicInfo],
   'created_at' : bigint,
@@ -263,6 +264,7 @@ export interface _SERVICE {
   'get_user_approvals_enriched' : ActorMethod<[string], Result_13>,
   'get_user_basic_information' : ActorMethod<[string], Result_14>,
   'get_user_pledges_enriched' : ActorMethod<[string], Result_15>,
+  'get_user_pledges_for_solution' : ActorMethod<[string, string], Result_15>,
   'get_user_profile_pic' : ActorMethod<[string], string>,
   'get_user_real_balance' : ActorMethod<[string], Result_5>,
   'get_user_reputation' : ActorMethod<[Principal], Result_5>,

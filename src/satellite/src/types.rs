@@ -364,6 +364,7 @@ pub mod interface {
         pub approval_id: String,
         pub amount: u64,
         pub solution: IndexResponseBasicInfo,
+        pub feature: IndexResponseBasicInfo,
         pub pledge: Option<PledgeBasicInfo>,
         pub created_at: u64,
         pub status: String,

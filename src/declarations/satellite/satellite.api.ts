@@ -317,6 +317,14 @@ export const getUserPledgesEnriched = async (value0: string): Promise<Result_15>
 	return await get_user_pledges_enriched(value0);
 }
 
+export const getUserPledgesForSolution = async (value0: string, value1: string): Promise<Result_15> => {
+	const {get_user_pledges_for_solution} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await get_user_pledges_for_solution(value0, value1);
+}
+
 export const getUserProfilePic = async (value0: string): Promise<string> => {
 	const {get_user_profile_pic} = await getSatelliteExtendedActor<SatelliteActor>({
 		idlFactory

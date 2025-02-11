@@ -10,6 +10,7 @@ use crate::user_information::{
     get_available_balance, get_historical_pledged_balance, get_paginated_following_elements,
     get_user_profile_pic, get_user_username,
 };
+use crate::Funding::get_solution_implemented_features;
 use crate::{delete_pledge, get_document_description_or_default, get_document_version_or_default};
 use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
 use bytes::Bytes;
@@ -1039,6 +1040,14 @@ pub fn get_user_approvals_enriched(user_id: String) -> Result<Vec<EnrichedApprov
                 Some(id) => id,
                 None => return None, // Skip if no solution_id
             };
+            let feature_id = match approval_json
+                .get("feature_id")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+            {
+                Some(id) => id,
+                None => return None, // Skip if no feature_id
+            };
             let pledge_id = match approval_json
                 .get("pledge_id")
                 .and_then(|v| v.as_str())
@@ -1136,7 +1145,44 @@ pub fn get_user_approvals_enriched(user_id: String) -> Result<Vec<EnrichedApprov
                 _ => None,
             };
 
+            let feature_info =
+                match get_doc_store(caller.clone(), "feature".to_string(), feature_id.clone()) {
+                    Ok(Some(feature_doc)) => {
+                        let feature_data: serde_json::Value =
+                            match decode_doc_data(&feature_doc.data) {
+                                Ok(data) => data,
+                                Err(_) => return None,
+                            };
+
+                        IndexResponseBasicInfo {
+                            element_id: feature_id.clone(),
+                            title: feature_data
+                                .get("title")
+                                .and_then(|v| v.as_str())
+                                .unwrap_or("Unknown feature")
+                                .to_string(),
+                            profile_image: feature_data
+                                .get("images")
+                                .and_then(|images| images.as_array())
+                                .and_then(|arr| arr.get(0))
+                                .and_then(|img| img.as_str())
+                                .unwrap_or("https://solutio.one/solutio-images/logo-01.png")
+                                .to_string(),
+                            creation_date: feature_doc.created_at,
+                            element_type: "feature".to_string(),
+                        }
+                    }
+                    _ => IndexResponseBasicInfo {
+                        element_id: feature_id.clone(),
+                        title: "Unknown or deleted feature".to_string(),
+                        profile_image: "https://solutio.one/solutio-images/logo-01.png".to_string(),
+                        creation_date: 0,
+                        element_type: "feature".to_string(),
+                    },
+                };
+
             Some(Ok(EnrichedApprovalData {
+                feature: feature_info,
                 approval_id: key,
                 amount,
                 solution: solution_info,
@@ -1150,4 +1196,36 @@ pub fn get_user_approvals_enriched(user_id: String) -> Result<Vec<EnrichedApprov
         .collect();
 
     enriched_approvals
+}
+
+#[query]
+pub fn get_user_pledges_for_solution(
+    solution_id: String,
+    user_id: String,
+) -> Result<Vec<EnrichedPledgeData>, String> {
+    // Step 1: Get all implemented features for this solution
+    let implemented_features = match get_solution_implemented_features(&solution_id) {
+        Ok(features) => features,
+        Err(e) => return Err(format!("Failed to get solution features: {}", e)),
+    };
+
+    // Step 2: Get all user pledges
+    let all_user_pledges = match get_user_pledges_enriched(user_id) {
+        Ok(pledges) => pledges,
+        Err(e) => return Err(format!("Failed to get user pledges: {}", e)),
+    };
+
+    // Step 3: Filter pledges that target the implemented features
+    let solution_pledges: Vec<EnrichedPledgeData> = all_user_pledges
+        .into_iter()
+        .filter(|pledge| {
+            if let Some(feature) = &pledge.feature {
+                implemented_features.contains(&feature.element_id)
+            } else {
+                false
+            }
+        })
+        .collect();
+
+    Ok(solution_pledges)
 }

@@ -149,6 +149,7 @@ export const idlFactory = ({ IDL }) => {
   const EnrichedApprovalData = IDL.Record({
     'status' : IDL.Text,
     'approval_id' : IDL.Text,
+    'feature' : IndexResponseBasicInfo,
     'payment_type' : IDL.Text,
     'pledge' : IDL.Opt(PledgeBasicInfo),
     'created_at' : IDL.Nat64,
@@ -322,6 +323,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_user_basic_information' : IDL.Func([IDL.Text], [Result_14], ['query']),
     'get_user_pledges_enriched' : IDL.Func([IDL.Text], [Result_15], ['query']),
+    'get_user_pledges_for_solution' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [Result_15],
+        ['query'],
+      ),
     'get_user_profile_pic' : IDL.Func([IDL.Text], [IDL.Text], ['query']),
     'get_user_real_balance' : IDL.Func([IDL.Text], [Result_5], []),
     'get_user_reputation' : IDL.Func([IDL.Principal], [Result_5], ['query']),

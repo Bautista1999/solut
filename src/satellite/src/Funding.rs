@@ -1182,7 +1182,7 @@ fn update_users_reputation(solution_id: &String) -> Result<String, String> {
 }
 
 // Helper function to get features implemented by a solution
-fn get_solution_implemented_features(solution_id: &String) -> Result<Vec<String>, String> {
+pub fn get_solution_implemented_features(solution_id: &String) -> Result<Vec<String>, String> {
     // Get solution document
     let solution_doc = get_doc_store(*CONTROLLER, "solution".to_string(), solution_id.clone())
         .map_err(|e| format!("Failed to fetch solution: {}", e))?
