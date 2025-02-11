@@ -77,21 +77,23 @@
                         </div>
                         <div class="card-content">
                             <div class="info-item">
-                                <span class="label">Feature</span>
+                                <span class="label">Idea</span>
                                 <div class="value feature-value">
                                     {#if pledge.feature.length > 0}
-                                        <img
-                                            src={pledge.feature[0]
-                                                ?.profile_image}
-                                            alt={pledge.feature[0]?.title}
-                                            class="feature-image"
-                                        />
-                                        <span
-                                            class="truncate-text"
-                                            title={pledge.feature[0]?.title}
-                                        >
-                                            {pledge.feature[0]?.title}
-                                        </span>
+                                        <div class="feature-content">
+                                            <img
+                                                src={pledge.feature[0]
+                                                    ?.profile_image}
+                                                alt={pledge.feature[0]?.title}
+                                                class="feature-image"
+                                            />
+                                            <span
+                                                class="truncate-text"
+                                                title={pledge.feature[0]?.title}
+                                            >
+                                                {pledge.feature[0]?.title}
+                                            </span>
+                                        </div>
                                     {:else}
                                         <span>N/A</span>
                                     {/if}
@@ -126,6 +128,8 @@
                                 <span
                                     class="value status-tag"
                                     class:active={pledge.status === "active"}
+                                    class:inactive={pledge.status ===
+                                        "inactive"}
                                 >
                                     {pledge.status}
                                 </span>
@@ -152,19 +156,15 @@
                                     (window.location.href = `/idea/${pledge.feature[0]?.element_id}`)}
                             />
 
-                            {#await getSolutionStatusFromIdeaId(pledge.idea.element_id)}
-                                <!-- Loading state -->
-                            {:then status}
-                                {#if status.toLowerCase() !== "delivered" && pledge.status === "active"}
-                                    <BasicButtonDarkSmall
-                                        msg="Cancel Pledge"
-                                        someFunction={() => {
-                                            selectedPledgeId = pledge.pledge_id;
-                                            DeleteModal.set(true);
-                                        }}
-                                    />
-                                {/if}
-                            {/await}
+                            {#if pledge.status === "active"}
+                                <BasicButtonDarkSmall
+                                    msg="Cancel Pledge"
+                                    someFunction={() => {
+                                        selectedPledgeId = pledge.pledge_id;
+                                        DeleteModal.set(true);
+                                    }}
+                                />
+                            {/if}
                         </div>
                     </div>
                 {/each}
@@ -206,125 +206,130 @@
 <style>
     .pledges-wrapper {
         width: 100%;
-        /* max-width: 1200px; */
         margin: 0 0;
         padding-block: 0.5rem;
     }
 
     .pledge-cards {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.5rem;
-        margin-top: 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 2rem;
+        margin-top: 1.5rem;
     }
 
     .pledge-card {
         display: flex;
         flex-direction: column;
         background: var(--tertiary-color);
-        border-radius: 12px;
+        border-radius: 16px;
         overflow: hidden;
         transition:
             transform 0.2s ease,
             box-shadow 0.2s ease;
         border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+    }
+
+    .pledge-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(
+            90deg,
+            var(--accent-color),
+            var(--primary-color)
+        );
     }
 
     .pledge-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    }
-
-    .card-header {
-        padding: 1rem;
-        background: var(--secondary-color);
-        display: flex;
-        align-items: center;
-        color: var(--tertiary-color);
-        gap: 1rem;
-    }
-
-    .card-header h3 {
-        margin: 0;
-        font-size: 1.1rem;
-        color: var(--text-color);
+        transform: translateY(-6px);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
     }
 
     .idea-image,
     .feature-image {
-        width: 30px;
-        height: 30px;
-        border-radius: 8px;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
         object-fit: cover;
         flex-shrink: 0;
     }
 
+    .card-header {
+        padding: 1.25rem;
+        background: var(--secondary-color);
+        display: flex;
+        align-items: center;
+        color: var(--tertiary-color);
+        gap: 1.25rem;
+    }
+
+    .card-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: var(--text-color);
+        font-weight: 600;
+    }
+
     .card-content {
-        padding: 1.5rem;
+        padding: 1.75rem;
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
     .info-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
     }
 
     .label {
         color: var(--text-secondary);
-        font-size: 0.9rem;
+        font-size: 0.95rem;
+        opacity: 0.8;
     }
 
     .value {
         font-weight: 500;
         color: var(--text-color);
+        font-size: 0.95rem;
     }
 
     .highlight {
-        color: var(--primary-color);
+        color: var(--accent-color);
         font-weight: 600;
+        font-size: 1.1rem;
     }
 
     .feature-value {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
         min-width: 0;
-        padding: 0.25rem 0;
     }
 
-    .card-actions {
-        padding: 1rem;
-        background: rgba(0, 0, 0, 0.1);
+    .feature-content {
         display: flex;
-        gap: 1rem;
-        justify-content: center;
-    }
-
-    .loading-state {
-        display: flex;
-        justify-content: center;
         align-items: center;
-        min-height: 200px;
+        gap: 0.5rem;
     }
 
-    @media (max-width: 768px) {
-        .pledges-wrapper {
-            padding: 0.5rem;
-        }
-
-        .pledge-cards {
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
-        .pledge-card {
-            border-radius: 8px;
-        }
+    .feature-image {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        object-fit: cover;
+        flex-shrink: 0;
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .truncate-text {
@@ -337,33 +342,64 @@
         line-height: 1.2em;
         height: 2.4em;
         font-size: 0.9rem;
-    }
-
-    .idea-image,
-    .feature-image {
-        margin-top: 0;
-        width: 40px;
-        height: 40px;
-        flex-shrink: 0;
+        display: flex;
+        align-items: center;
     }
 
     .status-tag {
-        padding: 0.2rem 0.5rem;
-        border-radius: 4px;
+        padding: 0.3rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
         text-transform: capitalize;
-        background: gray;
-        color: white;
+        font-weight: 500;
     }
 
     .status-tag.active {
-        background: var(--green);
+        background: rgba(40, 167, 69, 0.15);
+        color: #28a745;
+    }
+
+    .status-tag.inactive {
+        background: rgba(13, 110, 253, 0.15);
+        color: #0d6efd;
     }
 
     .payment-tag {
-        padding: 0.2rem 0.5rem;
-        border-radius: 4px;
+        padding: 0.3rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
         text-transform: capitalize;
         background: var(--primary-color);
         color: white;
+        font-weight: 500;
+    }
+
+    .card-actions {
+        padding: 1.25rem;
+        background: rgba(0, 0, 0, 0.05);
+        display: flex;
+        gap: 1.25rem;
+        justify-content: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .loading-state {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 300px;
+    }
+
+    .dark-mode .pledge-card {
+        background: var(--dark-secondary);
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .dark-mode .card-header {
+        background: var(--dark-primary);
+    }
+
+    .dark-mode .info-item {
+        border-color: rgba(255, 255, 255, 0.05);
     }
 </style>

@@ -190,7 +190,7 @@
                 {activePledges} ICP
             </div>
             {#if isOwner}
-                <div class="view-details-button" style="margin-left: 10px;">
+                <div class="view-details-button" style="">
                     <FlatButtonDarkSmall
                         icon={"arrow_right_alt"}
                         msg={"Check your pledges "}
@@ -202,6 +202,18 @@
             {/if}
         </div>
     </div>
+    <div class="divider"></div>
+    {#if isOwner}
+        <div class="" style="">
+            <FlatButtonDarkSmall
+                icon={"arrow_right_alt"}
+                msg={"Check your approvals "}
+                someFunction={() => {
+                    window.location.href = "/myapprovals";
+                }}
+            />
+        </div>
+    {/if}
     <div class="divider"></div>
     <!-- View Details Button -->
     {#if isOwner}

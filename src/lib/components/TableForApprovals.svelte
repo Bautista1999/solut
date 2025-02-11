@@ -66,14 +66,43 @@
                         transition:fly={{ y: 20, duration: 400 }}
                     >
                         <div class="card-header">
-                            <h3>Approval {approval.approval_id}</h3>
+                            <img
+                                src={approval.solution.profile_image}
+                                alt={approval.solution.title}
+                                class="solution-image"
+                            />
+                            <h3>{approval.solution.title}</h3>
                         </div>
                         <div class="card-content">
                             <div class="info-item">
-                                <span class="label">Solution ID</span>
+                                <span class="label">Solution</span>
                                 <span class="value"
                                     >{approval.solution.title}</span
                                 >
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Idea</span>
+                                <div class="value feature-value">
+                                    {#if approval.feature}
+                                        <div class="feature-content">
+                                            <img
+                                                src={approval.feature
+                                                    .profile_image}
+                                                alt={approval.feature.title}
+                                                class="feature-image"
+                                            />
+                                            <a
+                                                href={`/idea/${approval.feature.element_id}`}
+                                                class="truncate-text feature-link"
+                                                title={approval.feature.title}
+                                            >
+                                                {approval.feature.title}
+                                            </a>
+                                        </div>
+                                    {:else}
+                                        <span>N/A</span>
+                                    {/if}
+                                </div>
                             </div>
                             <div class="info-item">
                                 <span class="label">Amount</span>
@@ -111,9 +140,17 @@
                             </div>
                             <div class="info-item">
                                 <span class="label">Transaction</span>
-                                <span class="value"
-                                    >{approval.transaction_number}</span
+                                <a
+                                    href={`https://dashboard.internetcomputer.org/transaction/${approval.transaction_number}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="value transaction-link"
                                 >
+                                    <span class="link-icon">🌐</span>
+                                    <span class="link-text"
+                                        >View Transaction</span
+                                    >
+                                </a>
                             </div>
                         </div>
                         <div class="card-actions">
@@ -187,117 +224,154 @@
 
     .approval-cards {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.5rem;
-        margin-top: 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 2rem;
+        margin-top: 1.5rem;
     }
 
     .approval-card {
         display: flex;
         flex-direction: column;
         background: var(--tertiary-color);
-        border-radius: 12px;
+        border-radius: 16px;
         overflow: hidden;
         transition:
             transform 0.2s ease,
             box-shadow 0.2s ease;
         border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+    }
+
+    .approval-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(
+            90deg,
+            var(--accent-color),
+            var(--primary-color)
+        );
     }
 
     .approval-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        transform: translateY(-6px);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .solution-image {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        object-fit: cover;
+        flex-shrink: 0;
     }
 
     .card-header {
-        padding: 1rem;
+        padding: 1.25rem;
         background: var(--secondary-color);
         display: flex;
         align-items: center;
         color: var(--tertiary-color);
-        gap: 1rem;
+        gap: 1.25rem;
     }
 
     .card-header h3 {
         margin: 0;
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         color: var(--text-color);
+        font-weight: 600;
     }
 
     .card-content {
-        padding: 1rem;
+        padding: 1.75rem;
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
     .info-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
     }
 
     .label {
-        color: var(--text-color-secondary);
-        font-size: 0.9rem;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        opacity: 0.8;
     }
 
     .value {
-        color: var(--text-color);
         font-weight: 500;
+        color: var(--text-color);
+        font-size: 0.95rem;
     }
 
     .highlight {
         color: var(--accent-color);
         font-weight: 600;
+        font-size: 1.1rem;
     }
 
     .status-tag {
-        padding: 0.25rem 0.75rem;
-        border-radius: 1rem;
-        font-size: 0.85rem;
+        padding: 0.3rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
         text-transform: capitalize;
+        font-weight: 500;
     }
 
     .status-tag.pending {
-        background: var(--warning-color);
-        color: var(--dark-color);
+        background: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
     }
 
     .status-tag.completed {
-        background: var(--success-color);
-        color: var(--dark-color);
+        background: rgba(40, 167, 69, 0.15);
+        color: #28a745;
     }
 
     .payment-tag {
-        padding: 0.25rem 0.75rem;
-        border-radius: 1rem;
-        font-size: 0.85rem;
-        background: var(--accent-color);
-        color: var(--dark-color);
+        padding: 0.3rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        text-transform: capitalize;
+        background: var(--primary-color);
+        color: white;
+        font-weight: 500;
     }
 
     .card-actions {
-        padding: 1rem;
+        padding: 1.25rem;
+        background: rgba(0, 0, 0, 0.05);
         display: flex;
-        gap: 0.5rem;
-        justify-content: flex-end;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        gap: 1.25rem;
+        justify-content: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .loading-state {
         display: flex;
         justify-content: center;
         align-items: center;
-        min-height: 200px;
+        min-height: 300px;
     }
 
     .loader {
         border: 4px solid var(--background-color);
         border-top: 4px solid var(--accent-color);
         border-radius: 50%;
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
         animation: spin 1s linear infinite;
     }
 
@@ -310,7 +384,106 @@
         }
     }
 
-    .dark-mode {
-        /* Add dark mode specific styles if needed */
+    .dark-mode .approval-card {
+        background: var(--dark-secondary);
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .dark-mode .card-header {
+        background: var(--dark-primary);
+    }
+
+    .dark-mode .info-item {
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .transaction-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        background: linear-gradient(
+            135deg,
+            rgba(23, 162, 184, 0.1),
+            rgba(13, 110, 253, 0.1)
+        );
+        color: #17a2b8;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: 1px solid rgba(23, 162, 184, 0.2);
+    }
+
+    .transaction-link:hover {
+        background: linear-gradient(
+            135deg,
+            rgba(23, 162, 184, 0.2),
+            rgba(13, 110, 253, 0.2)
+        );
+        color: #0d6efd;
+        border-color: rgba(13, 110, 253, 0.3);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.1);
+    }
+
+    .transaction-link:active {
+        transform: translateY(0);
+        box-shadow: none;
+    }
+
+    .link-icon {
+        font-size: 1rem;
+    }
+
+    .link-text {
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    .feature-link {
+        color: var(--accent-color);
+        text-decoration: none;
+        transition: opacity 0.2s ease;
+    }
+
+    .feature-link:hover {
+        opacity: 0.8;
+        text-decoration: underline;
+    }
+
+    .feature-value {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .feature-content {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .feature-image {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        object-fit: cover;
+        flex-shrink: 0;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .truncate-text {
+        max-width: 150px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        white-space: normal;
+        line-height: 1.2em;
+        height: 2.4em;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
     }
 </style>
