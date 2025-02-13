@@ -5,6 +5,7 @@ pub mod interface {
     use ic_ledger_types::AccountIdentifier;
     // Candid for Internet Computer serialization
     use serde::{Deserialize, Serialize}; // Renaming the Serde `Deserialize`
+    use std::collections::HashMap;
     #[derive(Default, CandidType, Serialize, Deserialize, Clone)]
     pub struct Product {
         pub name: String,
@@ -420,5 +421,33 @@ pub mod interface {
     pub struct OrderedClaimTransfer {
         pub claimer_type: ClaimerType,
         pub transfer: ClaimTransfer,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct CompleteSolutionData {
+        // Basic Solution Info
+        pub solution: IndexResponseBasicInfo,
+
+        // Approval Metrics
+        pub approval_rate: f64,
+        pub total_pledges: u64,
+        pub approved_pledges: u64,
+        pub delivery_date: u64,
+
+        // Features
+        pub features: Vec<IndexResponseBasicInfo>,
+
+        // Distribution Info
+        pub total_amount: u64,
+        pub solution_provider: ClaimerInfo,
+        pub feature_creators: Vec<ClaimerInfo>,
+        pub topic_owner: ClaimerInfo,
+        pub platform_fee: ClaimerInfo,
+
+        // Status
+        pub is_ready_for_completion: bool,
+
+        // Feature Approval Counts
+        pub feature_approval_counts: HashMap<String, u64>,
     }
 }

@@ -24,7 +24,28 @@
             const approvalsResult = await getUserApprovalsEnriched($UserKey);
             console.log("Approvals result:", approvalsResult);
             if ("Ok" in approvalsResult) {
-                approvals = approvalsResult.Ok;
+                // Add debug logging
+                console.log("First approval object:", approvalsResult.Ok[0]);
+
+                approvals = approvalsResult.Ok.sort((a, b) => {
+                    // Add null checks and debug logging
+                    if (!a.created_at || !b.created_at) {
+                        console.log("Missing created_at in approval:", {
+                            a,
+                            b,
+                        });
+                        return 0;
+                    }
+
+                    const dateA = BigInt(a.created_at);
+                    const dateB = BigInt(b.created_at);
+
+                    // Convert BigInt to Number for comparison
+                    return Number(dateB - dateA);
+                });
+
+                // Log sorted results
+                console.log("Sorted approvals:", approvals);
             } else {
                 console.error("Error fetching approvals:", approvalsResult.Err);
             }

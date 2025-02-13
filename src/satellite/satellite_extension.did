@@ -13,6 +13,22 @@ type Activity = record {
   element_type : text;
   activity_image : opt text;
 };
+type ClaimerInfo = record { "principal" : principal; amount : nat64 };
+type CompleteSolutionData = record {
+  approved_pledges : nat64;
+  features : vec IndexResponseBasicInfo;
+  delivery_date : nat64;
+  total_amount : nat64;
+  feature_creators : vec ClaimerInfo;
+  total_pledges : nat64;
+  solution_provider : ClaimerInfo;
+  feature_approval_counts : vec record { text; nat64 };
+  solution : IndexResponseBasicInfo;
+  is_ready_for_completion : bool;
+  topic_owner : ClaimerInfo;
+  approval_rate : float64;
+  platform_fee : ClaimerInfo;
+};
 type CompletionResult = record {
   completion_timestamp : nat64;
   transaction_blocks : vec nat64;
@@ -123,11 +139,12 @@ type Result_10 = variant {
   Ok : record { vec Activity; nat64; nat64; nat64 };
   Err : text;
 };
-type Result_11 = variant { Ok : record { nat64; nat64 }; Err : text };
-type Result_12 = variant { Ok : vec PledgeData; Err : text };
-type Result_13 = variant { Ok : vec EnrichedApprovalData; Err : text };
-type Result_14 = variant { Ok : UserBasicInfo; Err : text };
-type Result_15 = variant { Ok : vec EnrichedPledgeData; Err : text };
+type Result_11 = variant { Ok : CompleteSolutionData; Err : text };
+type Result_12 = variant { Ok : record { nat64; nat64 }; Err : text };
+type Result_13 = variant { Ok : vec PledgeData; Err : text };
+type Result_14 = variant { Ok : vec EnrichedApprovalData; Err : text };
+type Result_15 = variant { Ok : UserBasicInfo; Err : text };
+type Result_16 = variant { Ok : vec EnrichedPledgeData; Err : text };
 type Result_2 = variant { Ok; Err : text };
 type Result_3 = variant { Ok : vec nat64; Err : text };
 type Result_4 = variant { Ok : CompletionResult; Err : text };
@@ -227,19 +244,20 @@ service : {
       Result_9,
     ) query;
   get_pledged_balance : (text) -> (Result_5) query;
+  get_solution_completion_data : (text) -> (Result_11) query;
   get_total_followers : (text) -> (nat64) query;
   get_total_following : (text) -> (nat64) query;
   get_total_pledged : (text, text) -> (Result_5) query;
-  get_total_pledged_and_expected : (text, text) -> (Result_11) query;
-  get_user_active_pledges : (text) -> (Result_12) query;
-  get_user_approvals_enriched : (text) -> (Result_13) query;
-  get_user_basic_information : (text) -> (Result_14) query;
-  get_user_pledges_enriched : (text) -> (Result_15) query;
-  get_user_pledges_for_solution : (text, text) -> (Result_15) query;
+  get_total_pledged_and_expected : (text, text) -> (Result_12) query;
+  get_user_active_pledges : (text) -> (Result_13) query;
+  get_user_approvals_enriched : (text) -> (Result_14) query;
+  get_user_basic_information : (text) -> (Result_15) query;
+  get_user_pledges_enriched : (text) -> (Result_16) query;
+  get_user_pledges_for_solution : (text, text) -> (Result_16) query;
   get_user_profile_pic : (text) -> (text) query;
   get_user_real_balance : (text) -> (Result_5);
   get_user_reputation : (principal) -> (Result_5) query;
-  get_user_total_pledges : (text) -> (Result_12) query;
+  get_user_total_pledges : (text) -> (Result_13) query;
   get_user_username : (text) -> (text) query;
   pledge_create : (text, text, text, nat64, blob) -> (text);
   query_scheduled_tasks_state : () -> (text) query;
@@ -255,4 +273,5 @@ service : {
   validate_user_balance_or_delete_pledge : (text, nat64, text) -> (Result_2);
   withdraw_approval : (text) -> (Result_5);
   withdraw_from_feature_subaccount : (nat64, text, principal) -> (Result_5);
+  withdraw_rejection : (text, text) -> (Result_2);
 }

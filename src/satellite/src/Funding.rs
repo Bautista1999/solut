@@ -2,10 +2,11 @@ use crate::notifications::send_single_notification;
 use crate::quickqueries::get_doc_owner;
 use crate::reputation::{get_user_reputation, update_user_reputation};
 use crate::types::interface::{
-    Approval, ApprovalStatus, ClaimTransfer, ClaimerInfo, ClaimerType, Claimers, CompletionResult,
-    Discount, EnrichedPledgeData, FollowData, Idea, IndexResponse, IndexResponseBasicInfo,
-    IndexSearch, Notification, OrderedClaimTransfer, PaymentType, PledgeApproval, PledgeData,
-    PledgeUser, Referral, RejectionData, TotalPledging, Transaction,
+    Approval, ApprovalStatus, ClaimTransfer, ClaimerInfo, ClaimerType, Claimers,
+    CompleteSolutionData, CompletionResult, Discount, EnrichedPledgeData, FollowData, Idea,
+    IndexResponse, IndexResponseBasicInfo, IndexSearch, Notification, OrderedClaimTransfer,
+    PaymentType, PledgeApproval, PledgeData, PledgeUser, Referral, RejectionData, Solution,
+    TotalPledging, Transaction,
 };
 
 use crate::user_information::{
@@ -324,6 +325,37 @@ pub async fn reject_approval(
     Ok(())
 }
 
+#[update]
+pub async fn withdraw_rejection(pledge_id: String, solution_id: String) -> Result<(), String> {
+    let caller = api::caller();
+
+    // Validate pledge ownership
+    validate_pledge_ownership(&pledge_id, caller)?;
+
+    // Validate solution status
+    validate_solution_status(&solution_id, "delivered")?;
+
+    // Check if rejection exists and get its version
+    let rejection_key = format!("REJ_{}_{}", pledge_id, solution_id);
+    let rejection = get_doc_store(*CONTROLLER, "rejection".to_string(), rejection_key.clone())?
+        .ok_or("Rejection not found for this pledge-solution pair")?;
+
+    // Get document version
+    let version = get_document_version_or_default("rejection".to_string(), rejection_key.clone())?;
+
+    // Delete the rejection document
+    delete_doc_store(
+        *CONTROLLER,
+        "rejection".to_string(),
+        rejection_key,
+        DelDoc {
+            version: Some(version),
+        },
+    )?;
+
+    Ok(())
+}
+
 // Modify claim_tokens to update approval status
 #[update]
 pub async fn claim_tokens(solution_id: String) -> Result<Vec<u64>, String> {
@@ -388,6 +420,172 @@ pub async fn complete_solution(solution_id: String) -> Result<CompletionResult, 
         transaction_blocks,
         approval_rate,
         completion_timestamp,
+    })
+}
+
+#[query]
+pub fn get_solution_completion_data(solution_id: String) -> Result<CompleteSolutionData, String> {
+    let caller = api::caller();
+
+    // 1. Get solution basic info
+    let solution_doc = get_doc_store(caller, "solution".to_string(), solution_id.clone())?
+        .ok_or("Solution not found")?;
+    let solution_json: serde_json::Value = decode_doc_data(&solution_doc.data)?;
+
+    // Get solution owner (solution provider)
+    let solution_owner = solution_doc.owner;
+    let solution_owner_username = get_user_username(solution_owner.to_string());
+    let solution_owner_profile = get_user_profile_pic(solution_owner.to_string());
+
+    // 2. Get approval metrics
+    let approval_rate = calculate_approval_rate(&solution_id)?;
+    let approvals = match get_solution_approvals(&solution_id) {
+        Ok(approvals) => approvals,
+        Err(_) => Vec::new(), // If no approvals found, use empty vector
+    };
+    let total_pledges = approvals.len();
+    let approved_pledges = approvals
+        .iter()
+        .filter(|a| matches!(a.status, ApprovalStatus::Completed))
+        .count();
+
+    // Create a map to track approvals per feature
+    let mut feature_approval_counts: HashMap<String, u64> = HashMap::new();
+    let mut feature_approval_amounts: HashMap<String, u64> = HashMap::new();
+
+    // Count approvals and sum amounts per feature
+    for approval in &approvals {
+        if matches!(approval.status, ApprovalStatus::Pending) {
+            *feature_approval_counts
+                .entry(approval.feature_id.clone())
+                .or_insert(0) += 1;
+            *feature_approval_amounts
+                .entry(approval.feature_id.clone())
+                .or_insert(0) += approval.amount;
+        }
+    }
+
+    // 3. Get implemented features and their creators
+    let feature_ids = get_solution_implemented_features(&solution_id)?;
+    let mut features = Vec::new();
+    let mut feature_creators = Vec::new();
+
+    for feature_id in feature_ids {
+        if let Ok(Some(feature_doc)) =
+            get_doc_store(caller, "feature".to_string(), feature_id.clone())
+        {
+            let feature_json: serde_json::Value = decode_doc_data(&feature_doc.data)?;
+
+            // Get feature creator info
+            let creator = feature_doc.owner;
+            let creator_username = get_user_username(creator.to_string());
+            let creator_profile = get_user_profile_pic(creator.to_string());
+
+            // Get approval count and amount for this feature
+            let approval_count = feature_approval_counts
+                .get(&feature_id)
+                .copied()
+                .unwrap_or(0);
+            let feature_amount = feature_approval_amounts
+                .get(&feature_id)
+                .copied()
+                .unwrap_or(0);
+
+            features.push(IndexResponseBasicInfo {
+                element_id: feature_id.clone(),
+                title: feature_json["title"]
+                    .as_str()
+                    .ok_or("Feature title not found")?
+                    .to_string(),
+                profile_image: feature_json["images"]
+                    .as_array()
+                    .and_then(|imgs| imgs.first())
+                    .and_then(|img| img.as_str())
+                    .map(|s| s.to_string())
+                    .unwrap_or_else(|| {
+                        "https://solutio.one/solutio-images/logo-01.png".to_string()
+                    }),
+                creation_date: feature_doc.created_at,
+                element_type: "feature".to_string(),
+            });
+
+            // Add feature creator with their share based on feature's approval amount
+            let creator_amount = (feature_amount as f64 * FEATURE_CREATOR_PERCENTAGE) as u64;
+            feature_creators.push(ClaimerInfo {
+                principal: creator,
+                amount: creator_amount,
+            });
+        }
+    }
+
+    // 4. Calculate total amount and distribution
+    let total_amount: u64 = approvals
+        .iter()
+        .filter(|a| matches!(a.status, ApprovalStatus::Pending))
+        .map(|a| a.amount)
+        .sum();
+
+    // Get topic owner from the idea_id in the description
+    let description = solution_doc
+        .description
+        .ok_or("No solution description found")?;
+    let idea_id = description
+        .split("idea_id:")
+        .nth(1)
+        .ok_or("No idea_id found")?
+        .split_whitespace()
+        .next()
+        .ok_or("Invalid idea_id format")?;
+
+    let topic_doc =
+        get_doc_store(caller, "idea".to_string(), idea_id.to_string())?.ok_or("Topic not found")?;
+    let topic_owner = topic_doc.owner;
+
+    // Calculate distributions
+    let solution_provider_amount = (total_amount as f64 * SOLUTION_PROVIDER_PERCENTAGE) as u64;
+    let topic_owner_amount = (total_amount as f64 * TOPIC_OWNER_PERCENTAGE) as u64;
+    let platform_fee_amount = (total_amount as f64 * PLATFORM_FEE_PERCENTAGE) as u64;
+
+    // 5. Check completion readiness
+    let is_ready_for_completion = approval_rate >= 60.0 && !features.is_empty();
+
+    Ok(CompleteSolutionData {
+        solution: IndexResponseBasicInfo {
+            element_id: solution_id,
+            title: solution_json["title"]
+                .as_str()
+                .ok_or("Solution title not found")?
+                .to_string(),
+            profile_image: solution_json["images"]
+                .as_array()
+                .and_then(|imgs| imgs.first())
+                .and_then(|img| img.as_str())
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| "https://solutio.one/solutio-images/logo-01.png".to_string()),
+            creation_date: solution_doc.created_at,
+            element_type: "solution".to_string(),
+        },
+        approval_rate,
+        total_pledges: total_pledges.try_into().unwrap(),
+        approved_pledges: approved_pledges.try_into().unwrap(),
+        delivery_date: solution_doc.created_at,
+        features,
+        total_amount,
+        solution_provider: ClaimerInfo {
+            principal: solution_owner,
+            amount: solution_provider_amount,
+        },
+        feature_creators,
+        topic_owner: ClaimerInfo {
+            principal: topic_owner,
+            amount: topic_owner_amount,
+        },
+        platform_fee: ClaimerInfo {
+            principal: *PLATFORM_FEE_RECEIVER,
+            amount: platform_fee_amount,
+        },
+        is_ready_for_completion,
+        feature_approval_counts,
     })
 }
 

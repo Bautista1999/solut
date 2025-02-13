@@ -1203,6 +1203,11 @@ pub fn get_user_pledges_for_solution(
     solution_id: String,
     user_id: String,
 ) -> Result<Vec<EnrichedPledgeData>, String> {
+    // Validate user_id
+    if user_id.trim().is_empty() {
+        return Err("User ID cannot be empty".to_string());
+    }
+
     // Step 1: Get all implemented features for this solution
     let implemented_features = match get_solution_implemented_features(&solution_id) {
         Ok(features) => features,
@@ -1215,15 +1220,17 @@ pub fn get_user_pledges_for_solution(
         Err(e) => return Err(format!("Failed to get user pledges: {}", e)),
     };
 
-    // Step 3: Filter pledges that target the implemented features
+    // Step 3: Filter pledges that target the implemented features and are active
     let solution_pledges: Vec<EnrichedPledgeData> = all_user_pledges
         .into_iter()
         .filter(|pledge| {
-            if let Some(feature) = &pledge.feature {
-                implemented_features.contains(&feature.element_id)
-            } else {
-                false
-            }
+            // Check if pledge is active and targets an implemented feature
+            pledge.status == "active"
+                && if let Some(feature) = &pledge.feature {
+                    implemented_features.contains(&feature.element_id)
+                } else {
+                    false
+                }
         })
         .collect();
 

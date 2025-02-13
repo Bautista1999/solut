@@ -210,3 +210,36 @@ Learning Points:
 - Importance of consistent component patterns
 - Value of iterative UI improvements
 - Need for thorough testing across different scenarios
+
+# Development Notes
+
+## Challenge Encountered
+- Sorting functionality not working as expected for approvals list
+- Potential issues with timestamp data format and handling
+
+## Investigation Steps
+1. Added detailed logging to debug data structure
+2. Implemented safer handling of timestamp comparisons using BigInt
+3. Added null checks to prevent errors with missing data
+
+## Learning
+- Importance of data validation and type checking when working with timestamps
+- Need for proper error handling with potentially missing fields
+- Value of console logging for debugging sorting issues
+
+## Content Suggestions
+
+### Blog Post: "Debugging Date Sorting in JavaScript"
+Description: A practical guide to common pitfalls when sorting dates in JavaScript
+Topics:
+- Working with different timestamp formats
+- Handling large numbers with BigInt
+- Debugging strategies for sorting issues
+- Best practices for date comparisons
+
+### Tweet Thread: "🔍 Debugging Tips for JavaScript Sorting"
+Description: Share practical tips for debugging sorting issues
+Topics:
+- Console logging strategies
+- Common pitfalls
+- Solutions and best practices
