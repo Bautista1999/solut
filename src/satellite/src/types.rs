@@ -424,6 +424,13 @@ pub mod interface {
     }
 
     #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct ClaimerInfoEnriched {
+        pub amount: u64,
+        pub user: UserBasicInfo,
+        pub type_of_claimer: String,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
     pub struct CompleteSolutionData {
         // Basic Solution Info
         pub solution: IndexResponseBasicInfo,
@@ -435,13 +442,13 @@ pub mod interface {
         pub delivery_date: u64,
 
         // Features
-        pub features: Vec<IndexResponseBasicInfo>,
+        pub features: Vec<IndexResponseWithApproval>,
 
         // Distribution Info
         pub total_amount: u64,
-        pub solution_provider: ClaimerInfo,
-        pub feature_creators: Vec<ClaimerInfo>,
-        pub topic_owner: ClaimerInfo,
+        pub solution_provider: ClaimerInfoEnriched,
+        pub feature_creators: Vec<ClaimerInfoEnriched>,
+        pub topic_owner: ClaimerInfoEnriched,
         pub platform_fee: ClaimerInfo,
 
         // Status
@@ -449,5 +456,11 @@ pub mod interface {
 
         // Feature Approval Counts
         pub feature_approval_counts: HashMap<String, u64>,
+    }
+
+    #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct IndexResponseWithApproval {
+        pub basic_info: IndexResponseBasicInfo, // Reuse existing struct
+        pub approved_amount: u64,               // Additional field for approved amount
     }
 }
