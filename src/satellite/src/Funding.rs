@@ -872,7 +872,12 @@ fn validate_claim_requirements(solution_id: &str) -> Result<(), String> {
 
     Ok(())
 }
+
 #[query]
+pub fn get_solution_approvals_enriched(
+    solution_id: String,
+) -> Result<Vec<EnrichedApprovalData>, String> {
+}
 pub fn get_solution_approvals(solution_id: String) -> Result<Vec<Approval>, String> {
     let matcher = ListMatcher {
         key: Some(format!("_{}", solution_id)), // Keys starting with "{user_id}_"
