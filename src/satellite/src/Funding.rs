@@ -2,16 +2,16 @@ use crate::notifications::send_single_notification;
 use crate::quickqueries::get_doc_owner;
 use crate::reputation::{get_user_reputation, update_user_reputation};
 use crate::types::interface::{
-    Approval, ApprovalStatus, ClaimTransfer, ClaimerInfo, ClaimerType, Claimers,
-    CompleteSolutionData, CompletionResult, Discount, EnrichedPledgeData, FollowData, Idea,
-    IndexResponse, IndexResponseBasicInfo, IndexSearch, Notification, OrderedClaimTransfer,
-    PaymentType, PledgeApproval, PledgeData, PledgeUser, Referral, RejectionData, Solution,
-    TotalPledging, Transaction,
+    Approval, ApprovalStatus, ClaimTransfer, ClaimerInfo, ClaimerInfoEnriched, ClaimerType,
+    Claimers, CompleteSolutionData, CompletionResult, Discount, EnrichedPledgeData, FollowData,
+    Idea, IndexResponse, IndexResponseBasicInfo, IndexResponseWithApproval, IndexSearch,
+    Notification, OrderedClaimTransfer, PaymentType, PledgeApproval, PledgeData, PledgeUser,
+    Referral, RejectionData, Solution, TotalPledging, Transaction,
 };
 
 use crate::user_information::{
     get_available_balance, get_historical_pledged_balance, get_paginated_following_elements,
-    get_user_profile_pic, get_user_username,
+    get_user_basic_information, get_user_profile_pic, get_user_username,
 };
 use crate::ApprovalFunctions::{
     approve_pledge, get_feature_id_from_pledge, reverse_approval, validate_pledge_ownership,
@@ -361,7 +361,7 @@ pub async fn withdraw_rejection(pledge_id: String, solution_id: String) -> Resul
 pub async fn claim_tokens(solution_id: String) -> Result<Vec<u64>, String> {
     validate_claim_requirements(&solution_id)?;
 
-    let approvals = get_solution_approvals(&solution_id)?;
+    let approvals = get_solution_approvals(solution_id.clone())?;
     let ordered_transfers = aggregate_claimer_amounts(&approvals)?;
 
     // Extract just the ClaimTransfer parts
@@ -439,14 +439,18 @@ pub fn get_solution_completion_data(solution_id: String) -> Result<CompleteSolut
 
     // 2. Get approval metrics
     let approval_rate = calculate_approval_rate(&solution_id)?;
-    let approvals = match get_solution_approvals(&solution_id) {
+    let approvals = match get_solution_approvals(solution_id.clone()) {
         Ok(approvals) => approvals,
         Err(_) => Vec::new(), // If no approvals found, use empty vector
     };
-    let total_pledges = approvals.len();
+
+    // Get all active pledges for the solution's features
+    let feature_ids = get_solution_implemented_features(&solution_id)?;
+    let active_pledges = get_active_pledges_for_features(&feature_ids)?;
+    let total_pledges = active_pledges.len();
     let approved_pledges = approvals
         .iter()
-        .filter(|a| matches!(a.status, ApprovalStatus::Completed))
+        .filter(|a| matches!(a.status, ApprovalStatus::Pending))
         .count();
 
     // Create a map to track approvals per feature
@@ -466,8 +470,7 @@ pub fn get_solution_completion_data(solution_id: String) -> Result<CompleteSolut
     }
 
     // 3. Get implemented features and their creators
-    let feature_ids = get_solution_implemented_features(&solution_id)?;
-    let mut features = Vec::new();
+    let mut features: Vec<IndexResponseWithApproval> = Vec::new();
     let mut feature_creators = Vec::new();
 
     for feature_id in feature_ids {
@@ -476,37 +479,34 @@ pub fn get_solution_completion_data(solution_id: String) -> Result<CompleteSolut
         {
             let feature_json: serde_json::Value = decode_doc_data(&feature_doc.data)?;
 
+            // Get the approved amount using the updated helper function
+            let feature_amount = get_approved_amount_for_feature(&feature_id, &solution_id)?;
+
             // Get feature creator info
             let creator = feature_doc.owner;
             let creator_username = get_user_username(creator.to_string());
             let creator_profile = get_user_profile_pic(creator.to_string());
 
-            // Get approval count and amount for this feature
-            let approval_count = feature_approval_counts
-                .get(&feature_id)
-                .copied()
-                .unwrap_or(0);
-            let feature_amount = feature_approval_amounts
-                .get(&feature_id)
-                .copied()
-                .unwrap_or(0);
-
-            features.push(IndexResponseBasicInfo {
-                element_id: feature_id.clone(),
-                title: feature_json["title"]
-                    .as_str()
-                    .ok_or("Feature title not found")?
-                    .to_string(),
-                profile_image: feature_json["images"]
-                    .as_array()
-                    .and_then(|imgs| imgs.first())
-                    .and_then(|img| img.as_str())
-                    .map(|s| s.to_string())
-                    .unwrap_or_else(|| {
-                        "https://solutio.one/solutio-images/logo-01.png".to_string()
-                    }),
-                creation_date: feature_doc.created_at,
-                element_type: "feature".to_string(),
+            // Add feature to the list
+            features.push(IndexResponseWithApproval {
+                basic_info: IndexResponseBasicInfo {
+                    element_id: feature_id.clone(),
+                    title: feature_json["title"]
+                        .as_str()
+                        .ok_or("Feature title not found")?
+                        .to_string(),
+                    profile_image: feature_json["images"]
+                        .as_array()
+                        .and_then(|imgs| imgs.first())
+                        .and_then(|img| img.as_str())
+                        .map(|s| s.to_string())
+                        .unwrap_or_else(|| {
+                            "https://solutio.one/solutio-images/logo-01.png".to_string()
+                        }),
+                    creation_date: feature_doc.created_at,
+                    element_type: "feature".to_string(),
+                },
+                approved_amount: feature_amount,
             });
 
             // Add feature creator with their share based on feature's approval amount
@@ -539,7 +539,7 @@ pub fn get_solution_completion_data(solution_id: String) -> Result<CompleteSolut
 
     let topic_doc =
         get_doc_store(caller, "idea".to_string(), idea_id.to_string())?.ok_or("Topic not found")?;
-    let topic_owner = topic_doc.owner;
+    let topic_owner_principal = topic_doc.owner;
 
     // Calculate distributions
     let solution_provider_amount = (total_amount as f64 * SOLUTION_PROVIDER_PERCENTAGE) as u64;
@@ -548,6 +548,52 @@ pub fn get_solution_completion_data(solution_id: String) -> Result<CompleteSolut
 
     // 5. Check completion readiness
     let is_ready_for_completion = approval_rate >= 60.0 && !features.is_empty();
+
+    // Correct the mapping to ClaimerInfo
+    let feature_creators: Vec<ClaimerInfo> = feature_creators
+        .into_iter()
+        .map(|creator| ClaimerInfo {
+            principal: creator.principal,
+            amount: creator.amount,
+        })
+        .collect();
+
+    // Correct the mapping for topic_owner
+    let topic_owner = ClaimerInfo {
+        principal: topic_owner_principal,
+        amount: topic_owner_amount,
+    };
+
+    // Correct the mapping for solution_provider
+    let solution_provider = ClaimerInfo {
+        principal: solution_owner,
+        amount: solution_provider_amount,
+    };
+
+    // Use ClaimerInfoEnriched instead of ClaimerInfo
+    let enriched_solution_provider = ClaimerInfoEnriched {
+        amount: solution_provider_amount,
+        user: get_user_basic_information(solution_owner.to_string())?,
+        type_of_claimer: "Solution Provider".to_string(),
+    };
+
+    let enriched_feature_creators: Vec<ClaimerInfoEnriched> = feature_creators
+        .into_iter()
+        .map(|creator| {
+            let user_info = get_user_basic_information(creator.principal.to_string())?;
+            Ok::<ClaimerInfoEnriched, String>(ClaimerInfoEnriched {
+                amount: creator.amount,
+                user: user_info,
+                type_of_claimer: "Feature Creator".to_string(),
+            })
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+
+    let enriched_topic_owner = ClaimerInfoEnriched {
+        amount: topic_owner_amount,
+        user: get_user_basic_information(topic_owner_principal.to_string())?,
+        type_of_claimer: "Topic Owner".to_string(),
+    };
 
     Ok(CompleteSolutionData {
         solution: IndexResponseBasicInfo {
@@ -571,15 +617,9 @@ pub fn get_solution_completion_data(solution_id: String) -> Result<CompleteSolut
         delivery_date: solution_doc.created_at,
         features,
         total_amount,
-        solution_provider: ClaimerInfo {
-            principal: solution_owner,
-            amount: solution_provider_amount,
-        },
-        feature_creators,
-        topic_owner: ClaimerInfo {
-            principal: topic_owner,
-            amount: topic_owner_amount,
-        },
+        solution_provider: enriched_solution_provider,
+        feature_creators: enriched_feature_creators,
+        topic_owner: enriched_topic_owner,
         platform_fee: ClaimerInfo {
             principal: *PLATFORM_FEE_RECEIVER,
             amount: platform_fee_amount,
@@ -832,8 +872,8 @@ fn validate_claim_requirements(solution_id: &str) -> Result<(), String> {
 
     Ok(())
 }
-
-fn get_solution_approvals(solution_id: &str) -> Result<Vec<Approval>, String> {
+#[query]
+pub fn get_solution_approvals(solution_id: String) -> Result<Vec<Approval>, String> {
     let matcher = ListMatcher {
         key: Some(format!("_{}", solution_id)), // Keys starting with "{user_id}_"
         ..Default::default()
@@ -1446,4 +1486,18 @@ fn get_active_pledges_for_features(feature_ids: &Vec<String>) -> Result<Vec<Pled
     }
 
     Ok(active_pledges)
+}
+
+fn get_approved_amount_for_feature(feature_id: &str, solution_id: &str) -> Result<u64, String> {
+    // Get solution approvals
+    let approvals = get_solution_approvals(solution_id.to_string())?;
+
+    // Sum amounts for the specified feature
+    let approved_amount: u64 = approvals
+        .iter()
+        .filter(|approval| approval.feature_id == feature_id)
+        .map(|approval| approval.amount)
+        .sum();
+
+    Ok(approved_amount)
 }
