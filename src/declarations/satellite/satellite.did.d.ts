@@ -17,19 +17,47 @@ export interface Activity {
   'element_type' : string,
   'activity_image' : [] | [string],
 }
+export interface Approval {
+  'status' : ApprovalStatus,
+  'feature_id' : string,
+  'approval_id' : string,
+  'user_principal' : Principal,
+  'payment_type' : PaymentType,
+  'claimers' : Claimers,
+  'subaccount' : [] | [Uint8Array | number[]],
+  'pledge_id' : string,
+  'solution_id' : string,
+  'timestamp' : bigint,
+  'transaction_number' : bigint,
+  'amount' : bigint,
+}
+export type ApprovalStatus = { 'Completed' : null } |
+  { 'Pending' : null };
 export interface ClaimerInfo { 'principal' : Principal, 'amount' : bigint }
+export interface ClaimerInfoEnriched {
+  'user' : UserBasicInfo,
+  'amount' : bigint,
+  'type_of_claimer' : string,
+}
+export interface Claimers {
+  'referral_reward' : [] | [ClaimerInfo],
+  'feature_creator' : ClaimerInfo,
+  'solution_provider' : ClaimerInfo,
+  'topic_owner' : ClaimerInfo,
+  'platform_fee' : ClaimerInfo,
+}
 export interface CompleteSolutionData {
   'approved_pledges' : bigint,
-  'features' : Array<IndexResponseBasicInfo>,
+  'features' : Array<IndexResponseWithApproval>,
   'delivery_date' : bigint,
   'total_amount' : bigint,
-  'feature_creators' : Array<ClaimerInfo>,
+  'feature_creators' : Array<ClaimerInfoEnriched>,
   'total_pledges' : bigint,
-  'solution_provider' : ClaimerInfo,
+  'solution_provider' : ClaimerInfoEnriched,
   'feature_approval_counts' : Array<[string, bigint]>,
   'solution' : IndexResponseBasicInfo,
   'is_ready_for_completion' : boolean,
-  'topic_owner' : ClaimerInfo,
+  'topic_owner' : ClaimerInfoEnriched,
   'approval_rate' : number,
   'platform_fee' : ClaimerInfo,
 }
@@ -86,6 +114,10 @@ export interface IndexResponseBasicInfo {
   'element_id' : string,
   'element_type' : string,
   'creation_date' : bigint,
+}
+export interface IndexResponseWithApproval {
+  'approved_amount' : bigint,
+  'basic_info' : IndexResponseBasicInfo,
 }
 export interface Milestone {
   'id' : bigint,
@@ -144,17 +176,19 @@ export type Result_1 = { 'Ok' : Array<string> } |
   { 'Err' : string };
 export type Result_10 = { 'Ok' : [Array<Activity>, bigint, bigint, bigint] } |
   { 'Err' : string };
-export type Result_11 = { 'Ok' : CompleteSolutionData } |
+export type Result_11 = { 'Ok' : Array<Approval> } |
   { 'Err' : string };
-export type Result_12 = { 'Ok' : [bigint, bigint] } |
+export type Result_12 = { 'Ok' : CompleteSolutionData } |
   { 'Err' : string };
-export type Result_13 = { 'Ok' : Array<PledgeData> } |
+export type Result_13 = { 'Ok' : [bigint, bigint] } |
   { 'Err' : string };
-export type Result_14 = { 'Ok' : Array<EnrichedApprovalData> } |
+export type Result_14 = { 'Ok' : Array<PledgeData> } |
   { 'Err' : string };
-export type Result_15 = { 'Ok' : UserBasicInfo } |
+export type Result_15 = { 'Ok' : Array<EnrichedApprovalData> } |
   { 'Err' : string };
-export type Result_16 = { 'Ok' : Array<EnrichedPledgeData> } |
+export type Result_16 = { 'Ok' : UserBasicInfo } |
+  { 'Err' : string };
+export type Result_17 = { 'Ok' : Array<EnrichedPledgeData> } |
   { 'Err' : string };
 export type Result_2 = { 'Ok' : null } |
   { 'Err' : string };
@@ -274,20 +308,21 @@ export interface _SERVICE {
     Result_9
   >,
   'get_pledged_balance' : ActorMethod<[string], Result_5>,
-  'get_solution_completion_data' : ActorMethod<[string], Result_11>,
+  'get_solution_approvals' : ActorMethod<[string], Result_11>,
+  'get_solution_completion_data' : ActorMethod<[string], Result_12>,
   'get_total_followers' : ActorMethod<[string], bigint>,
   'get_total_following' : ActorMethod<[string], bigint>,
   'get_total_pledged' : ActorMethod<[string, string], Result_5>,
-  'get_total_pledged_and_expected' : ActorMethod<[string, string], Result_12>,
-  'get_user_active_pledges' : ActorMethod<[string], Result_13>,
-  'get_user_approvals_enriched' : ActorMethod<[string], Result_14>,
-  'get_user_basic_information' : ActorMethod<[string], Result_15>,
-  'get_user_pledges_enriched' : ActorMethod<[string], Result_16>,
-  'get_user_pledges_for_solution' : ActorMethod<[string, string], Result_16>,
+  'get_total_pledged_and_expected' : ActorMethod<[string, string], Result_13>,
+  'get_user_active_pledges' : ActorMethod<[string], Result_14>,
+  'get_user_approvals_enriched' : ActorMethod<[string], Result_15>,
+  'get_user_basic_information' : ActorMethod<[string], Result_16>,
+  'get_user_pledges_enriched' : ActorMethod<[string], Result_17>,
+  'get_user_pledges_for_solution' : ActorMethod<[string, string], Result_17>,
   'get_user_profile_pic' : ActorMethod<[string], string>,
   'get_user_real_balance' : ActorMethod<[string], Result_5>,
   'get_user_reputation' : ActorMethod<[Principal], Result_5>,
-  'get_user_total_pledges' : ActorMethod<[string], Result_13>,
+  'get_user_total_pledges' : ActorMethod<[string], Result_14>,
   'get_user_username' : ActorMethod<[string], string>,
   'pledge_create' : ActorMethod<
     [string, string, string, bigint, Uint8Array | number[]],
