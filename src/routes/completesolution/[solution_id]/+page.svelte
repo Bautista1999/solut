@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import { getDoc } from "@junobuild/core-peer";
     import { onMount } from "svelte";
     import { fade, fly } from "svelte/transition";
@@ -6,20 +6,23 @@
     import { ICPtoDecimal } from "$lib/financial_functions/financial_functions";
     import DistributionRow from "$lib/components/DistributionRow.svelte";
     import FeatureRow from "$lib/components/FeatureRow.svelte";
+    import { formatDistanceToNow } from "date-fns";
 
     import {
         completeSolution,
         getSolutionCompletionData,
     } from "../../../declarations/satellite/satellite.api";
+    import FlatButtonSmall from "$lib/components/FlatButtonSmall.svelte";
     export let data;
     let solution_id = data.params.solution_id;
     let title = "";
     let loading = true;
     let error = "";
     let approvalRate = 0;
-    let totalPledges = 0;
+    let totalPledgesActive = 0;
     let approvedPledges = 0;
-    let deliveryDate = null;
+    /** @type {bigint} */
+    let deliveryDate = 0n;
     let totalAmount = 0;
     let isReadyForCompletion = false;
 
@@ -45,7 +48,7 @@
     let solutionProvider = {
         id: "",
         username: "",
-        profile_image: "",
+        profile_image: "default_image.png",
         wallet_id: "",
         amount: 0,
     };
@@ -75,7 +78,7 @@
     let topicOwner = {
         id: "",
         username: "",
-        profile_image: "",
+        profile_image: "default_image.png",
         wallet_id: "",
         amount: 0,
     };
@@ -86,6 +89,23 @@
 
     // Track which section is expanded
     let expandedSection = "";
+
+    // Calculate days since delivery
+    function calculateDaysSinceDelivery() {
+        // Convert nanoseconds to milliseconds, same as in ActivityPost.svelte
+        const timestamp = Math.floor(Number(deliveryDate) / 1_000_000);
+        const date = new Date(timestamp);
+
+        if (isNaN(date.getTime())) {
+            console.error("Invalid date generated from timestamp:", timestamp);
+            return "0";
+        }
+
+        const timeDistance = formatDistanceToNow(date);
+        // Extract just the number from strings like "about 15 days ago"
+        const days = timeDistance.match(/\d+/);
+        return days ? days[0] : "0";
+    }
 
     // Function to toggle section expansion
     /**
@@ -131,6 +151,7 @@
                 loading = false;
                 return;
             }
+            console.log(completionResult);
             let completionData = completionResult.Ok;
 
             // Convert feature_approval_counts from array to object
@@ -146,7 +167,7 @@
 
             // Metrics
             approvalRate = completionData.approval_rate;
-            totalPledges = Number(completionData.total_pledges);
+            totalPledgesActive = Number(completionData.total_pledges);
             approvedPledges = Number(completionData.approved_pledges);
             deliveryDate = completionData.delivery_date;
             totalAmount = Number(completionData.total_amount);
@@ -154,44 +175,44 @@
 
             // Features
             features = completionData.features.map((feature) => ({
-                title: feature.title,
-                profile_image: feature.profile_image,
-                approved_amount: Number(countsMap[feature.element_id] || 0),
-                id: feature.element_id,
+                title: feature.basic_info.title,
+                profile_image: feature.basic_info.profile_image,
+                approved_amount: Number(feature.approved_amount) / 1e8,
+                id: feature.basic_info.element_id,
             }));
 
             // Distribution info
             solutionProvider = {
-                id: completionData.solution_provider.principal.toString(),
-                username: "", // We'll need to fetch this
-                profile_image: "", // We'll need to fetch this
-                wallet_id:
-                    completionData.solution_provider.principal.toString(),
-                amount: Number(completionData.solution_provider.amount),
+                id: "",
+                username: completionData.solution_provider.user.username,
+                profile_image:
+                    completionData.solution_provider.user.profile_picture,
+                wallet_id: "",
+                amount: Number(completionData.solution_provider.amount) / 1e8,
             };
 
             featureCreators = completionData.feature_creators.map(
                 (creator) => ({
-                    id: creator.principal.toString(),
-                    username: "", // We'll need to fetch this
-                    profile_image: "", // We'll need to fetch this
-                    wallet_id: creator.principal.toString(),
-                    amount: Number(creator.amount),
-                    feature_id: "", // Required by type
-                    feature_title: "", // Required by type
+                    id: "",
+                    username: creator.user.username,
+                    profile_image: creator.user.profile_picture,
+                    wallet_id: "",
+                    amount: Number(creator.amount) / 1e8,
+                    feature_id: "",
+                    feature_title: "",
                 }),
             );
 
             topicOwner = {
-                id: completionData.topic_owner.principal.toString(),
-                username: "", // We'll need to fetch this
-                profile_image: "", // We'll need to fetch this
-                wallet_id: completionData.topic_owner.principal.toString(),
-                amount: Number(completionData.topic_owner.amount),
+                id: "",
+                username: completionData.topic_owner.user.username,
+                profile_image: completionData.topic_owner.user.profile_picture,
+                wallet_id: "",
+                amount: Number(completionData.topic_owner.amount) / 1e8,
             };
 
             platformFee = {
-                amount: Number(completionData.platform_fee.amount),
+                amount: Number(completionData.platform_fee.amount) / 1e8,
             };
 
             loading = false;
@@ -249,7 +270,8 @@
                 <div class="metric-card">
                     <div class="metric-circle success">
                         <span class="metric-value"
-                            >{approvedPledges}/{totalPledges}</span
+                            >{approvedPledges}/{totalPledgesActive +
+                                approvedPledges}</span
                         >
                     </div>
                     <span class="metric-label">Pledges Approved</span>
@@ -258,13 +280,20 @@
 
                 <div class="metric-card">
                     <div class="metric-circle success">
-                        <span class="metric-value">15d</span>
+                        <span class="metric-value"
+                            >{calculateDaysSinceDelivery()}d</span
+                        >
                     </div>
                     <span class="metric-label">Time Since Delivery</span>
                     <span class="metric-requirement">No time limit</span>
                 </div>
             </div>
-
+            <FlatButtonSmall
+                msg="Check approvals"
+                someFunction={() => {
+                    window.open(`/solution/${solution_id}/approvals`, "_blank");
+                }}
+            />
             <div class="features-section">
                 <h3>Implemented Features</h3>
                 <div class="features-container">
@@ -310,13 +339,15 @@
                     <div class="amount-row" style="margin-left: 0.5rem;">
                         <span class="label">Platform Fee (5%)</span>
                         <span class="amount"
-                            >{(totalAmount * 0.05).toFixed(3)} ICP</span
+                            >{((totalAmount * 0.05) / 1e8).toFixed(3)} ICP</span
                         >
                     </div>
 
                     <div class="amount-row total">
                         <span class="label">Total Distribution</span>
-                        <span class="amount">{totalAmount.toFixed(3)} ICP</span>
+                        <span class="amount"
+                            >{(totalAmount / 1e8).toFixed(3)} ICP</span
+                        >
                     </div>
                 </div>
             </div>
