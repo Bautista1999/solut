@@ -1,17 +1,39 @@
 {
     "name": "Solutio Development",
-    "dockerFile": "Dockerfile",
+    "image": "mcr.microsoft.com/devcontainers/rust:latest",
+    "features": {
+        "ghcr.io/devcontainers/features/rust:1": {
+            "version": "latest",
+            "profile": "complete"
+        }
+    },
     "customizations": {
         "vscode": {
             "extensions": [
                 "svelte.svelte-vscode",
                 "bradlc.vscode-tailwindcss",
                 "dbaeumer.vscode-eslint",
-                "esbenp.prettier-vscode"
-            ]
+                "esbenp.prettier-vscode",
+                "rust-lang.rust-analyzer",
+                "vadimcn.vscode-lldb"
+            ],
+            "settings": {
+                "rust-analyzer.server.path": "rust-analyzer",
+                "rust-analyzer.checkOnSave.command": "clippy",
+                "rust-analyzer.cargo.features": "all",
+                "rust-analyzer.diagnostics.enable": true,
+                "rust-analyzer.inlayHints.enable": true,
+                "rust-analyzer.workspace.symbol.search.kind": "allSymbols",
+                "rust-analyzer.cargo.loadOutDirsFromCheck": true,
+                "rust-analyzer.procMacro.enable": true,
+                "rust-analyzer.cargo.workspace.symbol.search.scope": "workspace"
+            }
         }
     },
-    "forwardPorts": [5173],
-    "postCreateCommand": "npm install",
-    "remoteUser": "node"
+    "forwardPorts": [
+        5173
+    ],
+    "postCreateCommand": "rustup update && rustup component add rust-src rust-analysis rust-analyzer clippy && cargo metadata && npm install",
+    "remoteUser": "vscode",
+    "workspaceFolder": "/workspaces/solutio"
 }
