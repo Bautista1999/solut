@@ -54,9 +54,10 @@ use junobuild_utils::{decode_doc_data, encode_doc_data};
 use regex::Regex;
 use scheduled::{delete_orphan_ideas, delete_orphan_solutions, delete_unused_images};
 use types::interface::{
-    Approval, ApprovalStatus, ClaimerInfo, ClaimerType, Claimers, CompleteSolutionData,
-    CompletionResult, Discount, Idea, IdeaRevenueCounter, IndexSearch, Notification, PaymentType,
-    PledgeData, PledgeUser, Product, Referral, SetIdea, Solution, Topic, TotalPledging,
+    Approval, ApprovalStatus, ClaimerInfo, ClaimerInfoEnriched, ClaimerType, Claimers,
+    CompleteSolutionData, CompletionResult, Discount, Idea, IdeaRevenueCounter, IndexSearch,
+    Notification, PaymentType, PledgeData, PledgeUser, Product, Referral, SetIdea, Solution, Topic,
+    TotalPledging,
 };
 
 #[on_delete_filtered_docs]
