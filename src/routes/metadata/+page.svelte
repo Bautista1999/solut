@@ -9,7 +9,7 @@
     uploadHTMLToDatabase,
     uploadImageToDatabase,
   } from "$lib/SEO and metadata/metadata_functions";
-  import { uploadFile, initSatellite } from "@junobuild/core-peer";
+  import { uploadFile, initSatellite, listDocs } from "@junobuild/core-peer";
   import { nanoid } from "nanoid";
   import { onMount } from "svelte";
   import { compile } from "svelte/compiler"; // Import the Svelte compiler
@@ -1134,6 +1134,26 @@
           }
         }}
         msg={"Complete Solution"}
+      />
+    </div>
+
+    <div class="Field">
+      <h1 style="margin:0px;">Get User Pledges</h1>
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          const result = await listDocs({
+            collection: "pledges_active",
+            filter: {
+              matcher: {
+                description:
+                  "pledger:eszql-phd7x-rwwkq-oho7j-kftuy-l5co4-pcewm-y2gdm-g5n35-krv3m-aae",
+              },
+            },
+          });
+          console.log(result);
+        }}
+        msg={"Get User Pledges"}
       />
     </div>
 
