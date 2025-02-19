@@ -5,6 +5,10 @@
         "ghcr.io/devcontainers/features/rust:1": {
             "version": "latest",
             "profile": "complete"
+        },
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "lts",
+            "nodeGypDependencies": true
         }
     },
     "customizations": {
