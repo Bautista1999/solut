@@ -9,6 +9,7 @@
     import { setUser } from "$lib/data_functions/create_functions";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import SuccessNew from "$lib/components/Success_New.svelte";
+    // @ts-ignore
     import { getNames } from "country-list";
     import { usernameExists } from "$lib/data_functions/get_functions";
     import SingleImageUploader from "$lib/components/SingleImageUploader.svelte";
@@ -16,6 +17,7 @@
     const countries = getNames();
 
     /** @type {import('./$types').PageData} */
+    // @ts-ignore
     export let data;
 
     let username = "";
