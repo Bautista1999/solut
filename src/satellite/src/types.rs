@@ -228,7 +228,7 @@ pub mod interface {
         pub element_type: String, // Type of element (e.g., "topic", "idea", "user")
     }
 
-    #[derive(Default, CandidType, Serialize, Deserialize, Clone)]
+    #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
     pub struct UserProfileBasicInfo {
         pub username: String,
         pub profile_picture: String,
@@ -371,6 +371,7 @@ pub mod interface {
         pub status: String,
         pub payment_type: String,
         pub transaction_number: u64,
+        pub user: UserProfileBasicInfo,
     }
 
     #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
