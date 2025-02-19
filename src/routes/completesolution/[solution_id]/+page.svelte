@@ -1,7 +1,7 @@
-<script lang="ts">
+<script>
     import { getDoc } from "@junobuild/core-peer";
     import { onMount } from "svelte";
-    import { fade, fly } from "svelte/transition";
+    import { fade, fly, slide } from "svelte/transition";
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
     import { ICPtoDecimal } from "$lib/financial_functions/financial_functions";
     import DistributionRow from "$lib/components/DistributionRow.svelte";
@@ -13,6 +13,9 @@
         getSolutionCompletionData,
     } from "../../../declarations/satellite/satellite.api";
     import FlatButtonSmall from "$lib/components/FlatButtonSmall.svelte";
+    import ModalConfirmationNew from "$lib/components/ModalConfirmationNew.svelte";
+    import { DeleteModal } from "$lib/stores/other_stores";
+
     export let data;
     let solution_id = data.params.solution_id;
     let title = "";
@@ -86,6 +89,7 @@
     let platformFee = {
         amount: 0,
     };
+    let acceptedTerms = false;
 
     // Track which section is expanded
     let expandedSection = "";
@@ -107,39 +111,70 @@
         return days ? days[0] : "0";
     }
 
-    // Function to toggle section expansion
-    /**
-     * @param {string} section
-     */
-    function toggleSection(section) {
-        expandedSection = expandedSection === section ? "" : section;
+    // Modal state variables for completing solution
+    let modalMessage = "";
+    let modalSuccessMsg = "";
+    let modalLoadingMsg = "";
+    let modalErrorMsg = "";
+    let modalLoading = false;
+    let modalSuccess = false;
+    let modalError = false;
+    let modalAction = async () => {};
+    let showCompleteSolutionModal = false;
+
+    const setModalForCompleteSolution = () => {
+        modalMessage =
+            "Are you sure you want to complete the solution and accept payment? This action cannot be undone.";
+        modalSuccessMsg =
+            "Solution completed and payment accepted successfully!";
+        modalLoadingMsg = "Completing solution...";
+        modalLoading = false;
+        modalError = false;
+        modalSuccess = false;
+        modalAction = async () => {
+            modalLoading = true;
+            try {
+                const result = await completeSolution(solution_id);
+                if ("Ok" in result) {
+                    modalSuccess = true;
+                } else {
+                    modalError = true;
+                    modalErrorMsg = result.Err;
+                }
+            } catch (e) {
+                modalError = true;
+                modalErrorMsg = e instanceof Error ? e.message : String(e);
+            }
+            modalLoading = false;
+            setTimeout(() => {
+                DeleteModal.set(false);
+                showCompleteSolutionModal = false;
+            }, 3000);
+        };
+    };
+
+    function handleCompletion() {
+        showCompleteSolutionModal = true;
+        setModalForCompleteSolution();
+        DeleteModal.set(true);
     }
 
-    // Function to calculate amounts
-    function calculateAmounts() {
-        if (totalAmount > 0) {
-            solutionProvider.amount = totalAmount * 0.8;
-            topicOwner.amount = totalAmount * 0.05;
-
-            // Calculate feature creators amounts based on their feature's proportion
-            const totalFeatureAmount = totalAmount * 0.1;
-            const totalApprovedAmount = features.reduce(
-                (sum, f) => sum + f.approved_amount,
-                0,
-            );
-
-            featureCreators = featureCreators.map((creator) => {
-                const feature = features.find(
-                    (f) => f.id === creator.feature_id,
-                );
-                return {
-                    ...creator,
-                    amount: feature
-                        ? totalFeatureAmount *
-                          (feature.approved_amount / totalApprovedAmount)
-                        : 0,
-                };
-            });
+    /**
+     * @type {Array<{ feature: string, from: string, to: string, amount: string, description: string }>}
+     */
+    let transfersPreview = [];
+    let transfersExpanded = false;
+    function toggleTransfers() {
+        transfersExpanded = !transfersExpanded;
+    }
+    /**
+     * Handles keyboard events for the transfers toggle.
+     * @param {KeyboardEvent} event
+     */
+    function handleTransfersKeydown(event) {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleTransfers();
         }
     }
 
@@ -220,9 +255,62 @@
             error = String(err);
             loading = false;
         }
-    });
 
-    async function handleCompletion() {}
+        transfersPreview = features.flatMap((f, index) => {
+            let transfers = [];
+            let candidate = featureCreators[index] || null;
+            let combined =
+                candidate &&
+                solutionProvider.username === candidate.username &&
+                solutionProvider.username === topicOwner.username;
+            if (combined) {
+                transfers.push({
+                    feature: f.title,
+                    from: f.id,
+                    to: solutionProvider.username,
+                    amount: (f.approved_amount * 0.95).toFixed(3),
+                    description:
+                        "Combined transfer to Developer/Feature Creator/Topic Owner",
+                });
+            } else {
+                transfers.push({
+                    feature: f.title,
+                    from: f.id,
+                    to: solutionProvider.username,
+                    amount: (f.approved_amount * 0.8).toFixed(3),
+                    description: "Transfer to Developer",
+                });
+                if (candidate) {
+                    transfers.push({
+                        feature: f.title,
+                        from: f.id,
+                        to: candidate.username,
+                        amount: (f.approved_amount * 0.1).toFixed(3),
+                        description: "Transfer to Feature Creator",
+                    });
+                }
+                transfers.push({
+                    feature: f.title,
+                    from: f.id,
+                    to: topicOwner.username,
+                    amount: (f.approved_amount * 0.05).toFixed(3),
+                    description: "Transfer to Topic Owner",
+                });
+            }
+            transfers.push({
+                feature: f.title,
+                from: f.id,
+                to: "Solutio Platform Fee",
+                amount: (f.approved_amount * 0.05).toFixed(3),
+                description: "Platform Fee",
+            });
+            return transfers;
+        });
+        // Filter out transfers with an amount of 0
+        transfersPreview = transfersPreview.filter(
+            (transfer) => parseFloat(transfer.amount) > 0,
+        );
+    });
 </script>
 
 <div class="complete-container" transition:fade>
@@ -352,7 +440,74 @@
                 </div>
             </div>
 
+            {#if transfersPreview && transfersPreview.length > 0}
+                <div class="transfers-preview">
+                    <div
+                        class="amount-row expandable"
+                        on:click={toggleTransfers}
+                        on:keydown={handleTransfersKeydown}
+                        role="button"
+                        tabindex="0"
+                    >
+                        <div class="row-header">
+                            <h3 style="margin: 0;">
+                                <span class="material-symbols-outlined">
+                                    {transfersExpanded
+                                        ? "arrow_drop_down"
+                                        : "arrow_right"}
+                                </span>
+                                Transfers Preview
+                            </h3>
+                        </div>
+                    </div>
+                    {#if transfersExpanded}
+                        <div
+                            class="features-container"
+                            transition:slide|local={{ duration: 300 }}
+                        >
+                            <div
+                                class="column-headers"
+                                style="justify-content: space-between;"
+                            >
+                                <span class="header-title">From Feature</span>
+                                <span class="header-title">To User</span>
+                                <span class="header-amount">Amount (ICP)</span>
+                                <span class="header-amount">Fee (ICP)</span>
+                            </div>
+                            {#each transfersPreview as transfer}
+                                <div
+                                    class="transfer-row"
+                                    style="display: flex; justify-content: space-between; padding: 0.5rem 1rem; border-bottom: 1px solid var(--border-color);"
+                                >
+                                    <div style="flex: 1;">
+                                        {transfer.feature}
+                                    </div>
+                                    <div style="flex: 1;">{transfer.to}</div>
+                                    <div style="flex: 1; text-align: right;">
+                                        {transfer.amount} ICP
+                                    </div>
+                                    <div style="flex: 1; text-align: right;">
+                                        0.0001 ICP
+                                    </div>
+                                </div>
+                            {/each}
+                        </div>
+                    {/if}
+                </div>
+            {/if}
+
             <div class="action-section">
+                <div class="terms-container">
+                    <label>
+                        <input type="checkbox" bind:checked={acceptedTerms} />
+                        I agree to the
+                        <a
+                            href="https://forum.solutio.one/-205/terms-and-conditions"
+                            target="_blank"
+                            rel="noopener noreferrer">Terms and Conditions</a
+                        >
+                    </label>
+                </div>
                 <p class="disclaimer">
                     By completing this solution, all approved money will be
                     distributed to stakeholders based on their contributions.
@@ -361,9 +516,23 @@
                 <BasicButtonDark
                     msg="Accept Payment and Complete Solution"
                     someFunction={handleCompletion}
+                    disabled={!acceptedTerms}
                 />
             </div>
         </div>
+
+        {#if showCompleteSolutionModal}
+            <ModalConfirmationNew
+                message={modalMessage}
+                someFunction={modalAction}
+                error={modalError}
+                loading={modalLoading}
+                success={modalSuccess}
+                errorMsg={modalErrorMsg}
+                successMsg={modalSuccessMsg}
+                loadingMsg={modalLoadingMsg}
+            />
+        {/if}
     {/if}
 </div>
 
@@ -562,6 +731,10 @@
         margin-top: 1rem;
     }
 
+    .terms-container {
+        margin-bottom: 1rem;
+    }
+
     .disclaimer {
         color: var(--text-secondary);
         margin-bottom: 1.5rem;
@@ -593,5 +766,73 @@
         .column-headers {
             padding: 0.75rem 1rem;
         }
+    }
+
+    /* New Transfers Preview styles */
+    .transfers-preview {
+        background: var(--background-secondary);
+        border-radius: 12px;
+    }
+    .transfer-row {
+        display: block;
+        padding: 0.75rem 0.5rem;
+        text-decoration: none;
+        color: inherit;
+        background: var(--tertiary-color);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+    .transfer-row:hover {
+        background: color-mix(
+            in srgb,
+            var(--primary-color) 4%,
+            var(--tertiary-color)
+        );
+        transform: translateY(-1px);
+    }
+    .transfer-row:active {
+        transform: translateY(0);
+    }
+    .transfer-header {
+        margin-bottom: 0.5rem;
+    }
+    .transfer-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+    .transfer-description {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    /* Additional styling for Transfers Preview header */
+    .transfers-preview .amount-row.expandable {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        padding: 0.75rem;
+    }
+
+    .transfers-preview .amount-row.expandable:hover {
+        border: 1px solid var(--primary-color);
+        background: linear-gradient(
+            to right,
+            var(--background-hover),
+            transparent
+        );
+        transition: all 0.2s ease;
+    }
+    .transfers-preview .row-header {
+        display: flex;
+        align-items: center;
+    }
+
+    .transfers-preview .row-header .material-symbols-outlined {
+        vertical-align: middle;
+        margin-right: 0.5rem;
     }
 </style>
