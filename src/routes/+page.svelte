@@ -189,10 +189,13 @@
     });
 
     /**
-     * @param {{ target: { value: string; }; }} event
+     * Handles sorting change events.
+     * @param {Event} event - The change event from the select element.
      */
     function onSortingChange(event) {
-        selectedSorting = event.target.value;
+        const target = event.target;
+        if (!(target instanceof HTMLSelectElement)) return;
+        selectedSorting = target.value;
         fetchData();
     }
 </script>
