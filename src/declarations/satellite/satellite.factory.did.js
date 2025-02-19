@@ -271,6 +271,11 @@ export const idlFactory = ({ IDL }) => {
     'eliminate_solution' : IDL.Func([IDL.Text], [Result_2], []),
     'eliminate_topic' : IDL.Func([IDL.Text], [Result_2], []),
     'get_available_balance' : IDL.Func([IDL.Text], [Result_5], []),
+    'get_available_balance_without_pledged_amount' : IDL.Func(
+        [IDL.Text, IDL.Nat64],
+        [Result_5],
+        [],
+      ),
     'get_feature_subaccount_balance' : IDL.Func([IDL.Text], [Result_5], []),
     'get_funding_details' : IDL.Func(
         [IDL.Text, IDL.Text],
@@ -358,7 +363,7 @@ export const idlFactory = ({ IDL }) => {
         [Result_13],
         ['query'],
       ),
-    'get_user_active_pledges' : IDL.Func([IDL.Text], [Result_14], ['query']),
+    'get_user_active_pledges' : IDL.Func([IDL.Text], [Result_14], []),
     'get_user_approvals_enriched' : IDL.Func(
         [IDL.Text],
         [Result_11],

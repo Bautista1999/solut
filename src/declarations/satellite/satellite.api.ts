@@ -149,6 +149,14 @@ export const getAvailableBalance = async (value0: string): Promise<Result_5> => 
 	return await get_available_balance(value0);
 }
 
+export const getAvailableBalanceWithoutPledgedAmount = async (value0: string, value1: bigint): Promise<Result_5> => {
+	const {get_available_balance_without_pledged_amount} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await get_available_balance_without_pledged_amount(value0, value1);
+}
+
 export const getFeatureSubaccountBalance = async (value0: string): Promise<Result_5> => {
 	const {get_feature_subaccount_balance} = await getSatelliteExtendedActor<SatelliteActor>({
 		idlFactory

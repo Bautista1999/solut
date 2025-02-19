@@ -9,7 +9,7 @@ use ic_cdk_macros::{query, update};
 use ic_ledger_types::{
     AccountBalanceArgs, AccountIdentifier, Subaccount, Tokens, DEFAULT_SUBACCOUNT,
 };
-use junobuild_satellite::delete_doc_store;
+use junobuild_satellite::{delete_doc_store, log_with_data};
 use junobuild_satellite::{
     get_doc_store, list_assets_store, list_docs_store, log, DelDoc, Doc, Key,
 };
@@ -344,6 +344,44 @@ pub fn get_historical_pledged_balance(user_id: String) -> Result<u64, String> {
 
     // Step 3: Return the total pledged balance
     Ok(total_balance)
+}
+
+#[update]
+pub async fn get_available_balance_without_pledged_amount(
+    user_id: String,
+    pledged_amount: u64,
+) -> Result<u64, String> {
+    use ic_cdk::api; // Ensure you have the correct import for `api::caller`
+
+    let caller = api::caller(); // Get the caller principal
+    let caller_text = Principal::to_text(&caller);
+
+    // Check if the caller is authorized
+    if caller_text != user_id {
+        return Err(format!("Permission denied!"));
+    }
+
+    // Call the asynchronous function to fetch the real balance
+    let balance = get_user_real_balance(user_id.clone())
+        .await
+        .map_err(|e| format!("Failed to retrieve user balance: {}", e))?;
+    let pledged_balance: u64 = match get_pledged_balance(user_id.clone()) {
+        Ok(b) => {
+            if b >= pledged_amount {
+                b - pledged_amount
+            } else {
+                0
+            }
+        }
+        Err(err) => 0,
+    };
+
+    if balance > pledged_balance {
+        return Ok(balance - pledged_balance);
+    } else {
+        return Ok(0);
+    }
+    Ok(balance)
 }
 
 #[update] // Use #[update] for async functions

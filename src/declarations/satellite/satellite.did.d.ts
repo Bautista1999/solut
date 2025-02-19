@@ -244,6 +244,10 @@ export interface _SERVICE {
   'eliminate_solution' : ActorMethod<[string], Result_2>,
   'eliminate_topic' : ActorMethod<[string], Result_2>,
   'get_available_balance' : ActorMethod<[string], Result_5>,
+  'get_available_balance_without_pledged_amount' : ActorMethod<
+    [string, bigint],
+    Result_5
+  >,
   'get_feature_subaccount_balance' : ActorMethod<[string], Result_5>,
   'get_funding_details' : ActorMethod<[string, string], Result_6>,
   'get_historical_pledged_balance' : ActorMethod<[string], Result_5>,
