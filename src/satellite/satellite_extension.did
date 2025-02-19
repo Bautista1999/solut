@@ -13,33 +13,11 @@ type Activity = record {
   element_type : text;
   activity_image : opt text;
 };
-type Approval = record {
-  status : ApprovalStatus;
-  feature_id : text;
-  approval_id : text;
-  user_principal : principal;
-  payment_type : PaymentType;
-  claimers : Claimers;
-  subaccount : opt blob;
-  pledge_id : text;
-  solution_id : text;
-  timestamp : nat64;
-  transaction_number : nat64;
-  amount : nat64;
-};
-type ApprovalStatus = variant { Completed; Pending };
 type ClaimerInfo = record { "principal" : principal; amount : nat64 };
 type ClaimerInfoEnriched = record {
   user : UserBasicInfo;
   amount : nat64;
   type_of_claimer : text;
-};
-type Claimers = record {
-  referral_reward : opt ClaimerInfo;
-  feature_creator : ClaimerInfo;
-  solution_provider : ClaimerInfo;
-  topic_owner : ClaimerInfo;
-  platform_fee : ClaimerInfo;
 };
 type CompleteSolutionData = record {
   approved_pledges : nat64;
@@ -67,6 +45,7 @@ type EnrichedApprovalData = record {
   feature : IndexResponseBasicInfo;
   payment_type : text;
   pledge : opt PledgeBasicInfo;
+  user : UserProfileBasicInfo;
   created_at : nat64;
   solution : IndexResponseBasicInfo;
   transaction_number : nat64;
@@ -170,13 +149,12 @@ type Result_10 = variant {
   Ok : record { vec Activity; nat64; nat64; nat64 };
   Err : text;
 };
-type Result_11 = variant { Ok : vec Approval; Err : text };
+type Result_11 = variant { Ok : vec EnrichedApprovalData; Err : text };
 type Result_12 = variant { Ok : CompleteSolutionData; Err : text };
 type Result_13 = variant { Ok : record { nat64; nat64 }; Err : text };
 type Result_14 = variant { Ok : vec PledgeData; Err : text };
-type Result_15 = variant { Ok : vec EnrichedApprovalData; Err : text };
-type Result_16 = variant { Ok : UserBasicInfo; Err : text };
-type Result_17 = variant { Ok : vec EnrichedPledgeData; Err : text };
+type Result_15 = variant { Ok : UserBasicInfo; Err : text };
+type Result_16 = variant { Ok : vec EnrichedPledgeData; Err : text };
 type Result_2 = variant { Ok; Err : text };
 type Result_3 = variant { Ok : vec nat64; Err : text };
 type Result_4 = variant { Ok : CompletionResult; Err : text };
@@ -276,17 +254,17 @@ service : {
       Result_9,
     ) query;
   get_pledged_balance : (text) -> (Result_5) query;
-  get_solution_approvals : (text) -> (Result_11) query;
+  get_solution_approvals_enriched : (text) -> (Result_11) query;
   get_solution_completion_data : (text) -> (Result_12) query;
   get_total_followers : (text) -> (nat64) query;
   get_total_following : (text) -> (nat64) query;
   get_total_pledged : (text, text) -> (Result_5) query;
   get_total_pledged_and_expected : (text, text) -> (Result_13) query;
   get_user_active_pledges : (text) -> (Result_14) query;
-  get_user_approvals_enriched : (text) -> (Result_15) query;
-  get_user_basic_information : (text) -> (Result_16) query;
-  get_user_pledges_enriched : (text) -> (Result_17) query;
-  get_user_pledges_for_solution : (text, text) -> (Result_17) query;
+  get_user_approvals_enriched : (text) -> (Result_11) query;
+  get_user_basic_information : (text) -> (Result_15) query;
+  get_user_pledges_enriched : (text) -> (Result_16) query;
+  get_user_pledges_for_solution : (text, text) -> (Result_16) query;
   get_user_profile_pic : (text) -> (text) query;
   get_user_real_balance : (text) -> (Result_5);
   get_user_reputation : (principal) -> (Result_5) query;

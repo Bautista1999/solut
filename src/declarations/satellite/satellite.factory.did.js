@@ -119,36 +119,29 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : IDL.Tuple(IDL.Vec(Activity), IDL.Nat64, IDL.Nat64, IDL.Nat64),
     'Err' : IDL.Text,
   });
-  const ApprovalStatus = IDL.Variant({
-    'Completed' : IDL.Null,
-    'Pending' : IDL.Null,
-  });
-  const ClaimerInfo = IDL.Record({
-    'principal' : IDL.Principal,
+  const PledgeBasicInfo = IDL.Record({
+    'status' : IDL.Text,
+    'feature_id' : IDL.Opt(IDL.Text),
+    'pledge_id' : IDL.Text,
+    'idea_id' : IDL.Text,
     'amount' : IDL.Nat64,
   });
-  const Claimers = IDL.Record({
-    'referral_reward' : IDL.Opt(ClaimerInfo),
-    'feature_creator' : ClaimerInfo,
-    'solution_provider' : ClaimerInfo,
-    'topic_owner' : ClaimerInfo,
-    'platform_fee' : ClaimerInfo,
-  });
-  const Approval = IDL.Record({
-    'status' : ApprovalStatus,
-    'feature_id' : IDL.Text,
+  const EnrichedApprovalData = IDL.Record({
+    'status' : IDL.Text,
     'approval_id' : IDL.Text,
-    'user_principal' : IDL.Principal,
-    'payment_type' : PaymentType,
-    'claimers' : Claimers,
-    'subaccount' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-    'pledge_id' : IDL.Text,
-    'solution_id' : IDL.Text,
-    'timestamp' : IDL.Nat64,
+    'feature' : IndexResponseBasicInfo,
+    'payment_type' : IDL.Text,
+    'pledge' : IDL.Opt(PledgeBasicInfo),
+    'user' : UserProfileBasicInfo,
+    'created_at' : IDL.Nat64,
+    'solution' : IndexResponseBasicInfo,
     'transaction_number' : IDL.Nat64,
     'amount' : IDL.Nat64,
   });
-  const Result_11 = IDL.Variant({ 'Ok' : IDL.Vec(Approval), 'Err' : IDL.Text });
+  const Result_11 = IDL.Variant({
+    'Ok' : IDL.Vec(EnrichedApprovalData),
+    'Err' : IDL.Text,
+  });
   const IndexResponseWithApproval = IDL.Record({
     'approved_amount' : IDL.Nat64,
     'basic_info' : IndexResponseBasicInfo,
@@ -169,6 +162,10 @@ export const idlFactory = ({ IDL }) => {
     'user' : UserBasicInfo,
     'amount' : IDL.Nat64,
     'type_of_claimer' : IDL.Text,
+  });
+  const ClaimerInfo = IDL.Record({
+    'principal' : IDL.Principal,
+    'amount' : IDL.Nat64,
   });
   const CompleteSolutionData = IDL.Record({
     'approved_pledges' : IDL.Nat64,
@@ -209,29 +206,7 @@ export const idlFactory = ({ IDL }) => {
     'Ok' : IDL.Vec(PledgeData),
     'Err' : IDL.Text,
   });
-  const PledgeBasicInfo = IDL.Record({
-    'status' : IDL.Text,
-    'feature_id' : IDL.Opt(IDL.Text),
-    'pledge_id' : IDL.Text,
-    'idea_id' : IDL.Text,
-    'amount' : IDL.Nat64,
-  });
-  const EnrichedApprovalData = IDL.Record({
-    'status' : IDL.Text,
-    'approval_id' : IDL.Text,
-    'feature' : IndexResponseBasicInfo,
-    'payment_type' : IDL.Text,
-    'pledge' : IDL.Opt(PledgeBasicInfo),
-    'created_at' : IDL.Nat64,
-    'solution' : IndexResponseBasicInfo,
-    'transaction_number' : IDL.Nat64,
-    'amount' : IDL.Nat64,
-  });
-  const Result_15 = IDL.Variant({
-    'Ok' : IDL.Vec(EnrichedApprovalData),
-    'Err' : IDL.Text,
-  });
-  const Result_16 = IDL.Variant({ 'Ok' : UserBasicInfo, 'Err' : IDL.Text });
+  const Result_15 = IDL.Variant({ 'Ok' : UserBasicInfo, 'Err' : IDL.Text });
   const EnrichedPledgeData = IDL.Record({
     'status' : IDL.Text,
     'feature' : IDL.Opt(IndexResponseBasicInfo),
@@ -243,7 +218,7 @@ export const idlFactory = ({ IDL }) => {
     'amount_paid' : IDL.Nat64,
     'amount' : IDL.Nat64,
   });
-  const Result_17 = IDL.Variant({
+  const Result_16 = IDL.Variant({
     'Ok' : IDL.Vec(EnrichedPledgeData),
     'Err' : IDL.Text,
   });
@@ -365,7 +340,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'get_pledged_balance' : IDL.Func([IDL.Text], [Result_5], ['query']),
-    'get_solution_approvals' : IDL.Func([IDL.Text], [Result_11], ['query']),
+    'get_solution_approvals_enriched' : IDL.Func(
+        [IDL.Text],
+        [Result_11],
+        ['query'],
+      ),
     'get_solution_completion_data' : IDL.Func(
         [IDL.Text],
         [Result_12],
@@ -382,14 +361,14 @@ export const idlFactory = ({ IDL }) => {
     'get_user_active_pledges' : IDL.Func([IDL.Text], [Result_14], ['query']),
     'get_user_approvals_enriched' : IDL.Func(
         [IDL.Text],
-        [Result_15],
+        [Result_11],
         ['query'],
       ),
-    'get_user_basic_information' : IDL.Func([IDL.Text], [Result_16], ['query']),
-    'get_user_pledges_enriched' : IDL.Func([IDL.Text], [Result_17], ['query']),
+    'get_user_basic_information' : IDL.Func([IDL.Text], [Result_15], ['query']),
+    'get_user_pledges_enriched' : IDL.Func([IDL.Text], [Result_16], ['query']),
     'get_user_pledges_for_solution' : IDL.Func(
         [IDL.Text, IDL.Text],
-        [Result_17],
+        [Result_16],
         ['query'],
       ),
     'get_user_profile_pic' : IDL.Func([IDL.Text], [IDL.Text], ['query']),
