@@ -75,6 +75,27 @@
                         </div>
                         <div class="card-content">
                             <div class="info-item">
+                                <span class="label">User</span>
+                                <div class="value user-value">
+                                    <a
+                                        href={`/profile/${approval.user.user_id}`}
+                                        class="user-link"
+                                    >
+                                        <div class="user-content">
+                                            <img
+                                                src={approval.user
+                                                    .profile_picture}
+                                                alt={approval.user.username}
+                                                class="user-image"
+                                            />
+                                            <span class="username"
+                                                >{approval.user.username}</span
+                                            >
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="info-item">
                                 <span class="label">Solution</span>
                                 <span class="value"
                                     >{approval.solution.title}</span
@@ -160,7 +181,7 @@
                                     (window.location.href = `/solution/${approval.solution.element_id}`)}
                             />
 
-                            {#if approval.status === "Pending"}
+                            {#if approval.status === "Pending" && approval.user.user_id === $UserKey}
                                 <BasicButtonDarkSmall
                                     msg="Withdraw Approval"
                                     someFunction={() => {
@@ -485,5 +506,38 @@
         font-size: 0.9rem;
         display: flex;
         align-items: center;
+    }
+
+    .user-value {
+        display: flex;
+        align-items: center;
+    }
+
+    .user-link {
+        text-decoration: none;
+        color: inherit;
+        transition: opacity 0.2s ease;
+    }
+
+    .user-link:hover {
+        opacity: 0.8;
+    }
+
+    .user-content {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .user-image {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .username {
+        font-weight: 500;
+        color: var(--text-color);
     }
 </style>
