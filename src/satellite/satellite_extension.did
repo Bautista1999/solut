@@ -221,6 +221,7 @@ service : {
   eliminate_solution : (text) -> (Result_2);
   eliminate_topic : (text) -> (Result_2);
   get_available_balance : (text) -> (Result_5);
+  get_available_balance_without_pledged_amount : (text, nat64) -> (Result_5);
   get_feature_subaccount_balance : (text) -> (Result_5);
   get_funding_details : (text, text) -> (Result_6) query;
   get_historical_pledged_balance : (text) -> (Result_5) query;
@@ -260,7 +261,7 @@ service : {
   get_total_following : (text) -> (nat64) query;
   get_total_pledged : (text, text) -> (Result_5) query;
   get_total_pledged_and_expected : (text, text) -> (Result_13) query;
-  get_user_active_pledges : (text) -> (Result_14) query;
+  get_user_active_pledges : (text) -> (Result_14);
   get_user_approvals_enriched : (text) -> (Result_11) query;
   get_user_basic_information : (text) -> (Result_15) query;
   get_user_pledges_enriched : (text) -> (Result_16) query;
