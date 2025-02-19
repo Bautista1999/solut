@@ -2,13 +2,14 @@
     export let msg = "Label";
     export let icon = "";
     export let someFunction = () => {};
+    export let disabled = false;
 </script>
 
 <link
     rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
 />
-<button on:click={() => someFunction()}>
+<button on:click={() => someFunction()} {disabled}>
     {msg} <span class="material-symbols-outlined"> {icon} </span></button
 >
 
@@ -36,6 +37,19 @@
         justify-content: center; /* Horizontally center the items in the container */
         align-items: center; /* Vertically align the items in the middle */
         gap: 5px;
+    }
+    button[disabled] {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    button[disabled]:hover {
+        background-color: var(--tertiary-color);
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+        box-shadow: 4px 4px 0px 0px var(--primary-color);
+    }
+    button[disabled]:active {
+        transform: scale(1); /* Slightly scale down the button */
     }
     .material-symbols-outlined {
         font-variation-settings:
