@@ -120,6 +120,7 @@ export async function setFeature(feature, parentIdeaId, key) {
 
         if ("Ok" in result) {
             // Return the feature ID if the backend operation was successful
+            createAndUploadHTMLStaticFile(feature.title,featureId,feature.subtitle,feature.images[0],"idea");
             return featureId;
         } else if ("Err" in result) {
             // If there's an error from the backend, return it directly
