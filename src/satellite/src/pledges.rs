@@ -2,7 +2,10 @@ use crate::notifications::send_single_notification;
 use crate::quickqueries::get_doc_owner;
 use crate::reputation::get_user_reputation;
 use crate::types::interface::{IndexSearch, Notification, PledgeData, PledgeUser, TotalPledging};
-use crate::user_information::{get_available_balance, get_user_profile_pic, get_user_username};
+use crate::user_information::{
+    get_available_balance, get_available_balance_without_pledged_amount, get_user_profile_pic,
+    get_user_username,
+};
 use crate::{delete_pledge, get_document_description_or_default, get_document_version_or_default};
 use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
 use bytes::Bytes;
@@ -145,7 +148,9 @@ pub fn pledge_create(
     let user_id = Principal::to_text(&caller);
     spawn(async move {
         match validate_user_balance_or_delete_pledge(user_id, amount, doc_key.clone()).await {
-            Ok(_) => (),
+            Ok(_) => {
+                send_pledge_notifications(&caller.clone(), &idea_id, Some(&feature_id), amount);
+            }
             Err(e) => {
                 log(format!(
                     "Error in validate_user_balance_or_delete_pledge: {}",
@@ -155,7 +160,6 @@ pub fn pledge_create(
         }
     });
 
-    send_pledge_notifications(&caller.clone(), &idea_id, Some(&feature_id), amount);
     "Pledge created successfully!".to_string()
 }
 
@@ -464,18 +468,19 @@ pub async fn validate_user_balance_or_delete_pledge(
     amount: u64,
     pledge_id: String,
 ) -> Result<(), String> {
-    let balance = match get_available_balance(user_id.clone()).await {
+    let balance = match get_available_balance_without_pledged_amount(user_id.clone(), amount).await
+    {
         Ok(balance) => balance,
         Err(err) => {
             return Err(format!("Failed to fetch balance: {}", err));
         }
     };
+    let username = get_user_username(user_id.clone());
     if balance < amount {
-        log("User has not sufficient funds!".to_string());
+        log(format!("User {} has not sufficient funds!", username));
         delete_pledge(pledge_id.to_string());
         return Err("User has insufficient funds.".to_string());
     }
-    log("User has funds!".to_string());
     Ok(())
 }
 
