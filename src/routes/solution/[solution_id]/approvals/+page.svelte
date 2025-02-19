@@ -2,7 +2,7 @@
     import { onMount } from "svelte";
     import { fade } from "svelte/transition";
     import TableForApprovals from "$lib/components/TableForApprovals.svelte";
-    import { getSolutionApprovals } from "../../../../declarations/satellite/satellite.api";
+    import { getSolutionApprovalsEnriched } from "../../../../declarations/satellite/satellite.api";
 
     export let data;
     let solution_id = data.params.solution_id;
@@ -14,9 +14,13 @@
      */
     let approvals = [];
 
+    // Add title variable
+    let title = "";
+
     onMount(async () => {
         try {
-            const approvalsResult = await getSolutionApprovals(solution_id);
+            const approvalsResult =
+                await getSolutionApprovalsEnriched(solution_id);
             if ("Err" in approvalsResult) {
                 error = approvalsResult.Err;
                 loading = false;
@@ -24,6 +28,12 @@
             }
             console.log("Approvals result:", approvalsResult);
             approvals = approvalsResult.Ok;
+
+            // Get the title from the first approval's solution title if available
+            if (approvals.length > 0) {
+                title = approvals[0].solution.title;
+            }
+
             loading = false;
         } catch (err) {
             error = String(err);
@@ -35,8 +45,8 @@
 <div class="approvals-container" transition:fade>
     <div class="header-container">
         <h1>Solution Approvals</h1>
-        <a href={`/solution/${solution_id}`} class="back-link">
-            Back to Solution
+        <a href={`/solution/${solution_id}`} class="solution-link">
+            {title || "Solution"}
         </a>
     </div>
 
@@ -58,12 +68,12 @@
 
     .header-container {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 2rem;
+        gap: 0.5rem;
+        flex-wrap: wrap;
     }
 
-    .back-link {
+    .solution-link {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
@@ -81,7 +91,7 @@
         border: 1px solid rgba(255, 140, 0, 0.2);
     }
 
-    .back-link:hover {
+    .solution-link:hover {
         background: linear-gradient(
             135deg,
             rgba(255, 140, 0, 0.2),
@@ -93,7 +103,7 @@
         box-shadow: 0 2px 8px rgba(255, 69, 0, 0.1);
     }
 
-    .back-link:active {
+    .solution-link:active {
         transform: translateY(0);
         box-shadow: none;
     }
