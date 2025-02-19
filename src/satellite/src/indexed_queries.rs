@@ -4,7 +4,7 @@ use crate::reputation::get_user_reputation;
 use crate::types::interface::{
     EnrichedApprovalData, EnrichedPledgeData, FollowData, Idea, IndexResponse,
     IndexResponseBasicInfo, IndexSearch, Notification, PledgeBasicInfo, PledgeData, PledgeUser,
-    TotalPledging,
+    TotalPledging, UserProfileBasicInfo,
 };
 use crate::user_information::{
     get_available_balance, get_historical_pledged_balance, get_paginated_following_elements,
@@ -1180,6 +1180,18 @@ pub fn get_user_approvals_enriched(user_id: String) -> Result<Vec<EnrichedApprov
                         element_type: "feature".to_string(),
                     },
                 };
+            let username = get_user_username(user_id.clone());
+            let profile_picture = get_user_profile_pic(user_id.clone());
+            let username_display = if username.is_empty() {
+                user_id[..7].to_string() // Fallback to a shortened user ID
+            } else {
+                username
+            };
+            let user = UserProfileBasicInfo {
+                user_id: user_id.clone(),
+                username: username_display,
+                profile_picture,
+            };
 
             Some(Ok(EnrichedApprovalData {
                 feature: feature_info,
@@ -1191,6 +1203,7 @@ pub fn get_user_approvals_enriched(user_id: String) -> Result<Vec<EnrichedApprov
                 status,
                 payment_type,
                 transaction_number,
+                user,
             }))
         })
         .collect();
