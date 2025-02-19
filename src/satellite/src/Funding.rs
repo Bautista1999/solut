@@ -3,10 +3,11 @@ use crate::quickqueries::get_doc_owner;
 use crate::reputation::{get_user_reputation, update_user_reputation};
 use crate::types::interface::{
     Approval, ApprovalStatus, ClaimTransfer, ClaimerInfo, ClaimerInfoEnriched, ClaimerType,
-    Claimers, CompleteSolutionData, CompletionResult, Discount, EnrichedPledgeData, FollowData,
-    Idea, IndexResponse, IndexResponseBasicInfo, IndexResponseWithApproval, IndexSearch,
-    Notification, OrderedClaimTransfer, PaymentType, PledgeApproval, PledgeData, PledgeUser,
-    Referral, RejectionData, Solution, TotalPledging, Transaction,
+    Claimers, CompleteSolutionData, CompletionResult, Discount, EnrichedApprovalData,
+    EnrichedPledgeData, FollowData, Idea, IndexResponse, IndexResponseBasicInfo,
+    IndexResponseWithApproval, IndexSearch, Notification, OrderedClaimTransfer, PaymentType,
+    PledgeApproval, PledgeBasicInfo, PledgeData, PledgeUser, Referral, RejectionData, Solution,
+    TotalPledging, Transaction, UserProfileBasicInfo,
 };
 
 use crate::user_information::{
@@ -877,7 +878,149 @@ fn validate_claim_requirements(solution_id: &str) -> Result<(), String> {
 pub fn get_solution_approvals_enriched(
     solution_id: String,
 ) -> Result<Vec<EnrichedApprovalData>, String> {
+    let caller = api::caller();
+
+    // Get base approvals using existing function
+    let approvals = get_solution_approvals(solution_id.clone())?;
+
+    // Process each approval to enrich it with related data
+    let enriched_approvals = approvals
+        .into_iter()
+        .filter_map(|approval| {
+            // Get solution info
+            let solution_info =
+                match get_doc_store(caller, "solution".to_string(), solution_id.clone()) {
+                    Ok(Some(solution_doc)) => {
+                        let solution_data: serde_json::Value =
+                            match decode_doc_data(&solution_doc.data) {
+                                Ok(data) => data,
+                                Err(_) => return None, // Skip if we can't decode solution data
+                            };
+
+                        IndexResponseBasicInfo {
+                            element_id: solution_id.clone(),
+                            title: solution_data
+                                .get("title")
+                                .and_then(|v| v.as_str())
+                                .unwrap_or("Unknown solution")
+                                .to_string(),
+                            profile_image: solution_data
+                                .get("images")
+                                .and_then(|images| images.as_array())
+                                .and_then(|arr| arr.get(0))
+                                .and_then(|img| img.as_str())
+                                .unwrap_or("https://solutio.one/solutio-images/logo-01.png")
+                                .to_string(),
+                            creation_date: solution_doc.created_at,
+                            element_type: "solution".to_string(),
+                        }
+                    }
+                    _ => return None, // Skip if we can't get solution info
+                };
+
+            // Get feature info
+            let feature_info =
+                match get_doc_store(caller, "feature".to_string(), approval.feature_id.clone()) {
+                    Ok(Some(feature_doc)) => {
+                        let feature_data: serde_json::Value =
+                            match decode_doc_data(&feature_doc.data) {
+                                Ok(data) => data,
+                                Err(_) => return None, // Skip if we can't decode feature data
+                            };
+
+                        IndexResponseBasicInfo {
+                            element_id: approval.feature_id.clone(),
+                            title: feature_data
+                                .get("title")
+                                .and_then(|v| v.as_str())
+                                .unwrap_or("Unknown feature")
+                                .to_string(),
+                            profile_image: feature_data
+                                .get("images")
+                                .and_then(|images| images.as_array())
+                                .and_then(|arr| arr.get(0))
+                                .and_then(|img| img.as_str())
+                                .unwrap_or("https://solutio.one/solutio-images/logo-01.png")
+                                .to_string(),
+                            creation_date: feature_doc.created_at,
+                            element_type: "feature".to_string(),
+                        }
+                    }
+                    _ => return None, // Skip if we can't get feature info
+                };
+
+            // Get pledge info
+            let pledge_info = match get_doc_store(
+                caller,
+                "pledges_active".to_string(),
+                approval.pledge_id.clone(),
+            ) {
+                Ok(Some(pledge_doc)) => {
+                    let pledge_data: serde_json::Value = match decode_doc_data(&pledge_doc.data) {
+                        Ok(data) => data,
+                        Err(_) => return None, // Skip if we can't decode pledge data
+                    };
+
+                    Some(PledgeBasicInfo {
+                        pledge_id: approval.pledge_id.clone(),
+                        amount: pledge_data
+                            .get("amount")
+                            .and_then(|v| v.as_u64())
+                            .unwrap_or(0),
+                        feature_id: Some(approval.feature_id.clone()),
+                        idea_id: pledge_data
+                            .get("idea_id")
+                            .and_then(|v| v.as_str())
+                            .map(|s| s.to_string())
+                            .unwrap_or_default(),
+                        status: pledge_data
+                            .get("status")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("active")
+                            .to_string(),
+                    })
+                }
+                _ => None,
+            };
+            let user_id = approval.user_principal.to_string();
+            let username = get_user_username(user_id.clone());
+            let profile_picture = get_user_profile_pic(user_id.clone());
+            let username_display = if username.is_empty() {
+                user_id[..7].to_string() // Fallback to a shortened user ID
+            } else {
+                username
+            };
+
+            let user = UserProfileBasicInfo {
+                user_id: user_id.clone(),
+                username: username_display,
+                profile_picture,
+            };
+
+            Some(EnrichedApprovalData {
+                approval_id: approval.approval_id,
+                amount: approval.amount,
+                solution: solution_info,
+                feature: feature_info,
+                pledge: pledge_info,
+                created_at: approval.timestamp,
+                status: match approval.status {
+                    ApprovalStatus::Pending => "Pending".to_string(),
+                    ApprovalStatus::Completed => "Completed".to_string(),
+                },
+                payment_type: match approval.payment_type {
+                    PaymentType::Crypto => "Crypto".to_string(),
+                    PaymentType::Fiat => "Fiat".to_string(),
+                },
+                transaction_number: approval.transaction_number,
+                user,
+            })
+        })
+        .collect();
+
+    Ok(enriched_approvals)
 }
+
 pub fn get_solution_approvals(solution_id: String) -> Result<Vec<Approval>, String> {
     let matcher = ListMatcher {
         key: Some(format!("_{}", solution_id)), // Keys starting with "{user_id}_"
