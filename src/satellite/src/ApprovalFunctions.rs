@@ -275,14 +275,12 @@ pub fn validate_solution_status(solution_id: &str, status: &str) -> Result<(), S
 
     // Construct the status document ID
     let status_doc_id = format!("SOL_STAT_{}", solution_id);
-
     // Fetch the status document using get_doc_store from store.rs
     let status_doc = match get_doc_store(controller, "solution_status".to_string(), status_doc_id) {
         Ok(Some(doc)) => doc,
         Ok(None) => return Err(format!("Solution status with ID {} not found", solution_id)),
         Err(e) => return Err(format!("Error fetching solution status: {}", e)),
     };
-
     // Get the description which contains status and owner
     let description = match status_doc.description {
         Some(description) => description,
