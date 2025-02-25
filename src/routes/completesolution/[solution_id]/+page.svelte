@@ -7,6 +7,8 @@
     import DistributionRow from "$lib/components/DistributionRow.svelte";
     import FeatureRow from "$lib/components/FeatureRow.svelte";
     import { formatDistanceToNow } from "date-fns";
+    import SuccessNew from "$lib/components/Success_New.svelte";
+    import { goto } from "$app/navigation";
 
     import {
         completeSolution,
@@ -15,6 +17,7 @@
     import FlatButtonSmall from "$lib/components/FlatButtonSmall.svelte";
     import ModalConfirmationNew from "$lib/components/ModalConfirmationNew.svelte";
     import { DeleteModal } from "$lib/stores/other_stores";
+    import ErrorMessage from "$lib/components/ErrorMessage.svelte";
 
     export let data;
     let solution_id = data.params.solution_id;
@@ -313,23 +316,31 @@
     });
 </script>
 
-<div class="complete-container" transition:fade>
-    <div class="header-container">
-        <h1>Complete Your Solution</h1>
-        <a href={`/solution/${solution_id}`} class="solution-link">
-            {title || "Solution"}
-        </a>
-    </div>
+{#if modalSuccess}
+    <SuccessNew
+        message="Solution completed successfully! All payments have been distributed."
+        buttonText="View Solution Details"
+        someFunction={() => {
+            goto(`/solutiontransfers/${solution_id}`);
+        }}
+    />
+{:else if modalError}
+    <ErrorMessage
+        message={"Want to try again?"}
+        error={modalErrorMsg}
+        someFunction={() => {
+            modalError = false;
+        }}
+    />
+{:else}
+    <div class="complete-container" transition:fade>
+        <div class="header-container">
+            <h1>Complete Your Solution</h1>
+            <a href={`/solution/${solution_id}`} class="solution-link">
+                {title || "Solution"}
+            </a>
+        </div>
 
-    {#if loading}
-        <div class="loading-state">
-            <div class="loader" />
-        </div>
-    {:else if error}
-        <div class="error-state">
-            <p>{error}</p>
-        </div>
-    {:else}
         <div class="completion-status-card" in:fly={{ y: 20, duration: 400 }}>
             <div class="status-header">
                 <h2 style="margin-top: 0;">Completion details</h2>
@@ -477,7 +488,7 @@
                             {#each transfersPreview as transfer}
                                 <div
                                     class="transfer-row"
-                                    style="display: flex; justify-content: space-between; padding: 0.5rem 1rem; border-bottom: 1px solid var(--border-color);"
+                                    style="display: flex; justify-content: space-between; padding: 0.5rem 1rem; "
                                 >
                                     <div style="flex: 1;">
                                         {transfer.feature}
@@ -533,8 +544,8 @@
                 loadingMsg={modalLoadingMsg}
             />
         {/if}
-    {/if}
-</div>
+    </div>
+{/if}
 
 <style>
     .complete-container {
@@ -674,7 +685,6 @@
     }
 
     .features-container {
-        background: var(--tertiary-color);
         border-radius: 12px;
         overflow: hidden;
     }
@@ -704,8 +714,6 @@
     }
 
     .distribution-preview {
-        background: var(--background-secondary);
-        border-radius: 12px;
     }
 
     .distribution-amounts {
@@ -716,14 +724,11 @@
         display: flex;
         justify-content: space-between;
         padding: 0.75rem;
-        border-bottom: 1px solid var(--border-color);
     }
 
     .amount-row.total {
-        border-bottom: none;
-        margin-top: 0.5rem;
+        margin-top: 1rem;
         padding-top: 1rem;
-        border-top: 2px solid var(--border-color);
         font-weight: 600;
     }
 
@@ -768,20 +773,14 @@
         }
     }
 
-    /* New Transfers Preview styles */
-    .transfers-preview {
-        background: var(--background-secondary);
-        border-radius: 12px;
-    }
     .transfer-row {
         display: block;
         padding: 0.75rem 0.5rem;
         text-decoration: none;
         color: inherit;
-        background: var(--tertiary-color);
+
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
+
         margin-bottom: 1rem;
     }
     .transfer-row:hover {
@@ -818,7 +817,6 @@
     }
 
     .transfers-preview .amount-row.expandable:hover {
-        border: 1px solid var(--primary-color);
         background: linear-gradient(
             to right,
             var(--background-hover),
@@ -834,5 +832,15 @@
     .transfers-preview .row-header .material-symbols-outlined {
         vertical-align: middle;
         margin-right: 0.5rem;
+    }
+
+    .transfers-preview {
+        border: 1px solid transparent; /* Initial transparent border to prevent layout shift */
+        border-radius: 30px;
+        transition: border-color 0.2s ease;
+    }
+
+    .transfers-preview:hover {
+        border-color: var(--primary-color);
     }
 </style>
