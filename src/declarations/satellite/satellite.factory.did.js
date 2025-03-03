@@ -53,7 +53,39 @@ export const idlFactory = ({ IDL }) => {
     'images' : IDL.Vec(IDL.Text),
   });
   const Result_5 = IDL.Variant({ 'Ok' : IDL.Nat64, 'Err' : IDL.Text });
+  const IndexResponseBasicInfo = IDL.Record({
+    'title' : IDL.Text,
+    'profile_image' : IDL.Text,
+    'element_id' : IDL.Text,
+    'element_type' : IDL.Text,
+    'creation_date' : IDL.Nat64,
+  });
   const Result_6 = IDL.Variant({
+    'Ok' : IndexResponseBasicInfo,
+    'Err' : IDL.Text,
+  });
+  const UserProfileBasicInfo = IDL.Record({
+    'username' : IDL.Text,
+    'profile_picture' : IDL.Text,
+    'user_id' : IDL.Text,
+  });
+  const EnrichedPledgeData = IDL.Record({
+    'status' : IDL.Text,
+    'feature' : IDL.Opt(IndexResponseBasicInfo),
+    'payment_type' : IDL.Text,
+    'idea' : IndexResponseBasicInfo,
+    'expected_amount' : IDL.Nat64,
+    'user' : UserProfileBasicInfo,
+    'pledge_id' : IDL.Text,
+    'created_at' : IDL.Nat64,
+    'amount_paid' : IDL.Nat64,
+    'amount' : IDL.Nat64,
+  });
+  const Result_7 = IDL.Variant({
+    'Ok' : IDL.Vec(EnrichedPledgeData),
+    'Err' : IDL.Text,
+  });
+  const Result_8 = IDL.Variant({
     'Ok' : IDL.Tuple(
       IDL.Nat64,
       IDL.Nat64,
@@ -62,23 +94,11 @@ export const idlFactory = ({ IDL }) => {
     ),
     'Err' : IDL.Text,
   });
-  const UserProfileBasicInfo = IDL.Record({
-    'username' : IDL.Text,
-    'profile_picture' : IDL.Text,
-    'user_id' : IDL.Text,
-  });
-  const Result_7 = IDL.Variant({
+  const Result_9 = IDL.Variant({
     'Ok' : IDL.Vec(UserProfileBasicInfo),
     'Err' : IDL.Text,
   });
-  const IndexResponseBasicInfo = IDL.Record({
-    'title' : IDL.Text,
-    'profile_image' : IDL.Text,
-    'element_id' : IDL.Text,
-    'element_type' : IDL.Text,
-    'creation_date' : IDL.Nat64,
-  });
-  const Result_8 = IDL.Variant({
+  const Result_10 = IDL.Variant({
     'Ok' : IDL.Tuple(
       IDL.Vec(IndexResponseBasicInfo),
       IDL.Nat64,
@@ -99,7 +119,7 @@ export const idlFactory = ({ IDL }) => {
     'total_followers' : IDL.Nat64,
     'creation_date' : IDL.Nat64,
   });
-  const Result_9 = IDL.Variant({
+  const Result_11 = IDL.Variant({
     'Ok' : IDL.Tuple(IDL.Vec(IndexResponse), IDL.Nat64, IDL.Nat64, IDL.Nat64),
     'Err' : IDL.Text,
   });
@@ -115,7 +135,7 @@ export const idlFactory = ({ IDL }) => {
     'element_type' : IDL.Text,
     'activity_image' : IDL.Opt(IDL.Text),
   });
-  const Result_10 = IDL.Variant({
+  const Result_12 = IDL.Variant({
     'Ok' : IDL.Tuple(IDL.Vec(Activity), IDL.Nat64, IDL.Nat64, IDL.Nat64),
     'Err' : IDL.Text,
   });
@@ -138,7 +158,7 @@ export const idlFactory = ({ IDL }) => {
     'transaction_number' : IDL.Nat64,
     'amount' : IDL.Nat64,
   });
-  const Result_11 = IDL.Variant({
+  const Result_13 = IDL.Variant({
     'Ok' : IDL.Vec(EnrichedApprovalData),
     'Err' : IDL.Text,
   });
@@ -182,11 +202,11 @@ export const idlFactory = ({ IDL }) => {
     'approval_rate' : IDL.Float64,
     'platform_fee' : ClaimerInfo,
   });
-  const Result_12 = IDL.Variant({
+  const Result_14 = IDL.Variant({
     'Ok' : CompleteSolutionData,
     'Err' : IDL.Text,
   });
-  const Result_13 = IDL.Variant({
+  const Result_15 = IDL.Variant({
     'Ok' : IDL.Tuple(IDL.Nat64, IDL.Nat64),
     'Err' : IDL.Text,
   });
@@ -202,26 +222,15 @@ export const idlFactory = ({ IDL }) => {
     'amount' : IDL.Nat64,
     'doc_key' : IDL.Text,
   });
-  const Result_14 = IDL.Variant({
+  const Result_16 = IDL.Variant({
     'Ok' : IDL.Vec(PledgeData),
     'Err' : IDL.Text,
   });
-  const Result_15 = IDL.Variant({ 'Ok' : UserBasicInfo, 'Err' : IDL.Text });
-  const EnrichedPledgeData = IDL.Record({
-    'status' : IDL.Text,
-    'feature' : IDL.Opt(IndexResponseBasicInfo),
-    'payment_type' : IDL.Text,
-    'idea' : IndexResponseBasicInfo,
-    'expected_amount' : IDL.Nat64,
-    'pledge_id' : IDL.Text,
-    'created_at' : IDL.Nat64,
-    'amount_paid' : IDL.Nat64,
-    'amount' : IDL.Nat64,
-  });
-  const Result_16 = IDL.Variant({
-    'Ok' : IDL.Vec(EnrichedPledgeData),
+  const Result_17 = IDL.Variant({
+    'Ok' : UserProfileBasicInfo,
     'Err' : IDL.Text,
   });
+  const Result_18 = IDL.Variant({ 'Ok' : UserBasicInfo, 'Err' : IDL.Text });
   const Notification = IDL.Record({
     'title' : IDL.Text,
     'linkURL' : IDL.Text,
@@ -276,10 +285,20 @@ export const idlFactory = ({ IDL }) => {
         [Result_5],
         [],
       ),
+    'get_element_enriched_data' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [Result_6],
+        ['query'],
+      ),
+    'get_enriched_element_pledges' : IDL.Func(
+        [IDL.Text],
+        [Result_7],
+        ['query'],
+      ),
     'get_feature_subaccount_balance' : IDL.Func([IDL.Text], [Result_5], []),
     'get_funding_details' : IDL.Func(
         [IDL.Text, IDL.Text],
-        [Result_6],
+        [Result_8],
         ['query'],
       ),
     'get_historical_pledged_balance' : IDL.Func(
@@ -289,17 +308,17 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_paginated_common_users' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Nat64)],
-        [Result_7],
+        [Result_9],
         ['query'],
       ),
     'get_paginated_followers' : IDL.Func(
         [IDL.Text, IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Nat64)],
-        [Result_8],
+        [Result_10],
         ['query'],
       ),
     'get_paginated_following_elements' : IDL.Func(
         [IDL.Text, IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Nat64)],
-        [Result_8],
+        [Result_10],
         ['query'],
       ),
     'get_paginated_ideas' : IDL.Func(
@@ -310,7 +329,7 @@ export const idlFactory = ({ IDL }) => {
           IDL.Opt(IDL.Text),
           IDL.Opt(IDL.Text),
         ],
-        [Result_9],
+        [Result_11],
         ['query'],
       ),
     'get_paginated_ideas_by_solution' : IDL.Func(
@@ -321,38 +340,38 @@ export const idlFactory = ({ IDL }) => {
           IDL.Opt(IDL.Text),
           IDL.Text,
         ],
-        [Result_9],
+        [Result_11],
         ['query'],
       ),
     'get_paginated_most_recent_activities' : IDL.Func(
         [IDL.Text, IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Nat64)],
-        [Result_10],
+        [Result_12],
         ['query'],
       ),
     'get_paginated_topics' : IDL.Func(
         [IDL.Text, IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Text)],
-        [Result_9],
+        [Result_11],
         ['query'],
       ),
     'get_paginated_topics_ideas' : IDL.Func(
         [IDL.Text, IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Text)],
-        [Result_9],
+        [Result_11],
         ['query'],
       ),
     'get_paginated_users' : IDL.Func(
         [IDL.Text, IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Text)],
-        [Result_9],
+        [Result_11],
         ['query'],
       ),
     'get_pledged_balance' : IDL.Func([IDL.Text], [Result_5], ['query']),
     'get_solution_approvals_enriched' : IDL.Func(
         [IDL.Text],
-        [Result_11],
+        [Result_13],
         ['query'],
       ),
     'get_solution_completion_data' : IDL.Func(
         [IDL.Text],
-        [Result_12],
+        [Result_14],
         ['query'],
       ),
     'get_total_followers' : IDL.Func([IDL.Text], [IDL.Nat64], ['query']),
@@ -360,26 +379,32 @@ export const idlFactory = ({ IDL }) => {
     'get_total_pledged' : IDL.Func([IDL.Text, IDL.Text], [Result_5], ['query']),
     'get_total_pledged_and_expected' : IDL.Func(
         [IDL.Text, IDL.Text],
+        [Result_15],
+        ['query'],
+      ),
+    'get_total_pledged_of_solution' : IDL.Func(
+        [IDL.Text],
+        [Result_5],
+        ['query'],
+      ),
+    'get_user_active_pledges' : IDL.Func([IDL.Text], [Result_16], ['query']),
+    'get_user_approvals_enriched' : IDL.Func(
+        [IDL.Text],
         [Result_13],
         ['query'],
       ),
-    'get_user_active_pledges' : IDL.Func([IDL.Text], [Result_14], []),
-    'get_user_approvals_enriched' : IDL.Func(
-        [IDL.Text],
-        [Result_11],
-        ['query'],
-      ),
-    'get_user_basic_information' : IDL.Func([IDL.Text], [Result_15], ['query']),
-    'get_user_pledges_enriched' : IDL.Func([IDL.Text], [Result_16], ['query']),
+    'get_user_basic_info' : IDL.Func([IDL.Text], [Result_17], ['query']),
+    'get_user_basic_information' : IDL.Func([IDL.Text], [Result_18], ['query']),
+    'get_user_pledges_enriched' : IDL.Func([IDL.Text], [Result_7], ['query']),
     'get_user_pledges_for_solution' : IDL.Func(
         [IDL.Text, IDL.Text],
-        [Result_16],
+        [Result_7],
         ['query'],
       ),
     'get_user_profile_pic' : IDL.Func([IDL.Text], [IDL.Text], ['query']),
     'get_user_real_balance' : IDL.Func([IDL.Text], [Result_5], []),
     'get_user_reputation' : IDL.Func([IDL.Principal], [Result_5], ['query']),
-    'get_user_total_pledges' : IDL.Func([IDL.Text], [Result_14], ['query']),
+    'get_user_total_pledges' : IDL.Func([IDL.Text], [Result_16], ['query']),
     'get_user_username' : IDL.Func([IDL.Text], [IDL.Text], ['query']),
     'pledge_create' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Nat64, IDL.Vec(IDL.Nat8)],

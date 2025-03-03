@@ -273,6 +273,7 @@ pub mod interface {
         pub status: String,
         pub amount_paid: u64,
         pub payment_type: String,
+        pub user: UserProfileBasicInfo,
     }
 
     #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]

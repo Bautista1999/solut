@@ -4,7 +4,7 @@ use crate::reputation::get_user_reputation;
 use crate::types::interface::{
     EnrichedApprovalData, EnrichedPledgeData, FollowData, Idea, IndexResponse,
     IndexResponseBasicInfo, IndexSearch, Notification, PledgeBasicInfo, PledgeData, PledgeUser,
-    TotalPledging, UserProfileBasicInfo,
+    TotalPledging, UserBasicInfo, UserProfileBasicInfo,
 };
 use crate::user_information::{
     get_available_balance, get_historical_pledged_balance, get_paginated_following_elements,
@@ -288,6 +288,21 @@ pub fn get_paginated_topics(
         total_pages,
         offset / limit + 1,
     ))
+}
+
+#[query]
+pub fn get_total_pledged_of_solution(solution_id: String) -> Result<u64, String> {
+    let caller = api::caller();
+    let features = match get_solution_implemented_features(&solution_id.clone()) {
+        Ok(features) => features,
+        Err(_) => return Ok(0),
+    };
+    let mut total_pledged = 0;
+    for feature in features {
+        let pledged = get_total_pledged("feature".to_string(), feature.clone()).unwrap_or(0);
+        total_pledged += pledged;
+    }
+    Ok(total_pledged)
 }
 
 #[query]
@@ -962,7 +977,11 @@ pub fn get_user_pledges_enriched(user_id: String) -> Result<Vec<EnrichedPledgeDa
             } else {
                 None
             };
-
+            let user = UserProfileBasicInfo {
+                user_id: user_id.clone(),
+                username: get_user_username(user_id.clone()),
+                profile_picture: get_user_profile_pic(user_id.clone()),
+            };
             Ok(EnrichedPledgeData {
                 pledge_id: key,
                 amount,
@@ -973,6 +992,7 @@ pub fn get_user_pledges_enriched(user_id: String) -> Result<Vec<EnrichedPledgeDa
                 status,
                 amount_paid,
                 payment_type,
+                user,
             })
         })
         .collect();
@@ -1248,4 +1268,98 @@ pub fn get_user_pledges_for_solution(
         .collect();
 
     Ok(solution_pledges)
+}
+
+#[query]
+/// Retrieves enriched pledge data for a given element ID
+pub fn get_enriched_element_pledges(element_id: String) -> Result<Vec<EnrichedPledgeData>, String> {
+    let caller = api::caller();
+    let filter = ListParams {
+        matcher: Some(ListMatcher {
+            description: Some(format!("{}", element_id)),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let collection = "pledges_active".to_string();
+    let pledges_result = list_docs_store(caller.clone(), collection, &filter)?;
+
+    let enriched_pledges: Result<Vec<EnrichedPledgeData>, String> = pledges_result
+        .items
+        .into_iter()
+        .map(|(key, doc)| {
+            let data: serde_json::Value = serde_json::from_slice(&doc.data)
+                .map_err(|e| format!("Failed to parse pledge data: {}", e))?;
+            let amount = data["amount"].as_u64().unwrap_or_default();
+            let expected_amount = data["expected_amount"].as_u64().unwrap_or_default();
+            let feature_id = data["feature_id"].as_str().map(|s| s.to_string());
+            let idea_id = data["idea_id"].as_str().unwrap_or_default().to_string();
+            let user_id = data["user"].as_str().unwrap_or_default().to_string();
+            let status = data["status"].as_str().unwrap_or_default().to_string();
+            let amount_paid = data["amount_paid"].as_u64().unwrap_or_default();
+            let payment_type = data["payment_type"]
+                .as_str()
+                .unwrap_or_default()
+                .to_string();
+
+            let user_info = get_user_basic_info(user_id.clone())?;
+            let idea_info = get_element_enriched_data("idea".to_string(), idea_id.clone())?;
+            let feature_info = feature_id
+                .as_ref()
+                .map(|fid| get_element_enriched_data("feature".to_string(), fid.clone()))
+                .transpose()?;
+
+            Ok(EnrichedPledgeData {
+                pledge_id: key,
+                amount,
+                expected_amount,
+                idea: idea_info,
+                feature: feature_info,
+                created_at: doc.created_at,
+                status,
+                amount_paid,
+                payment_type,
+                user: user_info,
+            })
+        })
+        .collect();
+
+    enriched_pledges
+}
+
+#[query]
+/// Helper function to get basic user information
+fn get_user_basic_info(user_id: String) -> Result<UserProfileBasicInfo, String> {
+    Ok(UserProfileBasicInfo {
+        user_id: user_id.clone(),
+        username: get_user_username(user_id.clone()),
+        profile_picture: get_user_profile_pic(user_id.clone()),
+    })
+}
+
+#[query]
+/// Helper function to get enriched data for an element
+fn get_element_enriched_data(
+    element_type: String,
+    element_id: String,
+) -> Result<IndexResponseBasicInfo, String> {
+    let caller = api::caller();
+    let doc = get_doc_store(caller, element_type.to_string(), element_id.clone())?
+        .ok_or_else(|| format!("{} Unknown or deleted", element_type))?;
+    let data: serde_json::Value = serde_json::from_slice(&doc.data)
+        .map_err(|e| format!("Failed to parse {} data: {}", element_type, e))?;
+
+    Ok(IndexResponseBasicInfo {
+        element_id,
+        title: data["title"].as_str().unwrap_or("Unknown").to_string(),
+        profile_image: data["images"]
+            .as_array()
+            .and_then(|arr| arr.first())
+            .and_then(|v| v.as_str())
+            .unwrap_or("https://solutio.one/solutio-images/logo-01.png")
+            .to_string(),
+        creation_date: doc.created_at,
+        element_type: element_type.to_string(),
+    })
 }
