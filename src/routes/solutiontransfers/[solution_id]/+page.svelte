@@ -1,8 +1,15 @@
 <script>
     import { onMount } from "svelte";
+    // @ts-ignore
     import { getSolutionCompletionData } from "../../../declarations/satellite/satellite.api";
+    // @ts-ignore
     import { fade, slide } from "svelte/transition";
+    import Table from "$lib/components/Table/Table.svelte";
+    import TransactionButton from "$lib/components/TransactionButton.svelte";
+    import { getDoc, listDocs } from "@junobuild/core-peer";
+    import AccountHex from "$lib/components/AccountHex.svelte";
 
+    // @ts-ignore
     export let data;
     let solution_id = data.params.solution_id;
     let title = "";
@@ -11,21 +18,109 @@
     /**
      * @type {any[]}
      */
-    let transactions = [];
+    let transactions = [
+        // Sample transaction data for demonstration
+        {
+            id: "TX-001",
+            sender: "0x123...456",
+            target: "0x789...012",
+            created_at: "2025-02-28",
+            amount: "1.25",
+            transaction_number: "12345678",
+        },
+        {
+            id: "TX-002",
+            sender: "0x456...789",
+            target: "0x012...345",
+            created_at: "2025-02-27",
+            amount: "0.75",
+            transaction_number: "87654321",
+        },
+        {
+            id: "TX-003",
+            sender: "0x789...012",
+            target: "0x345...678",
+            created_at: "2025-02-26",
+            amount: "2.50",
+            transaction_number: "23456789",
+        },
+    ];
+
+    // Define table columns
+    const columns = [
+        {
+            id: "sender",
+            header: "From",
+            accessor: "sender",
+            sortable: true,
+            cellComponent: AccountHex,
+        },
+        {
+            id: "target",
+            header: "To",
+            accessor: "target",
+            sortable: true,
+            cellComponent: AccountHex,
+        },
+        {
+            id: "created_at",
+            header: "Date",
+            accessor: "created_at",
+            sortable: true,
+        },
+        {
+            id: "amount",
+            header: "Amount (ICP)",
+            accessor: "amount",
+            sortable: true,
+        },
+        {
+            id: "transaction_number",
+            header: "Transaction number",
+            accessor: "transaction_number",
+            sortable: false,
+            cellComponent: TransactionButton,
+        },
+    ];
 
     onMount(async () => {
-        let completionResult = await getSolutionCompletionData(solution_id);
-        if ("Err" in completionResult) {
-            error = completionResult.Err;
-            loading = false;
-            return;
+        let queryTransactions = (
+            await listDocs({
+                collection: "transaction",
+                filter: {
+                    matcher: {
+                        key: solution_id,
+                    },
+                },
+            })
+        ).items;
+        transactions = [];
+        for (let transaction of queryTransactions) {
+            transactions.push({
+                id: transaction.key,
+                uniqueKey: `${transaction.key}`,
+                sender: Buffer.from(transaction.data.sender).toString("hex"),
+                target: Buffer.from(transaction.data.target).toString("hex"),
+                // @ts-ignore
+                created_at: new Date(Number(transaction.created_at / 1000000n))
+                    .toISOString()
+                    .split("T")[0],
+                amount: (transaction.data.amount / 10 ** 8).toFixed(3),
+                transaction_number: transaction.data.transaction_number,
+            });
         }
-        console.log(completionResult);
-        let completionData = completionResult.Ok;
-
-        // Basic solution info
-        title = completionData.solution.title;
+        let solutionDoc = await getDoc({
+            collection: "solution",
+            key: solution_id,
+        });
         loading = false;
+        // @ts-ignore
+        title = solutionDoc.data.title;
+
+        console.log(transactions);
+
+        // In a real implementation, you would map the actual transaction data here
+        // transactions = completionData.transactions;
     });
 </script>
 
@@ -36,38 +131,28 @@
             {title || "Solution"}
         </a>
     </div>
-    <div class="features-container" transition:slide|local={{ duration: 300 }}>
-        <div class="column-headers" style="justify-content: space-between;">
-            <span class="header-title">FROM</span>
-            <span class="header-title">TO</span>
-            <span class="header-title">DATE</span>
-            <span class="header-amount">AMOUNT (ICP)</span>
-            <span class="header-amount">TRANSACTION NUMBER</span>
+
+    {#if error}
+        <div class="error-message">
+            {error}
         </div>
-        {#each transactions as transfer}
-            <div
-                class="transfer-row"
-                style="display: flex; justify-content: space-between; padding: 0.5rem 1rem; "
-            >
-                <div style="flex: 1;">
-                    {transfer.sender}
-                </div>
-                <div style="flex: 1;">{transfer.target}</div>
-                <div style="flex: 1;">{transfer.created_at}</div>
-                <div style="flex: 1; text-align: right;">
-                    {transfer.amount} ICP
-                </div>
-                <div style="flex: 1; text-align: right;">
-                    {transfer.transaction_number}
-                </div>
-            </div>
-        {/each}
-    </div>
+    {/if}
+
+    {#if loading}
+        <div class="loading-indicator">Loading transaction data...</div>
+    {:else}
+        <Table
+            rows={transactions}
+            {columns}
+            showCheckboxes={false}
+            showRowActions={false}
+        />
+    {/if}
 </div>
 
 <style>
     .complete-container {
-        max-width: 800px;
+        max-width: 1200px;
         margin: 0 auto;
         padding: 2rem;
     }
@@ -77,6 +162,7 @@
         align-items: center;
         gap: 0.5rem;
         flex-wrap: wrap;
+        margin-bottom: 1rem;
     }
 
     .solution-link {
@@ -112,6 +198,28 @@
     .solution-link:active {
         transform: translateY(0);
         box-shadow: none;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .error-message {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: rgb(220, 38, 38);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .loading-indicator {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        color: var(--text-secondary, #666);
+        font-style: italic;
     }
 
     .completion-status-card {
@@ -227,67 +335,15 @@
     .header-amount {
         position: relative;
         padding: 0.5rem 1rem;
-
         border-radius: 6px;
     }
 
-    .distribution-preview {
-    }
-
-    .distribution-amounts {
-        margin-top: 1rem;
-    }
-
-    .amount-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.75rem;
-    }
-
-    .amount-row.total {
-        margin-top: 1rem;
-        padding-top: 1rem;
-        font-weight: 600;
-    }
-
-    .action-section {
-        margin-top: 1rem;
-    }
-
-    .terms-container {
-        margin-bottom: 1rem;
-    }
-
-    .disclaimer {
-        color: var(--text-secondary);
-        margin-bottom: 1.5rem;
-        line-height: 1.5;
-    }
-
     @media (max-width: 768px) {
-        .metrics-grid {
-            grid-template-columns: 1fr;
-            gap: 2rem;
+        .complete-container {
+            padding: 0;
         }
-
-        .status-header {
-            flex-direction: column;
-            gap: 1rem;
-            text-align: center;
-        }
-
-        .metric-circle {
-            width: 100px;
-            height: 100px;
-            font-size: 1.3rem;
-        }
-
-        .features-section {
-            margin: 1rem 0;
-        }
-
-        .column-headers {
-            padding: 0.75rem 1rem;
+        .header-container {
+            margin-bottom: 0rem;
         }
     }
 
@@ -296,11 +352,10 @@
         padding: 0.75rem 0.5rem;
         text-decoration: none;
         color: inherit;
-
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
         margin-bottom: 1rem;
     }
+
     .transfer-row:hover {
         background: color-mix(
             in srgb,
@@ -309,56 +364,8 @@
         );
         transform: translateY(-1px);
     }
+
     .transfer-row:active {
         transform: translateY(0);
-    }
-    .transfer-header {
-        margin-bottom: 0.5rem;
-    }
-    .transfer-info {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 0.5rem;
-        font-size: 0.95rem;
-    }
-    .transfer-description {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-    }
-
-    /* Additional styling for Transfers Preview header */
-    .transfers-preview .amount-row.expandable {
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        padding: 0.75rem;
-    }
-
-    .transfers-preview .amount-row.expandable:hover {
-        background: linear-gradient(
-            to right,
-            var(--background-hover),
-            transparent
-        );
-        transition: all 0.2s ease;
-    }
-    .transfers-preview .row-header {
-        display: flex;
-        align-items: center;
-    }
-
-    .transfers-preview .row-header .material-symbols-outlined {
-        vertical-align: middle;
-        margin-right: 0.5rem;
-    }
-
-    .transfers-preview {
-        border: 1px solid transparent; /* Initial transparent border to prevent layout shift */
-        border-radius: 30px;
-        transition: border-color 0.2s ease;
-    }
-
-    .transfers-preview:hover {
-        border-color: var(--primary-color);
     }
 </style>
