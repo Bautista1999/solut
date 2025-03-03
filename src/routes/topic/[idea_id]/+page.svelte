@@ -60,6 +60,7 @@
     import { browser } from "$app/environment";
     import FloatingHelpText from "$lib/components/FloatingHelpText.svelte";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
+    import PledgeTable from "$lib/components/PledgeTable.svelte";
 
     /** @type {import('./$types').PageData} */
     export let data;
@@ -100,7 +101,7 @@
     let isLoading = false;
     let ideaNonExistent = false;
     let tabs = ["Pledge Timeline", "Comments", "About the project"];
-    let activeTab = tabs[2]; // default active tab
+    let activeTab = tabs[0]; // default active tab
     // Function to change active tab
     /**
      * @param {string} tab
@@ -494,13 +495,7 @@
 
                     <div class="ActivityContent">
                         {#if activeTab === tabs[0]}
-                            {#await getTransactionsAndPledges(key)}
-                                <MagicalDotsAbsoluteSmall />
-                            {:then data}
-                                <TransactionDisplay
-                                    transactions={data ? data : []}
-                                />
-                            {/await}
+                            <PledgeTable id={key} />
                         {:else if activeTab === tabs[1]}
                             <CommentSection project_id={key} />
                         {:else if activeTab === tabs[2]}
