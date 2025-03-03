@@ -14,6 +14,9 @@
     let isLoading = true;
 
     // Animation delays for staggered effects
+    /**
+     * @param {number} i
+     */
     const staggerDelay = (i) => 150 * i;
 
     // Sample data for charts
@@ -51,6 +54,9 @@
     });
 
     // Function to format numbers with commas
+    /**
+     * @param {number} num
+     */
     function formatNumber(num) {
         return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }

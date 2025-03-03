@@ -5,12 +5,16 @@
     import PledgeManager from "$lib/components/PledgeManager.svelte";
     import UserManager from "$lib/components/UserManager.svelte";
     import Analytics from "$lib/components/Analytics.svelte";
+    import TableDemo from "$lib/components/Table/TableDemo.svelte";
     import { theme } from "$lib/stores/theme.js";
 
     // Active section state
     let activeSection = "dashboard";
 
-    // Handle section change from sidebar
+    /**
+     * Handle section change from sidebar
+     * @param {CustomEvent} event - Section change event with section detail
+     */
     function handleSectionChange(event) {
         activeSection = event.detail.section;
     }
@@ -37,6 +41,8 @@
             <UserManager />
         {:else if activeSection === "analytics"}
             <Analytics />
+        {:else if activeSection === "tasks"}
+            <TableDemo />
         {/if}
     </main>
 </div>

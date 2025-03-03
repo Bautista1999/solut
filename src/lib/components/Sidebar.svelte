@@ -10,7 +10,10 @@
     // Active section state
     let activeSection = "dashboard";
 
-    // Handle section selection
+    /**
+     * Handle section selection
+     * @param {string} section - The section to activate
+     */
     function handleSelect(section) {
         activeSection = section;
         dispatch("sectionChange", { section });
@@ -82,6 +85,21 @@
                     <span class="material-symbols-outlined">group</span>
                     <span class="label">Users</span>
                     {#if activeSection === "users"}
+                        <span
+                            class="active-indicator"
+                            in:scale={{ duration: 200, start: 0.5 }}
+                        ></span>
+                    {/if}
+                </button>
+            </li>
+            <li>
+                <button
+                    class:active={activeSection === "tasks"}
+                    on:click={() => handleSelect("tasks")}
+                >
+                    <span class="material-symbols-outlined">task</span>
+                    <span class="label">Tasks</span>
+                    {#if activeSection === "tasks"}
                         <span
                             class="active-indicator"
                             in:scale={{ duration: 200, start: 0.5 }}
