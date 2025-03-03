@@ -80,6 +80,10 @@
     import MagicalDotsSmall from "$lib/components/MagicalDotsSmall.svelte";
     import FloatingHelpText from "$lib/components/FloatingHelpText.svelte";
     import FuindingDetails from "$lib/components/FundingDetails.svelte";
+    import {
+        getSolutionApprovalsEnriched,
+        getTotalPledgedOfSolution,
+    } from "../../../declarations/satellite/satellite.api";
 
     let userKey = "";
     let ownerKey = "";
@@ -188,19 +192,37 @@
     });
 
     async function getApprovalsNumbers() {
-        let total = await getTotalAmountApprovedByProject(key);
-        let approvals = await getAmountOfUsersThatApproved(key);
+        let approvalsResult = await getSolutionApprovalsEnriched(key);
+        let total = 0;
+        let approved = 0;
+        if ("Err" in approvalsResult) {
+            return {
+                approved: 0,
+                amountApprovals: 0,
+            };
+        }
+        for (let approval of approvalsResult.Ok) {
+            total += Number(approval.amount);
+            approved += Number(approval.amount);
+        }
+
         return {
             approved: roundUpToThreeDecimalPlaces(ICPtoDecimal(BigInt(total))),
-            amountApprovals: approvals,
+            amountApprovals: approvalsResult.Ok.length,
         };
     }
     async function getApprovalsAndPledgingNumbers() {
-        let total = await getTotalAmountApprovedByProject(key);
-        let totalPossible = await getTotalPledgesOfSolution(key);
+        let total = (await getApprovalsNumbers()).approved;
+        let totalPossible = await getTotalPledgedOfSolution(key);
+        if ("Err" in totalPossible) {
+            return {
+                approved: total,
+                totalPossible: 0,
+            };
+        }
         return {
-            approved: roundUpToThreeDecimalPlaces(ICPtoDecimal(BigInt(total))),
-            totalPossible: totalPossible.pledges,
+            approved: total,
+            totalPossible: Number(totalPossible.Ok) / 10 ** 8 + total,
         };
     }
 
@@ -677,6 +699,21 @@
                                             PaymentModal.set(true);
                                         }}
                                     />
+                                {:else if status == "completed"}
+                                    <h1 style="color: var(--tertiary-color);">
+                                        Solution completed!
+                                    </h1>
+
+                                    <BasicButtonDark
+                                        msg={"Check the transactions"}
+                                        icon={"payments"}
+                                        someFunction={() => {
+                                            window.open(
+                                                "/solutiontransfers/" + key,
+                                                "_blank",
+                                            );
+                                        }}
+                                    />
                                 {/if}
                             {:else if status == "delivered"}
                                 {#await getDeliveryLink(key)}
@@ -769,6 +806,22 @@
                                         </div>
                                     </div>
                                 {/await}
+                            {/if}
+                            {#if status == "completed"}
+                                <h1 style="color: var(--tertiary-color);">
+                                    Solution completed!
+                                </h1>
+
+                                <BasicButtonDark
+                                    msg={"Check the transactions"}
+                                    icon={"payments"}
+                                    someFunction={() => {
+                                        window.open(
+                                            "/solutiontransfers/" + key,
+                                            "_blank",
+                                        );
+                                    }}
+                                />
                             {/if}
                         {/await}
                     </div>

@@ -13,7 +13,7 @@ import  {idlFactory as Escrow} from "$lib/declarations/escrow.declarations.did";
 import { getIdeaIdBySolution, getImplementedFeaturesOfSolution, getUserKey } from "$lib/data_functions/get_functions";
 import { createNotification, followElement, updateSolutionStatus } from "$lib/data_functions/create_functions";
 // import { trackEvent } from "@junobuild/analytics";
-import { cancelPledge, checkCycles, deletePledge, getFundingDetails, getPledgedBalance, getUserActivePledges, pledgeCreate } from "../../declarations/satellite/satellite.api";
+import { cancelPledge, checkCycles, deletePledge, getFundingDetails, getPledgedBalance, getTotalPledged, getUserActivePledges, pledgeCreate } from "../../declarations/satellite/satellite.api";
 import { UserKey } from "$lib/stores/other_stores";
 
 // import("../declarations/juno.declarations.did.js")._SERVICE.set_doc;
@@ -155,6 +155,8 @@ export async function getTotalPledges(idea_id,type) {
  * @return {Promise<import("$lib/data_objects/data_types").TotalPledge>}
  */
 export async function getTotalPledgesOfSolution(solution_id) {
+    
+    
     let featureList = await getImplementedFeaturesOfSolution(solution_id);
     if(featureList.length==0){
         return {
