@@ -105,18 +105,19 @@ h4 {
 :root {
     --primary-color: #ff812c;
     /*orange*/
-    --secondary-color: #222831;
+    --secondary-color: #2d2d2d;
     /*black-ish*/
     --tertiary-color: white;
     --forth-color: #EEEEEE;
     /*white_v2 (?)*/
-    --forth-color-v2: #c7c7c7;
+    --forth-color-v2: #e8e8e8;
     --fifth-color: #FFE6C7;
     /*white-orange*/
     --sixth-color: #FFA559;
     /*white-orange*/
     --seventh-color: black;
-    --eighth-color: #2e2e2e;
+    --eigth-color: #454545;
+    --ninth-color: #b9b9b9;
     /*black*/
     --red-wine: #D42160;
     --sky-blue: #6bc9e1;
