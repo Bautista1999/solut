@@ -937,9 +937,9 @@ pub fn get_user_basic_information(user_id: String) -> Result<UserBasicInfo, Stri
         Ok(amount) => amount,
         Err(err) => return Err(err), // Default to 0 if an error occurs
     };
-
+    let user_principal = Principal::from_text(user_key.clone()).unwrap();
     // Step 6: Fetch user reputation
-    user_info.reputation = match get_user_reputation(caller) {
+    user_info.reputation = match get_user_reputation(user_principal) {
         Ok(reputation) => reputation,
         Err(_) => 0, // Default to 0 if an error occurs
     };
