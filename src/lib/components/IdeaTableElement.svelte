@@ -66,37 +66,6 @@
         showHover = false;
     }
 
-    /**
-     * @param {string} idea_id
-     */
-    async function getIdeaInfo(idea_id) {
-        try {
-            const idea = await getDoc({
-                collection: "idea",
-                key: idea_id,
-            });
-            return idea;
-        } catch (err) {
-            console.error("Error fetching idea:", err, "ID:", idea_id);
-            return null;
-        }
-    }
-
-    /**
-     * @param {string} feature_id
-     */
-    async function getFeatureInfo(feature_id) {
-        try {
-            const feature = await getDoc({
-                collection: "feature",
-                key: feature_id,
-            });
-            return feature;
-        } catch (err) {
-            console.error("Error fetching feature:", err, "ID:", feature_id);
-            return null;
-        }
-    }
     $: typeLink =
         hoverType === "idea"
             ? "topic"
