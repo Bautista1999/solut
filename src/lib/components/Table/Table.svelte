@@ -516,14 +516,14 @@
             max-width: 45%;
             padding-inline: 10px;
             padding-block: 4px;
-            font-size: medium;
+            font-size: small;
         }
 
         .column-header,
         .data-cell {
             padding: 10px;
             /* min-width: 100px; */
-            font-size: medium;
+            font-size: small;
         }
     }
 
