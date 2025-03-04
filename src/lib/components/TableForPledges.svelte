@@ -11,16 +11,15 @@
   } from "$lib/financial_functions/financial_functions";
   import { onDestroy, onMount } from "svelte";
   import { getUserPledgesEnriched } from "../../declarations/satellite/satellite.api";
-  import { writable } from "svelte/store";
 
   /**
    * @type {import("../../declarations/satellite/satellite.did").EnrichedPledgeData[]}
    */
   export let pledges = [];
-  export let loading = writable(false);
+  export let loading = false;
   export let darkMode = false;
-  let error = writable(false);
-  let success = writable(false);
+  let error = false;
+  let success = false;
   let modalErrorMsg = "Something went wrong when canceling the pledge.";
 
   let renderCount = 0;
@@ -32,10 +31,10 @@
   }
 
   // Monitor modal interactions
-  function handleModalOpen() {
+  const handleModalOpen = () => {
     console.log("Attempting to open modal from TableForPledges");
     DeleteModal.set(true);
-  }
+  };
 
   onMount(() => {
     console.log("TableForPledges mounted");
@@ -44,36 +43,19 @@
   onDestroy(() => {
     console.log("TableForPledges destroyed, total renders:", renderCount);
     DeleteModal.set(false);
-    error.set(false);
-    success.set(false);
+    error = false;
+    loading = false;
+    success = false;
   });
-  let loading = writable(false);
+
   /**
    * @type {string}
    */
   let selectedPledgeId = "";
-
-  async function cancelPledge() {
-    loading.set(true);
-    error.set(false);
-    success.set(false);
-    const result = await deletePledgeFromProject(selectedPledgeId);
-    loading.set(false);
-    if ("Ok" in result) {
-      success.set(true);
-      const activePledges = await getUserPledgesEnriched($UserKey);
-      if ("Ok" in activePledges) {
-        pledges = activePledges.Ok;
-      }
-    } else {
-      error.set(true);
-      modalErrorMsg = result.Err;
-    }
-  }
 </script>
 
 <div class="pledges-wrapper" class:dark-mode={darkMode} transition:fade>
-  {#if $loading}
+  {#if loading}
     <div class="loading-state">
       <div class="loader" />
     </div>
@@ -126,7 +108,7 @@
                 <span class="label">Expected</span>
                 <span class="value">
                   {roundUpToThreeDecimalPlaces(
-                    ICPtoDecimal(pledge.expected_amount)
+                    ICPtoDecimal(pledge.expected_amount),
                   )} ICP
                 </span>
               </div>
@@ -134,7 +116,7 @@
                 <span class="label">Amount Paid</span>
                 <span class="value">
                   {roundUpToThreeDecimalPlaces(
-                    ICPtoDecimal(pledge.amount_paid)
+                    ICPtoDecimal(pledge.amount_paid),
                   )} ICP
                 </span>
               </div>
@@ -158,7 +140,7 @@
                 <span class="label">Created</span>
                 <span class="value"
                   >{new Date(
-                    Number(pledge.created_at) / 1000000
+                    Number(pledge.created_at) / 1000000,
                   ).toLocaleDateString()}</span
                 >
               </div>
@@ -191,7 +173,23 @@
 {#if selectedPledgeId}
   <ModalConfirmationNew
     message="Are you sure you want to cancel this pledge?"
-    someFunction={cancelPledge}
+    someFunction={async () => {
+      loading = true;
+      error = false;
+      success = false;
+      const result = await deletePledgeFromProject(selectedPledgeId);
+      loading = false;
+      if ("Ok" in result) {
+        success = true;
+        const activePledges = await getUserPledgesEnriched($UserKey);
+        if ("Ok" in activePledges) {
+          pledges = activePledges.Ok;
+        }
+      } else {
+        error = true;
+        modalErrorMsg = result.Err;
+      }
+    }}
     {error}
     {loading}
     {success}
@@ -199,19 +197,10 @@
     successMsg="Your pledge was canceled successfully."
     loadingMsg="Deleting pledge..."
   />
+  }
 {/if}
 
 <style>
-  :root {
-    --card-padding: 1.25rem;
-    --card-border-radius: 16px;
-    --card-transition: transform 0.2s ease, box-shadow 0.2s ease;
-    --status-active-bg: rgba(40, 167, 69, 0.15);
-    --status-active-color: #28a745;
-    --status-inactive-bg: rgba(13, 110, 253, 0.15);
-    --status-inactive-color: #0d6efd;
-  }
-
   .pledges-wrapper {
     width: 100%;
     margin: 0 0;
@@ -229,12 +218,13 @@
     display: flex;
     flex-direction: column;
     background: var(--tertiary-color);
-    border-radius: var(--card-border-radius);
+    border-radius: 16px;
     overflow: hidden;
-    transition: var(--card-transition);
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
     border: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
-    padding: var(--card-padding);
   }
 
   .pledge-card::before {
@@ -362,13 +352,13 @@
   }
 
   .status-tag.active {
-    background: var(--status-active-bg);
-    color: var(--status-active-color);
+    background: rgba(40, 167, 69, 0.15);
+    color: #28a745;
   }
 
   .status-tag.inactive {
-    background: var(--status-inactive-bg);
-    color: var(--status-inactive-color);
+    background: rgba(13, 110, 253, 0.15);
+    color: #0d6efd;
   }
 
   .payment-tag {
