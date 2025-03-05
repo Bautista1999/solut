@@ -10,7 +10,6 @@
     import DateCellComponent from "./DateCellComponent.svelte";
 
     export let id;
-
     let columns = [
         {
             id: "created_at",
