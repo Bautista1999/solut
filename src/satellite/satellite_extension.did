@@ -94,6 +94,15 @@ type IndexResponseWithApproval = record {
   approved_amount : nat64;
   basic_info : IndexResponseBasicInfo;
 };
+type MetaTagsInput = record {
+  url : text;
+  title : text;
+  user : text;
+  content_type : text;
+  description : text;
+  image : text;
+};
+type MetaTagsResult = record { html : text; error : opt text; success : bool };
 type Milestone = record {
   id : nat64;
   title : text;
@@ -213,8 +222,11 @@ service : {
   check_cycles : () -> (nat) query;
   claim_tokens : (text) -> (Result_3);
   complete_solution : (text) -> (Result_4);
+  create_and_upload_html : (MetaTagsInput, text, text) -> (Result);
   create_ideas : (vec SetIdea, text) -> (Result_2);
+  create_metatags : (MetaTagsInput) -> (MetaTagsResult);
   create_new_product : (Product, text) -> (Result_2);
+  create_or_update_html_metatags : (text, text) -> (Result_2);
   create_or_update_idea : (text, Idea, text) -> (Result_2);
   create_or_update_solution : (text, Solution, text) -> (Result_2);
   create_or_update_topic : (text, Idea) -> (Result_2);
@@ -288,6 +300,7 @@ service : {
   trigger_delete_orphan_ideas : () -> (Result_2);
   trigger_delete_orphan_solutions : () -> (Result_2);
   trigger_delete_unused_images : () -> (Result_2);
+  upload_html_to_storage : (text, text, text) -> (Result);
   upload_image : (text, text, blob, text, text, text) -> (Result);
   validate_user_balance_or_delete_pledge : (text, nat64, text) -> (Result_2);
   withdraw_approval : (text) -> (Result_5);

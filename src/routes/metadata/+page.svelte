@@ -50,6 +50,7 @@
     rejectApproval,
     claimTokens,
     completeSolution,
+    createOrUpdateHtmlMetatags,
   } from "../../declarations/satellite/satellite.api";
   import { signIn, NFIDProvider, authSubscribe } from "@junobuild/core";
   import SearchBarLarger from "$lib/components/SearchBarLarger.svelte";
@@ -418,6 +419,9 @@
 
   $: solutionIdToComplete = "";
   $: completionResult = null;
+
+  $: solutionIdToUpdateLinkPreview = "";
+  $: linkPreviewType = "";
 </script>
 
 <svelte:head>
@@ -1154,6 +1158,31 @@
           console.log(result);
         }}
         msg={"Get User Pledges"}
+      />
+    </div>
+
+    <div class="Field">
+      <h1 style="margin:0px;">Update Link Preview</h1>
+      <input
+        class="InputTextSmall"
+        placeholder="Enter solution ID"
+        bind:value={solutionIdToUpdateLinkPreview}
+      />
+      <input
+        class="InputTextSmall"
+        placeholder="Enter type"
+        bind:value={linkPreviewType}
+      />
+      <BasicRoundedButton
+        disabledCondition={!solutionIdToUpdateLinkPreview || !linkPreviewType}
+        someFunction={async () => {
+          const result = await createOrUpdateHtmlMetatags(
+            solutionIdToUpdateLinkPreview,
+            linkPreviewType,
+          );
+          console.log(result);
+        }}
+        msg={"Update Link Preview"}
       />
     </div>
 

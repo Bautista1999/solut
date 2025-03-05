@@ -98,6 +98,19 @@ export interface IndexResponseWithApproval {
   'approved_amount' : bigint,
   'basic_info' : IndexResponseBasicInfo,
 }
+export interface MetaTagsInput {
+  'url' : string,
+  'title' : string,
+  'user' : string,
+  'content_type' : string,
+  'description' : string,
+  'image' : string,
+}
+export interface MetaTagsResult {
+  'html' : string,
+  'error' : [] | [string],
+  'success' : boolean,
+}
 export interface Milestone {
   'id' : bigint,
   'title' : string,
@@ -235,8 +248,14 @@ export interface _SERVICE {
   'check_cycles' : ActorMethod<[], bigint>,
   'claim_tokens' : ActorMethod<[string], Result_3>,
   'complete_solution' : ActorMethod<[string], Result_4>,
+  'create_and_upload_html' : ActorMethod<
+    [MetaTagsInput, string, string],
+    Result
+  >,
   'create_ideas' : ActorMethod<[Array<SetIdea>, string], Result_2>,
+  'create_metatags' : ActorMethod<[MetaTagsInput], MetaTagsResult>,
   'create_new_product' : ActorMethod<[Product, string], Result_2>,
+  'create_or_update_html_metatags' : ActorMethod<[string, string], Result_2>,
   'create_or_update_idea' : ActorMethod<[string, Idea, string], Result_2>,
   'create_or_update_solution' : ActorMethod<
     [string, Solution, string],
@@ -329,6 +348,7 @@ export interface _SERVICE {
   'trigger_delete_orphan_ideas' : ActorMethod<[], Result_2>,
   'trigger_delete_orphan_solutions' : ActorMethod<[], Result_2>,
   'trigger_delete_unused_images' : ActorMethod<[], Result_2>,
+  'upload_html_to_storage' : ActorMethod<[string, string, string], Result>,
   'upload_image' : ActorMethod<
     [string, string, Uint8Array | number[], string, string, string],
     Result

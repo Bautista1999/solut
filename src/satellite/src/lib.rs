@@ -16,6 +16,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use url::Url;
 mod ApprovalFunctions;
 mod Funding;
+mod XMLAndLinkPreviews;
 mod indexed_queries;
 mod notifications;
 mod pledges;
@@ -56,8 +57,8 @@ use scheduled::{delete_orphan_ideas, delete_orphan_solutions, delete_unused_imag
 use types::interface::{
     Approval, ApprovalStatus, ClaimerInfo, ClaimerInfoEnriched, ClaimerType, Claimers,
     CompleteSolutionData, CompletionResult, Discount, Idea, IdeaRevenueCounter, IndexSearch,
-    Notification, PaymentType, PledgeData, PledgeUser, Product, Referral, SetIdea, Solution, Topic,
-    TotalPledging,
+    MetaTagsInput, MetaTagsResult, Notification, PaymentType, PledgeData, PledgeUser, Product,
+    Referral, SetIdea, Solution, Topic, TotalPledging,
 };
 
 #[on_delete_filtered_docs]

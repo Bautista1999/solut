@@ -465,4 +465,22 @@ pub mod interface {
         pub basic_info: IndexResponseBasicInfo, // Reuse existing struct
         pub approved_amount: u64,               // Additional field for approved amount
     }
+
+    // Types for XMLAndLinkPreviews functionality
+    #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+    pub struct MetaTagsInput {
+        pub title: String,
+        pub description: String,
+        pub image: String,
+        pub content_type: String, // equivalent to "type" in JS (type is a reserved keyword in Rust)
+        pub url: String,
+        pub user: String, // Added user field for Twitter creator and author meta tags
+    }
+
+    #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+    pub struct MetaTagsResult {
+        pub html: String,
+        pub success: bool,
+        pub error: Option<String>,
+    }
 }

@@ -18,6 +18,14 @@ export const idlFactory = ({ IDL }) => {
     'approval_rate' : IDL.Float64,
   });
   const Result_4 = IDL.Variant({ 'Ok' : CompletionResult, 'Err' : IDL.Text });
+  const MetaTagsInput = IDL.Record({
+    'url' : IDL.Text,
+    'title' : IDL.Text,
+    'user' : IDL.Text,
+    'content_type' : IDL.Text,
+    'description' : IDL.Text,
+    'image' : IDL.Text,
+  });
   const Idea = IDL.Record({
     'categories' : IDL.Vec(IDL.Text),
     'title' : IDL.Text,
@@ -27,6 +35,11 @@ export const idlFactory = ({ IDL }) => {
     'images' : IDL.Vec(IDL.Text),
   });
   const SetIdea = IDL.Record({ 'key' : IDL.Text, 'idea' : Idea });
+  const MetaTagsResult = IDL.Record({
+    'html' : IDL.Text,
+    'error' : IDL.Opt(IDL.Text),
+    'success' : IDL.Bool,
+  });
   const Product = IDL.Record({
     'owner' : IDL.Opt(IDL.Principal),
     'link' : IDL.Text,
@@ -257,8 +270,19 @@ export const idlFactory = ({ IDL }) => {
     'check_cycles' : IDL.Func([], [IDL.Nat], ['query']),
     'claim_tokens' : IDL.Func([IDL.Text], [Result_3], []),
     'complete_solution' : IDL.Func([IDL.Text], [Result_4], []),
+    'create_and_upload_html' : IDL.Func(
+        [MetaTagsInput, IDL.Text, IDL.Text],
+        [Result],
+        [],
+      ),
     'create_ideas' : IDL.Func([IDL.Vec(SetIdea), IDL.Text], [Result_2], []),
+    'create_metatags' : IDL.Func([MetaTagsInput], [MetaTagsResult], []),
     'create_new_product' : IDL.Func([Product, IDL.Text], [Result_2], []),
+    'create_or_update_html_metatags' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [Result_2],
+        [],
+      ),
     'create_or_update_idea' : IDL.Func(
         [IDL.Text, Idea, IDL.Text],
         [Result_2],
@@ -428,6 +452,11 @@ export const idlFactory = ({ IDL }) => {
     'trigger_delete_orphan_ideas' : IDL.Func([], [Result_2], []),
     'trigger_delete_orphan_solutions' : IDL.Func([], [Result_2], []),
     'trigger_delete_unused_images' : IDL.Func([], [Result_2], []),
+    'upload_html_to_storage' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [Result],
+        [],
+      ),
     'upload_image' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Vec(IDL.Nat8), IDL.Text, IDL.Text, IDL.Text],
         [Result],
