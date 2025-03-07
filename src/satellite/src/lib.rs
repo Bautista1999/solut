@@ -11,6 +11,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::iter::Filter;
+use XMLAndLinkPreviews::create_or_update_html_metatags;
 
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use url::Url;
@@ -40,8 +41,8 @@ use junobuild_macros::{
     on_delete_many_docs, on_set_doc, on_set_many_docs, on_upload_asset,
 };
 use junobuild_satellite::{
-    count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, get_doc_store,
-    list_docs_store, log, set_asset_handler, set_doc_store, DelDoc, Key,
+    count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, error_with_data,
+    get_doc_store, list_docs_store, log, set_asset_handler, set_doc_store, DelDoc, Key,
     OnDeleteFilteredAssetsContext, OnDeleteFilteredDocsContext, SetDoc,
 };
 use junobuild_satellite::{
@@ -1313,6 +1314,7 @@ fn create_or_update_topic(key: String, topic: Topic) -> Result<(), String> {
     for (collection, key, set_doc) in docs_to_create_user {
         set_doc_store(caller, collection, key, set_doc)?;
     }
+    create_or_update_html_metatags("topic".to_string(), key.clone());
 
     Ok(())
 }
@@ -1423,6 +1425,7 @@ fn create_or_update_idea(key: String, idea: Idea, parent_idea_id: String) -> Res
         for (collection, key, set_doc) in docs_to_create_admin {
             set_doc_store(controller, collection, key, set_doc)?;
         }
+        create_or_update_html_metatags("idea".to_string(), key.clone());
     }
 
     // Step 6: Insert or update the user-owned documents
@@ -1657,7 +1660,16 @@ fn create_or_update_solution(
             set_doc_store(controller, collection, key, set_doc)?;
         }
     }
-
+    match create_or_update_html_metatags("solution".to_string(), key.clone()) {
+        Ok(_) => return Ok(()),
+        Err(e) => {
+            error_with_data(
+                "Failed to create metatags".to_string(),
+                &format!("Error: {}", e),
+            );
+            return Ok(());
+        }
+    };
     return Ok(());
 }
 

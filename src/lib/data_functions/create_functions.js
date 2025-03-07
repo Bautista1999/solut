@@ -58,7 +58,6 @@ export async function setIdea(idea,features, key){
     };
     let idea_id = key;
     
-    createAndUploadHTMLStaticFile(idea.title,idea_id,idea.subtitle,idea.images[0],"topic");
 
 
    
@@ -120,7 +119,6 @@ export async function setFeature(feature, parentIdeaId, key) {
 
         if ("Ok" in result) {
             // Return the feature ID if the backend operation was successful
-            createAndUploadHTMLStaticFile(feature.title,featureId,feature.subtitle,feature.images[0],"idea");
             return featureId;
         } else if ("Err" in result) {
             // If there's an error from the backend, return it directly
@@ -161,7 +159,6 @@ export async function setFeatures(features, parentIdea_id) {
         }
 
         // Create static HTML and track events on the frontend as before
-        createAndUploadHTMLStaticFile(feature.title, idea_id, feature.subtitle, feature.images[0], "idea");
         // trackEvent({
         //     name: "Ideas created",
         //     metadata: {

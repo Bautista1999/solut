@@ -15,7 +15,7 @@ use std::fmt;
 
 // Function to create metatags similar to metadataTagsCreator in JavaScript
 #[update]
-pub async fn create_metatags(input: MetaTagsInput) -> MetaTagsResult {
+pub fn create_metatags(input: MetaTagsInput) -> MetaTagsResult {
     let MetaTagsInput {
         title,
         description,
@@ -75,7 +75,7 @@ pub async fn create_metatags(input: MetaTagsInput) -> MetaTagsResult {
 
 // Function to upload HTML to asset storage using Juno's set_asset_handler
 #[update]
-pub async fn upload_html_to_storage(
+pub fn upload_html_to_storage(
     html: String,
     collection: String,
     id: String,
@@ -111,13 +111,13 @@ pub async fn upload_html_to_storage(
 
 // Utility function to create and upload HTML
 #[update]
-pub async fn create_and_upload_html(
+pub fn create_and_upload_html(
     input: MetaTagsInput,
     collection: String,
     id: String,
 ) -> Result<String, String> {
     // Create the metatags
-    let metatags_result = create_metatags(input).await;
+    let metatags_result = create_metatags(input);
 
     if !metatags_result.success {
         return Err(metatags_result
@@ -126,13 +126,10 @@ pub async fn create_and_upload_html(
     }
 
     // Upload to storage
-    upload_html_to_storage(metatags_result.html, collection, id).await
+    upload_html_to_storage(metatags_result.html, collection, id)
 }
 #[update]
-pub async fn create_or_update_html_metatags(
-    content_type: String,
-    id: String,
-) -> Result<(), String> {
+pub fn create_or_update_html_metatags(content_type: String, id: String) -> Result<(), String> {
     let caller = caller();
 
     let database_type = match content_type.as_str() {
@@ -196,7 +193,7 @@ pub async fn create_or_update_html_metatags(
     };
 
     // Create and upload HTML
-    match create_and_upload_html(input, content_type.clone().to_string(), id).await {
+    match create_and_upload_html(input, content_type.clone().to_string(), id) {
         Ok(_) => Ok(()),
         Err(e) => Err(format!("Failed to create and upload HTML: {}", e)),
     }
