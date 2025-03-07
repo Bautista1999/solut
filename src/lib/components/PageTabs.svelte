@@ -21,7 +21,7 @@
             style="font-weight: 50;"
             on:click={() => setActive(tab)}
         >
-            <h3>{tab}</h3>
+            <h2>{tab}</h2>
         </div>
     {/each}
 </div>
