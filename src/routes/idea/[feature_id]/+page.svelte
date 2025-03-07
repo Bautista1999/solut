@@ -57,6 +57,7 @@
     import TitleSection from "$lib/components/TitleSection.svelte";
     import MagicalDotsSmall from "$lib/components/MagicalDotsSmall.svelte";
     import FloatingHelpText from "$lib/components/FloatingHelpText.svelte";
+    import PledgeTable from "$lib/components/PledgeTable.svelte";
 
     /** @type {import('./$types').PageData} */
     // @ts-ignore
@@ -565,13 +566,7 @@
 
                     <div class="ActivityContent">
                         {#if activeTab === tabs[0]}
-                            {#await getTransactionsAndPledges(key)}
-                                <MagicalDotsAbsoluteSmall />
-                            {:then data}
-                                <TransactionDisplay
-                                    transactions={data ? data : []}
-                                />
-                            {/await}
+                            <PledgeTable id={key} />
                         {:else if activeTab === tabs[1]}
                             <CommentSection project_id={key} />
                         {:else if activeTab === tabs[2]}
