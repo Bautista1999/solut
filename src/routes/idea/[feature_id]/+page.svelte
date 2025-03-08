@@ -630,6 +630,7 @@
             "EditImages EditImages EditImages"
             "FundingSection FundingSection FundingSection"
             "PledgingSection PledgingSection PledgingSection"
+            "PledgeSectionMobile PledgeSectionMobile PledgeSectionMobile"
             "ActivitySection ActivitySection ActivitySection";
     }
 
