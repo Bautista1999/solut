@@ -630,7 +630,6 @@
             "EditImages EditImages EditImages"
             "FundingSection FundingSection FundingSection"
             "PledgingSection PledgingSection PledgingSection"
-            "PledgeSectionMobile PledgeSectionMobile PledgeSectionMobile"
             "ActivitySection ActivitySection ActivitySection";
     }
 
@@ -728,7 +727,7 @@
         justify-content: center;
         align-items: center;
         flex-direction: row;
-        margin: 0px;
+        margin-bottom: 10px;
     }
 
     .PledgeInfo {
@@ -832,7 +831,7 @@
             justify-content: center;
             align-items: center;
         }
-        .PledgeSectionMobile {
+        /* .PledgeSectionMobile {
             visibility: visible;
             height: fit-content;
             width: fit-content;
@@ -842,7 +841,7 @@
             gap: 20px;
             margin-top: 25px;
             margin-bottom: 15px;
-        }
+        } */
     }
 
     @media (max-width: 480px) {
@@ -873,6 +872,17 @@
             grid-area: PledgingSection;
             justify-content: center;
             align-items: center;
+        }
+        .PledgeSectionMobile {
+            visibility: visible;
+            height: fit-content;
+            width: fit-content;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 0px;
+            margin-bottom: 0px;
         }
         .PledgeButton {
             visibility: hidden;

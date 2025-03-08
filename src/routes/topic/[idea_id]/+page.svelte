@@ -61,6 +61,7 @@
     import FloatingHelpText from "$lib/components/FloatingHelpText.svelte";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import PledgeTable from "$lib/components/PledgeTable.svelte";
+    import { path } from "$lib/stores/redirect_store";
 
     /** @type {import('./$types').PageData} */
     export let data;
@@ -356,7 +357,7 @@
                 </div>
                 <div class="PledgingSection">
                     <div class="PledgeButton">
-                        <!-- <BasicButton
+                        <BasicButton
                             msg={"Pledge"}
                             someFunction={async () => {
                                 if (await CheckIfSignedIn()) {
@@ -365,16 +366,17 @@
                                     goto("/signin/");
                                 }
                             }}
-                        /> -->
+                        />
                     </div>
                     <div class="PledgeInfo">
-                        <!-- <p style="margin:0px; font-size:small;">
+                        <p style="margin:0px; font-size:small;">
                             Fully refundable until second confirmation. <span
                                 style="text-decoration: underline;cursor:pointer;"
                                 >Read more</span
                             >
-                        </p> -->
+                        </p>
                     </div>
+
                     {#await getTotalFollowers(key)}
                         <MagicalDotsAbsoluteSmall />
                     {:then data}
@@ -406,7 +408,30 @@
                         </div>
                     </div>
                 </div>
-
+                <div class="PledgeSectionMobile">
+                    <div class="">
+                        <BasicButton
+                            msg={"Pledge"}
+                            someFunction={async () => {
+                                if (await CheckIfSignedIn()) {
+                                    pledgeModalOpen();
+                                } else {
+                                    path.set("/idea/" + key);
+                                    goto("/signin/");
+                                }
+                            }}
+                        />
+                    </div>
+                    <div class="">
+                        <p style="margin:0px; font-size:small;">
+                            Fully refundable until second confirmation. <a
+                                href="https://forum.solutio.one/-205/terms-and-conditions"
+                                style="color:blue; text-decoration:underline;"
+                                >Read more.</a
+                            >
+                        </p>
+                    </div>
+                </div>
                 <div class="FeaturesSection">
                     <div class="FeaturesTitle">
                         {#if user == $UserKey}
@@ -557,6 +582,7 @@
             "EditImages EditImages EditImages"
             "FundingSection FundingSection FundingSection"
             "PledgingSection PledgingSection PledgingSection"
+            "PledgeSectionMobile PledgeSectionMobile PledgeSectionMobile"
             "FeaturesSection FeaturesSection FeaturesSection"
             "ActivitySection ActivitySection ActivitySection";
     }
@@ -637,12 +663,18 @@
         justify-content: center;
         align-items: center;
         flex-direction: row;
-        margin: 0px;
+        margin-bottom: 10px;
     }
 
     .PledgeInfo {
         grid-area: PledgeInfo;
         text-align: center;
+    }
+    .PledgeSectionMobile {
+        grid-area: PledgeSectionMobile;
+        visibility: hidden;
+        width: 0px;
+        height: 0px;
     }
 
     .ShareButton {
@@ -752,7 +784,7 @@
             display: grid;
             grid-template-columns: auto auto auto;
             grid-template-rows: auto auto;
-            gap: 0px 0px;
+            gap: 0px 15px;
             grid-auto-flow: row;
 
             grid-template-areas:
@@ -791,6 +823,27 @@
             grid-area: PledgingSection;
             justify-content: center;
             align-items: center;
+        }
+        .PledgeSectionMobile {
+            visibility: visible;
+            height: fit-content;
+            width: fit-content;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 0px;
+            margin-bottom: 0px;
+        }
+        .PledgeButton {
+            visibility: hidden;
+            height: 0px;
+            width: 0px;
+        }
+        .PledgeInfo {
+            visibility: hidden;
+            height: 0px;
+            width: 0px;
         }
         .Title {
             grid-area: Title;
