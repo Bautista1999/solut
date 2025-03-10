@@ -22,6 +22,7 @@
         UserKey,
     } from "$lib/stores/other_stores";
     import ModalPledgeFunds from "$lib/components/ModalPledgeFunds.svelte";
+    import ExpandablePledgeSection from "$lib/components/ExpandablePledgeSection.svelte";
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
     import { getDoc } from "@junobuild/core-peer";
@@ -110,9 +111,20 @@
     function setActiveTab(tab) {
         activeTab = tab;
     }
-    function pledgeModalOpen() {
-        pledgeModal.set(true);
+
+    // State for expandable pledge section
+    let isPledgeSectionExpanded = false;
+
+    function togglePledgeSection() {
+        isPledgeSectionExpanded = !isPledgeSectionExpanded;
     }
+
+    // Original function - kept for compatibility but modified to toggle section instead
+    function pledgeModalOpen() {
+        // pledgeModal.set(true); // Original behavior
+        togglePledgeSection(); // New behavior
+    }
+
     onMount(async () => {
         isLoading = true;
         // await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
@@ -361,7 +373,7 @@
                             msg={"Pledge"}
                             someFunction={async () => {
                                 if (await CheckIfSignedIn()) {
-                                    pledgeModalOpen();
+                                    togglePledgeSection();
                                 } else {
                                     goto("/signin/");
                                 }
@@ -414,7 +426,7 @@
                             msg={"Pledge"}
                             someFunction={async () => {
                                 if (await CheckIfSignedIn()) {
-                                    pledgeModalOpen();
+                                    togglePledgeSection();
                                 } else {
                                     path.set("/idea/" + key);
                                     goto("/signin/");
@@ -432,8 +444,15 @@
                         </p>
                     </div>
                 </div>
+
                 <div class="FeaturesSection">
                     <div class="FeaturesTitle">
+                        <div class="ExpandablePledgeSection">
+                            <ExpandablePledgeSection
+                                isExpanded={isPledgeSectionExpanded}
+                                topic_id={key}
+                            />
+                        </div>
                         {#if user == $UserKey}
                             <div style="margin-bottom: 20px">
                                 <BasicButtonDark
@@ -533,7 +552,10 @@
                         {/if}
                     </div>
                 </div>
-                <ModalPledgeFunds idea_id={key} feature_id={""} />
+                <!-- Keep this for compatibility but it won't be used directly anymore -->
+                {#if $pledgeModal}
+                    <ModalPledgeFunds idea_id={key} feature_id={""} />
+                {/if}
             </div>
         {:else if $success}
             <SuccessNew message={"Pledge successfully created"} />
@@ -571,7 +593,7 @@
     .container {
         display: grid;
         grid-template-columns: 0.3fr 1.8fr 0.9fr;
-        grid-template-rows: 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr;
+        grid-template-rows: 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr;
         gap: 13px 0px;
         grid-auto-flow: row;
         grid-template-areas:
@@ -675,6 +697,11 @@
         visibility: hidden;
         width: 0px;
         height: 0px;
+    }
+
+    .ExpandablePledgeSection {
+        grid-area: ExpandablePledgeSection;
+        width: 100%;
     }
 
     .ShareButton {
