@@ -25,7 +25,6 @@
     import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsolut.svelte";
     import EditImagesSection from "$lib/components/EditImagesSection.svelte";
     import MagicalDots from "$lib/components/magicalDots.svelte";
-
     import {
         CheckIfFeatureIsImplemented,
         SolutionLink,
@@ -62,6 +61,8 @@
     /** @type {import('./$types').PageData} */
     // @ts-ignore
     export let data;
+    let usere = "";
+
     let key = data.params.feature_id;
     let idea_id = "";
     /**
@@ -777,6 +778,8 @@
             "ActivityTabs"
             "ActivityContent";
         grid-area: ActivitySection;
+        margin-top: 20px;
+        margin-bottom: 20px;
     }
 
     .ActivityTabs {
@@ -787,6 +790,7 @@
         grid-auto-flow: row;
         grid-template-areas: "CommentsTab PledgersTab";
         grid-area: ActivityTabs;
+        padding: 10px 0;
     }
 
     .CommentsTab {
@@ -857,7 +861,8 @@
                 ". Funding-info .";
             grid-area: FundingSection;
             height: fit-content;
-            padding-inline: 0px;
+            padding: 0 15px;
+            margin-top: 10px;
         }
         .PledgingSection {
             display: grid;
