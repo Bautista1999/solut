@@ -10,6 +10,7 @@
     import InputAmountCellComponent from "$lib/components/InputAmountCellComponent.svelte";
     import SendButtonCellComponent from "$lib/components/SendButtonCellComponent.svelte";
     import StatusCellComponent from "$lib/components/StatusCellComponent.svelte";
+    import TitleCellComponent from "$lib/components/TitleCellComponent.svelte";
     import { afterUpdate } from "svelte";
     // Props
     export let isExpanded = false;
@@ -149,6 +150,7 @@
             accessor: "title",
             sortable: true,
             width: "100px",
+            cellComponent: TitleCellComponent,
         },
         {
             id: "amount",
