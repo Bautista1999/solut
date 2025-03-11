@@ -1,30 +1,21 @@
-
+# Build files
 /.svelte-kit
 /build
-/node_modules
-/static/workers
 /target
-/static/assets
-/static
-.DS_Store
-/build
-/build
-/build
-/node_modules
-build/_app/version.json
-build/index.html
-node_modules/.package-lock.json
-Cargo.lock
-build/index.html
-build/_app/version.json
-.DS_Store
-build/_app/version.json
-build/index.html
-node_modules/.package-lock.json
-node_modules/.package-lock.json
-build/_app/version.json
-build/index.html
 build_log.txt
-node_modules/.package-lock.json
-output.txt
 build_output.txt
+output.txt
+
+# Dependencies
+/node_modules
+
+# Static files
+/static
+/static/workers
+/static/assets
+
+# System files
+.DS_Store
+
+# Lock files
+Cargo.lock
