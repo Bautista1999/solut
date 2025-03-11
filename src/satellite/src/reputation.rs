@@ -48,7 +48,6 @@ pub fn calculate_reputation(amount_paid: u64, amount_promised: u64) -> u64 {
     if amount_promised == 0 {
         return if amount_paid > 0 { 100 } else { 0 };
     }
-
     let percentage = (amount_paid as f64 / amount_promised as f64) * 100.0;
     percentage.min(100.0) as u64
 }
