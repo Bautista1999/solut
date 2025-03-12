@@ -3,6 +3,8 @@
     import { quintOut } from "svelte/easing";
     import Table from "./Table/Table.svelte";
     import BasicButton from "./basicButton.svelte";
+    import { createEventDispatcher } from "svelte";
+    import { config, formatCurrency } from "$lib/stores/config_store";
 
     // Import local components
     // If these imports cause linter errors, ensure the component files exist in the correct location
@@ -13,9 +15,37 @@
     import TitleCellComponent from "$lib/components/TitleCellComponent.svelte";
     import { afterUpdate } from "svelte";
     // Props
+    const dispatch = createEventDispatcher();
     export let isExpanded = false;
-    export let availableFunds = 1000; // Sample value in ICP
+    export let availableFunds = 1000; // Sample value in configured currency
     export let topic_id = ""; // The ID of the topic
+
+    // Function to reset all state to initial values
+    function resetState() {
+        sampleIdeas = sampleIdeas.map((idea) => ({
+            ...idea,
+            checked: false,
+            amount: 0,
+            status: "neutral",
+        }));
+        isExecuting = false;
+    }
+
+    function handleClose() {
+        isExpanded = false;
+        dispatch("expandedChange", false);
+        // Reset all state when closing
+        resetState();
+    }
+
+    // Also reset state when isExpanded becomes false from parent
+    $: if (!isExpanded) {
+        resetState();
+    }
+
+    $: if (isExpanded) {
+        dispatch("expandedChange", true);
+    }
 
     // Create a function factory for checkbox toggle handlers
     /**
@@ -65,6 +95,7 @@
             uniqueKey: "idea-1",
             title: "Add dark mode to the application",
             checked: false,
+            amountPledged: 300, // Values in configured currency
             amount: 0,
             status: "neutral",
             handleCheckboxToggle: createToggleHandler(1),
@@ -75,6 +106,7 @@
             uniqueKey: "idea-2",
             title: "Implement real-time notifications",
             checked: false,
+            amountPledged: 200, // Values in configured currency
             amount: 0,
             status: "neutral",
             handleCheckboxToggle: createToggleHandler(2),
@@ -85,6 +117,7 @@
             uniqueKey: "idea-3",
             title: "Create a mobile app version",
             checked: false,
+            amountPledged: 50,
             amount: 0,
             status: "neutral",
             handleCheckboxToggle: createToggleHandler(3),
@@ -95,6 +128,7 @@
             uniqueKey: "idea-4",
             title: "Add export functionality for reports",
             checked: false,
+            amountPledged: 100,
             amount: 0,
             status: "neutral",
             handleCheckboxToggle: createToggleHandler(4),
@@ -105,6 +139,7 @@
             uniqueKey: "idea-5",
             title: "Improve search functionality",
             checked: false,
+            amountPledged: 13,
             amount: 0,
             status: "neutral",
             handleCheckboxToggle: createToggleHandler(5),
@@ -153,10 +188,18 @@
             cellComponent: TitleCellComponent,
         },
         {
+            id: "Amount pledged",
+            header: "Total Raised",
+            accessor: "amountPledged",
+            sortable: true,
+            width: "50px",
+            format: (/** @type {any} */ value) => $formatCurrency(value),
+        },
+        {
             id: "amount",
             header: "Amount",
             accessor: "amount",
-            // width: "",
+            width: "100px",
             cellComponent: InputAmountCellComponent,
         },
         // {
@@ -199,7 +242,7 @@
                 // Here you would call the actual pledge creation API
                 // await pledgeCreate(topic_id, idea.id, idea.amount);
                 console.log(
-                    `Pledge created for idea ${idea.id} with amount ${idea.amount}`,
+                    `Pledge created for idea ${idea.id} with amount ${$formatCurrency(idea.amount)}`,
                 );
 
                 // Update status to completed
@@ -239,11 +282,13 @@
         transition:slide={{ duration: 300, easing: quintOut }}
     >
         <div class="section-header">
-            <h2 style="margin-top: 0px">Pledge Funds</h2>
-            <p>
-                Choose the ideas you want to fund for this topic. You currently
-                have {availableFunds} ICP available to pledge.
-            </p>
+            <div class="header-content">
+                <h2 style="margin-top: 0px">Pledge Funds</h2>
+                <button class="close-button" on:click={handleClose}>
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <p>Choose the ideas you want to fund for this topic.</p>
         </div>
 
         <div class="table-container">
@@ -261,7 +306,17 @@
         <div class="summary-section">
             <div class="total-amount">
                 <span class="total-label">Total:</span>
-                <span class="total-value">{totalAmount.toFixed(2)} ICP</span>
+                <span class="total-value">{$formatCurrency(totalAmount)}</span>
+            </div>
+            <div class="total-amount">
+                <span class="total-label">Total Available:</span>
+                <span
+                    class="total-value"
+                    style="color: {availableFunds >= totalAmount
+                        ? 'var(--green)'
+                        : 'var(--red-wine)'}"
+                    >{$formatCurrency(availableFunds)}</span
+                >
             </div>
 
             <div class="action-button">
@@ -331,5 +386,35 @@
     .button-disabled {
         opacity: 0.5;
         pointer-events: none;
+    }
+
+    .section-header {
+        width: 100%;
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .close-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--secondary-color);
+        padding: 8px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+            background-color 0.2s,
+            color 0.2s;
+    }
+
+    .close-button:hover {
+        color: var(--primary-color);
     }
 </style>
