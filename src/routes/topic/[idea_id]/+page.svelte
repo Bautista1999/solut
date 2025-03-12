@@ -114,9 +114,33 @@
 
     // State for expandable pledge section
     let isPledgeSectionExpanded = false;
+    /**
+     * @type {HTMLDivElement}
+     */
+    let pledgeSectionRef; // Reference to the pledge section element
 
     function togglePledgeSection() {
         isPledgeSectionExpanded = !isPledgeSectionExpanded;
+        // Add scroll behavior after state update with centered positioning
+        if (isPledgeSectionExpanded) {
+            setTimeout(() => {
+                if (pledgeSectionRef) {
+                    const offset = window.innerHeight * 0.2; // 20% from the top of viewport
+                    const elementPosition =
+                        pledgeSectionRef.getBoundingClientRect().top +
+                        window.pageYOffset;
+                    window.scrollTo({
+                        top: elementPosition - offset,
+                        behavior: "smooth",
+                    });
+                }
+            }, 100);
+        }
+    }
+
+    // Handle state changes from child component
+    function handleExpandedChange(event) {
+        isPledgeSectionExpanded = event.detail;
     }
 
     // Original function - kept for compatibility but modified to toggle section instead
@@ -447,9 +471,14 @@
 
                 <div class="FeaturesSection">
                     <div class="FeaturesTitle">
-                        <div class="ExpandablePledgeSection">
+                        <div
+                            class="ExpandablePledgeSection"
+                            style="margin-bottom: 20px"
+                            bind:this={pledgeSectionRef}
+                        >
                             <ExpandablePledgeSection
                                 isExpanded={isPledgeSectionExpanded}
+                                on:expandedChange={handleExpandedChange}
                                 topic_id={key}
                             />
                         </div>
