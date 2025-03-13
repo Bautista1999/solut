@@ -21,10 +21,11 @@
         getUserAvailableBalance,
     } from "$lib/financial_functions/financial_functions";
     import { UserKey } from "$lib/stores/other_stores";
+    import BasicButtonDark from "./basicButton_Dark.svelte";
     // Props
     const dispatch = createEventDispatcher();
     export let isExpanded = false;
-    export let availableFunds = 1000; // Sample value in configured currency
+    export let availableFunds = 0; // Sample value in configured currency
     export let topic_id = ""; // The ID of the topic
 
     // Store for ideas data
@@ -36,11 +37,11 @@
 
     // Helper function to convert e8s to ICP
     /**
-     * Converts e8s (smallest unit of ICP) to ICP
+     * Converts e8s (smallest unit of ICP) to ICP with 2 decimal places
      * @param {number | bigint} e8s - Amount in e8s
-     * @returns {string} Amount in ICP
+     * @returns {number} Amount in ICP with 2 decimal places
      */
-    const e8sToIcp = (e8s) => (Number(e8s) / 100000000).toFixed(2);
+    const e8sToIcp = (e8s) => Number((Number(e8s) / 100000000).toFixed(2));
 
     onMount(async () => {
         try {
@@ -293,73 +294,118 @@
         class="expandable-section"
         transition:slide={{ duration: 300, easing: quintOut }}
     >
-        <div class="section-header">
-            <div class="header-content">
-                <h2 style="margin-top: 0px">Pledge Funds</h2>
-                <button class="close-button" on:click={handleClose}>
-                    <span class="material-symbols-outlined">close</span>
-                </button>
+        {#if ideas.length > 0}
+            <div class="section-header">
+                <div class="header-content">
+                    <h2 style="margin-top: 0px">Pledge Funds</h2>
+                    <button class="close-button" on:click={handleClose}>
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <p>Choose the ideas you want to fund for this topic.</p>
             </div>
-            <p>Choose the ideas you want to fund for this topic.</p>
-        </div>
 
-        {#if isLoading}
-            <div class="loading-container">
-                <span>Loading ideas...</span>
+            {#if isLoading}
+                <div class="loading-container">
+                    <span>Loading ideas...</span>
+                </div>
+            {:else}
+                <div class="table-container">
+                    <Table
+                        rows={ideas}
+                        {columns}
+                        showCheckboxes={false}
+                        showRowActions={false}
+                        showFilters={true}
+                        initialVisibleColumns={allColumnIds}
+                        showColumnToggle={false}
+                        defaultSort={{
+                            columnId: "Amount pledged",
+                            direction: "desc",
+                        }}
+                    />
+                </div>
+            {/if}
+
+            <div class="summary-section">
+                <div class="total-amount">
+                    <span class="total-label">Total:</span>
+                    <span class="total-value"
+                        >{$formatCurrency(totalAmount)}</span
+                    >
+                </div>
+                <div class="total-amount">
+                    <span class="total-label">Total Available:</span>
+
+                    {#await getAvailableFunds()}
+                        <span
+                            class="total-value"
+                            style="font-weight: 400; color:  var(--eigth-color)"
+                            >Loading...</span
+                        >
+                    {:then}
+                        <span
+                            class="total-value"
+                            style="color: {availableFunds >= totalAmount
+                                ? 'var(--green)'
+                                : 'var(--red-wine)'}"
+                            >{$formatCurrency(availableFunds)}</span
+                        >
+                    {/await}
+                    {#if availableFunds < totalAmount}
+                        <span
+                            class="insufficient-funds total-label"
+                            style="font-weight: 400; color: var(--red-wine)"
+                            >You have insufficient funds.</span
+                        >
+                    {/if}
+                </div>
+
+                <div class="action-button">
+                    <div
+                        class={!canExecutePledges || isExecuting
+                            ? "button-disabled"
+                            : ""}
+                    >
+                        <BasicButton
+                            msg={"Pledge funds"}
+                            someFunction={handleExecutePledges}
+                            icon={""}
+                            disabled={!canExecutePledges ||
+                                isExecuting ||
+                                availableFunds < totalAmount}
+                        />
+                    </div>
+                </div>
             </div>
         {:else}
-            <div class="table-container">
-                <Table
-                    rows={ideas}
-                    {columns}
-                    showCheckboxes={false}
-                    showRowActions={false}
-                    showFilters={true}
-                    initialVisibleColumns={allColumnIds}
-                    showColumnToggle={false}
+            <div class="section-header">
+                <div class="header-content">
+                    <h2 style="margin-top: 0px">Pledging Not Available Yet</h2>
+                    <button class="close-button" on:click={handleClose}>
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <p>
+                    This topic doesn't have any ideas to pledge to yet. Pledging
+                    becomes available once community members contribute ideas
+                    for features, improvements or bug fixes.
+                </p>
+                <p style="margin-top: 10px; margin-bottom: 15px">
+                    <span style="font-weight: 600; font-style: italic"
+                        >Be the pioneer</span
+                    > - create the first idea and kickstart the development of this
+                    topic!
+                </p>
+                <BasicButtonDark
+                    msg={"Create the first idea"}
+                    someFunction={() => {
+                        window.open("/createidea/" + topic_id);
+                    }}
+                    icon={"emoji_objects"}
                 />
             </div>
         {/if}
-
-        <div class="summary-section">
-            <div class="total-amount">
-                <span class="total-label">Total:</span>
-                <span class="total-value">{$formatCurrency(totalAmount)}</span>
-            </div>
-            <div class="total-amount">
-                <span class="total-label">Total Available:</span>
-
-                {#await getAvailableFunds()}
-                    <span
-                        class="total-value"
-                        style="font-weight: 400; color:  var(--eigth-color)"
-                        >Loading...</span
-                    >
-                {:then}
-                    <span
-                        class="total-value"
-                        style="color: {availableFunds >= totalAmount
-                            ? 'var(--green)'
-                            : 'var(--red-wine)'}"
-                        >{$formatCurrency(availableFunds)}</span
-                    >
-                {/await}
-            </div>
-
-            <div class="action-button">
-                <div
-                    class={!canExecutePledges || isExecuting
-                        ? "button-disabled"
-                        : ""}
-                >
-                    <BasicButton
-                        msg={"Pledge funds"}
-                        someFunction={handleExecutePledges}
-                        icon={""}
-                    />
-                </div>
-            </div>
-        </div>
     </div>
 {/if}
 
@@ -382,7 +428,7 @@
     .summary-section {
         display: flex;
         flex-direction: column;
-        gap: 15px;
+        gap: 10px;
         padding-top: 15px;
         border-top: 1px solid var(--seventh-color);
     }
@@ -391,7 +437,14 @@
         display: flex;
         justify-content: flex-end;
         align-items: center;
-        gap: 10px;
+        gap: 0px 10px; /* row-gap column-gap syntax: 5px between rows, 10px between columns */
+        flex-wrap: wrap;
+    }
+
+    .insufficient-funds {
+        width: 100%;
+        text-align: right;
+        font-size: small;
     }
 
     .total-label {

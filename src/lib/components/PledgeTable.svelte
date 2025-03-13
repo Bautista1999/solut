@@ -137,5 +137,9 @@
         showRowActions={false}
         {maxWidth}
         {initialVisibleColumns}
+        defaultSort={{
+            columnId: "created_at",
+            direction: "asc",
+        }}
     />
 </div>

@@ -139,6 +139,9 @@
     }
 
     // Handle state changes from child component
+    /**
+     * @param {{ detail: boolean }} event - Custom event from ExpandablePledgeSection
+     */
     function handleExpandedChange(event) {
         isPledgeSectionExpanded = event.detail;
     }
