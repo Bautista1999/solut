@@ -5,6 +5,10 @@
     /** @type {Record<string, any>} */
     export let row;
 
+    // Use a string for the input value
+    /** @type {string} */
+    let inputValue = row.amount ? row.amount.toString() : "";
+
     $: isLoading = row.status === "loading";
     $: isDisabled = isLoading || !row.checked; // Disable if row is loading or not checked
 
@@ -14,13 +18,13 @@
     function updateAmount(e) {
         if (isDisabled) return; // Prevent updates when disabled
 
-        const newValue = parseFloat(
-            /** @type {HTMLInputElement} */ (e.target).value,
-        );
+        const input = /** @type {HTMLInputElement} */ (e.target);
+        inputValue = input.value;
 
-        const amount = isNaN(newValue) ? 0 : newValue;
+        // Convert to number only if there's a value
+        const amount = inputValue === "" ? 0 : parseFloat(inputValue);
 
-        // Update the row directly
+        // Update the row
         row.amount = amount;
 
         // Use the handleAmountChange handler if available
@@ -31,6 +35,11 @@
             row = { ...row };
         }
     }
+
+    // Keep inputValue in sync with row.amount when it changes externally
+    $: if (row.amount !== undefined && !isNaN(row.amount)) {
+        inputValue = row.amount > 0 ? row.amount.toString() : "";
+    }
 </script>
 
 <div class="input-cell" class:loading={isLoading}>
@@ -39,7 +48,7 @@
             type="number"
             min="0"
             step="0.01"
-            bind:value={row.amount}
+            value={inputValue}
             on:input={updateAmount}
             placeholder="0.00"
             disabled={isLoading}
@@ -71,6 +80,7 @@
         border: 1px solid var(--seventh-color);
         border-radius: 8px;
         font-size: medium;
+        font-family: "Barlow";
     }
 
     input:focus {

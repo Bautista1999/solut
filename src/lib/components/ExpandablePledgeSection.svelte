@@ -5,6 +5,8 @@
     import BasicButton from "./basicButton.svelte";
     import { createEventDispatcher } from "svelte";
     import { config, formatCurrency } from "$lib/stores/config_store";
+    import { onMount } from "svelte";
+    import { getPaginatedIdeas } from "../../declarations/satellite/satellite.api";
 
     // Import local components
     // If these imports cause linter errors, ensure the component files exist in the correct location
@@ -14,15 +16,68 @@
     import StatusCellComponent from "$lib/components/StatusCellComponent.svelte";
     import TitleCellComponent from "$lib/components/TitleCellComponent.svelte";
     import { afterUpdate } from "svelte";
+    import {
+        CreatePledgeNew,
+        getUserAvailableBalance,
+    } from "$lib/financial_functions/financial_functions";
+    import { UserKey } from "$lib/stores/other_stores";
     // Props
     const dispatch = createEventDispatcher();
     export let isExpanded = false;
     export let availableFunds = 1000; // Sample value in configured currency
     export let topic_id = ""; // The ID of the topic
 
+    // Store for ideas data
+    /**
+     * @type {any[]}
+     */
+    let ideas = [];
+    let isLoading = true;
+
+    // Helper function to convert e8s to ICP
+    /**
+     * Converts e8s (smallest unit of ICP) to ICP
+     * @param {number | bigint} e8s - Amount in e8s
+     * @returns {string} Amount in ICP
+     */
+    const e8sToIcp = (e8s) => (Number(e8s) / 100000000).toFixed(2);
+
+    onMount(async () => {
+        try {
+            const response = await getPaginatedIdeas(
+                "most_pledged",
+                [0],
+                [12],
+                [],
+                [topic_id],
+            );
+            if ("Ok" in response) {
+                const [ideasData] = response.Ok;
+                // Map backend data to our table format
+                ideas = ideasData.map((idea, index) => ({
+                    id: index + 1, // Use numeric IDs for compatibility
+                    uniqueKey: `${idea.element_id}`,
+                    title: idea.title,
+                    checked: false,
+                    amountPledged: e8sToIcp(idea.total_pledged), // Convert e8s to ICP
+                    amount: 0,
+                    status: "neutral",
+                    handleCheckboxToggle: createToggleHandler(index + 1),
+                    handleAmountChange: createAmountHandler(index + 1),
+                    originalId: idea.element_id, // Store original ID if needed
+                }));
+                ideas = ideas; // Update the table data
+            }
+        } catch (error) {
+            console.error("Error fetching ideas:", error);
+        } finally {
+            isLoading = false;
+        }
+    });
+
     // Function to reset all state to initial values
     function resetState() {
-        sampleIdeas = sampleIdeas.map((idea) => ({
+        ideas = ideas.map((idea) => ({
             ...idea,
             checked: false,
             amount: 0,
@@ -58,10 +113,10 @@
          * @param {boolean} checked - The new checked state
          */
         return function (checked) {
-            const index = sampleIdeas.findIndex((idea) => idea.id === rowId);
+            const index = ideas.findIndex((idea) => idea.id === rowId);
             if (index >= 0) {
-                sampleIdeas[index].checked = checked;
-                sampleIdeas = [...sampleIdeas]; // Trigger reactivity
+                ideas[index].checked = checked;
+                ideas = [...ideas]; // Trigger reactivity
                 console.log(
                     `Toggle handled for idea ${rowId}, checked=${checked}`,
                 );
@@ -79,89 +134,31 @@
          * @param {number} amount - The new amount
          */
         return function (amount) {
-            const index = sampleIdeas.findIndex((idea) => idea.id === rowId);
+            const index = ideas.findIndex((idea) => idea.id === rowId);
             if (index >= 0) {
-                sampleIdeas[index].amount = amount;
-                sampleIdeas = [...sampleIdeas]; // Trigger reactivity
+                ideas[index].amount = amount;
+                ideas = [...ideas]; // Trigger reactivity
                 console.log(`Amount updated for idea ${rowId}: ${amount}`);
             }
         };
     }
 
-    // Sample data for the table with event handlers
-    let sampleIdeas = [
-        {
-            id: 1,
-            uniqueKey: "idea-1",
-            title: "Add dark mode to the application",
-            checked: false,
-            amountPledged: 300, // Values in configured currency
-            amount: 0,
-            status: "neutral",
-            handleCheckboxToggle: createToggleHandler(1),
-            handleAmountChange: createAmountHandler(1),
-        },
-        {
-            id: 2,
-            uniqueKey: "idea-2",
-            title: "Implement real-time notifications",
-            checked: false,
-            amountPledged: 200, // Values in configured currency
-            amount: 0,
-            status: "neutral",
-            handleCheckboxToggle: createToggleHandler(2),
-            handleAmountChange: createAmountHandler(2),
-        },
-        {
-            id: 3,
-            uniqueKey: "idea-3",
-            title: "Create a mobile app version",
-            checked: false,
-            amountPledged: 50,
-            amount: 0,
-            status: "neutral",
-            handleCheckboxToggle: createToggleHandler(3),
-            handleAmountChange: createAmountHandler(3),
-        },
-        {
-            id: 4,
-            uniqueKey: "idea-4",
-            title: "Add export functionality for reports",
-            checked: false,
-            amountPledged: 100,
-            amount: 0,
-            status: "neutral",
-            handleCheckboxToggle: createToggleHandler(4),
-            handleAmountChange: createAmountHandler(4),
-        },
-        {
-            id: 5,
-            uniqueKey: "idea-5",
-            title: "Improve search functionality",
-            checked: false,
-            amountPledged: 13,
-            amount: 0,
-            status: "neutral",
-            handleCheckboxToggle: createToggleHandler(5),
-            handleAmountChange: createAmountHandler(5),
-        },
-    ];
-
     // Calculate total amount pledged
-    $: totalAmount = sampleIdeas
+    $: totalAmount = ideas
         .filter((idea) => idea.checked && idea.amount > 0)
         .reduce((sum, idea) => sum + idea.amount, 0);
 
     // Track which ideas are ready to be pledged
-    $: ideasToExecute = sampleIdeas
+    $: ideasToExecute = ideas
         .filter(
             (idea) =>
                 idea.checked && idea.amount > 0 && idea.status === "neutral",
         )
         .map((idea) => ({
             id: idea.id,
+            key: idea.uniqueKey,
             amount: idea.amount,
-            index: sampleIdeas.findIndex((i) => i.id === idea.id),
+            index: ideas.findIndex((i) => i.id === idea.id),
         }));
 
     // Determine if the execute button should be enabled
@@ -232,12 +229,18 @@
         // Process each pledge sequentially
         for (const idea of ideasToExecute) {
             // Update status to loading
-            sampleIdeas[idea.index].status = "loading";
-            sampleIdeas = [...sampleIdeas]; // Trigger reactivity
+            ideas[idea.index].status = "loading";
+            ideas = [...ideas]; // Trigger reactivity
 
             try {
                 // Simulate API call with delay
-                await new Promise((resolve) => setTimeout(resolve, 2000));
+                // await new Promise((resolve) => setTimeout(resolve, 2000));
+                let pledgeCreation = await CreatePledgeNew(
+                    topic_id,
+                    idea.key,
+                    idea.amount,
+                    $UserKey,
+                );
 
                 // Here you would call the actual pledge creation API
                 // await pledgeCreate(topic_id, idea.id, idea.amount);
@@ -246,18 +249,19 @@
                 );
 
                 // Update status to completed
-                sampleIdeas[idea.index].status = "completed";
+                ideas[idea.index].status = "completed";
             } catch (error) {
-                console.error(
-                    `Error creating pledge for idea ${idea.id}:`,
-                    error,
-                );
-                // Update status to error
-                sampleIdeas[idea.index].status = "error";
+                alert(`Error creating pledge for idea ${idea.id}:` + error);
+                if (String(error).includes("signature could not be verified")) {
+                    ideas[idea.index].status = "success";
+                } else {
+                    // Update status to error
+                    ideas[idea.index].status = "error";
+                }
             }
 
             // Trigger reactivity
-            sampleIdeas = [...sampleIdeas];
+            ideas = [...ideas];
         }
 
         isExecuting = false;
@@ -272,8 +276,16 @@
 
     // For debugging, log when component updates
     afterUpdate(() => {
-        console.log("ExpandablePledgeSection updated, ideas:", sampleIdeas);
+        console.log("ExpandablePledgeSection updated, ideas:", ideas);
     });
+
+    async function getAvailableFunds() {
+        const response = await getUserAvailableBalance();
+        availableFunds = response;
+    }
+
+    // When displaying available funds, also convert from e8s to ICP
+    // $: availableFundsIcp = e8sToIcp(availableFunds);
 </script>
 
 {#if isExpanded}
@@ -291,17 +303,23 @@
             <p>Choose the ideas you want to fund for this topic.</p>
         </div>
 
-        <div class="table-container">
-            <Table
-                rows={sampleIdeas}
-                {columns}
-                showCheckboxes={false}
-                showRowActions={false}
-                showFilters={true}
-                initialVisibleColumns={allColumnIds}
-                showColumnToggle={false}
-            />
-        </div>
+        {#if isLoading}
+            <div class="loading-container">
+                <span>Loading ideas...</span>
+            </div>
+        {:else}
+            <div class="table-container">
+                <Table
+                    rows={ideas}
+                    {columns}
+                    showCheckboxes={false}
+                    showRowActions={false}
+                    showFilters={true}
+                    initialVisibleColumns={allColumnIds}
+                    showColumnToggle={false}
+                />
+            </div>
+        {/if}
 
         <div class="summary-section">
             <div class="total-amount">
@@ -310,13 +328,22 @@
             </div>
             <div class="total-amount">
                 <span class="total-label">Total Available:</span>
-                <span
-                    class="total-value"
-                    style="color: {availableFunds >= totalAmount
-                        ? 'var(--green)'
-                        : 'var(--red-wine)'}"
-                    >{$formatCurrency(availableFunds)}</span
-                >
+
+                {#await getAvailableFunds()}
+                    <span
+                        class="total-value"
+                        style="font-weight: 400; color:  var(--eigth-color)"
+                        >Loading...</span
+                    >
+                {:then}
+                    <span
+                        class="total-value"
+                        style="color: {availableFunds >= totalAmount
+                            ? 'var(--green)'
+                            : 'var(--red-wine)'}"
+                        >{$formatCurrency(availableFunds)}</span
+                    >
+                {/await}
             </div>
 
             <div class="action-button">

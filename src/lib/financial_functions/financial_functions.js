@@ -304,6 +304,7 @@ export async function CreatePledgeNew(idea_id, feature_id, amount, userPrincipal
     //   });
     
     console.log("Result: ", result);
+    return result;
 }
 
 /**
