@@ -51,6 +51,7 @@
     claimTokens,
     completeSolution,
     createOrUpdateHtmlMetatags,
+    generateSitemap,
   } from "../../declarations/satellite/satellite.api";
   import { signIn, NFIDProvider, authSubscribe } from "@junobuild/core";
   import SearchBarLarger from "$lib/components/SearchBarLarger.svelte";
@@ -1183,6 +1184,18 @@
           console.log(result);
         }}
         msg={"Update Link Preview"}
+      />
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">Update XML Sitemap</h1>
+
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          const result = await generateSitemap();
+          console.log(result);
+        }}
+        msg={"Update XML Sitemap"}
       />
     </div>
 

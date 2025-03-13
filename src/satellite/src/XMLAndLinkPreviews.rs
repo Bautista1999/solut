@@ -4,7 +4,9 @@ use candid::{CandidType, Principal};
 use ic_cdk::api::caller;
 use ic_cdk::api::management_canister::http_request::{HttpResponse, TransformArgs};
 use ic_cdk_macros::*;
-use junobuild_satellite::{delete_asset_store, get_doc_store, set_asset_handler};
+use junobuild_satellite::{delete_asset_store, get_doc_store, list_docs_store, set_asset_handler};
+use junobuild_shared::types::list::ListResults;
+use junobuild_shared::types::list::{ListMatcher, ListParams};
 use junobuild_storage::http::types::HeaderField;
 use junobuild_storage::types::store::AssetKey;
 use junobuild_utils::decode_doc_data;
@@ -196,5 +198,102 @@ pub fn create_or_update_html_metatags(content_type: String, id: String) -> Resul
     match create_and_upload_html(input, content_type.clone().to_string(), id) {
         Ok(_) => Ok(()),
         Err(e) => Err(format!("Failed to create and upload HTML: {}", e)),
+    }
+}
+
+#[update]
+pub fn generate_sitemap() -> Result<String, String> {
+    // Start XML with static URLs
+    let mut sitemap = String::from(
+        r#"<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
+<loc>https://solutio.one</loc>
+<lastmod>2024-09-18T19:39:50+00:00</lastmod>
+<priority>1</priority>
+</url>
+<url>
+<loc>https://solutio.one/createtopic</loc>
+<lastmod>2024-09-18T19:39:50+00:00</lastmod>
+<priority>0.8</priority>
+</url>"#,
+    );
+
+    // Function to format a URL entry
+    fn format_url_entry(path_type: &str, id: &str) -> String {
+        format!(
+            r#"
+<url>
+<loc>https://solutio.one/{}/{}</loc>
+<lastmod>{}</lastmod>
+<priority>0.8</priority>
+</url>"#,
+            path_type,
+            id,
+            ic_cdk::api::time() / 1_000_000
+        )
+    }
+
+    // Create empty filter params
+    let filter = ListParams {
+        order: None,
+        owner: None,
+        matcher: None,
+        paginate: None,
+    };
+
+    // Get topics (stored as "idea" collection)
+    let topics_result = list_docs_store(caller(), "idea".to_string(), &filter)?;
+    for (key, _doc) in topics_result.items {
+        sitemap.push_str(&format_url_entry("topic", &key));
+    }
+
+    // Get ideas (stored as "feature" collection)
+    let ideas_result = list_docs_store(caller(), "feature".to_string(), &filter)?;
+    for (key, _doc) in ideas_result.items {
+        sitemap.push_str(&format_url_entry("idea", &key));
+    }
+
+    // Get solutions
+    let solutions_result = list_docs_store(caller(), "solution".to_string(), &filter)?;
+    for (key, _doc) in solutions_result.items {
+        sitemap.push_str(&format_url_entry("solution", &key));
+    }
+
+    // Get users
+    let users_result = list_docs_store(caller(), "user".to_string(), &filter)?;
+    for (key, _doc) in users_result.items {
+        sitemap.push_str(&format_url_entry("profile", &key));
+    }
+
+    // Close the XML
+    sitemap.push_str("\n</urlset>");
+
+    // Create the asset key for sitemap.xml
+    let key = AssetKey {
+        name: "sitemap.xml".to_string(),
+        full_path: "/solutio-files/sitemap.xml".to_string(),
+        token: None,
+        collection: "solutio-files".to_string(),
+        owner: caller(),
+        description: Some("Sitemap XML file".to_string()),
+    };
+
+    // Create headers for XML content
+    let headers = vec![
+        HeaderField("Content-Type".to_string(), "application/xml".to_string()),
+        HeaderField(
+            "Cache-Control".to_string(),
+            "public, max-age=3600".to_string(),
+        ),
+    ];
+
+    // Convert string to Vec<u8>
+    let sitemap_bytes: Vec<u8> = sitemap.clone().into_bytes();
+
+    // Upload the sitemap using set_asset_handler
+    match set_asset_handler(&key, &sitemap_bytes, &headers) {
+        Ok(_) => Ok(sitemap.clone()),
+        Err(e) => Err(format!("Failed to upload sitemap: {}", e)),
     }
 }

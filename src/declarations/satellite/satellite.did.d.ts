@@ -267,6 +267,7 @@ export interface _SERVICE {
   'eliminate_idea' : ActorMethod<[string], Result_2>,
   'eliminate_solution' : ActorMethod<[string], Result_2>,
   'eliminate_topic' : ActorMethod<[string], Result_2>,
+  'generate_sitemap' : ActorMethod<[], Result>,
   'get_available_balance' : ActorMethod<[string], Result_5>,
   'get_available_balance_without_pledged_amount' : ActorMethod<
     [string, bigint],

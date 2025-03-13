@@ -165,6 +165,14 @@ export const eliminateTopic = async (value0: string): Promise<Result_2> => {
 	return await eliminate_topic(value0);
 }
 
+export const generateSitemap = async (): Promise<Result> => {
+	const {generate_sitemap} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await generate_sitemap();
+}
+
 export const getAvailableBalance = async (value0: string): Promise<Result_5> => {
 	const {get_available_balance} = await getSatelliteExtendedActor<SatelliteActor>({
 		idlFactory

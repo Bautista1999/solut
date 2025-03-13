@@ -303,6 +303,7 @@ export const idlFactory = ({ IDL }) => {
     'eliminate_idea' : IDL.Func([IDL.Text], [Result_2], []),
     'eliminate_solution' : IDL.Func([IDL.Text], [Result_2], []),
     'eliminate_topic' : IDL.Func([IDL.Text], [Result_2], []),
+    'generate_sitemap' : IDL.Func([], [Result], []),
     'get_available_balance' : IDL.Func([IDL.Text], [Result_5], []),
     'get_available_balance_without_pledged_amount' : IDL.Func(
         [IDL.Text, IDL.Nat64],
