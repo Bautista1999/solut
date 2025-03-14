@@ -269,7 +269,8 @@
             <div slot="additional-fields">
                 <div class="form-section">
                     <label for="ideasSelected"
-                        >Which ideas are you going to be solving?</label
+                        >Which ideas are you going to be solving? Select at
+                        least one.</label
                     >
                     <SearchBarLarger
                         bind:ideas

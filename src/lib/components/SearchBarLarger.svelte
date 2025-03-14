@@ -58,6 +58,7 @@
             } else {
                 results = counterDoc.items.filter((doc) => {
                     if (doc.description == undefined) {
+                    } else if (doc.key.includes(parentIdeaKey)) {
                     } else {
                         return doc.description.includes(parentIdeaKey);
                     }
@@ -124,13 +125,29 @@
     }
 </script>
 
-<div class="search-container">
+<div
+    class="search-container"
+    style={results.length == 0
+        ? "border-radius: 8px;"
+        : "border-radius: 8px 8px 0 0;"}
+>
+    {#if searchText.length > 0}
+        <button
+            class="close-button"
+            on:click={async () => {
+                results = [];
+                searchText = "";
+            }}
+        >
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    {/if}
     <div class="search-content">
         <input
             class="search-box"
             id="search-box"
             type="text"
-            placeholder="Search for a topic or idea..."
+            placeholder="Search for an idea..."
             bind:value={searchText}
             on:input={(event) => {
                 /*handleInput;*/
@@ -139,6 +156,7 @@
             style="font-family: 'Barlow';"
         />
     </div>
+
     {#if !isLoading}
         <button
             class="search-button"
@@ -152,12 +170,13 @@
         <MagicalDotsAbsoluteSmall />
     {/if}
 </div>
-<div class="results">
-    {#each results as result}
+<div class="results" style="background-color: transparent;">
+    {#each results as result, index}
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
             class="result-card"
+            class:last-result={index === results.length - 1}
             on:click={() => {
                 AddFeature(result.key.substring(6));
                 AddFeatureName(result.data.title);
@@ -168,11 +187,12 @@
                 class="image"
                 style="background-image: url({result.data.images[0] || ''})"
             ></div>
-            <div class="content SmallSeparator">
-                <p>{result.data.title}</p>
-                <p>{result.data.subtitle}</p>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <p style="font-size: medium; font-weight: bold;">
+                    {result.data.title}
+                </p>
+                <p style="font-size: 0.8rem;">{result.data.subtitle}</p>
             </div>
-            <div class="badge">Idea</div>
         </div>
     {/each}
     {#if noIdeas}
@@ -190,9 +210,11 @@
         justify-content: space-between;
         width: 760px;
         background: linear-gradient(to right, var(--tertiary-color));
-        padding: 0.5rem 1rem;
+        padding: 10px;
+        padding-right: 10px;
         border: 1px solid var(--seventh-color);
         font-family: "Barlow";
+        border-radius: 8px;
     }
 
     .search-content {
@@ -206,7 +228,9 @@
         flex-grow: 1;
         padding: 0.5rem;
         margin-right: 1rem;
+
         border: none;
+        border-radius: 8px;
         background: transparent;
         font-size: 1rem;
         width: 100%; /* Ensures it takes available space */
@@ -225,6 +249,7 @@
         justify-content: center;
         border: 1px solid var(--seventh-color);
         color: var(--tertiary-color);
+        border-radius: 8px;
     }
 
     .material-symbols-outlined {
@@ -237,6 +262,8 @@
 
     .results {
         z-index: 2;
+        border-radius: 8px;
+        box-shadow: 0 5px 5px 0 rgba(0, 0, 0, 0.1);
     }
 
     .result-card {
@@ -244,27 +271,37 @@
         align-items: center;
         padding: 10px;
         border: 1px solid var(--seventh-color);
-        margin-bottom: 10px;
         position: relative;
-        background-color: var(--tertiary-color);
-        border-top: 0px;
+        /* background-color: var(--tertiary-color); */
+        border-top: none;
+        border-radius: 0;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
         cursor: pointer;
+        gap: 10px;
         transition: background-color 0.3s ease;
     }
+
+    .result-card.last-result {
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
     .result-card:hover {
-        background-color: var(--fifth-color);
+        /* background-color: var(--fifth-color); */
     }
 
     .image {
-        width: 150px;
+        min-width: 80px;
+        max-width: 80px;
         height: 80px;
         background-size: cover;
         background-position: center;
         border: 1px solid var(--seventh-color);
+        border-radius: 8px;
     }
 
     .content {
-        margin-left: 20px;
         flex: 1;
     }
 
@@ -275,6 +312,20 @@
         border-radius: 4px;
         font-weight: bold;
     }
+
+    .close-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .close-button:hover {
+        color: var(--primary-color);
+    }
+
     @media (max-width: 480px) {
         .search-container {
             display: flex;
