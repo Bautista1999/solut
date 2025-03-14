@@ -521,7 +521,7 @@
                             />
                         {/if}
                     </div>
-                    <div>
+                    <div id="ideas">
                         <IdeaCardContainer idea_id={key} />
                     </div>
 

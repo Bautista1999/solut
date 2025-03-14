@@ -287,6 +287,24 @@
 
     // When displaying available funds, also convert from e8s to ICP
     // $: availableFundsIcp = e8sToIcp(availableFunds);
+
+    function handleViewIdeas() {
+        handleClose();
+        // Wait for the close animation to finish
+        setTimeout(() => {
+            const ideasSection = document.getElementById("ideas");
+            if (ideasSection) {
+                const offset = window.innerHeight * 0.05; // 20% of viewport height
+                const elementPosition =
+                    ideasSection.getBoundingClientRect().top +
+                    window.pageYOffset;
+                window.scrollTo({
+                    top: elementPosition - offset,
+                    behavior: "smooth",
+                });
+            }
+        }, 300); // Match the slide transition duration
+    }
 </script>
 
 {#if isExpanded}
@@ -297,12 +315,19 @@
         {#if ideas.length > 0}
             <div class="section-header">
                 <div class="header-content">
-                    <h2 style="margin-top: 0px">Pledge Funds</h2>
+                    <h2 style="margin-top: 0px">Pledge to Multiple Ideas</h2>
                     <button class="close-button" on:click={handleClose}>
                         <span class="material-symbols-outlined">close</span>
                     </button>
                 </div>
-                <p>Choose the ideas you want to fund for this topic.</p>
+                <p>
+                    Here you can pledge to multiple ideas at once by selecting
+                    them below.
+                    <button class="link-button" on:click={handleViewIdeas}
+                        >Click here</button
+                    >
+                    to learn more about the ideas.
+                </p>
             </div>
 
             {#if isLoading}
@@ -352,15 +377,27 @@
                             >{$formatCurrency(availableFunds)}</span
                         >
                     {/await}
-                    {#if availableFunds < totalAmount}
-                        <span
-                            class="insufficient-funds total-label"
-                            style="font-weight: 400; color: var(--red-wine)"
-                            >You have insufficient funds.</span
-                        >
-                    {/if}
                 </div>
-
+                {#if availableFunds < totalAmount}
+                    <span
+                        class="insufficient-funds total-label"
+                        style="color: var(--red-wine)"
+                    >
+                        <p style="font-weight: 600">Balance too low.</p>
+                        <span
+                            style="color: var(--seventh-color); font-weight: 350;"
+                        >
+                            To increase your balance, find your wallet address
+                            in your
+                        </span>
+                        <a
+                            style="font-weight: 350; color: var(--primary-color)"
+                            href="/account/{$UserKey}"
+                        >
+                            user settings</a
+                        >.
+                    </span>
+                {/if}
                 <div class="action-button">
                     <div
                         class={!canExecutePledges || isExecuting
@@ -444,7 +481,6 @@
     .insufficient-funds {
         width: 100%;
         text-align: right;
-        font-size: small;
     }
 
     .total-label {
@@ -495,6 +531,20 @@
     }
 
     .close-button:hover {
+        color: var(--primary-color);
+    }
+
+    .link-button {
+        background: none;
+        border: none;
+        padding: 0;
+        text-decoration: underline;
+        cursor: pointer;
+        font-size: medium;
+        font-family: "Barlow";
+    }
+
+    .link-button:hover {
         color: var(--primary-color);
     }
 </style>
