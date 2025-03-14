@@ -211,11 +211,6 @@ pub fn generate_sitemap() -> Result<String, String> {
 <loc>https://solutio.one</loc>
 <lastmod>2024-09-18T19:39:50+00:00</lastmod>
 <priority>1</priority>
-</url>
-<url>
-<loc>https://solutio.one/createtopic</loc>
-<lastmod>2024-09-18T19:39:50+00:00</lastmod>
-<priority>0.8</priority>
 </url>"#,
     );
 
