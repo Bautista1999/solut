@@ -183,6 +183,7 @@ a:hover {
     font-family: 'Barlow';
     font-size: medium;
     height: fit-content;
+    border-radius: 8px;
 }
 
 .InputTextSmall {
@@ -191,6 +192,7 @@ a:hover {
     font-family: 'Barlow';
     font-size: medium;
     height: fit-content;
+    border-radius: 8px;
 }
 
 .userSmallProfilePicture {
