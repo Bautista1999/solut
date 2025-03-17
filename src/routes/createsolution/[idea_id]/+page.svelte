@@ -138,6 +138,7 @@
     let id = nanoid();
     async function onPost() {
         document.body.scrollIntoView({ behavior: "smooth" });
+        loadingMsg = "Uploading data...";
         isLoading = true;
         // Check if the fields are empty and set the flags accordingly
         if (title == "") {
