@@ -737,7 +737,7 @@ export async function WithDrawTokens(amount, destination){
     try{
         let transactionNumber = await transferTo(roundedAmount,destination);
         console.log("Result:" , transactionNumber)
-        let storeTransaction = await storeTransactionInCanister((transactionNumber),"withdraw",userKey);
+        // let storeTransaction = await storeTransactionInCanister((transactionNumber),"withdraw",userKey);
     }catch(e){
         console.log("Error, ", String(e));
         throw new Error(String(e));

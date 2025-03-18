@@ -19,7 +19,7 @@
     let amount = 0;
     let destination = "";
     let error = false;
-    let errorMsg = "";
+    let errorMsg = "The transaction failed";
     let isLoading = false;
     let success = false;
     let userBal = getUserBalance($UserKey);
@@ -117,28 +117,34 @@
         <MagicalDotsAbsoluteSmall />
         <p style="text-align: center;">Withdrawing money...</p>
     {:else if error}
-        <div class="errorPart SmallSeparator">
-            <p>Oops.. something went wrong!</p>
-            <p class="InputErrorMessage errorMessageDetails">
+        <div class="errorPart">
+            <span class="material-symbols-outlined error-icon"> error </span>
+            <p style="font-size: large;">Oops.. something went wrong!</p>
+            <p class="error-details">
                 {errorMsg}
             </p>
-            <FlatButtonSmall
-                msg={"Go back"}
+            <FlatButtonDarkSmall
+                msg={"Try again"}
                 someFunction={() => {
                     error = false;
                 }}
             />
         </div>
     {:else if success}
-        <div class=" HorizontallyAligned" style="flex-direction:column">
-            <p>Success!</p>
-            <p class="InputSuccessMessage errorMessageDetails">
-                {"You have successfully withdraw funds!"}
+        <div class="successPart">
+            <span class="material-symbols-outlined success-icon">
+                check_circle
+            </span>
+            <p style="font-size: large;">Withdrawal Successful!</p>
+            <p class="success-details">
+                {amount} ICP has been transferred
             </p>
-            <FlatButtonSmall
-                msg={"Go back"}
+            <FlatButtonDarkSmall
+                msg={"Make another withdrawal"}
                 someFunction={() => {
                     success = false;
+                    amount = 0;
+                    destination = "";
                 }}
             />
         </div>
@@ -155,15 +161,35 @@
         border-radius: 8px;
     }
     .errorPart {
-        max-width: 250px;
-        min-width: 250px;
         display: flex;
-        overflow: scroll;
         flex-direction: column;
-        justify-content: center;
         align-items: center;
+        text-align: center;
+        gap: 10px;
     }
-    .errorMessageDetails {
-        overflow: scroll;
+    .error-icon {
+        font-size: 48px;
+        color: var(--primary-color);
+    }
+    .error-details {
+        font-size: medium;
+        color: var(--red-wine);
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+    .successPart {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 10px;
+    }
+    .success-icon {
+        font-size: 48px;
+        color: var(--primary-color);
+    }
+    .success-details {
+        font-size: medium;
+        color: var(--green);
     }
 </style>

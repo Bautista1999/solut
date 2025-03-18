@@ -28,12 +28,23 @@
             object-fit: contain;"
         />
     </div>
+
+    <div>
+        <p style="font-size:Large;">
+            {#if user_name != ""}
+                {user_name}
+            {:else}{principal.substring(0, 10) +
+                    " ... " +
+                    principal.substring(50, 100)}{/if}
+        </p>
+        <p style="font-weight: 100; font-size:small;">Owner</p>
+    </div>
     <div>
         <div class="walletAddress">
             <p>
-                {wallet_address.substring(0, 15) +
+                {wallet_address.substring(0, 14) +
                     " ... " +
-                    wallet_address.substring(35, 42)}
+                    wallet_address.substring(wallet_address.length - 14)}
             </p>
             <span class="material-symbols-outlined" on:click={handleCopy}>
                 content_copy
@@ -42,16 +53,6 @@
                 <span class="copied-message">Copied!</span>{/if}
         </div>
         <p style="font-weight: 100; font-size:small;">Wallet address</p>
-    </div>
-    <div>
-        <p>
-            {#if user_name != ""}
-                {user_name}
-            {:else}{principal.substring(0, 10) +
-                    " ... " +
-                    principal.substring(50, 100)}{/if}
-        </p>
-        <p style="font-weight: 100; font-size:small;">Owner</p>
     </div>
 </div>
 
