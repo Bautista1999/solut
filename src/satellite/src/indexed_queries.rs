@@ -1,41 +1,27 @@
-use crate::notifications::send_single_notification;
-use crate::quickqueries::get_doc_owner;
 use crate::reputation::get_user_reputation;
 use crate::types::interface::{
-    EnrichedApprovalData, EnrichedPledgeData, FollowData, Idea, IndexResponse,
-    IndexResponseBasicInfo, IndexSearch, Notification, PledgeBasicInfo, PledgeData, PledgeUser,
-    TotalPledging, UserBasicInfo, UserProfileBasicInfo,
+    EnrichedApprovalData, EnrichedPledgeData,  Idea, IndexResponse,
+    IndexResponseBasicInfo, PledgeBasicInfo,  UserProfileBasicInfo,
 };
 use crate::user_information::{
-    get_available_balance, get_historical_pledged_balance, get_paginated_following_elements,
+     get_historical_pledged_balance, get_paginated_following_elements,
     get_user_profile_pic, get_user_username,
 };
 use crate::Funding::get_solution_implemented_features;
-use crate::{delete_pledge, get_document_description_or_default, get_document_version_or_default};
-use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
-use bytes::Bytes;
-use candid::{CandidType, Int, Nat, Principal};
-use ic_cdk::api::{self, call, canister_balance128, set_global_timer, time};
-use ic_cdk::spawn;
-use ic_cdk_macros::{query, update};
+use ic_cdk::{caller};
+use ic_cdk_macros::{query, };
 use junobuild_satellite::{
-    count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, get_doc_store,
-    get_many_docs, list_docs_store, log, set_asset_handler, set_doc_store, DelDoc, Doc, Key,
-    SetDoc,
+    get_doc_store,
+    list_docs_store, log,Doc,
+    
 };
 use junobuild_shared::types::list::{ListMatcher, ListParams};
-use junobuild_storage::http::types::HeaderField;
-use junobuild_storage::types::store::AssetKey;
-use junobuild_storage::well_known::update;
-use junobuild_utils::{decode_doc_data, encode_doc_data};
-use regex::Regex;
-use serde_json::json;
-use std::cell::RefCell;
+use junobuild_utils::{decode_doc_data};
 use std::collections::HashMap;
-use std::convert::TryFrom;
-use std::iter::{Cycle, Filter};
 
-use std::sync::LazyLock; // For Rust 1.63 and later
+use std::sync::LazyLock;
+use ic_cdk::api::canister_balance128;
+// For Rust 1.63 and later
 
 static PLEDGE_TOTALS_CACHE: LazyLock<HashMap<String, u64>> = LazyLock::new(HashMap::new);
 static FOLLOWER_TOTALS_CACHE: LazyLock<HashMap<String, u64>> = LazyLock::new(HashMap::new);
@@ -44,7 +30,7 @@ const DEFAULT_LIMIT: usize = 12;
 
 #[query]
 pub fn get_total_pledged(element: String, id: String) -> Result<u64, String> {
-    let caller = api::caller();
+    let caller = caller();
     // Filter to find documents where the description contains the given element and id
     let mut description_of_filter = format!("_{}:{}", element, id);
     if element == "user" {
@@ -89,7 +75,7 @@ pub fn get_total_pledged(element: String, id: String) -> Result<u64, String> {
 
 #[query]
 pub fn get_total_pledged_and_expected(element: String, id: String) -> Result<(u64, u64), String> {
-    let caller = api::caller();
+    let caller = caller();
 
     // Determine the description filter based on the element type
     let mut description_of_filter = format!("_{}:{}", element, id);
@@ -146,7 +132,7 @@ pub fn get_total_pledged_and_expected(element: String, id: String) -> Result<(u6
 
 #[query]
 pub fn get_total_followers(element_id: String) -> u64 {
-    let caller = api::caller();
+    let caller = caller();
     // Filter to find documents where the key ends with "_{FOLLOWED_ID}"
     let filter = ListParams {
         matcher: Some(ListMatcher {
@@ -198,7 +184,7 @@ pub fn get_paginated_topics(
         ..Default::default()
     };
     let collection = "idea".to_string(); // Collection name for topics
-    let caller = api::caller(); // Use the caller principal for authorization
+    let caller = caller(); // Use the caller principal for authorization
     let ideas_result = list_docs_store(caller, collection, &filter)?;
 
     // Normalize the search term for case-insensitive matching
@@ -292,7 +278,7 @@ pub fn get_paginated_topics(
 
 #[query]
 pub fn get_total_pledged_of_solution(solution_id: String) -> Result<u64, String> {
-    let caller = api::caller();
+    let caller = caller();
     let features = match get_solution_implemented_features(&solution_id.clone()) {
         Ok(features) => features,
         Err(_) => return Ok(0),
@@ -328,7 +314,7 @@ pub fn get_paginated_ideas(
     };
 
     let collection = "feature".to_string(); // Targeting the "feature" collection
-    let caller = api::caller(); // Use the caller principal for authorization
+    let caller = caller(); // Use the caller principal for authorization
     let features_result = list_docs_store(caller, collection, &filter)?;
 
     // Normalize the search term for case-insensitive matching
@@ -430,7 +416,7 @@ pub fn get_paginated_users(
         ..Default::default()
     };
     let collection = "user".to_string(); // Targeting the "user" collection
-    let caller = api::caller(); // Use the caller principal for authorization
+    let caller = caller(); // Use the caller principal for authorization
     let users_result = list_docs_store(caller, collection, &filter)?;
 
     // Normalize the search term for case-insensitive matching
@@ -583,7 +569,7 @@ pub fn get_paginated_ideas_by_solution(
     let limit = limit.unwrap_or(12);
 
     // Step 1: Retrieve the solution document
-    let caller = api::caller();
+    let caller = caller();
     let collection = "solution".to_string(); // Collection containing solution documents
 
     let solution_doc = match get_doc_store(caller.clone(), collection.clone(), solution_id.clone())
@@ -713,7 +699,7 @@ pub fn get_funding_details(
     element_type: String,
     id: String,
 ) -> Result<(u64, u64, usize, Vec<(String, String)>), String> {
-    let caller = api::caller();
+    let caller = caller();
     let mut pledges: Vec<Doc> = vec![];
     let collection = match element_type.as_str() {
         "idea" | "feature" => "pledges_active".to_string(),
@@ -873,7 +859,7 @@ pub fn check_cycles() -> u128 {
 
 #[query]
 pub fn get_user_pledges_enriched(user_id: String) -> Result<Vec<EnrichedPledgeData>, String> {
-    let caller = api::caller();
+    let caller = caller();
 
     // Filter to find pledges for the specific user
     let filter = ListParams {
@@ -1011,7 +997,7 @@ pub fn get_total_following(user_id: String) -> u64 {
 
 #[query]
 pub fn get_user_approvals_enriched(user_id: String) -> Result<Vec<EnrichedApprovalData>, String> {
-    let caller = api::caller();
+    let caller = caller();
 
     // Filter to find approvals for the specific user
     let filter = ListParams {
@@ -1273,7 +1259,7 @@ pub fn get_user_pledges_for_solution(
 #[query]
 /// Retrieves enriched pledge data for a given element ID
 pub fn get_enriched_element_pledges(element_id: String) -> Result<Vec<EnrichedPledgeData>, String> {
-    let caller = api::caller();
+    let caller = caller();
     let filter = ListParams {
         matcher: Some(ListMatcher {
             description: Some(format!("{}", element_id)),
@@ -1344,7 +1330,7 @@ pub fn get_element_enriched_data(
     element_type: String,
     element_id: String,
 ) -> Result<IndexResponseBasicInfo, String> {
-    let caller = api::caller();
+    let caller = caller();
     let doc = get_doc_store(caller, element_type.to_string(), element_id.clone())?
         .ok_or_else(|| format!("{} Unknown or deleted", element_type))?;
     let data: serde_json::Value = serde_json::from_slice(&doc.data)

@@ -2,33 +2,27 @@ use crate::reputation::get_user_reputation;
 use crate::types::interface::{
     Activity, IndexResponseBasicInfo, PledgeData, User, UserBasicInfo, UserProfileBasicInfo,
 };
-use crate::{delete_many_images, eliminate_idea, get_document_version_or_default};
 use candid::Principal;
-use ic_cdk::api::{self, time};
 use ic_cdk_macros::{query, update};
 use ic_ledger_types::{
-    AccountBalanceArgs, AccountIdentifier, Subaccount, Tokens, DEFAULT_SUBACCOUNT,
+    AccountIdentifier, Tokens, DEFAULT_SUBACCOUNT,
 };
-use junobuild_satellite::{delete_doc_store, log_with_data};
 use junobuild_satellite::{
-    get_doc_store, list_assets_store, list_docs_store, log, DelDoc, Doc, Key,
+    get_doc_store,  list_docs_store,  Doc, 
 };
 use junobuild_shared::types::list::{
-    ListMatcher, ListOrder, ListOrderField, ListParams, ListResults, TimestampMatcher,
+    ListMatcher, ListParams, ListResults, 
 };
-use junobuild_storage::{http::types::HeaderField, types::interface::AssetNoContent};
 use junobuild_utils::decode_doc_data;
-use regex::Regex;
-use serde_bytes::ByteBuf;
 use std::collections::HashSet;
-use std::{cell::RefCell, fmt::format};
+use ic_cdk::caller;
 
 //TODO: Take into account that these pledges are inactive even if the solution hasnt implemented the IDEA targeted in the pledge.
 // ---> For example. A user targeted "idea a" on his pledge, but the developer only implemented "idea b".
 //      In this case, that pledge is counted as inactive.
 #[query]
 pub fn get_user_active_pledges(user_id: String) -> Result<Vec<PledgeData>, String> {
-    let caller = api::caller();
+    let caller = caller();
     let caller_text = Principal::to_text(&caller);
     // if (caller_text != user_id) {
     //     return Err(format!("Permission denied!"));
@@ -206,7 +200,7 @@ pub fn get_user_active_pledges(user_id: String) -> Result<Vec<PledgeData>, Strin
 
 #[query]
 pub fn get_user_total_pledges(user_id: String) -> Result<Vec<PledgeData>, String> {
-    let caller = api::caller();
+    let caller = caller();
     let caller_text = Principal::to_text(&caller);
     // if (caller_text != user_id) {
     //     return Err(format!("Permission denied!"));
@@ -308,7 +302,7 @@ fn extract_parent_topic_id(description: &str) -> Option<String> {
 
 #[query]
 pub fn get_pledged_balance(user_id: String) -> Result<u64, String> {
-    let caller = api::caller();
+    let caller = caller();
     let caller_text = Principal::to_text(&caller);
     // if (caller_text != user_id) {
     //     return Err(format!("Permission denied!"));
@@ -328,7 +322,7 @@ pub fn get_pledged_balance(user_id: String) -> Result<u64, String> {
 
 #[query]
 pub fn get_historical_pledged_balance(user_id: String) -> Result<u64, String> {
-    let caller = api::caller();
+    let caller = caller();
     let caller_text = Principal::to_text(&caller);
     // if (caller_text != user_id) {
     //     return Err(format!("Permission denied!"));
@@ -351,9 +345,9 @@ pub async fn get_available_balance_without_pledged_amount(
     user_id: String,
     pledged_amount: u64,
 ) -> Result<u64, String> {
-    use ic_cdk::api; // Ensure you have the correct import for `api::caller`
+    use ic_cdk::api; // Ensure you have the correct import for `caller`
 
-    let caller = api::caller(); // Get the caller principal
+    let caller = caller(); // Get the caller principal
     let caller_text = Principal::to_text(&caller);
 
     // Check if the caller is authorized
@@ -386,9 +380,9 @@ pub async fn get_available_balance_without_pledged_amount(
 
 #[update] // Use #[update] for async functions
 pub async fn get_available_balance(user_id: String) -> Result<u64, String> {
-    use ic_cdk::api; // Ensure you have the correct import for `api::caller`
+    use ic_cdk::api; // Ensure you have the correct import for `caller`
 
-    let caller = api::caller(); // Get the caller principal
+    let caller = caller(); // Get the caller principal
     let caller_text = Principal::to_text(&caller);
 
     // Check if the caller is authorized
@@ -437,7 +431,7 @@ pub async fn get_user_real_balance(user_id: String) -> Result<u64, String> {
 
 #[query]
 pub fn get_user_username(user_id: String) -> String {
-    let caller = api::caller();
+    let caller = caller();
     let doc = match get_doc_store(caller, "user".to_string(), user_id.clone()) {
         Ok(None) => return user_id.clone(),
         Ok(Some(doc)) => {
@@ -454,7 +448,7 @@ pub fn get_user_username(user_id: String) -> String {
 
 #[query]
 pub fn get_user_profile_pic(user_id: String) -> String {
-    let caller = api::caller();
+    let caller = caller();
     let doc = match get_doc_store(caller, "user".to_string(), user_id.clone()) {
         Ok(None) => return "https://cdn-icons-png.freepik.com/512/8792/8792047.png".to_string(),
         Ok(Some(doc)) => {
@@ -473,7 +467,7 @@ pub fn get_user_following(
     user_id: String,
     follow_type: Option<String>,
 ) -> Result<Vec<String>, String> {
-    let caller = api::caller();
+    let caller = caller();
 
     // Filter to find documents where the key starts with "{user_id}_"
     let filter = ListParams {
@@ -554,7 +548,7 @@ pub fn get_user_following(
 }
 
 fn get_user_followers(user_id: String) -> Result<Vec<String>, String> {
-    let caller = api::caller();
+    let caller = caller();
 
     // Filter to find documents where the key ends with "_{user_id}"
     let filter = ListParams {
@@ -670,7 +664,7 @@ pub fn get_paginated_following_elements(
     offset: Option<usize>,
     limit: Option<usize>,
 ) -> Result<(Vec<IndexResponseBasicInfo>, usize, usize, usize), String> {
-    let caller = api::caller();
+    let caller = caller();
     let offset = offset.unwrap_or(0);
     let limit = limit.unwrap_or(20);
 
@@ -778,7 +772,7 @@ pub fn get_paginated_followers(
     offset: Option<usize>,
     limit: Option<usize>,
 ) -> Result<(Vec<IndexResponseBasicInfo>, usize, usize, usize), String> {
-    let caller = api::caller();
+    let caller = caller();
     let offset = offset.unwrap_or(0);
     let limit = limit.unwrap_or(20);
 
@@ -869,8 +863,8 @@ pub fn get_paginated_followers(
 
 #[query]
 pub fn get_user_basic_information(user_id: String) -> Result<UserBasicInfo, String> {
-    use ic_cdk::api::caller;
-    let caller = api::caller();
+    use ic_cdk::caller;
+    let caller = caller();
 
     // Initialize default UserBasicInfo
 
@@ -953,7 +947,7 @@ pub fn get_paginated_most_recent_activities(
     offset: Option<usize>,
     limit: Option<usize>,
 ) -> Result<(Vec<Activity>, usize, usize, usize), String> {
-    let caller = api::caller();
+    let caller = caller();
     let offset = offset.unwrap_or(0);
     let limit = limit.unwrap_or(12);
     let username = get_user_username(user_id.clone());
@@ -1144,7 +1138,7 @@ pub fn get_paginated_most_recent_activities(
 }
 
 pub fn get_userid_by_id_or_username(user_prop: String) -> String {
-    let caller = api::caller();
+    let caller = caller();
     let collection = "user".to_string();
 
     // Step 1: Attempt to find the user document directly by key

@@ -2,34 +2,21 @@ use crate::indexed_queries::get_element_enriched_data;
 use crate::notifications::send_single_notification;
 use crate::quickqueries::get_doc_owner;
 use crate::reputation::get_user_reputation;
-use crate::types::interface::{IndexSearch, Notification, PledgeData, PledgeUser, TotalPledging};
+use crate::types::interface::{Notification, PledgeData, PledgeUser, TotalPledging};
 use crate::user_information::{
-    get_available_balance, get_available_balance_without_pledged_amount, get_user_profile_pic,
+    get_available_balance_without_pledged_amount, get_user_profile_pic,
     get_user_username,
 };
 use crate::{delete_pledge, get_document_description_or_default, get_document_version_or_default};
-use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
-use bytes::Bytes;
-use candid::{CandidType, Int, Nat, Principal};
-use ic_cdk::api::{self, call, set_global_timer, time};
-use ic_cdk::spawn;
-use ic_cdk_macros::{query, update};
+use candid::{Principal};
+use ic_cdk::{caller, spawn};
+use ic_cdk_macros::{update};
 use junobuild_satellite::{
-    count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, get_doc_store,
-    get_many_docs, list_docs_store, log, set_asset_handler, set_doc_store, DelDoc, Doc, Key,
+    get_many_docs, log, set_doc_store, Doc,
     SetDoc,
 };
-use junobuild_shared::types::list::ListParams;
-use junobuild_storage::http::types::HeaderField;
-use junobuild_storage::types::store::AssetKey;
-use junobuild_storage::well_known::update;
+use junobuild_shared::types::core::Key;
 use junobuild_utils::{decode_doc_data, encode_doc_data};
-use regex::Regex;
-use serde_json::json;
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::convert::TryFrom;
-use std::iter::Filter;
 
 // Main pledge creation function
 #[update]
@@ -48,7 +35,7 @@ pub fn pledge_create(
         return "idea_id is empty".to_string();
     }
 
-    let caller = api::caller();
+    let caller = caller();
     if caller == Principal::anonymous() {
         return "Anonymous users cannot create pledges.".to_string();
     }

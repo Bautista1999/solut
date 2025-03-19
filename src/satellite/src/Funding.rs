@@ -1,29 +1,25 @@
 use crate::notifications::send_single_notification;
 use crate::quickqueries::get_doc_owner;
-use crate::reputation::{get_user_reputation, update_user_reputation};
+use crate::reputation::{update_user_reputation};
 use crate::types::interface::{
     Approval, ApprovalStatus, ClaimTransfer, ClaimerInfo, ClaimerInfoEnriched, ClaimerType,
-    Claimers, CompleteSolutionData, CompletionResult, Discount, EnrichedApprovalData,
-    EnrichedPledgeData, FollowData, Idea, IndexResponse, IndexResponseBasicInfo,
-    IndexResponseWithApproval, IndexSearch, Notification, OrderedClaimTransfer, PaymentType,
-    PledgeApproval, PledgeBasicInfo, PledgeData, PledgeUser, Referral, RejectionData, Solution,
-    TotalPledging, Transaction, UserProfileBasicInfo,
+    CompleteSolutionData, CompletionResult, EnrichedApprovalData,
+    IndexResponseBasicInfo,
+    IndexResponseWithApproval, Notification, OrderedClaimTransfer, PaymentType,
+    PledgeApproval, PledgeBasicInfo, PledgeData, RejectionData,
+    Transaction, UserProfileBasicInfo,
 };
 
 use crate::user_information::{
-    get_available_balance, get_historical_pledged_balance, get_paginated_following_elements,
     get_user_basic_information, get_user_profile_pic, get_user_username,
 };
 use crate::ApprovalFunctions::{
     approve_pledge, get_feature_id_from_pledge, reverse_approval, validate_pledge_ownership,
     validate_solution_status,
 };
-use crate::{delete_pledge, get_document_description_or_default, get_document_version_or_default};
-use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
-use bytes::Bytes;
-use candid::{CandidType, Int, Nat, Principal};
-use ic_cdk::api::{self, call, canister_balance128, set_global_timer, time};
-use ic_cdk::spawn;
+use crate::{get_document_version_or_default};
+use candid::{CandidType, Principal};
+use ic_cdk::{caller, id, spawn};
 use ic_cdk_macros::{query, update};
 use ic_ledger_types::{
     account_balance, query_archived_blocks, query_blocks, transfer, AccountBalanceArgs,
@@ -31,15 +27,11 @@ use ic_ledger_types::{
     TransferArgs, DEFAULT_FEE, DEFAULT_SUBACCOUNT, MAINNET_LEDGER_CANISTER_ID,
 };
 use junobuild_satellite::{
-    count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, error_with_data,
-    get_doc_store, get_many_docs, list_docs_store, log, set_asset_handler, set_doc_store, DelDoc,
-    Doc, Key, SetDoc,
+    delete_doc_store, error_with_data,
+    get_doc_store, list_docs_store, log, set_doc_store, DelDoc,
+    Doc, SetDoc,
 };
 use junobuild_shared::types::list::{ListMatcher, ListParams};
-use junobuild_storage::http::response::error_response;
-use junobuild_storage::http::types::HeaderField;
-use junobuild_storage::types::store::AssetKey;
-use junobuild_storage::well_known::update;
 use junobuild_utils::{decode_doc_data, encode_doc_data};
 use regex::Regex;
 use serde_json::json;
@@ -51,6 +43,7 @@ use std::iter::{Cycle, Filter};
 use futures::future::join_all;
 use sha2::{Digest, Sha256};
 use std::sync::LazyLock;
+use ic_cdk::api::{call, time};
 
 // Constants for payment distribution
 pub const TOPIC_OWNER_PERCENTAGE: f64 = 0.05; // 5%
@@ -74,7 +67,7 @@ pub async fn approve_solution_pledges(
     payment_type: PaymentType,
     pledge_approvals: Vec<PledgeApproval>,
 ) -> Result<Vec<String>, String> {
-    let caller = api::caller();
+    let caller = caller();
 
     let feature_approvals = get_feature_approvals(&pledge_approvals, solution_id.clone())?;
 
@@ -207,7 +200,7 @@ pub async fn get_feature_subaccount_balance(feature_id: String) -> Result<u64, S
 
 #[update]
 pub async fn withdraw_approval(approval_id: String) -> Result<u64, String> {
-    let caller = api::caller();
+    let caller = caller();
 
     // Get approval details
     let approval = get_approval_details(&approval_id)?;
@@ -263,7 +256,7 @@ pub async fn reject_approval(
     solution_id: String,
     message: Option<String>,
 ) -> Result<(), String> {
-    let caller = api::caller();
+    let caller = caller();
 
     // Validate pledge ownership
     validate_pledge_ownership(&pledge_id, caller)?;
@@ -293,7 +286,7 @@ pub async fn reject_approval(
         solution_id: solution_id.clone(),
         feature_id,
         pledge_id: pledge_id.clone(),
-        timestamp: api::time(),
+        timestamp: time(),
     };
 
     // Store rejection
@@ -328,7 +321,7 @@ pub async fn reject_approval(
 
 #[update]
 pub async fn withdraw_rejection(pledge_id: String, solution_id: String) -> Result<(), String> {
-    let caller = api::caller();
+    let caller = caller();
 
     // Validate pledge ownership
     validate_pledge_ownership(&pledge_id, caller)?;
@@ -398,7 +391,7 @@ pub async fn complete_solution(solution_id: String) -> Result<CompletionResult, 
 
     // Step 3: Update Solution Status
     update_solution_status(&solution_id, "completed")?;
-    let completion_timestamp = ic_cdk::api::time();
+    let completion_timestamp = time();
 
     // Step 4: Reputation Management
     let approval_rate = calculate_approval_rate(&solution_id)?;
@@ -426,7 +419,7 @@ pub async fn complete_solution(solution_id: String) -> Result<CompletionResult, 
 
 #[query]
 pub fn get_solution_completion_data(solution_id: String) -> Result<CompleteSolutionData, String> {
-    let caller = api::caller();
+    let caller = caller();
 
     // 1. Get solution basic info
     let solution_doc = get_doc_store(caller, "solution".to_string(), solution_id.clone())?
@@ -858,7 +851,7 @@ async fn update_approval_status(approval_id: &str, status: ApprovalStatus) -> Re
 }
 
 fn validate_claim_requirements(solution_id: &str) -> Result<(), String> {
-    let caller = api::caller();
+    let caller = caller();
     let caller_text = caller.to_text();
 
     // 1. Verify solution status is "delivered"
@@ -878,7 +871,7 @@ fn validate_claim_requirements(solution_id: &str) -> Result<(), String> {
 pub fn get_solution_approvals_enriched(
     solution_id: String,
 ) -> Result<Vec<EnrichedApprovalData>, String> {
-    let caller = api::caller();
+    let caller = caller();
 
     // Get base approvals using existing function
     let approvals = get_solution_approvals(solution_id.clone())?;
@@ -1186,7 +1179,7 @@ async fn process_transfers_in_batches(
                                 "amount": claim.amount,
                                 "claimer_type": claim.claimer_type,
                                 "error": e,
-                                "timestamp": ic_cdk::api::time(),
+                                "timestamp": time(),
                             }),
                         )?;
                         let _ = record_failed_transfer(solution_id, claim, &e.to_string());
@@ -1219,7 +1212,7 @@ async fn process_transfers_in_batches(
                             "amount": claim.amount,
                             "claimer_type": format!("{:?}", claim.claimer_type),
                             "error": e,
-                            "timestamp": ic_cdk::api::time(),
+                            "timestamp": time(),
                         }),
                     )?;
                     return Err(format!("Transfer failed: {}", e));
@@ -1269,7 +1262,7 @@ fn record_successful_transfer(
         ClaimerType::Solutio => "Solutio Fee", // Note: might want to fix this typo in the enum
     };
     let transaction = Transaction {
-        sender: AccountIdentifier::new(&api::id(), &Subaccount(claim.subaccount)),
+        sender: AccountIdentifier::new(&id(), &Subaccount(claim.subaccount)),
         target: AccountIdentifier::new(&claim.principal.clone(), &DEFAULT_SUBACCOUNT),
         amount: claim.amount,
         feature_id: claim.feature_id.clone(),
@@ -1283,7 +1276,7 @@ fn record_successful_transfer(
             claimer.clone()
         ),
         solution_id: solution_id.to_string(),
-        created_at: ic_cdk::api::time(),
+        created_at: time(),
     };
 
     // Generate a unique key for the transaction
@@ -1325,7 +1318,7 @@ fn record_failed_transfer(
         ClaimerType::Solutio => "Solutio Fee", // Note: might want to fix this typo in the enum
     };
     let transaction = Transaction {
-        sender: AccountIdentifier::new(&api::id(), &Subaccount(claim.subaccount)),
+        sender: AccountIdentifier::new(&id(), &Subaccount(claim.subaccount)),
         target: AccountIdentifier::new(&claim.principal.clone(), &DEFAULT_SUBACCOUNT),
         amount: claim.amount,
         feature_id: claim.feature_id.clone(),
@@ -1340,7 +1333,7 @@ fn record_failed_transfer(
             claimer.clone()
         ),
         solution_id: solution_id.to_string(),
-        created_at: ic_cdk::api::time(),
+        created_at: time(),
     };
 
     // Generate a unique key for the failed transaction
@@ -1348,7 +1341,7 @@ fn record_failed_transfer(
         "TRANS_FAILED_{}_{}_{}",
         solution_id,
         claim.feature_id,
-        ic_cdk::api::time()
+        time()
     );
     let description = format!(
         "Transaction failed for solution {} and feature {} for claimer {}.",
@@ -1545,7 +1538,7 @@ fn update_users_reputation(solution_id: &String) -> Result<String, String> {
                             "Failed to send notification to user {} and solution {}",
                             pledge.user, solution_id
                         ),
-                        &json!({ "error": e.to_string(), "timestamp": ic_cdk::api::time() }),
+                        &json!({ "error": e.to_string(), "timestamp": time() }),
                     )?;
                 }
             }
@@ -1557,7 +1550,7 @@ fn update_users_reputation(solution_id: &String) -> Result<String, String> {
                     ),
                     &json!({
                         "error": e.to_string(),
-                        "timestamp": ic_cdk::api::time(),
+                        "timestamp": time(),
                     }),
                 )?;
             }

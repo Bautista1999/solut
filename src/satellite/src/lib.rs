@@ -44,7 +44,7 @@ use junobuild_macros::{
 use junobuild_satellite::{
     count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, error_with_data,
     get_admin_controllers, get_doc_store, list_docs_store, log, set_asset_handler, set_doc_store,
-    DelDoc, Key, OnDeleteFilteredAssetsContext, OnDeleteFilteredDocsContext, SetDoc,
+    DelDoc, OnDeleteFilteredAssetsContext, OnDeleteFilteredDocsContext, SetDoc,
 };
 use junobuild_satellite::{
     include_satellite, AssertDeleteAssetContext, AssertDeleteDocContext, AssertSetDocContext,
@@ -1701,6 +1701,7 @@ fn update_doc_description(
 }
 
 use std::str;
+use junobuild_shared::types::core::Key;
 
 #[update]
 pub fn upload_image(

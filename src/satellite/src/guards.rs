@@ -2,6 +2,7 @@ use crate::STATE;
 use candid::Principal;
 use ic_cdk::caller;
 use junobuild_satellite::get_admin_controllers;
+use junobuild_shared::controllers::is_admin_controller;
 
 pub fn caller_is_user() -> Result<(), String> {
     let caller = caller();
@@ -17,7 +18,7 @@ pub fn caller_is_admin() -> Result<(), String> {
     let caller = caller();
     let admins = get_admin_controllers();
 
-    if admins.contains(&caller) {
+    if is_admin_controller(caller, &admins) {
         Ok(())
     } else {
         Err("Caller is not the admin of the canister.".to_string())
