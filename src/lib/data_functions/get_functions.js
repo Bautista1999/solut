@@ -757,11 +757,15 @@ export async function getUserNotifications(){
  */
 export async function getUserNotificationsWithoutUpdatingLastSeen(){
     let userKey = await getUserKey();
+    if(userKey==""){
+        return [];
+    }
     /**
      * @type {Array<string>}
      */
     let followedElements = await getFollowedElements(userKey);
     let regexInput = createOrRegexInput([userKey,...followedElements])
+  
     let notifications = await listDocs({
         collection:"notification",
         filter:{
