@@ -11,7 +11,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::iter::Filter;
-use XMLAndLinkPreviews::create_or_update_html_metatags;
+use XMLAndLinkPreviews::{create_or_update_html_metatags, generate_sitemap};
 
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use url::Url;
@@ -67,15 +67,18 @@ async fn on_delete_filtered_docs(_context: OnDeleteFilteredDocsContext) -> Resul
     Ok(())
 }
 
-#[on_set_doc(collections = ["pledges_active"])]
-async fn on_set_doc(_context: OnSetDocContext) -> Result<(), String> {
-    log("The thing executed.".to_string());
+#[on_set_doc]
+async fn on_set_doc(context: OnSetDocContext) -> Result<(), String> {
+    ic_cdk::print("something");
+    match generate_sitemap() {
+        Ok(_) => {
+            log("Sitemap generated successfully.".to_string());
+        }
+        Err(e) => {
+            error_with_data(format!("Failed to generate sitemap: {}", e), &context.data);
+        }
+    }
     return Ok(());
-}
-
-fn create_pledge_validation_test() -> Result<(), String> {
-    log("The thing executed.".to_string());
-    return Err("We encountered an issue".to_string());
 }
 
 #[on_set_many_docs]
@@ -84,8 +87,16 @@ async fn on_set_many_docs(_context: OnSetManyDocsContext) -> Result<(), String> 
 }
 
 #[on_delete_doc]
-async fn on_delete_doc(_context: OnDeleteDocContext) -> Result<(), String> {
-    Ok(())
+async fn on_delete_doc(context: OnDeleteDocContext) -> Result<(), String> {
+    match generate_sitemap() {
+        Ok(_) => {
+            log("Sitemap generated successfully.".to_string());
+        }
+        Err(e) => {
+            error_with_data(format!("Failed to generate sitemap: {}", e), &context.data);
+        }
+    }
+    return Ok(());
 }
 
 #[on_delete_many_docs]
