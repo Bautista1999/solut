@@ -1340,7 +1340,7 @@ fn get_user_basic_info(user_id: String) -> Result<UserProfileBasicInfo, String> 
 
 #[query]
 /// Helper function to get enriched data for an element
-fn get_element_enriched_data(
+pub fn get_element_enriched_data(
     element_type: String,
     element_id: String,
 ) -> Result<IndexResponseBasicInfo, String> {
