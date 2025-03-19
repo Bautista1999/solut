@@ -1,3 +1,4 @@
+use crate::indexed_queries::get_element_enriched_data;
 use crate::notifications::send_single_notification;
 use crate::quickqueries::get_doc_owner;
 use crate::reputation::get_user_reputation;
@@ -588,19 +589,25 @@ fn send_pledge_notifications(
     amount: u64,
 ) -> Result<(), String> {
     let user_id = Principal::to_text(caller);
+    let topic_title = match get_element_enriched_data("topic".to_string(), idea_id.to_string()) {
+        Ok(topic) => topic.title,
+        Err(err) => "Unknown topic".to_string(),
+    };
     let username = get_user_username(user_id.clone());
     let image = get_user_profile_pic(user_id.clone());
     let amount_string = format!("{:.1}", amount as f64 / 100_000_000.0);
     let title = "New pledge!".to_string();
     let subtitle_idea = format!(
-        "{} has pledged {} ICP into your topic.",
+        "{} has pledged {} ICP into the topic: {}",
         username.clone(),
-        amount_string.clone()
+        amount_string.clone(),
+        topic_title.clone()
     );
     let description = format!(
-        "{} has pledged {} ICP into your topic.",
+        "{} has pledged {} ICP into the topic: {}",
         username.clone(),
-        amount_string.clone()
+        amount_string.clone(),
+        topic_title.clone()
     );
     let type_of = "Pledge".to_string();
     let link_url_feature = match feature_id {
@@ -633,10 +640,16 @@ fn send_pledge_notifications(
                 username.clone(),
                 amount_string.clone()
             );
+            let feature_title =
+                match get_element_enriched_data("feature".to_string(), feature.to_string()) {
+                    Ok(feature) => feature.title,
+                    Err(err) => "Unknown idea".to_string(),
+                };
             let description_feature = format!(
-                "{} has pledged {} ICP into your idea.",
+                "{} has pledged {} ICP into the idea: {}",
                 username.clone(),
-                amount_string.clone()
+                amount_string.clone(),
+                feature_title.clone()
             );
             let feature_owner_notification: Notification = Notification {
                 title: title.clone(),
