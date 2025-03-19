@@ -84,6 +84,7 @@
         border: 1px solid var(--seventh-color);
         background-color: white;
         border-radius: 8px;
+        cursor: text; /* Ensure text cursor is shown */
     }
 
     /* Fix list styling */
@@ -116,6 +117,10 @@
     }
 
     /* Default and hover icon color */
+    :global(.ql-toolbar button) {
+        cursor: pointer; /* Add pointer cursor for toolbar buttons */
+    }
+
     :global(.ql-toolbar button .ql-stroke),
     :global(.ql-toolbar button .ql-fill) {
         /* stroke: var(--seventh-color); */
