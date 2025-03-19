@@ -85,6 +85,25 @@
         background-color: white;
         border-radius: 8px;
     }
+
+    /* Fix list styling */
+    :global(.ql-editor ul),
+    :global(.ql-editor ol) {
+        padding-left: 0px;
+    }
+
+    :global(.ql-editor li) {
+        font-size: medium;
+        font-family: "Barlow";
+        line-height: inherit;
+    }
+
+    /* Ensure bullet points and numbers are properly sized */
+    :global(.ql-editor li::before) {
+        font-size: inherit !important;
+        /* width: 1.5em !important; Give more space for list markers */
+    }
+
     :global(.ql-editor:focus) {
         border: 2px solid var(--primary-color);
     }
