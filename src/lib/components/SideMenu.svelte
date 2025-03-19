@@ -76,10 +76,21 @@
      * @type {any[]}
      */
     let notifications = [];
-    onMount(async () => {
-        notifications = await getUserNewNotifications();
-    });
     let notificationsPreview = false;
+    let notificationsLoading = false;
+
+    onMount(async () => {
+        // Removing the initial fetch of notifications
+    });
+
+    async function fetchNotifications() {
+        notificationsLoading = true;
+        try {
+            notifications = await getUserNewNotifications();
+        } finally {
+            notificationsLoading = false;
+        }
+    }
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -156,9 +167,11 @@
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
                         <a
                             class="material-symbols-outlined"
+                            style="cursor: pointer;"
                             href={"/notifications/" + $UserKey}
-                            on:mouseenter={() => {
+                            on:mouseenter={async () => {
                                 notificationsPreview = true;
+                                await fetchNotifications(); // Fetch notifications on hover
                             }}
                             on:mouseleave={() => {
                                 notificationsPreview = false;
@@ -175,6 +188,7 @@
                         <NotificationPopUp
                             bind:show={notificationsPreview}
                             {notifications}
+                            isLoading={notificationsLoading}
                         />
                         <!-- svelte-ignore a11y-click-events-have-key-events -->
                         {#if isOpen}<a
