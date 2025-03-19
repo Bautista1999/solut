@@ -3,7 +3,7 @@
 
 import type {_SERVICE as SatelliteActor, Activity, ClaimerInfo, ClaimerInfoEnriched, CompleteSolutionData, CompletionResult, EnrichedApprovalData, EnrichedPledgeData, Idea, IndexResponse, IndexResponseBasicInfo, IndexResponseWithApproval, MetaTagsInput, MetaTagsResult, Milestone, Notification, PledgeApproval, PledgeBasicInfo, PledgeData, Product, SetIdea, Solution, UserBasicInfo, UserProfileBasicInfo, PaymentType, Result, Result_1, Result_10, Result_11, Result_12, Result_13, Result_14, Result_15, Result_16, Result_17, Result_18, Result_2, Result_3, Result_4, Result_5, Result_6, Result_7, Result_8, Result_9} from './satellite.did';
 import {idlFactory} from './satellite.factory.did.js';
-import {getSatelliteExtendedActor} from '@junobuild/core-peer';
+import {getSatelliteExtendedActor} from '@junobuild/core';
 
 export const approvePledge = async (value0: string, value1: string, value2: bigint, value3: bigint, value4: PaymentType): Promise<Result> => {
 	const {approve_pledge} = await getSatelliteExtendedActor<SatelliteActor>({
