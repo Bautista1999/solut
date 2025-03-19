@@ -18,6 +18,7 @@ use url::Url;
 mod ApprovalFunctions;
 mod Funding;
 mod XMLAndLinkPreviews;
+mod guards;
 mod indexed_queries;
 mod notifications;
 mod pledges;
@@ -42,8 +43,8 @@ use junobuild_macros::{
 };
 use junobuild_satellite::{
     count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, error_with_data,
-    get_doc_store, list_docs_store, log, set_asset_handler, set_doc_store, DelDoc, Key,
-    OnDeleteFilteredAssetsContext, OnDeleteFilteredDocsContext, SetDoc,
+    get_admin_controllers, get_doc_store, list_docs_store, log, set_asset_handler, set_doc_store,
+    DelDoc, Key, OnDeleteFilteredAssetsContext, OnDeleteFilteredDocsContext, SetDoc,
 };
 use junobuild_satellite::{
     include_satellite, AssertDeleteAssetContext, AssertDeleteDocContext, AssertSetDocContext,
@@ -69,16 +70,7 @@ async fn on_delete_filtered_docs(_context: OnDeleteFilteredDocsContext) -> Resul
 
 #[on_set_doc]
 async fn on_set_doc(context: OnSetDocContext) -> Result<(), String> {
-    ic_cdk::print("something");
-    match generate_sitemap() {
-        Ok(_) => {
-            log("Sitemap generated successfully.".to_string());
-        }
-        Err(e) => {
-            error_with_data(format!("Failed to generate sitemap: {}", e), &context.data);
-        }
-    }
-    return Ok(());
+    Ok(())
 }
 
 #[on_set_many_docs]
@@ -88,15 +80,7 @@ async fn on_set_many_docs(_context: OnSetManyDocsContext) -> Result<(), String> 
 
 #[on_delete_doc]
 async fn on_delete_doc(context: OnDeleteDocContext) -> Result<(), String> {
-    match generate_sitemap() {
-        Ok(_) => {
-            log("Sitemap generated successfully.".to_string());
-        }
-        Err(e) => {
-            error_with_data(format!("Failed to generate sitemap: {}", e), &context.data);
-        }
-    }
-    return Ok(());
+    Ok(())
 }
 
 #[on_delete_many_docs]
@@ -139,6 +123,14 @@ fn assert_delete_asset(_context: AssertDeleteAssetContext) -> Result<(), String>
     Ok(())
 }
 
+#[derive(Default)]
+pub struct State {
+    pub user: Option<Principal>,
+}
+thread_local! {
+    static STATE: RefCell<State> = RefCell::default();
+}
+
 #[update]
 async fn create_new_product(product: Product, key: String) -> Result<(), String> {
     let caller = api::caller();
@@ -149,6 +141,7 @@ async fn create_new_product(product: Product, key: String) -> Result<(), String>
             return Err(format!("Failed to encode product data: {}", err));
         }
     };
+
     let value = SetDoc {
         data: data_vec,
         description: None,
