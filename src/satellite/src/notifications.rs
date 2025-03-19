@@ -23,7 +23,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::iter::Filter;
-use uuid::Uuid;
+use junobuild_satellite::random;
 
 #[update]
 pub fn send_single_notification(
@@ -32,8 +32,11 @@ pub fn send_single_notification(
     notification: Notification,
 ) -> Result<(), String> {
     // encode_doc_data(data)
-    let id = Uuid::new_v4();
-    let key = id.to_string();
+
+    let nonce = random()?;
+
+    let key: Key = format!("{}-{}", time(), nonce);
+
     let encoded_data = match encode_doc_data(&notification) {
         Ok(vec) => vec,
         Err(err) => return Err(format!("Failed to encode notification: {}", err)),
