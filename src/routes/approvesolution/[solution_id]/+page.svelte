@@ -15,7 +15,7 @@
         rejectApproval,
         withdrawRejection,
     } from "../../../declarations/satellite/satellite.api";
-    import { getDoc } from "@junobuild/core-peer";
+    import { getDoc } from "@junobuild/core";
     import ModalConfirmationNew from "$lib/components/ModalConfirmationNew.svelte";
     import { DeleteModal, UserKey } from "$lib/stores/other_stores";
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";

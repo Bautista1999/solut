@@ -31,7 +31,7 @@
     import ModalReject from "$lib/components/ModalReject.svelte";
     import SuccessNew from "$lib/components/Success_New.svelte";
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
-    import { getDoc, initSatellite } from "@junobuild/core-peer";
+    import { getDoc, initSatellite } from "@junobuild/core";
     import NotFound from "$lib/components/NotFound.svelte";
     import EditImagesSection from "$lib/components/EditImagesSection.svelte";
 

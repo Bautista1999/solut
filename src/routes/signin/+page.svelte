@@ -11,7 +11,7 @@
         signIn,
         InternetIdentityProvider,
         NFIDProvider,
-    } from "@junobuild/core-peer";
+    } from "@junobuild/core";
     import { isRegistered } from "$lib/data_functions/user.functions";
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import { GoToPath } from "$lib/stores/redirect_store";

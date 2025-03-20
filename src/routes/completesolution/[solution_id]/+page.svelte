@@ -1,5 +1,5 @@
 <script>
-    import { getDoc } from "@junobuild/core-peer";
+    import { getDoc } from "@junobuild/core";
     import { onMount } from "svelte";
     import { fade, fly, slide } from "svelte/transition";
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";

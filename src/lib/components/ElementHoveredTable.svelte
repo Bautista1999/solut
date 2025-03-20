@@ -1,6 +1,6 @@
 <script>
     import { onMount } from "svelte";
-    import { getDoc } from "@junobuild/core-peer";
+    import { getDoc } from "@junobuild/core";
 
     /**
      * @type {"idea" | "feature"}

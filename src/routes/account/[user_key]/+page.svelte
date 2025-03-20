@@ -76,9 +76,7 @@
             copied.set(false);
         }, 3000);
     };
-    /**
-     * @type {import("@junobuild/core-peer").Doc.<any>}
-     */
+
     let userData = {
         key: "",
         data: {},

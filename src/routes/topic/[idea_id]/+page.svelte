@@ -25,7 +25,7 @@
     import ExpandablePledgeSection from "$lib/components/ExpandablePledgeSection.svelte";
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
-    import { getDoc } from "@junobuild/core-peer";
+    import { getDoc } from "@junobuild/core";
     import NotFound from "$lib/components/NotFound.svelte";
     import {
         getTotalPledges,

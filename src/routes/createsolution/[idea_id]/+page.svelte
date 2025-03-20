@@ -11,7 +11,7 @@
     import TagsDisplay from "$lib/components/TagsDisplay.svelte";
     import TimelineEdit from "$lib/components/TimelineEdit.svelte";
     import { onMount } from "svelte";
-    import { getDoc } from "@junobuild/core-peer";
+    import { getDoc } from "@junobuild/core";
     import { setSolution } from "$lib/data_functions/create_functions";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { path } from "$lib/stores/redirect_store";

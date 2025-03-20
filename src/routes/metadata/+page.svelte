@@ -12,7 +12,6 @@
   import { uploadFile, initSatellite, listDocs } from "@junobuild/core-peer";
   import { nanoid } from "nanoid";
   import { onMount } from "svelte";
-  import { compile } from "svelte/compiler"; // Import the Svelte compiler
   import {
     approveSolutionPledges,
     createNewProduct,
@@ -68,8 +67,6 @@
   import { UserKey } from "$lib/stores/other_stores";
   import { AccountIdentifier } from "@dfinity/ledger-icp";
   import { Principal } from "@dfinity/principal";
-
-  import Graph from "$lib/components/Graph.svelte";
 
   // Example data
   const xData = [1, 2, 3, 4, 5, 6, 7];

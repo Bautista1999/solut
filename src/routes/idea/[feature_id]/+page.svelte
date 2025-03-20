@@ -5,8 +5,6 @@
     import PledgersSection from "$lib/components/pledgersSection.svelte";
     import ProfilePicture from "$lib/components/profilePicture.svelte";
     import ShareButton from "$lib/components/shareButton.svelte";
-
-    import TransactionDisplay from "$lib/components/TransactionDisplay.svelte";
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
     import Breadcrumbs from "$lib/components/breadcrumbs.svelte";
     import PageTabs from "$lib/components/PageTabs.svelte";
@@ -24,7 +22,6 @@
     import { goto } from "$app/navigation";
     import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsolut.svelte";
     import EditImagesSection from "$lib/components/EditImagesSection.svelte";
-    import MagicalDots from "$lib/components/magicalDots.svelte";
 
     import {
         CheckIfFeatureIsImplemented,
@@ -41,13 +38,11 @@
         getTransactionsAndPledges,
         getFundingInformation,
     } from "$lib/financial_functions/financial_functions";
-    import { getDoc } from "@junobuild/core-peer";
+    import { getDoc } from "@junobuild/core";
     import NotFound from "$lib/components/NotFound.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { path } from "$lib/stores/redirect_store";
-    import FundingBarNew from "$lib/components/FundingBarNew.svelte";
-    import BasicButtonBlackWhite from "$lib/components/BasicButtonBlackWhite.svelte";
     import ModalConfirmation from "$lib/components/ModalConfirmation.svelte";
     import {
         deleteIdea,

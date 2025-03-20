@@ -10,7 +10,7 @@
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import { onMount } from "svelte";
-    import { getDoc } from "@junobuild/core-peer";
+    import { getDoc } from "@junobuild/core";
     import { nanoid } from "nanoid";
     import { path } from "$lib/stores/redirect_store";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";

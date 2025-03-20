@@ -14,7 +14,7 @@
         getUserBalance,
         getUserTransactions_bySender,
     } from "$lib/financial_functions/financial_functions";
-    import { authSubscribe, getDoc, listDocs } from "@junobuild/core-peer";
+    import { authSubscribe, getDoc, listDocs } from "@junobuild/core";
     import { onMount } from "svelte";
     import { Principal } from "@dfinity/principal";
     import { getWalletAddress } from "$lib/data_functions/docu.functions";
@@ -66,7 +66,7 @@
     };
 
     /**
-     * @type {import("@junobuild/core-peer").Doc.<any>}
+     * @type {import("@junobuild/core").Doc.<any>}
      */
     let userData = {
         key: "",

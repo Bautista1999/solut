@@ -22,7 +22,7 @@
     import AppMenuBar from "./AppMenuBar.svelte";
     // @ts-ignore
     import PledgerProfilePicture from "./PledgerProfilePicture.svelte";
-    import { signOut } from "@junobuild/core-peer";
+    import { signOut } from "@junobuild/core";
     import NotificationPopUp from "./NotificationPopUp.svelte";
     import { onMount } from "svelte";
 

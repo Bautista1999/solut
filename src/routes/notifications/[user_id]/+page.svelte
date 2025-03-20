@@ -1,14 +1,6 @@
 <script>
     import { onMount } from "svelte";
-    import {
-        check_new_notifications,
-        get_user_notifications,
-    } from "$lib/data_functions/docu.functions";
-    import { createNotification } from "$lib/data_objects/data_objects";
-    import { howLongAgo } from "$lib/other_functions/other.functions";
-    import MagicalDots from "$lib/components/magicalDots.svelte";
-    import { basicInfo } from "$lib/stores/auth.state";
-    import Loading from "$lib/components/loading.svelte";
+
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { goto } from "$app/navigation";
     import { path } from "$lib/stores/redirect_store";
@@ -18,8 +10,6 @@
         getUserNotifications,
     } from "$lib/data_functions/get_functions";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
-    import { subtitle } from "$lib/data_objects/testing_objects";
-    import { notificationCount } from "$lib/stores/notifications";
 
     /** @type {import('./$types').PageData} */
     // @ts-ignore

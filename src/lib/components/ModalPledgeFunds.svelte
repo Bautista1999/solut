@@ -11,7 +11,7 @@
         getUserBalance,
     } from "$lib/financial_functions/financial_functions";
     import { onMount } from "svelte";
-    import { authSubscribe } from "@junobuild/core-peer";
+    import { authSubscribe } from "@junobuild/core";
     import FlatButtonDarkSmall from "./FlatButtonDarkSmall.svelte";
     import SuccessModalNew from "./SuccessModalNew.svelte";
     import LoadingModalNew from "./LoadingModalNew.svelte";

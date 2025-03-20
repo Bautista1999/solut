@@ -1,4 +1,4 @@
-import { authSubscribe, deleteDoc, getDoc, setDoc, setManyDocs, unsafeIdentity } from "@junobuild/core-peer";
+import { authSubscribe, deleteDoc, getDoc, setDoc, setManyDocs, unsafeIdentity } from "@junobuild/core";
 import { nanoid } from "nanoid";
 import {idlFactory as canisterIdl}  from "$lib/declarations/admin.declarations.did.js";
 import { Actor, HttpAgent } from "@dfinity/agent";

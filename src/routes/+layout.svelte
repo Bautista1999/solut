@@ -4,7 +4,7 @@
   import "./global.styles.css";
   import SideMenu from "$lib/components/SideMenu.svelte";
   import Footer from "$lib/components/Footer.svelte";
-  import { initSatellite } from "@junobuild/core-peer";
+  import { initSatellite } from "@junobuild/core";
   import { onMount, onDestroy } from "svelte";
   import { updateNotificationCount } from "$lib/stores/notifications";
   import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";

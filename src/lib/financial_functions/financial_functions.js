@@ -1,4 +1,4 @@
-import { authSubscribe, getDoc, getManyDocs, initJuno, listDocs, unsafeIdentity } from "@junobuild/core-peer";
+import { authSubscribe, getDoc, getManyDocs, initJuno, listDocs, unsafeIdentity } from "@junobuild/core";
 import { Actor, HttpAgent } from "@dfinity/agent";
 import { Principal } from "@dfinity/principal";
 

@@ -1,5 +1,5 @@
 import { getUserKey, getUsername } from "$lib/data_functions/get_functions";
-import { uploadFile } from "@junobuild/core-peer";
+import { uploadFile } from "@junobuild/core";
 import fs from 'fs';
 import path from "path";
 /**

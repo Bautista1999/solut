@@ -4,7 +4,7 @@
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { notificationCount } from "$lib/stores/notifications";
     import { IsSignedIn, UserKey } from "$lib/stores/other_stores";
-    import { signOut } from "@junobuild/core-peer";
+    import { signOut } from "@junobuild/core";
 
     let active = "";
     $: userKey = getUserKey();

@@ -5,7 +5,7 @@
         getUserBalance,
     } from "$lib/financial_functions/financial_functions";
     import { UserKey } from "$lib/stores/other_stores";
-    import { unsafeIdentity } from "@junobuild/core-peer";
+    import { unsafeIdentity } from "@junobuild/core";
     import ErrorMessage from "./ErrorMessage.svelte";
     import ErrorModalNew from "./ErrorModalNew.svelte";
 
