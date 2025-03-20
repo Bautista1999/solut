@@ -1321,7 +1321,7 @@ fn create_or_update_topic(key: String, topic: Topic) -> Result<(), String> {
         set_doc_store(caller, collection, key, set_doc)?;
     }
     create_or_update_html_metatags("topic".to_string(), key.clone());
-
+    generate_sitemap();
     Ok(())
 }
 
@@ -1459,7 +1459,7 @@ fn create_or_update_idea(key: String, idea: Idea, parent_idea_id: String) -> Res
     for (collection, key, set_doc) in docs_to_create_user {
         set_doc_store(caller, collection, key, set_doc)?;
     }
-
+    generate_sitemap();
     Ok(())
 }
 
@@ -1676,6 +1676,7 @@ fn create_or_update_solution(
             return Ok(());
         }
     };
+    generate_sitemap();
     return Ok(());
 }
 
@@ -1786,6 +1787,10 @@ thread_local! {
 
 #[update]
 fn start_scheduled_tasks() -> String {
+    match caller_is_admin() {
+        Ok(_) => {}
+        Err(e) => return format!("Error: {}", e),
+    }
     let global_interval = Duration::from_secs(86_400); // 24 hours for all scheduled tasks
 
     // Schedule delete_unused_images
@@ -1820,6 +1825,10 @@ fn start_scheduled_tasks() -> String {
 
 #[update]
 fn stop_scheduled_tasks() -> String {
+    match caller_is_admin() {
+        Ok(_) => {}
+        Err(e) => return format!("Error: {}", e),
+    }
     SCHEDULED_TASKS.with(|tasks| {
         for (_, timer_id) in tasks.borrow_mut().drain() {
             clear_timer(timer_id);
@@ -1831,6 +1840,10 @@ fn stop_scheduled_tasks() -> String {
 
 #[query]
 fn query_scheduled_tasks_state() -> String {
+    match caller_is_admin() {
+        Ok(_) => {}
+        Err(e) => return format!("Error: {}", e),
+    }
     let task_states = SCHEDULED_TASKS.with(|tasks| {
         tasks
             .borrow()
@@ -1848,11 +1861,13 @@ fn query_scheduled_tasks_state() -> String {
 
 #[update]
 fn trigger_delete_unused_images() -> Result<(), String> {
+    caller_is_admin()?;
     return delete_unused_images();
 }
 
 #[update]
 fn trigger_delete_orphan_ideas() -> Result<(), String> {
+    caller_is_admin()?;
     return delete_orphan_ideas();
 }
 
