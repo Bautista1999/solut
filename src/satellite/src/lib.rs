@@ -1,7 +1,9 @@
 use bytes::Bytes;
 use candid::{CandidType, Int, Nat, Principal};
 
+use guards::caller_is_admin;
 use ic_cdk_timers::{clear_timer, set_timer_interval, TimerId};
+use junobuild_shared::controllers::is_admin_controller;
 use junobuild_storage::http::types::HeaderField;
 use junobuild_storage::types::store::AssetKey;
 use mime::Mime;
@@ -1700,8 +1702,8 @@ fn update_doc_description(
     Ok(())
 }
 
-use std::str;
 use junobuild_shared::types::core::Key;
+use std::str;
 
 #[update]
 pub fn upload_image(
@@ -1856,6 +1858,7 @@ fn trigger_delete_orphan_ideas() -> Result<(), String> {
 
 #[update]
 fn trigger_delete_orphan_solutions() -> Result<(), String> {
+    caller_is_admin()?;
     return delete_orphan_solutions();
 }
 
