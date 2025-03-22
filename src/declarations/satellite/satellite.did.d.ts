@@ -286,6 +286,10 @@ export interface _SERVICE {
     [string, [] | [bigint], [] | [bigint]],
     Result_10
   >,
+  'get_paginated_followers_by_type' : ActorMethod<
+    [string, string, [] | [bigint], [] | [bigint]],
+    Result_10
+  >,
   'get_paginated_following_elements' : ActorMethod<
     [string, [] | [bigint], [] | [bigint]],
     Result_10

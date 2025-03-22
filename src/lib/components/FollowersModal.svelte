@@ -12,6 +12,7 @@
     import FollowerDisplay from "./FollowerDisplay.svelte";
 
     export let amount = 0;
+    export let isLoading = false;
 
     let errorFlag = false;
     let errorMsg = "";
@@ -28,7 +29,7 @@
 
     export let getMoreUsersFunction = () => {};
 
-    let isLoading = false;
+    let isLoadingMore = false;
 
     // Handler for detecting scrolling to the bottom of the modal content
     // @ts-ignore
@@ -38,12 +39,12 @@
         // Check if user scrolled to the bottom of the modal
         if (
             element.scrollTop + element.clientHeight >= element.scrollHeight &&
-            !isLoading &&
+            !isLoadingMore &&
             users.length < amount
         ) {
-            isLoading = true; // Prevent multiple triggers
+            isLoadingMore = true; // Prevent multiple triggers
             await getMoreUsersFunction();
-            isLoading = false;
+            isLoadingMore = false;
         }
     }
 
@@ -77,16 +78,34 @@
         </p>
         <div class="SmallSeparator">
             {#if !errorFlag}
-                {#each users as user}
-                    <FollowerDisplay
-                        username={user.title}
-                        profilePicture={user.profile_image}
-                        key={user.element_id}
-                        type={correctType(user.element_type)}
-                    />
-                {/each}
                 {#if isLoading}
-                    <p>Loading more...</p>
+                    {#each Array(3) as _, i}
+                        <div class="follower-skeleton">
+                            <div class="skeleton profile-pic"></div>
+                            <div class="skeleton-content">
+                                <div class="skeleton username"></div>
+                                <div class="skeleton type"></div>
+                            </div>
+                        </div>
+                    {/each}
+                {:else}
+                    {#each users as user}
+                        <FollowerDisplay
+                            username={user.title}
+                            profilePicture={user.profile_image}
+                            key={user.element_id}
+                            type={correctType(user.element_type)}
+                        />
+                    {/each}
+                    {#if isLoadingMore}
+                        <div class="follower-skeleton">
+                            <div class="skeleton profile-pic"></div>
+                            <div class="skeleton-content">
+                                <div class="skeleton username"></div>
+                                <div class="skeleton type"></div>
+                            </div>
+                        </div>
+                    {/if}
                 {/if}
             {:else if errorFlag}
                 <ErrorModalNew
@@ -105,5 +124,60 @@
     .SmallSeparator {
         max-height: 60vh; /* Adjust as needed */
         overflow-y: auto;
+    }
+
+    .follower-skeleton {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        margin-bottom: 8px;
+        background: var(--tertiary-color);
+        border-radius: 8px;
+    }
+
+    .skeleton {
+        background: linear-gradient(
+            90deg,
+            var(--forth-color-v2) 0%,
+            var(--ninth-color) 50%,
+            var(--forth-color-v2) 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 4px;
+    }
+
+    .profile-pic {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .skeleton-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .username {
+        height: 16px;
+        width: 120px;
+    }
+
+    .type {
+        height: 12px;
+        width: 80px;
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: 200% 0;
+        }
+        100% {
+            background-position: -200% 0;
+        }
     }
 </style>

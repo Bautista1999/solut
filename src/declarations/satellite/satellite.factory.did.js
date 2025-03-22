@@ -342,6 +342,11 @@ export const idlFactory = ({ IDL }) => {
         [Result_10],
         ['query'],
       ),
+    'get_paginated_followers_by_type' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Nat64)],
+        [Result_10],
+        ['query'],
+      ),
     'get_paginated_following_elements' : IDL.Func(
         [IDL.Text, IDL.Opt(IDL.Nat64), IDL.Opt(IDL.Nat64)],
         [Result_10],

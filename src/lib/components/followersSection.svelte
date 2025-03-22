@@ -8,8 +8,9 @@
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { path } from "$lib/stores/redirect_store";
     import { onMount } from "svelte";
-    import FollowersModalDisplay from "./FollowersModalDisplay.svelte";
-    import { FollowersModal } from "$lib/stores/other_stores";
+    import FollowersModal from "./FollowersModal.svelte";
+    import { FollowersModal as modalFollowers } from "$lib/stores/other_stores";
+    import { getPaginatedFollowersByType } from "../../declarations/satellite/satellite.api";
 
     /**
      * @param {number} num
@@ -19,6 +20,14 @@
     export let type = "";
     let follows = false;
     let amount_sub = formatNumber(amount);
+    let isLoading = false;
+
+    /**
+     * @type {import("../../declarations/satellite/satellite.did").IndexResponseBasicInfo[]}
+     */
+    let followerList = [];
+    let offsetFollowers = 0;
+
     /**
      * @param {number} num
      */
@@ -29,6 +38,39 @@
             return (num / 1000).toFixed(num % 1000 !== 0 ? 1 : 0) + "K";
         } else {
             return (num / 1000000).toFixed(num % 1000000 !== 0 ? 1 : 0) + "M";
+        }
+    }
+
+    async function getFollowers() {
+        debugger;
+        isLoading = true;
+        try {
+            let result = await getPaginatedFollowersByType(
+                element_key,
+                type,
+                [offsetFollowers],
+                [],
+            );
+            if ("Ok" in result) {
+                followerList = result.Ok[0];
+                amount = Number(result.Ok[1]);
+                amount_sub = formatNumber(amount);
+            }
+        } finally {
+            isLoading = false;
+        }
+    }
+
+    async function getMoreFollowers() {
+        offsetFollowers += 20;
+        let result = await getPaginatedFollowersByType(
+            element_key,
+            type,
+            [offsetFollowers],
+            [],
+        );
+        if ("Ok" in result) {
+            followerList = [...followerList, ...result.Ok[0]];
         }
     }
 
@@ -87,13 +129,19 @@
     <div
         class="Followers"
         on:click={() => {
-            FollowersModal.set(true);
+            getFollowers();
+            modalFollowers.set(true);
         }}
     >
         Followers: {amount_sub}
     </div>
 
-    <FollowersModalDisplay elementId={element_key} bind:amount />
+    <FollowersModal
+        users={followerList}
+        {amount}
+        {isLoading}
+        getMoreUsersFunction={getMoreFollowers}
+    />
 </div>
 
 <style>

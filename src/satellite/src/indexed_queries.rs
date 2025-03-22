@@ -1,26 +1,22 @@
 use crate::reputation::get_user_reputation;
 use crate::types::interface::{
-    EnrichedApprovalData, EnrichedPledgeData,  Idea, IndexResponse,
-    IndexResponseBasicInfo, PledgeBasicInfo,  UserProfileBasicInfo,
+    EnrichedApprovalData, EnrichedPledgeData, Idea, IndexResponse, IndexResponseBasicInfo,
+    PledgeBasicInfo, UserProfileBasicInfo,
 };
 use crate::user_information::{
-     get_historical_pledged_balance, get_paginated_following_elements,
+    get_historical_pledged_balance, get_paginated_following_elements, get_user_basic_information,
     get_user_profile_pic, get_user_username,
 };
 use crate::Funding::get_solution_implemented_features;
-use ic_cdk::{caller};
-use ic_cdk_macros::{query, };
-use junobuild_satellite::{
-    get_doc_store,
-    list_docs_store, log,Doc,
-    
-};
+use ic_cdk::caller;
+use ic_cdk_macros::query;
+use junobuild_satellite::{get_doc_store, list_docs_store, log, Doc};
 use junobuild_shared::types::list::{ListMatcher, ListParams};
-use junobuild_utils::{decode_doc_data};
+use junobuild_utils::decode_doc_data;
 use std::collections::HashMap;
 
-use std::sync::LazyLock;
 use ic_cdk::api::canister_balance128;
+use std::sync::LazyLock;
 // For Rust 1.63 and later
 
 static PLEDGE_TOTALS_CACHE: LazyLock<HashMap<String, u64>> = LazyLock::new(HashMap::new);
@@ -1348,4 +1344,92 @@ pub fn get_element_enriched_data(
         creation_date: doc.created_at,
         element_type: element_type.to_string(),
     })
+}
+
+#[query]
+pub fn get_paginated_followers_by_type(
+    element_id: String,
+    element_type: String,
+    offset: Option<usize>,
+    limit: Option<usize>,
+) -> Result<(Vec<IndexResponseBasicInfo>, usize, usize, usize), String> {
+    let caller = caller();
+    let offset = offset.unwrap_or(0);
+    let limit = limit.unwrap_or(20);
+
+    // Step 1: Filter for keys ending with `_{element_id}`
+    let filter = ListParams {
+        matcher: Some(ListMatcher {
+            key: Some(format!("_{}", element_id)),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let follow_result = list_docs_store(caller.clone(), "follow".to_string(), &filter)?;
+
+    // Step 2: Extract followers from the documents
+    let mut followers: Vec<(String, String)> = follow_result
+        .items
+        .iter()
+        .filter_map(|(key, doc)| {
+            // Extract follower ID from key first as fallback
+            let follower_id_from_key = key.split('_').next()?.to_string();
+
+            // Decode the document data
+            let decoded_data: serde_json::Value = match decode_doc_data(&doc.data) {
+                Ok(data) => data,
+                Err(_) => {
+                    // On decode error, use follower_id_from_key
+                    let follow_type = "user".to_string();
+                    return Some((follower_id_from_key, follow_type));
+                }
+            };
+
+            // Try to get follower_id from data, fallback to key if not found
+            let follower_id = decoded_data
+                .get("follower")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+                .unwrap_or(follower_id_from_key);
+
+            let follow_type = decoded_data
+                .get("type")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_lowercase())
+                .unwrap_or("user".to_string());
+
+            Some((follower_id, follow_type))
+        })
+        .collect();
+
+    // Step 3: Process followers and get their information
+    let mut valid_followers = Vec::new();
+    for (follower_id, follow_type) in followers {
+        // Use get_user_basic_information to get user details
+        if let Ok(user_info) = get_user_basic_information(follower_id.clone()) {
+            valid_followers.push(IndexResponseBasicInfo {
+                element_id: follower_id,
+                title: user_info.username,
+                profile_image: user_info.profile_picture,
+                creation_date: 0, // Note: get_user_basic_information doesn't provide creation_date
+                element_type: "user".to_string(),
+            });
+        }
+    }
+
+    // Step 5: Apply pagination
+    let total_items = valid_followers.len();
+    let paginated_followers = valid_followers
+        .into_iter()
+        .skip(offset)
+        .take(limit)
+        .collect::<Vec<_>>();
+    let total_pages = (total_items + limit - 1) / limit;
+
+    Ok((
+        paginated_followers,
+        total_items,
+        total_pages,
+        offset / limit + 1,
+    ))
 }

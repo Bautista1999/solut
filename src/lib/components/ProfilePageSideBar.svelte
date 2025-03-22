@@ -61,11 +61,40 @@
      */
     $: followingElements = [];
     let offset = 0;
+    let isLoadingFollowing = false;
+
     async function getFollowingElements() {
-        let result = await getPaginatedFollowingElements(user_id, [offset], []);
-        if ("Ok" in result) {
-            followingElements = result.Ok[0];
-            following = Number(result.Ok[1]);
+        isLoadingFollowing = true;
+        try {
+            let result = await getPaginatedFollowingElements(
+                user_id,
+                [offset],
+                [],
+            );
+            if ("Ok" in result) {
+                followingElements = result.Ok[0];
+                following = Number(result.Ok[1]);
+            }
+        } finally {
+            isLoadingFollowing = false;
+        }
+    }
+
+    async function getMoreFollowingElements() {
+        offset += 10;
+        isLoadingFollowing = true;
+        try {
+            let result = await getPaginatedFollowingElements(
+                user_id,
+                [offset],
+                [],
+            );
+            if ("Ok" in result) {
+                followingElements = [...followingElements, ...result.Ok[0]];
+                following = Number(result.Ok[1]);
+            }
+        } finally {
+            isLoadingFollowing = false;
         }
     }
 
@@ -74,17 +103,43 @@
      */
     $: followerList = [];
     let offsetFollowers = 0;
+    let isLoading = false;
+
     async function getFollowers() {
-        let result = await getPaginatedFollowers(
-            user_id,
-            [offsetFollowers],
-            [],
-        );
-        if ("Ok" in result) {
-            followerList = result.Ok[0];
-            followers = Number(result.Ok[1]);
+        isLoading = true;
+        try {
+            let result = await getPaginatedFollowers(
+                user_id,
+                [offsetFollowers],
+                [],
+            );
+            if ("Ok" in result) {
+                followerList = result.Ok[0];
+                followers = Number(result.Ok[1]);
+            }
+        } finally {
+            isLoading = false;
         }
     }
+
+    async function getMoreFollowers() {
+        offsetFollowers += 10;
+        isLoading = true;
+        try {
+            let result = await getPaginatedFollowers(
+                user_id,
+                [offsetFollowers],
+                [],
+            );
+            if ("Ok" in result) {
+                followerList = [...followerList, ...result.Ok[0]];
+                followers = Number(result.Ok[1]);
+            }
+        } finally {
+            isLoading = false;
+        }
+    }
+
     let isOwner = false;
     onMount(async () => {
         let callerPrincipal = get(UserKey);
@@ -227,8 +282,18 @@
         </div>
     {/if}
 </div>
-<FollowingsModal users={followingElements} amount={following} />
-<FollowersModal users={followerList} amount={followers} />
+<FollowingsModal
+    users={followingElements}
+    amount={following}
+    isLoading={isLoadingFollowing}
+    getMoreUsersFunction={getMoreFollowingElements}
+/>
+<FollowersModal
+    users={followerList}
+    amount={followers}
+    {isLoading}
+    getMoreUsersFunction={getMoreFollowers}
+/>
 
 <style>
     .material-symbols-outlined {

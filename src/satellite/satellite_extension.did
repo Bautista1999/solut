@@ -247,6 +247,9 @@ service : {
       Result_9,
     ) query;
   get_paginated_followers : (text, opt nat64, opt nat64) -> (Result_10) query;
+  get_paginated_followers_by_type : (text, text, opt nat64, opt nat64) -> (
+      Result_10,
+    ) query;
   get_paginated_following_elements : (text, opt nat64, opt nat64) -> (
       Result_10,
     ) query;

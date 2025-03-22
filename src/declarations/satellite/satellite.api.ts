@@ -245,6 +245,14 @@ export const getPaginatedFollowers = async (value0: string, value1: unknown, val
 	return await get_paginated_followers(value0, value1, value2);
 }
 
+export const getPaginatedFollowersByType = async (value0: string, value1: string, value2: unknown, value3: unknown): Promise<Result_10> => {
+	const {get_paginated_followers_by_type} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await get_paginated_followers_by_type(value0, value1, value2, value3);
+}
+
 export const getPaginatedFollowingElements = async (value0: string, value1: unknown, value2: unknown): Promise<Result_10> => {
 	const {get_paginated_following_elements} = await getSatelliteExtendedActor<SatelliteActor>({
 		idlFactory
