@@ -251,6 +251,7 @@
 
                 // Update status to completed
                 ideas[idea.index].status = "completed";
+                availableFunds = availableFunds - idea.amount;
             } catch (error) {
                 alert(`Error creating pledge for idea ${idea.id}:` + error);
                 if (String(error).includes("signature could not be verified")) {

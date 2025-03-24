@@ -197,7 +197,6 @@
     successMsg="Your pledge was canceled successfully."
     loadingMsg="Deleting pledge..."
   />
-  }
 {/if}
 
 <style>

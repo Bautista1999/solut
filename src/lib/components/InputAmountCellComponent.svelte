@@ -7,38 +7,36 @@
 
     // Use a string for the input value
     /** @type {string} */
-    let inputValue = row.amount ? row.amount.toString() : "";
+    let inputValue = "";
 
     $: isLoading = row.status === "loading";
-    $: isDisabled = isLoading || !row.checked; // Disable if row is loading or not checked
+    $: isDisabled = isLoading || !row.checked;
 
     /**
      * @param {Event} e
      */
     function updateAmount(e) {
-        if (isDisabled) return; // Prevent updates when disabled
+        if (isDisabled) return;
 
         const input = /** @type {HTMLInputElement} */ (e.target);
         inputValue = input.value;
 
-        // Convert to number only if there's a value
-        const amount = inputValue === "" ? 0 : parseFloat(inputValue);
+        // Convert to number, allowing zero values
+        const amount = inputValue === "" ? 0 : Number(inputValue);
 
         // Update the row
         row.amount = amount;
 
-        // Use the handleAmountChange handler if available
         if (row.handleAmountChange) {
             row.handleAmountChange(amount);
         } else {
-            // If no handler, at least ensure reactivity
             row = { ...row };
         }
     }
 
     // Keep inputValue in sync with row.amount when it changes externally
-    $: if (row.amount !== undefined && !isNaN(row.amount)) {
-        inputValue = row.amount > 0 ? row.amount.toString() : "";
+    $: if (row.amount !== undefined && !isNaN(row.amount) && row.amount > 0) {
+        inputValue = row.amount.toString();
     }
 </script>
 
@@ -91,5 +89,10 @@
     input:disabled {
         background-color: var(--tertiary-color);
         cursor: not-allowed;
+    }
+
+    /* Style for the placeholder */
+    input::placeholder {
+        color: var(--forth-color);
     }
 </style>
