@@ -85,14 +85,12 @@ export async function GetNewNotifications(){
                 desc:false,
                 field:'created_at'
             },
-            paginate:{
-                startAfter:lastNotificationKey==""?undefined:lastNotificationKey ,
-            }
+            
             
         },
         
     });
-    return notifications.items;
+    return notifications.items.filter(notification => notification.data.read === false);
 
 
 }

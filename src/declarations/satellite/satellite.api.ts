@@ -501,6 +501,22 @@ export const sendSingleNotification = async (value0: string, value1: string, val
 	return await send_single_notification(value0, value1, value2);
 }
 
+export const setAllUserNotificationsAsRead = async (): Promise<Result_2> => {
+	const {set_all_user_notifications_as_read} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await set_all_user_notifications_as_read();
+}
+
+export const setUserNotificationAsRead = async (value0: string): Promise<Result_2> => {
+	const {set_user_notification_as_read} = await getSatelliteExtendedActor<SatelliteActor>({
+		idlFactory
+	});
+
+	return await set_user_notification_as_read(value0);
+}
+
 export const startScheduledTasks = async (): Promise<string> => {
 	const {start_scheduled_tasks} = await getSatelliteExtendedActor<SatelliteActor>({
 		idlFactory

@@ -348,6 +348,8 @@ export interface _SERVICE {
     [string, string, Notification],
     Result_2
   >,
+  'set_all_user_notifications_as_read' : ActorMethod<[], Result_2>,
+  'set_user_notification_as_read' : ActorMethod<[string], Result_2>,
   'start_scheduled_tasks' : ActorMethod<[], string>,
   'stop_scheduled_tasks' : ActorMethod<[], string>,
   'trigger_delete_orphan_ideas' : ActorMethod<[], Result_2>,

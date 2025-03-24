@@ -454,6 +454,8 @@ export const idlFactory = ({ IDL }) => {
         [Result_2],
         [],
       ),
+    'set_all_user_notifications_as_read' : IDL.Func([], [Result_2], []),
+    'set_user_notification_as_read' : IDL.Func([IDL.Text], [Result_2], []),
     'start_scheduled_tasks' : IDL.Func([], [IDL.Text], []),
     'stop_scheduled_tasks' : IDL.Func([], [IDL.Text], []),
     'trigger_delete_orphan_ideas' : IDL.Func([], [Result_2], []),

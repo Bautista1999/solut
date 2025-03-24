@@ -299,6 +299,8 @@ service : {
   reject_approval : (text, text, opt text) -> (Result_2);
   reverse_approval : (text) -> (Result_2);
   send_single_notification : (text, text, Notification) -> (Result_2);
+  set_all_user_notifications_as_read : () -> (Result_2);
+  set_user_notification_as_read : (text) -> (Result_2);
   start_scheduled_tasks : () -> (text);
   stop_scheduled_tasks : () -> (text);
   trigger_delete_orphan_ideas : () -> (Result_2);

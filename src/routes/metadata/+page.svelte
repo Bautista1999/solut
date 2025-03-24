@@ -51,6 +51,7 @@
     completeSolution,
     createOrUpdateHtmlMetatags,
     generateSitemap,
+    setAllUserNotificationsAsRead,
   } from "../../declarations/satellite/satellite.api";
   import { signIn, NFIDProvider, authSubscribe } from "@junobuild/core";
   import SearchBarLarger from "$lib/components/SearchBarLarger.svelte";
@@ -1193,6 +1194,19 @@
           console.log(result);
         }}
         msg={"Update XML Sitemap"}
+      />
+    </div>
+
+    <div class="Field">
+      <h1 style="margin:0px;">Set All Notifications as Read</h1>
+
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          const result = await setAllUserNotificationsAsRead();
+          console.log(result);
+        }}
+        msg={"Set All Notifications as Read"}
       />
     </div>
 

@@ -1,4 +1,5 @@
 <script>
+    // @ts-nocheck
     import { onMount } from "svelte";
 
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
@@ -10,42 +11,141 @@
         getUserNotifications,
     } from "$lib/data_functions/get_functions";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
+    import { setAllUserNotificationsAsRead } from "../../../declarations/satellite/satellite.api";
 
     /** @type {import('./$types').PageData} */
     // @ts-ignore
     export let data;
     let key = data.params.user_id;
-    let newNotis = 1;
     let notisLoading = false;
-    let backgroundcolor = "transparent";
-    let color = "azure";
-    let advancedDate = {
-        day: 0,
-        month: 0,
-        year: 2023,
-        hour: 0,
-        minutes: 0,
-        seconds: 0,
+
+    // This variable will be used to trigger a reload of notifications
+    let reloadTrigger = 0;
+
+    // Function to get notifications that can be called multiple times
+    const getNotifications = async () => {
+        let notifications = await getUserNotifications();
+        console.log(notifications);
+        return notifications;
     };
-    let notification = {
-        link: "https://svftd-daaaa-aaaal-adr3a-cai.icp0.io/",
-        seen: false,
-        picture:
-            "https://i.pinimg.com/474x/05/c3/59/05c359cd010df3e7f1ea3cb6f6f54fad.jpg",
-        createBy: "Erik_Jung",
-        subject: "Erik_Jung has followed you",
-        body: "You have earned a new follower!",
-        /**
-         * @type {advancedDate} date
-         */
-        date: advancedDate,
-        elementName: "",
+
+    // Function to reload notifications
+    const reloadNotifications = () => {
+        reloadTrigger += 1;
     };
-    //let notification = createNotification();
+
     /**
-     * @type {notification[]} userNotifications
+     * Groups notifications by date
+     * @param {any[]} notifications - Array of notification objects
+     * @return {Object} Grouped notifications
      */
-    $: userNotifications = [];
+    const groupNotificationsByDate = (notifications) => {
+        const groups = {};
+
+        notifications.forEach((notification) => {
+            const timestamp = Number(
+                (notification.created_at == undefined
+                    ? 0n
+                    : notification.created_at) / 1000000n,
+            );
+
+            const date = new Date(timestamp);
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            let groupKey;
+
+            if (date.toDateString() === today.toDateString()) {
+                groupKey = "Today";
+            } else if (date.toDateString() === yesterday.toDateString()) {
+                groupKey = "Yesterday";
+            } else {
+                groupKey = date.toISOString().split("T")[0];
+            }
+
+            if (!groups[groupKey]) {
+                groups[groupKey] = [];
+            }
+
+            groups[groupKey].push(notification);
+        });
+
+        return groups;
+    };
+
+    /**
+     * Check if any notification in a group is unread
+     * @param {any[]} notifications - Array of notification objects
+     * @return {boolean} True if at least one notification is unread
+     */
+    const hasUnreadNotification = (notifications) => {
+        return notifications.some(
+            (notification) => notification.data.read === false,
+        );
+    };
+
+    /**
+     * Format a notification type to determine styling
+     * @param {string} title - The notification title
+     * @return {string} Type classification
+     */
+    const getNotificationType = (title) => {
+        if (!title) return "default";
+
+        const lowercaseTitle = title.toLowerCase();
+        if (
+            lowercaseTitle.includes("pledge") &&
+            lowercaseTitle.includes("approved")
+        )
+            return "success";
+        if (
+            lowercaseTitle.includes("pledge") &&
+            lowercaseTitle.includes("rejected")
+        )
+            return "error";
+        if (lowercaseTitle.includes("reputation")) return "info";
+        if (lowercaseTitle.includes("follow")) return "follow";
+        return "default";
+    };
+
+    /**
+     * Get the correct URL for a notification
+     * @param {Object} notification - Notification object
+     * @return {string} The URL to navigate to
+     */
+    const getNotificationUrl = (notification) => {
+        let date = Number(
+            (notification.created_at == undefined
+                ? 0n
+                : notification.created_at) / 1000000n,
+        );
+
+        if (
+            new Date(date) < new Date("8 July 2024") &&
+            !notification.data.linkURL.includes("solution")
+        ) {
+            // if notification was created before renaming of topics.
+            if (notification.data.linkURL.includes("/feature/")) {
+                return (
+                    "/idea/" +
+                    extractDocumentIdFromURL(
+                        notification.data.linkURL,
+                        "feature",
+                    )
+                );
+            } else if (notification.data.linkURL.includes("/idea/")) {
+                return (
+                    "/topic/" +
+                    extractDocumentIdFromURL(notification.data.linkURL, "idea")
+                );
+            }
+        }
+
+        return notification.data.linkURL
+            ? notification.data.linkURL
+            : "/profile/" + data.params.user_id;
+    };
 
     onMount(async () => {
         if (!(await CheckIfSignedIn())) {
@@ -55,377 +155,527 @@
         if (!((await getUserKey()) != data.params.user_id)) {
             key = await getUserKey();
         }
+        setAllUserNotificationsAsRead();
     });
+
+    // Create an array for loading skeletons
+    const loadingSkeletons = Array(10).fill(null);
 </script>
 
-<br />
-<div class="notificationBlock">
-    <div class="notification-dropdown">
-        {#await getUserNotifications()}
-            <LoadingNew message={"Checking notifications..."} />
-        {:then userNotifications}
-            {#if userNotifications.length == 0}
-                <p
-                    style="display: flex; justify-content:center; align-items:center; font-size:large;"
-                >
-                    - No notifications yet -
-                </p>
-            {:else}
-                {#each userNotifications as notification, index}
-                    <button
-                        class="notification"
-                        on:click={() => {
-                            let date = Number(
-                                (notification.created_at == undefined
-                                    ? 0n
-                                    : notification.created_at) / 1000000n,
-                            );
-                            if (
-                                new Date(date) < new Date("8 July 2024") &&
-                                !notification.data.linkURL.includes("solution")
-                            ) {
-                                // if notification was created before renaming of topics.
-                                if (
-                                    notification.data.linkURL.includes(
-                                        "/feature/",
-                                    )
-                                ) {
-                                    window.location.href =
-                                        "/idea/" +
-                                        extractDocumentIdFromURL(
-                                            notification.data.linkURL,
-                                            "feature",
-                                        );
-                                    return;
-                                } else if (
-                                    notification.data.linkURL.includes("/idea/")
-                                ) {
-                                    window.location.href =
-                                        "/topic/" +
-                                        extractDocumentIdFromURL(
-                                            notification.data.linkURL,
-                                            "idea",
-                                        );
-                                    return;
-                                }
-                            }
-                            window.location.href = notification.data.linkURL;
-                        }}
-                    >
-                        <div>
-                            <div class="notiColumns">
-                                <div class="profilePicture">
-                                    <img
-                                        src={notification.data.imageURL}
-                                        alt=""
-                                    />
-                                </div>
-
-                                <div style="width: 100%;">
-                                    <p style="font-weight:700;">
-                                        {notification.data.title}
-                                    </p>
-
-                                    {#if notification.data.subtitle != ""}
-                                        <p style="">
-                                            {notification.data.subtitle.substring(
-                                                0,
-                                                200,
-                                            )}{#if notification.data.subtitle.length > 200}...{/if}
-                                        </p>
-                                    {/if}
-                                </div>
-                            </div>
-                            <p style="color: orangered;">
-                                {new Date(
-                                    Number(
-                                        (notification.created_at == undefined
-                                            ? 0n
-                                            : notification.created_at) /
-                                            1000000n,
-                                    ),
-                                )
-                                    .toISOString()
-                                    .split("T")[0]}
-                            </p>
-                        </div>
-                    </button>
-                {/each}
-            {/if}
-            <div style="height: 0.3cm;" />
-            <div
-                style="display: flex; align-items:center; justify-content:center;"
-            />
-        {/await}
-    </div>
-</div>
 <svelte:head>
     <meta name="twitter:card" content="summary" />
     <meta charset="utf-8" />
     <title>Notifications</title>
 </svelte:head>
 
+<div class="notifications-container">
+    <div class="notifications-header">
+        <h1>Notifications</h1>
+        <button
+            class="reload-button"
+            on:click={reloadNotifications}
+            aria-label="Reload notifications"
+        >
+            <span class="material-symbols-outlined">refresh</span>
+        </button>
+    </div>
+
+    <div class="notifications-content">
+        {#key reloadTrigger}
+            {#await getNotifications()}
+                <div class="loading-container">
+                    <!-- Skeleton loaders for notifications -->
+                    <div class="notification-skeleton-container">
+                        {#each loadingSkeletons as _, i}
+                            <div class="notification-group">
+                                {#if i === 0 || i === 5}
+                                    <div class="date-header">
+                                        <div
+                                            class="date-marker skeleton-pulse"
+                                        ></div>
+                                        <div
+                                            class="skeleton-date-text skeleton-pulse"
+                                        ></div>
+                                    </div>
+                                {/if}
+
+                                <div class="notification-card skeleton-card">
+                                    <div
+                                        class="notification-image skeleton-pulse"
+                                    ></div>
+                                    <div class="notification-content">
+                                        <div
+                                            class="skeleton-title skeleton-pulse"
+                                        ></div>
+                                        <div
+                                            class="skeleton-body skeleton-pulse"
+                                        ></div>
+                                    </div>
+                                    <div class="notification-right">
+                                        <div
+                                            class="skeleton-time skeleton-pulse"
+                                        ></div>
+                                        <div
+                                            class="skeleton-icon skeleton-pulse"
+                                        ></div>
+                                    </div>
+                                </div>
+                            </div>
+                        {/each}
+                    </div>
+                </div>
+            {:then userNotifications}
+                {#if userNotifications.length == 0}
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <span class="material-symbols-outlined"
+                                >notifications_off</span
+                            >
+                        </div>
+                        <p>You don't have any notifications yet</p>
+                    </div>
+                {:else}
+                    {#each Object.entries(groupNotificationsByDate(userNotifications)) as [dateGroup, notifications]}
+                        {@const hasUnread =
+                            hasUnreadNotification(notifications)}
+                        <div class="notification-group">
+                            <div class="date-header">
+                                <div
+                                    class="date-marker"
+                                    class:unread-marker={hasUnread}
+                                ></div>
+                                <p>{dateGroup}</p>
+                            </div>
+
+                            <div class="notification-cards">
+                                {#each notifications as notification}
+                                    {@const notificationType =
+                                        getNotificationType(
+                                            notification.data.title,
+                                        )}
+                                    {@const notificationUrl =
+                                        getNotificationUrl(notification)}
+
+                                    <a
+                                        href={notificationUrl}
+                                        class="notification-card"
+                                        class:unread={notification.data.read ===
+                                            false}
+                                    >
+                                        <div class="notification-image">
+                                            <img
+                                                src={notification.data
+                                                    .imageURL ||
+                                                    "https://solutio.one/images/ENl0XIiJTV6ThUh96s3Rj.png"}
+                                                alt=""
+                                                on:error={function (e) {
+                                                    if (e && e.target) {
+                                                        e.target.src =
+                                                            "https://solutio.one/images/ENl0XIiJTV6ThUh96s3Rj.png";
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+
+                                        <div class="notification-content">
+                                            <div class="title-row">
+                                                <h3>
+                                                    {notification.data.title}
+                                                </h3>
+                                                {#if notification.data.read === false}
+                                                    <span class="new-badge"
+                                                        >New</span
+                                                    >
+                                                {/if}
+                                            </div>
+
+                                            {#if notification.data.subtitle != ""}
+                                                <p class="notification-body">
+                                                    {notification.data.subtitle.substring(
+                                                        0,
+                                                        80,
+                                                    )}{notification.data
+                                                        .subtitle.length > 80
+                                                        ? "..."
+                                                        : ""}
+                                                </p>
+                                            {/if}
+                                        </div>
+
+                                        <div class="notification-right">
+                                            <span class="notification-time">
+                                                {new Date(
+                                                    Number(
+                                                        (notification.created_at ==
+                                                        undefined
+                                                            ? 0n
+                                                            : notification.created_at) /
+                                                            1000000n,
+                                                    ),
+                                                ).toLocaleTimeString([], {
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                })}
+                                            </span>
+
+                                            {#if notificationType === "success"}
+                                                <span
+                                                    class="status-icon success-icon material-symbols-outlined"
+                                                    >check_circle</span
+                                                >
+                                            {:else if notificationType === "error"}
+                                                <span
+                                                    class="status-icon error-icon material-symbols-outlined"
+                                                    >cancel</span
+                                                >
+                                            {:else if notificationType === "info"}
+                                                <span
+                                                    class="status-icon info-icon material-symbols-outlined"
+                                                    >info</span
+                                                >
+                                            {:else}
+                                                <span
+                                                    class="status-icon info-icon material-symbols-outlined"
+                                                    >info</span
+                                                >
+                                            {/if}
+                                        </div>
+                                    </a>
+                                {/each}
+                            </div>
+                        </div>
+                    {/each}
+                {/if}
+            {/await}
+        {/key}
+    </div>
+</div>
+
 <style>
-    .profile {
-        height: auto;
-        margin: 5px;
-        width: 1.2cm;
-        margin-right: 0px;
+    .notifications-container {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
     }
-    .profilePicture {
-        width: 2cm;
-        height: 2cm;
-        overflow: hidden;
-        border: 1px solid black;
+
+    .notifications-header {
+        margin-bottom: 24px;
         display: flex;
-        justify-content: center;
+        justify-content: start;
+        gap: 10px;
         align-items: center;
     }
 
-    .profilePicture img {
+    .notifications-header h1 {
+        color: var(--secondary-color);
+        font-weight: 600;
+        font-size: 28px;
+        margin: 0;
+    }
+
+    .reload-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--primary-color);
+        padding: 8px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .reload-button:hover {
+        background-color: var(--forth-color);
+        transform: rotate(30deg);
+    }
+
+    .reload-button:active {
+        transform: rotate(360deg);
+    }
+
+    .reload-button span {
+        font-size: 24px;
+    }
+
+    .notifications-content {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .loading-container {
+        width: 100%;
+    }
+
+    /* Skeleton styles */
+    .notification-skeleton-container {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .skeleton-card {
+        background-color: var(--tertiary-color);
+        box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 0.7);
+        min-height: 80px;
+    }
+
+    .skeleton-pulse {
+        background: linear-gradient(
+            90deg,
+            var(--forth-color) 0%,
+            var(--ninth-color) 50%,
+            var(--forth-color) 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 4px;
+    }
+
+    .skeleton-date-text {
+        width: 80px;
+        height: 16px;
+    }
+
+    .skeleton-title {
+        height: 16px;
+        width: 70%;
+        margin-bottom: 8px;
+    }
+
+    .skeleton-body {
+        height: 14px;
+        width: 90%;
+    }
+
+    .skeleton-time {
+        height: 14px;
+        width: 50px;
+        margin-bottom: 8px;
+    }
+
+    .skeleton-icon {
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: 200% 0;
+        }
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 0;
+        color: var(--eigth-color);
+        gap: 16px;
+    }
+
+    .empty-icon {
+        font-size: 48px;
+    }
+
+    .empty-icon span {
+        color: var(--ninth-color);
+        font-size: 48px;
+    }
+
+    .notification-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .notification-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .date-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .date-marker {
+        width: 4px;
+        height: 20px;
+        background-color: var(--secondary-color);
+        border-radius: 0;
+    }
+
+    .unread-marker {
+        background-color: var(--primary-color);
+    }
+
+    .date-header p {
+        color: var(--eigth-color);
+        font-weight: 500;
+        font-size: 16px;
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .notification-card {
+        display: flex;
+        position: relative;
+        padding: 16px;
+        background-color: var(--tertiary-color);
+        border: 1px solid var(--seventh-color);
+        box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        overflow: hidden;
+        align-items: center;
+        gap: 16px;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .unread {
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .notification-card:not(.unread) {
+        border-left: 1px solid var(--seventh-color);
+    }
+
+    .notification-card:hover {
+        background-color: var(--forth-color);
+        transform: translateY(-2px);
+    }
+
+    .notification-card:active {
+        transform: translateY(0);
+        box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+    }
+
+    .notification-image {
+        flex-shrink: 0;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 1px solid var(--seventh-color);
+        background-color: var(--forth-color);
+    }
+
+    .notification-image img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
-    .newNotis {
-        width: 0.8cm;
-        height: 0.8cm;
-        background-color: orangered;
+
+    .notification-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .notification-content h3 {
+        margin: 0;
+        font-weight: 600;
+        color: var(--secondary-color);
+    }
+
+    .title-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .new-badge {
+        font-size: 12px;
+        font-weight: 600;
+        background-color: var(--green);
         color: white;
-        border-color: black;
-        border-width: 1px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        padding: 2px 6px;
+        border-radius: 8px;
+        text-transform: uppercase;
+    }
+
+    .notification-body {
         font-size: medium;
-
-        border-radius: 50%;
+        color: var(--eigth-color);
+        line-height: 1.4;
+        margin: 0;
     }
-    .notiColumns {
-        gap: 10px;
+
+    .notification-right {
         display: flex;
-        justify-content: flex-start;
-        align-items: flex-start;
-        line-height: 1.1;
-        max-width: 100%;
-    }
-    .horizontalLine {
-        width: 80%;
-        border-color: rgba(240, 248, 255, 0.149);
-        border-width: 0.2px;
-    }
-
-    .notificationBlock {
-    }
-
-    .notification-dropdown {
-        width: 50%;
-        margin-left: auto;
-        margin-right: auto;
-        overflow-y: auto;
-        overflow-x: hidden;
-        margin-top: 10px;
-
-        z-index: 0; /* Place it above other content (e.g., z-index: 1) */
-        padding-bottom: 5px;
-
-        max-height: fit-content;
-        padding: 10px;
-        border-radius: 3px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
         flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
     }
 
-    .notification {
-        width: 100%;
-        display: flex;
-        justify-content: start;
-        align-items: start;
-        text-align: left;
-        font-size: medium;
-        padding-left: 10px;
-        padding-right: 10px;
-        padding-top: 5px;
-        padding-bottom: 5px;
-        border: 1px solid var(--secondary-color);
-        background-color: var(--tertiary-color);
-        cursor: pointer;
-    }
-    .notification:hover {
-        background-color: antiquewhite;
+    .notification-time {
+        font-size: small;
+        color: var(--eigth-color);
+        white-space: nowrap;
     }
 
-    header {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: x-large;
-        gap: 30px;
-        margin-top: 10px;
-        margin-bottom: 25px;
-    }
-    header > :last-child {
-        order: 1;
-    }
-    .tabClosed {
-        width: fit-content;
-        padding: 7px;
-        padding-left: 15px;
-        padding-right: 15px;
-        /* background: linear-gradient(to right, rgb(255, 0, 0), orangered); */
-
-        display: flex;
-        align-items: center; /* Vertical alignment */
-        justify-content: center; /* Horizontal alignment */
-        font-size: x-large;
-        font-weight: 330;
-        transition:
-            transform 0.3s ease,
-            box-shadow 0.3s ease;
-    }
-    .tabClosed:hover {
-        transform: scale(
-            1.08
-        ); /* scales the button to 105% of its original size on hover */
-        box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
-        border-width: 0.5px;
-        /* background-color: rgba(255, 245, 191, 0.5); */
-    }
-    .tabClosed:active {
-        transform: scale(
-            0.98
-        ); /* scales the button to 105% of its original size on hover */
-        box-shadow: none;
-        border-width: 0.5px;
-        /* background-color: rgba(255, 245, 191, 0.5); */
-    }
-    .tabNoti {
-        width: fit-content;
-        padding: 7px;
-
-        padding-left: 15px;
-        padding-right: 15px;
-        /* background: linear-gradient(to right, rgb(255, 0, 0), orangered); */
-
-        display: flex;
-        align-items: center; /* Vertical alignment */
-        justify-content: center; /* Horizontal alignment */
-        font-size: x-large;
-        font-weight: 330;
-        transition:
-            transform 0.3s ease,
-            box-shadow 0.3s ease;
-    }
-    .tabNoti:hover {
-        transform: scale(
-            1.08
-        ); /* scales the button to 105% of its original size on hover */
-        box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
-        border-width: 0.5px;
-        /* background-color: rgba(255, 245, 191, 0.5); */
-    }
-    .tabNoti:active {
-        transform: scale(
-            0.98
-        ); /* scales the button to 105% of its original size on hover */
-        box-shadow: none;
-        border-width: 0.5px;
-        /* background-color: rgba(255, 245, 191, 0.5); */
-    }
-    .menuLogo {
-        background-color: black;
-        position: absolute;
-        width: 1.5cm;
-        height: 1.5cm;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.5);
-        transition:
-            transform 0.3s ease,
-            box-shadow 0.3s ease;
-    }
-    .menuLogo:hover {
-        transform: scale(
-            1.08
-        ); /* scales the button to 105% of its original size on hover */
-    }
-    .menuLogo:active {
-        transform: scale(
-            0.98
-        ); /* scales the button to 105% of its original size on hover */
-        box-shadow: none;
-        /* background-color: rgba(255, 245, 191, 0.5); */
-    }
-    .menu-dropdown {
-        background-color: darkslategrey;
-        position: absolute;
-        flex-direction: column;
-        display: flex;
-        font-size: 150%;
-        gap: 10px;
-        color: orangered;
-        align-items: flex-start;
-        justify-content: flex-start;
-        width: 80%;
-        height: fit-content;
-        overflow-y: auto;
-        overflow-x: hidden;
-        margin-top: 10px;
-        color: darkslategrey;
-        z-index: 2; /* Place it above other content (e.g., z-index: 1) */
-        padding-bottom: 5px;
-        box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.5);
-        max-height: 80vh;
-        padding: 10px;
-        border-radius: 3px;
-    }
-    .menuItem {
-        color: antiquewhite;
-        width: 100%;
-    }
-    .menuItem:active {
-        color: antiquewhite;
-        background-color: rgba(255, 255, 255, 0.2);
+    .status-icon {
+        font-size: 20px;
     }
 
+    .success-icon {
+        color: var(--green);
+    }
+
+    .error-icon {
+        color: var(--red-wine);
+    }
+
+    .info-icon {
+        color: var(--sky-blue);
+    }
+
+    /* Responsive design */
     @media (max-width: 700px) {
-        .notification-dropdown {
-            width: 100%;
-            margin-left: 0;
-            margin-right: 0;
-            overflow-y: 0;
-            overflow-x: hidden;
-
-            z-index: 0;
-
-            max-height: fit-content;
-            border-radius: 3px;
-            border: 0px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            margin: 0px;
-            padding: 0;
+        .notifications-container {
+            padding: 16px;
         }
-        .notification {
-            width: 100%;
-            display: flex;
-            justify-content: start;
-            align-items: start;
-            text-align: left;
-            font-size: medium;
-            padding-left: 10px;
-            padding-right: 10px;
-            padding-top: 5px;
-            padding-bottom: 5px;
-            border: 0px;
-            border-bottom: 1px solid var(--secondary-color);
-            background-color: var(--tertiary-color);
-            cursor: pointer;
+
+        .notification-card {
+            padding: 12px;
+            box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+            gap: 12px;
+        }
+
+        .notification-image {
+            width: 40px;
+            height: 40px;
+        }
+
+        .notification-content h3 {
+            font-size: 15px;
+        }
+
+        .notification-time {
+            font-size: 12px;
+        }
+
+        .notification-body {
+            font-size: 13px;
+        }
+
+        .status-icon {
+            font-size: 18px;
         }
     }
 </style>

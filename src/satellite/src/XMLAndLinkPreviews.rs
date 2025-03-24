@@ -1,6 +1,7 @@
 use crate::types::interface::{MetaTagsInput, MetaTagsResult};
 use crate::user_information::get_user_username;
 use candid::{CandidType, Principal};
+use chrono::{DateTime, TimeZone, Utc};
 use ic_cdk::api::caller;
 use ic_cdk::api::management_canister::http_request::{HttpResponse, TransformArgs};
 use ic_cdk_macros::*;
@@ -215,7 +216,24 @@ pub fn generate_sitemap() -> Result<String, String> {
     );
 
     // Function to format a URL entry
-    fn format_url_entry(path_type: &str, id: &str) -> String {
+    fn format_url_entry(path_type: &str, id: &str, last_modified: u64) -> String {
+        // Simple direct formatting approach - convert timestamp to ISO date
+        // Using a fixed date format for simplicity - will always return a date
+        let timestamp_millis = last_modified / 1_000_000; // Convert nanos to millis
+        let timestamp_secs = timestamp_millis / 1000; // Convert to seconds
+
+        // Use a fixed current date if timestamp is obviously wrong
+        let iso_date = if timestamp_secs < 1000000000 || timestamp_secs > 2000000000 {
+            "2024-09-20T00:00:00Z".to_string() // Fallback to fixed date if timestamp is invalid
+        } else {
+            // Convert from IC timestamp to DateTime using chrono without now()
+            let dt = Utc
+                .timestamp_opt(timestamp_secs as i64, 0)
+                .single()
+                .unwrap();
+            dt.format("%Y-%m-%dT%H:%M:%SZ").to_string()
+        };
+
         format!(
             r#"
 <url>
@@ -223,9 +241,7 @@ pub fn generate_sitemap() -> Result<String, String> {
 <lastmod>{}</lastmod>
 <priority>0.8</priority>
 </url>"#,
-            path_type,
-            id,
-            ic_cdk::api::time() / 1_000_000
+            path_type, id, iso_date
         )
     }
 
@@ -239,26 +255,26 @@ pub fn generate_sitemap() -> Result<String, String> {
 
     // Get topics (stored as "idea" collection)
     let topics_result = list_docs_store(caller(), "idea".to_string(), &filter)?;
-    for (key, _doc) in topics_result.items {
-        sitemap.push_str(&format_url_entry("topic", &key));
+    for (key, doc) in topics_result.items {
+        sitemap.push_str(&format_url_entry("topic", &key, doc.updated_at));
     }
 
     // Get ideas (stored as "feature" collection)
     let ideas_result = list_docs_store(caller(), "feature".to_string(), &filter)?;
-    for (key, _doc) in ideas_result.items {
-        sitemap.push_str(&format_url_entry("idea", &key));
+    for (key, doc) in ideas_result.items {
+        sitemap.push_str(&format_url_entry("idea", &key, doc.updated_at));
     }
 
     // Get solutions
     let solutions_result = list_docs_store(caller(), "solution".to_string(), &filter)?;
-    for (key, _doc) in solutions_result.items {
-        sitemap.push_str(&format_url_entry("solution", &key));
+    for (key, doc) in solutions_result.items {
+        sitemap.push_str(&format_url_entry("solution", &key, doc.updated_at));
     }
 
     // Get users
     let users_result = list_docs_store(caller(), "user".to_string(), &filter)?;
-    for (key, _doc) in users_result.items {
-        sitemap.push_str(&format_url_entry("profile", &key));
+    for (key, doc) in users_result.items {
+        sitemap.push_str(&format_url_entry("profile", &key, doc.updated_at));
     }
 
     // Close the XML
