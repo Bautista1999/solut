@@ -30,3 +30,4 @@ junobuild-storage = "0.0.15"
 regex = "1.7"
 sha2 = "0.10.0"
 rand = "0.9.0"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
