@@ -118,7 +118,15 @@ export async function setFeature(feature, parentIdeaId, key) {
 
         if ("Ok" in result) {
             // Return the feature ID if the backend operation was successful
+            trackEvent({
+                name: "Ideas created",
+                metadata: {
+                    title: feature.title,
+                    key: featureId
+                }
+            });
             return featureId;
+
         } else if ("Err" in result) {
             // If there's an error from the backend, return it directly
             return   "ERROR: " + result.Err; // Backend error result.Err;
@@ -156,7 +164,6 @@ export async function setFeatures(features, parentIdea_id) {
             let errorDetail = feature.title.length === 0 ? "Title is required." : "Subtitle is required.";
             return `ERROR: ${errorDetail} in feature: ${feature.title}`;
         }
-
         trackEvent({
             name: "Ideas created",
             metadata: {
@@ -164,6 +171,7 @@ export async function setFeatures(features, parentIdea_id) {
                 key: idea_id
             }
         });
+       
 
         // Return each feature structured for the backend function
         return { key: idea_id, idea: feature };
@@ -172,7 +180,7 @@ export async function setFeatures(features, parentIdea_id) {
     // Attempt to create all features on the backend and handle any errors
     try {
         const result = await createIdeas(setIdeas, parentIdea_id);
-
+        
         if ("Ok" in result) {
             return setIdeas.map(idea => (idea)); // Return an array of keys if successful
         } else if ("Err" in result) {
