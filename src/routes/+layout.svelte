@@ -13,12 +13,13 @@
 
   const init = async () => {
     await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
-    // await initOrbiter({
-    //   satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
-    //   orbiterId: "vwcao-hiaaa-aaaal-ajlpq-cai",
-    // });
+    await initOrbiter({
+      satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
+      orbiterId: "vwcao-hiaaa-aaaal-ajlpq-cai",
+    });
   };
   import { afterNavigate } from "$app/navigation";
+  import { initOrbiter } from "@junobuild/analytics";
 
   afterNavigate(({ to }) => {
     // @ts-ignore

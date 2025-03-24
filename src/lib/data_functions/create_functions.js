@@ -6,7 +6,7 @@ import { admin_canister_id } from "./canisters";
 import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
 import { getUserKey } from "./get_functions";
 import { createAndUploadHTMLStaticFile } from "$lib/SEO and metadata/metadata_functions";
-// import { trackEvent } from "@junobuild/analytics";
+import { trackEvent } from "@junobuild/analytics";
 import { createIdeas, createOrUpdateIdea, createOrUpdateSolution, createOrUpdateTopic, deleteManyImages, eliminateIdea, eliminateSolution, eliminateTopic, uploadImage } from "../../declarations/satellite/satellite.api";
 
 
@@ -59,15 +59,14 @@ export async function setIdea(idea,features, key){
     let idea_id = key;
     
 
-
    
-    // trackEvent({
-    //     name: "Topics created",
-    //     metadata: {
-    //       title: idea.title,
-    //       key: idea_id
-    //     }
-    //   });
+    trackEvent({
+        name: "Topics created",
+        metadata: {
+          title: idea.title,
+          key: idea_id
+        }
+      });
     let featuresDocs = await setFeatures(features,idea_id);
     followElement(idea_id,"idea");
     
@@ -158,14 +157,13 @@ export async function setFeatures(features, parentIdea_id) {
             return `ERROR: ${errorDetail} in feature: ${feature.title}`;
         }
 
-        // Create static HTML and track events on the frontend as before
-        // trackEvent({
-        //     name: "Ideas created",
-        //     metadata: {
-        //         title: feature.title,
-        //         key: idea_id
-        //     }
-        // });
+        trackEvent({
+            name: "Ideas created",
+            metadata: {
+                title: feature.title,
+                key: idea_id
+            }
+        });
 
         // Return each feature structured for the backend function
         return { key: idea_id, idea: feature };
@@ -244,13 +242,13 @@ export async function setSolution(solution, parentIdea_id, key) {
 
         if ("Ok" in result) {
             // Track event and notify user if creation succeeded
-            // trackEvent({
-            //     name: "Solution created",
-            //     metadata: {
-            //         title: solution.title,
-            //         key: sol_id
-            //     }
-            // });
+            trackEvent({
+                name: "Solution created",
+                metadata: {
+                    title: solution.title,
+                    key: sol_id
+                }
+            });
 
             // Send notification about the solution creation
             const newNotification = {
@@ -344,13 +342,13 @@ export async function setUser(user, userKey){
     const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
     const result = await canister.setManyDocs(arrayDocsAdmin);
     let usersCounter = await updateCounter("users_counter",1);
-    // trackEvent({
-    //     name: "Users registered",
-    //     metadata: {
-    //         name: user.username,
-    //         id: userKey
-    //     }
-    //   });
+    trackEvent({
+        name: "Users registered",
+        metadata: {
+            name: user.username,
+            id: userKey
+        }
+      });
     return newDocs;
 };
 
@@ -605,14 +603,14 @@ export async function deliverSolution(solution_id, link){
                     let description = solution_id;
                     createNotification(newNotification,description);
                     resolve("Success");
-                    // trackEvent({
-                    //     name: "Solutions delivered",
-                    //     metadata: {
-                    //         title: solDoc.data.title,
-                    //         key: solution_id,
-                    //         link: link
-                    //     }
-                    //   });
+                    trackEvent({
+                        name: "Solutions delivered",
+                        metadata: {
+                            title: solDoc.data.title,
+                            key: solution_id,
+                            link: link
+                        }
+                      });
                 }
             catch(e){
                 return reject( new Error (String(e)));
@@ -654,13 +652,13 @@ export async function setInvitationDocument(inviterKey){
             version:0n,
         }
     });
-    // trackEvent({
-    //     name: "Users invited",
-    //     metadata: {
-    //         inviter_key: inviterKey,
-    //         invited_user_key:userKey,
-    //     }
-    //   });
+    trackEvent({
+        name: "Users invited",
+        metadata: {
+            inviter_key: inviterKey,
+            invited_user_key:userKey,
+        }
+      });
 }
 
 /**
