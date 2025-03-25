@@ -2,6 +2,8 @@
     import { editImages, UserKey } from "$lib/stores/other_stores";
     import IconButton from "./IconButton.svelte";
     import ImageUrl from "./ImageUrl.svelte";
+    import FullscreenImageViewer from "./FullscreenImageViewer.svelte";
+    import { onMount } from "svelte";
 
     /**
      * @type {{ localUrl: string, uploadedUrl: string }[]}
@@ -9,6 +11,26 @@
     export let newImages = []; // Updated type for newImages
 
     let currentImageIndex = 0;
+    let isFullscreen = false;
+
+    /**
+     * Preloads an image in the background
+     * @param {string} src - The image source URL
+     */
+    function preloadImage(src) {
+        const img = new Image();
+        img.src = src;
+    }
+
+    onMount(() => {
+        // Preload all images in the background
+        if (newImages.length > 0) {
+            // Start from index 1 since index 0 is already being shown
+            newImages.slice(1).forEach((img) => {
+                preloadImage(img.localUrl);
+            });
+        }
+    });
 
     /**
      * Function to scroll through images.
@@ -47,8 +69,11 @@
 
 <div id="image-scroller" on:wheel={handleScroll}>
     {#if newImages.length > 0}
-        <ImageUrl src={newImages[currentImageIndex].localUrl} />
-        <!-- Display localUrl -->
+        <ImageUrl
+            src={newImages[currentImageIndex].localUrl}
+            enableFullscreen={true}
+            onFullscreenClick={() => (isFullscreen = true)}
+        />
     {:else}
         <div
             style="display: flex; justify-content:center; align-items:center; margin:auto; height:100%; background-color:black; color:var(--tertiary-color);"
@@ -77,6 +102,13 @@
         </div>
     </div>
 </div>
+
+<FullscreenImageViewer
+    bind:isOpen={isFullscreen}
+    images={newImages}
+    bind:currentIndex={currentImageIndex}
+/>
+
 {#if owner == $UserKey}
     <div class="actions">
         {#if !$editImages}
