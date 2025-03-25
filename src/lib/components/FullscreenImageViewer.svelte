@@ -296,6 +296,14 @@
         pointer-events: auto;
     }
 
+    @media (min-width: 769px) {
+        .image-slide img {
+            height: 80vh;
+            width: auto;
+            max-width: 90vw;
+        }
+    }
+
     .close-button {
         position: absolute;
         top: 20px;
