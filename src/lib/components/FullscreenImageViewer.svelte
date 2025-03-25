@@ -21,40 +21,43 @@
     let touchEndY = 0;
     let isDragging = false;
     let isVerticalDrag = false;
+    let isClosing = false;
 
     let slidePosition = spring(0, {
-        stiffness: 0.15,
-        damping: 0.8,
+        stiffness: 0.2,
+        damping: 1,
     });
 
     let verticalOffset = spring(0, {
-        stiffness: 0.15,
-        damping: 0.8,
+        stiffness: 0.3,
+        damping: 0.7,
     });
 
     let scale = spring(1, {
-        stiffness: 0.15,
-        damping: 0.8,
+        stiffness: 0.3,
+        damping: 0.7,
     });
 
     let opacity = spring(1, {
-        stiffness: 0.15,
-        damping: 0.8,
+        stiffness: 0.3,
+        damping: 0.7,
     });
 
     /** @type {HTMLImageElement} */
     let imageElement;
 
-    function resetSpringValues() {
-        verticalOffset.set(0, { hard: true });
-        scale.set(1, { hard: true });
-        opacity.set(1, { hard: true });
+    function resetSpringValues(hard = false) {
+        const opts = hard ? { hard: true } : {};
+        verticalOffset.set(0, opts);
+        scale.set(1, opts);
+        opacity.set(1, opts);
+        isClosing = false;
     }
 
     // Initialize slide position as soon as the component is created
     $: if (isOpen && containerWidth) {
         slidePosition.set(-currentIndex * containerWidth, { hard: true });
-        resetSpringValues();
+        resetSpringValues(true);
     }
 
     // Handle subsequent changes to currentIndex
@@ -67,10 +70,10 @@
          * @param {KeyboardEvent} e
          */
         const handleKeydown = (e) => {
-            if (!isOpen) return;
+            if (!isOpen || isClosing) return;
 
             if (e.key === "Escape") {
-                isOpen = false;
+                closeViewer();
             } else if (e.key === "ArrowLeft") {
                 previousImage();
             } else if (e.key === "ArrowRight") {
@@ -86,6 +89,7 @@
      * @param {TouchEvent} e
      */
     function handleTouchStart(e) {
+        if (isClosing) return;
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].pageY;
         isDragging = true;
@@ -104,7 +108,6 @@
         const deltaX = touchEndX - touchStartX;
         const deltaY = touchEndY - touchStartY;
 
-        // Determine drag direction after a small threshold
         if (
             !isVerticalDrag &&
             Math.abs(deltaY) > 10 &&
@@ -114,14 +117,14 @@
         }
 
         if (isVerticalDrag) {
-            // Handle vertical dragging
-            verticalOffset.set(deltaY);
+            verticalOffset.set(deltaY, { hard: true });
             const progress = Math.min(Math.abs(deltaY) / 200, 1);
-            scale.set(1 - progress * 0.2);
-            opacity.set(1 - progress);
+            scale.set(1 - progress * 0.2, { hard: true });
+            opacity.set(1 - progress, { hard: true });
         } else {
-            // Handle horizontal sliding
-            slidePosition.set(currentIndex * -containerWidth + deltaX);
+            slidePosition.set(currentIndex * -containerWidth + deltaX, {
+                hard: true,
+            });
         }
     }
 
@@ -132,17 +135,8 @@
         if (isVerticalDrag) {
             const deltaY = touchEndY - touchStartY;
             if (Math.abs(deltaY) > 100) {
-                // Close the viewer if dragged far enough
-                verticalOffset.set(deltaY > 0 ? 500 : -500);
-                scale.set(0.5);
-                opacity.set(0);
-                setTimeout(() => {
-                    isOpen = false;
-                    // Reset spring values after a short delay
-                    setTimeout(resetSpringValues, 100);
-                }, 300);
+                isOpen = false;
             } else {
-                // Reset position if not dragged far enough
                 verticalOffset.set(0);
                 scale.set(1);
                 opacity.set(1);
@@ -158,6 +152,14 @@
             }
             slidePosition.set(-currentIndex * containerWidth);
         }
+    }
+
+    function onRelease() {
+        isOpen = false;
+    }
+
+    function closeViewer() {
+        onRelease();
     }
 
     function nextImage() {
@@ -178,11 +180,11 @@
 {#if isOpen}
     <div
         class="fullscreen-overlay"
-        transition:fade={{ duration: 200 }}
-        on:click|self={() => (isOpen = false)}
+        transition:fade={{ duration: 100 }}
+        on:click|self={closeViewer}
         style="opacity: {$opacity};"
     >
-        <button class="close-button" on:click={() => (isOpen = false)}>
+        <button class="close-button" on:click={closeViewer}>
             <span class="material-symbols-outlined">close</span>
         </button>
 
@@ -248,7 +250,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        will-change: opacity;
+        pointer-events: auto;
     }
 
     .image-container {
