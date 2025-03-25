@@ -4,17 +4,13 @@ use crate::quickqueries::get_doc_owner;
 use crate::reputation::get_user_reputation;
 use crate::types::interface::{Notification, PledgeData, PledgeUser, TotalPledging};
 use crate::user_information::{
-    get_available_balance_without_pledged_amount, get_user_profile_pic,
-    get_user_username,
+    get_available_balance_without_pledged_amount, get_user_profile_pic, get_user_username,
 };
 use crate::{delete_pledge, get_document_description_or_default, get_document_version_or_default};
-use candid::{Principal};
+use candid::Principal;
 use ic_cdk::{caller, spawn};
-use ic_cdk_macros::{update};
-use junobuild_satellite::{
-    get_many_docs, log, set_doc_store, Doc,
-    SetDoc,
-};
+use ic_cdk_macros::update;
+use junobuild_satellite::{get_many_docs, log, set_doc_store, Doc, SetDoc};
 use junobuild_shared::types::core::Key;
 use junobuild_utils::{decode_doc_data, encode_doc_data};
 
@@ -576,7 +572,7 @@ fn send_pledge_notifications(
     amount: u64,
 ) -> Result<(), String> {
     let user_id = Principal::to_text(caller);
-    let topic_title = match get_element_enriched_data("topic".to_string(), idea_id.to_string()) {
+    let topic_title = match get_element_enriched_data("idea".to_string(), idea_id.to_string()) {
         Ok(topic) => topic.title,
         Err(err) => "Unknown topic".to_string(),
     };
@@ -622,16 +618,18 @@ fn send_pledge_notifications(
     match feature_id {
         None => {}
         Some(feature) => {
-            let subtitle_feature = format!(
-                "{} has pledged {} ICP into your idea.",
-                username.clone(),
-                amount_string.clone()
-            );
             let feature_title =
                 match get_element_enriched_data("feature".to_string(), feature.to_string()) {
                     Ok(feature) => feature.title,
                     Err(err) => "Unknown idea".to_string(),
                 };
+
+            let subtitle_feature = format!(
+                "{} has pledged {} ICP into the idea: {}",
+                username.clone(),
+                amount_string.clone(),
+                feature_title.clone()
+            );
             let description_feature = format!(
                 "{} has pledged {} ICP into the idea: {}",
                 username.clone(),
