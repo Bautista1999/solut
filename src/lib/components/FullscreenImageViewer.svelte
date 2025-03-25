@@ -1,5 +1,5 @@
 <script>
-    import { fade, slide } from "svelte/transition";
+    import { fade } from "svelte/transition";
     import { spring } from "svelte/motion";
     import { onMount } from "svelte";
 
@@ -14,31 +14,72 @@
     export let currentIndex = 0;
     export let isOpen = false;
 
+    let containerWidth = 0;
     let touchStartX = 0;
+    let touchStartY = 0;
     let touchEndX = 0;
+    let touchEndY = 0;
     let isDragging = false;
-    let dragDistance = spring(0, {
-        stiffness: 0.1,
-        damping: 0.7,
+    let isVerticalDrag = false;
+
+    let slidePosition = spring(0, {
+        stiffness: 0.15,
+        damping: 0.8,
     });
 
-    /** @type {number} */
-    let containerWidth = 0;
+    let verticalOffset = spring(0, {
+        stiffness: 0.15,
+        damping: 0.8,
+    });
+
+    let scale = spring(1, {
+        stiffness: 0.15,
+        damping: 0.8,
+    });
+
+    let opacity = spring(1, {
+        stiffness: 0.15,
+        damping: 0.8,
+    });
+
     /** @type {HTMLImageElement} */
     let imageElement;
+
+    function resetSpringValues() {
+        verticalOffset.set(0, { hard: true });
+        scale.set(1, { hard: true });
+        opacity.set(1, { hard: true });
+    }
+
+    // Initialize slide position as soon as the component is created
+    $: if (isOpen && containerWidth) {
+        slidePosition.set(-currentIndex * containerWidth, { hard: true });
+        resetSpringValues();
+    }
+
+    // Handle subsequent changes to currentIndex
+    $: if (!isDragging && isOpen && containerWidth) {
+        slidePosition.set(-currentIndex * containerWidth);
+    }
 
     onMount(() => {
         /**
          * @param {KeyboardEvent} e
          */
-        const handleEscape = (e) => {
-            if (e.key === "Escape" && isOpen) {
+        const handleKeydown = (e) => {
+            if (!isOpen) return;
+
+            if (e.key === "Escape") {
                 isOpen = false;
+            } else if (e.key === "ArrowLeft") {
+                previousImage();
+            } else if (e.key === "ArrowRight") {
+                nextImage();
             }
         };
 
-        window.addEventListener("keydown", handleEscape);
-        return () => window.removeEventListener("keydown", handleEscape);
+        window.addEventListener("keydown", handleKeydown);
+        return () => window.removeEventListener("keydown", handleKeydown);
     });
 
     /**
@@ -46,7 +87,9 @@
      */
     function handleTouchStart(e) {
         touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].pageY;
         isDragging = true;
+        isVerticalDrag = false;
     }
 
     /**
@@ -54,25 +97,67 @@
      */
     function handleTouchMove(e) {
         if (!isDragging) return;
+
         touchEndX = e.touches[0].clientX;
-        const distance = touchEndX - touchStartX;
-        dragDistance.set(distance);
+        touchEndY = e.touches[0].pageY;
+
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+
+        // Determine drag direction after a small threshold
+        if (
+            !isVerticalDrag &&
+            Math.abs(deltaY) > 10 &&
+            Math.abs(deltaY) > Math.abs(deltaX)
+        ) {
+            isVerticalDrag = true;
+        }
+
+        if (isVerticalDrag) {
+            // Handle vertical dragging
+            verticalOffset.set(deltaY);
+            const progress = Math.min(Math.abs(deltaY) / 200, 1);
+            scale.set(1 - progress * 0.2);
+            opacity.set(1 - progress);
+        } else {
+            // Handle horizontal sliding
+            slidePosition.set(currentIndex * -containerWidth + deltaX);
+        }
     }
 
     function handleTouchEnd() {
         if (!isDragging) return;
         isDragging = false;
-        const distance = touchEndX - touchStartX;
 
-        if (Math.abs(distance) > containerWidth * 0.2) {
-            if (distance > 0 && currentIndex > 0) {
-                currentIndex--;
-            } else if (distance < 0 && currentIndex < images.length - 1) {
-                currentIndex++;
+        if (isVerticalDrag) {
+            const deltaY = touchEndY - touchStartY;
+            if (Math.abs(deltaY) > 100) {
+                // Close the viewer if dragged far enough
+                verticalOffset.set(deltaY > 0 ? 500 : -500);
+                scale.set(0.5);
+                opacity.set(0);
+                setTimeout(() => {
+                    isOpen = false;
+                    // Reset spring values after a short delay
+                    setTimeout(resetSpringValues, 100);
+                }, 300);
+            } else {
+                // Reset position if not dragged far enough
+                verticalOffset.set(0);
+                scale.set(1);
+                opacity.set(1);
             }
+        } else {
+            const deltaX = touchEndX - touchStartX;
+            if (Math.abs(deltaX) > containerWidth * 0.2) {
+                if (deltaX > 0 && currentIndex > 0) {
+                    currentIndex--;
+                } else if (deltaX < 0 && currentIndex < images.length - 1) {
+                    currentIndex++;
+                }
+            }
+            slidePosition.set(-currentIndex * containerWidth);
         }
-
-        dragDistance.set(0);
     }
 
     function nextImage() {
@@ -95,6 +180,7 @@
         class="fullscreen-overlay"
         transition:fade={{ duration: 200 }}
         on:click|self={() => (isOpen = false)}
+        style="opacity: {$opacity};"
     >
         <button class="close-button" on:click={() => (isOpen = false)}>
             <span class="material-symbols-outlined">close</span>
@@ -106,6 +192,7 @@
             on:touchstart={handleTouchStart}
             on:touchmove={handleTouchMove}
             on:touchend={handleTouchEnd}
+            style="transform: translateY({$verticalOffset}px);"
         >
             <button
                 class="nav-button prev"
@@ -117,16 +204,18 @@
             </button>
 
             <div
-                class="image-wrapper"
-                style="transform: translateX({$dragDistance}px)"
+                class="images-wrapper"
+                style="transform: translateX({$slidePosition}px) scale({$scale});"
             >
-                <div class="img-container">
-                    <img
-                        src={currentImage}
-                        alt="Fullscreen view"
-                        bind:this={imageElement}
-                    />
-                </div>
+                {#each images as image, i}
+                    <div class="image-slide">
+                        <img
+                            src={image.localUrl}
+                            alt="Fullscreen view"
+                            draggable="false"
+                        />
+                    </div>
+                {/each}
             </div>
 
             <button
@@ -159,45 +248,50 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        will-change: opacity;
     }
 
     .image-container {
         position: relative;
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        touch-action: pan-y pinch-zoom;
+        touch-action: none;
+        pointer-events: none;
+        will-change: transform;
     }
 
-    .image-wrapper {
-        height: 100%;
+    .images-wrapper {
+        position: absolute;
+        left: 0;
         display: flex;
-        align-items: center;
-        justify-content: center;
+        height: 100%;
         transition: transform 0.3s ease-out;
+        will-change: transform;
+        pointer-events: none;
+        transform-origin: center;
     }
 
-    .img-container {
-        max-height: 70vh;
-        max-width: 90vw;
-        width: auto;
-        height: 90vh;
+    .image-slide {
+        flex: 0 0 100vw;
+        width: 100vw;
+        height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: transparent;
+        pointer-events: none;
     }
 
-    .img-container img {
-        height: 100%;
-        width: auto;
+    .image-slide img {
+        max-height: 90vh;
         max-width: 90vw;
         object-fit: contain;
         user-select: none;
         -webkit-user-drag: none;
+        pointer-events: auto;
     }
 
     .close-button {
@@ -215,6 +309,7 @@
         align-items: center;
         justify-content: center;
         transition: background-color 0.3s ease;
+        pointer-events: auto;
     }
 
     .close-button:hover {
@@ -234,12 +329,17 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: background-color 0.3s ease;
+        transition: all 0.3s ease;
         z-index: 10000;
+        pointer-events: auto;
     }
 
-    .nav-button:hover {
+    .nav-button:hover:not(:disabled) {
         background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-button:disabled {
+        cursor: not-allowed;
     }
 
     .nav-button.prev {

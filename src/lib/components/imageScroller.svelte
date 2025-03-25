@@ -4,14 +4,24 @@
     import ImageUrl from "./ImageUrl.svelte";
     import FullscreenImageViewer from "./FullscreenImageViewer.svelte";
     import { onMount } from "svelte";
+    import { spring } from "svelte/motion";
 
     /**
      * @type {{ localUrl: string, uploadedUrl: string }[]}
      */
-    export let newImages = []; // Updated type for newImages
-
+    export let newImages = [];
     let currentImageIndex = 0;
     let isFullscreen = false;
+    let containerWidth = 0;
+
+    // Sliding animation state
+    let touchStartX = 0;
+    let touchEndX = 0;
+    let isDragging = false;
+    let slidePosition = spring(0, {
+        stiffness: 0.15,
+        damping: 0.8,
+    });
 
     /**
      * Preloads an image in the background
@@ -23,9 +33,7 @@
     }
 
     onMount(() => {
-        // Preload all images in the background
         if (newImages.length > 0) {
-            // Start from index 1 since index 0 is already being shown
             newImages.slice(1).forEach((img) => {
                 preloadImage(img.localUrl);
             });
@@ -33,28 +41,86 @@
     });
 
     /**
-     * Function to scroll through images.
-     * @param {number} direction
+     * Handles touch start event
+     * @param {TouchEvent} e
      */
-    function scroll(direction) {
-        currentImageIndex =
-            (currentImageIndex + direction + newImages.length) %
-            newImages.length;
+    function handleTouchStart(e) {
+        touchStartX = e.touches[0].clientX;
+        isDragging = true;
     }
 
     /**
-     * Function to handle horizontal scroll events.
+     * Handles touch move event
+     * @param {TouchEvent} e
+     */
+    function handleTouchMove(e) {
+        if (!isDragging) return;
+        touchEndX = e.touches[0].clientX;
+        const distance = touchEndX - touchStartX;
+        slidePosition.set(currentImageIndex * -containerWidth + distance);
+    }
+
+    /**
+     * Handles touch end event
+     */
+    function handleTouchEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        const distance = touchEndX - touchStartX;
+
+        if (Math.abs(distance) > containerWidth * 0.2) {
+            if (distance > 0 && currentImageIndex > 0) {
+                currentImageIndex--;
+            } else if (
+                distance < 0 &&
+                currentImageIndex < newImages.length - 1
+            ) {
+                currentImageIndex++;
+            }
+        }
+        slidePosition.set(currentImageIndex * -containerWidth);
+    }
+
+    /**
+     * Handles mouse wheel events for horizontal scrolling
      * @param {WheelEvent} event
      */
     function handleScroll(event) {
         if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
-            event.stopPropagation();
             event.preventDefault();
-            if (event.deltaX < 0) {
-                scroll(-1);
-            } else if (event.deltaX > 0) {
-                scroll(1);
+            const threshold = 50;
+
+            if (Math.abs(event.deltaX) > threshold) {
+                if (
+                    event.deltaX > 0 &&
+                    currentImageIndex < newImages.length - 1
+                ) {
+                    currentImageIndex++;
+                    slidePosition.set(currentImageIndex * -containerWidth);
+                } else if (event.deltaX < 0 && currentImageIndex > 0) {
+                    currentImageIndex--;
+                    slidePosition.set(currentImageIndex * -containerWidth);
+                }
             }
+        }
+    }
+
+    /**
+     * Function to scroll through images with buttons
+     * @param {number} direction
+     */
+    function scroll(direction) {
+        const newIndex = currentImageIndex + direction;
+        if (newIndex >= 0 && newIndex < newImages.length) {
+            currentImageIndex = newIndex;
+            slidePosition.set(currentImageIndex * -containerWidth);
+        }
+    }
+
+    $: {
+        // Update slide position when currentImageIndex changes
+        if (!isDragging) {
+            slidePosition.set(currentImageIndex * -containerWidth);
         }
     }
 
@@ -67,27 +133,38 @@
     export let owner = "";
 </script>
 
-<div id="image-scroller" on:wheel={handleScroll}>
-    {#if newImages.length > 0}
-        <ImageUrl
-            src={newImages[currentImageIndex].localUrl}
-            enableFullscreen={true}
-            onFullscreenClick={() => (isFullscreen = true)}
-        />
-    {:else}
-        <div
-            style="display: flex; justify-content:center; align-items:center; margin:auto; height:100%; background-color:black; color:var(--tertiary-color);"
-        >
-            No images included.
-        </div>
-    {/if}
+<div
+    id="image-scroller"
+    on:wheel={handleScroll}
+    bind:clientWidth={containerWidth}
+    on:touchstart={handleTouchStart}
+    on:touchmove={handleTouchMove}
+    on:touchend={handleTouchEnd}
+>
+    <div
+        class="images-container"
+        style="transform: translateX({$slidePosition}px)"
+    >
+        {#each newImages as image, i}
+            <div class="image-slide">
+                <ImageUrl
+                    src={image.localUrl}
+                    enableFullscreen={true}
+                    onFullscreenClick={() => {
+                        currentImageIndex = i;
+                        isFullscreen = true;
+                    }}
+                />
+            </div>
+        {/each}
+    </div>
+
     <div class="ButtonSection">
         <div class="buttons">
-            <button on:click={() => scroll(-1)}>
-                <link
-                    rel="stylesheet"
-                    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-                />
+            <button
+                on:click={() => scroll(-1)}
+                disabled={currentImageIndex === 0}
+            >
                 <span class="material-symbols-outlined">arrow_back</span>
             </button>
 
@@ -96,7 +173,10 @@
             {:else}
                 0/0
             {/if}
-            <button on:click={() => scroll(1)}>
+            <button
+                on:click={() => scroll(1)}
+                disabled={currentImageIndex === newImages.length - 1}
+            >
                 <span class="material-symbols-outlined">arrow_forward</span>
             </button>
         </div>
@@ -147,7 +227,8 @@
         margin: auto;
         position: relative;
         overflow: hidden;
-        background-position: 10%;
+        background-color: black;
+        touch-action: pan-y pinch-zoom;
     }
     #image-scroller img {
         width: 100%;
@@ -161,7 +242,7 @@
         margin-bottom: 8px;
         left: 50%;
         transform: translateX(-50%);
-        z-index: 1;
+        z-index: 4;
     }
     .buttons {
         display: flex;
@@ -190,15 +271,27 @@
         cursor: pointer;
         border: 0px solid var(--primary-color);
     }
+    .buttons button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .images-container {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.3s ease-out;
+        will-change: transform;
+    }
+    .image-slide {
+        flex: 0 0 100%;
+        width: 100%;
+        height: 100%;
+    }
     @media (max-width: 480px) {
         #image-scroller {
             margin: 0 !important;
             padding: 0 !important;
             width: 75%;
-            aspect-ratio: 1200 / 628;
-            position: relative;
-            overflow: hidden;
-            background-position: 10%;
         }
         .actions {
             transform: translateY(-50px);
