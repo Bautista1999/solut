@@ -53,6 +53,7 @@
         width: 45px; /* Width of the images */
         height: 45px; /* Height of the images */
         border: 2px solid var(--secondary-color);
+        background-color: var(--forth-color);
         cursor: pointer;
         transition:
             border-color 0.3s ease,
@@ -105,7 +106,7 @@
         overflow: hidden; /* Hide overflow to maintain the circular shape */
         width: 45px; /* Width of the images */
         height: 45px; /* Height of the images */
-        border: 2px solid var(--secondary-color);
+        background-color: var(--forth-color);
         width: 30px;
         height: 30px;
         transition:

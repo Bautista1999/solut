@@ -7,16 +7,9 @@
         getUserImages,
         validateImageUrl,
     } from "$lib/data_functions/get_functions";
-    import { getTotalPledges } from "$lib/financial_functions/financial_functions";
-    import { onMount } from "svelte";
-    import MagicalDotsAbsoluteSmall from "./MagicalDotsSmall.svelte";
-    import FundingBar from "./fundingBar.svelte";
-    import PledgersSection from "./pledgersSection.svelte";
-    import ProfilePicture from "./profilePicture.svelte";
-    import UsersOverview from "./usersOverview.svelte";
+
     import PledgersOverview from "./PledgersOverview.svelte";
-    import FundingBarNew from "./FundingBarNew.svelte";
-    import ProfileImageCards from "./ProfileImageCards.svelte";
+
     import { CheckIfFollow } from "$lib/data_functions/create_functions";
     import { formatNumber } from "$lib/data_functions/user.functions";
 
