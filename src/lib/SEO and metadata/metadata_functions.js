@@ -207,7 +207,7 @@ export async function uploadImageToDatabase(collection,image){
     return result.downloadUrl;
   }
   catch(e){
-    throw new Error("Something went wrong when uploading image  ...")
+    throw new Error("Something went wrong when uploading image  ..."+String(e))
   }
 }
 
