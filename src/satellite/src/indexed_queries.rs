@@ -1,3 +1,6 @@
+use crate::config::images::{
+    DEFAULT_LINK_PREVIEW_IMAGE, DEFAULT_PROFILE_IMAGE, DEFAULT_SEARCH_RESULT_IMAGE,
+};
 use crate::reputation::get_user_reputation;
 use crate::types::interface::{
     EnrichedApprovalData, EnrichedPledgeData, Idea, IndexResponse, IndexResponseBasicInfo,
@@ -207,7 +210,7 @@ pub fn get_paginated_topics(
                 .and_then(|arr| arr.get(0)) // Get the first element
                 .and_then(|img| img.as_str()) // Ensure it's a string
                 .map(|s| s.to_string()) // Convert to String
-                .unwrap_or_else(|| "https://solutio.one/solutio-images/logo-01.png".to_string()); // Fallback to default image
+                .unwrap_or_else(|| DEFAULT_SEARCH_RESULT_IMAGE.to_string()); // Fallback to default image
             let creation_date = doc.created_at;
 
             // Calculate `total_pledged` and `total_followers`
@@ -337,7 +340,7 @@ pub fn get_paginated_ideas(
                 .and_then(|arr| arr.get(0))
                 .and_then(|img| img.as_str())
                 .map(|s| s.to_string())
-                .unwrap_or_else(|| "https://solutio.one/solutio-images/logo-01.png".to_string());
+                .unwrap_or_else(|| DEFAULT_SEARCH_RESULT_IMAGE.to_string());
             let creation_date = doc.created_at;
 
             // Calculate `total_pledged` and `total_followers`
@@ -436,7 +439,7 @@ pub fn get_paginated_users(
                 .get("profile_image")
                 .and_then(|img| img.as_str())
                 .map(|s| s.to_string())
-                .unwrap_or_else(|| "https://solutio.one/solutio-images/logo-01.png".to_string()); // Default image if not present
+                .unwrap_or_else(|| DEFAULT_SEARCH_RESULT_IMAGE.to_string()); // Default image if not present
             let creation_date = doc.created_at; // Use the creation date from the document
             let reputation = get_user_reputation(doc.owner).unwrap_or(0); // Fetch reputation
             let total_pledged = get_historical_pledged_balance(key.clone()).unwrap_or(0); // Fetch total pledged
@@ -631,7 +634,7 @@ pub fn get_paginated_ideas_by_solution(
                 .and_then(|arr| arr.get(0))
                 .and_then(|img| img.as_str())
                 .map(|s| s.to_string())
-                .unwrap_or_else(|| "https://solutio.one/solutio-images/logo-01.png".to_string());
+                .unwrap_or_else(|| DEFAULT_SEARCH_RESULT_IMAGE.to_string());
             let creation_date = doc.created_at;
 
             // Calculate `total_pledged` and `total_followers`
@@ -917,9 +920,11 @@ pub fn get_user_pledges_enriched(user_id: String) -> Result<Vec<EnrichedPledgeDa
                     IndexResponseBasicInfo {
                         element_id: idea_id.clone(),
                         title: idea_data.title,
-                        profile_image: idea_data.images.first().cloned().unwrap_or_else(|| {
-                            "https://solutio.one/solutio-images/logo-01.png".to_string()
-                        }),
+                        profile_image: idea_data
+                            .images
+                            .first()
+                            .cloned()
+                            .unwrap_or_else(|| DEFAULT_SEARCH_RESULT_IMAGE.to_string()),
                         creation_date: idea_doc.created_at,
                         element_type: "idea".to_string(),
                     }
@@ -927,7 +932,7 @@ pub fn get_user_pledges_enriched(user_id: String) -> Result<Vec<EnrichedPledgeDa
                 _ => IndexResponseBasicInfo {
                     element_id: idea_id.clone(),
                     title: "Unknown or deleted topic".to_string(),
-                    profile_image: "https://solutio.one/solutio-images/logo-01.png".to_string(),
+                    profile_image: DEFAULT_SEARCH_RESULT_IMAGE.to_string(),
                     creation_date: doc.created_at,
                     element_type: "idea".to_string(),
                 },
@@ -941,9 +946,11 @@ pub fn get_user_pledges_enriched(user_id: String) -> Result<Vec<EnrichedPledgeDa
                         Some(IndexResponseBasicInfo {
                             element_id: feature_id,
                             title: feature_data.title,
-                            profile_image: feature_data.images.first().cloned().unwrap_or_else(
-                                || "https://solutio.one/solutio-images/logo-01.png".to_string(),
-                            ),
+                            profile_image: feature_data
+                                .images
+                                .first()
+                                .cloned()
+                                .unwrap_or_else(|| DEFAULT_SEARCH_RESULT_IMAGE.to_string()),
                             creation_date: feature_doc.created_at,
                             element_type: "feature".to_string(),
                         })
@@ -951,7 +958,7 @@ pub fn get_user_pledges_enriched(user_id: String) -> Result<Vec<EnrichedPledgeDa
                     _ => Some(IndexResponseBasicInfo {
                         element_id: feature_id,
                         title: "Unknown or deleted idea".to_string(),
-                        profile_image: "https://solutio.one/solutio-images/logo-01.png".to_string(),
+                        profile_image: DEFAULT_SEARCH_RESULT_IMAGE.to_string(),
                         creation_date: doc.created_at,
                         element_type: "feature".to_string(),
                     }),
@@ -1095,7 +1102,7 @@ pub fn get_user_approvals_enriched(user_id: String) -> Result<Vec<EnrichedApprov
                                 .and_then(|images| images.as_array())
                                 .and_then(|arr| arr.get(0))
                                 .and_then(|img| img.as_str())
-                                .unwrap_or("https://solutio.one/solutio-images/logo-01.png")
+                                .unwrap_or(DEFAULT_SEARCH_RESULT_IMAGE)
                                 .to_string(),
                             creation_date: solution_doc.created_at,
                             element_type: "solution".to_string(),
@@ -1104,7 +1111,7 @@ pub fn get_user_approvals_enriched(user_id: String) -> Result<Vec<EnrichedApprov
                     _ => IndexResponseBasicInfo {
                         element_id: solution_id.clone(),
                         title: "Unknown or deleted solution".to_string(),
-                        profile_image: "https://solutio.one/solutio-images/logo-01.png".to_string(),
+                        profile_image: DEFAULT_SEARCH_RESULT_IMAGE.to_string(),
                         creation_date: doc.created_at,
                         element_type: "solution".to_string(),
                     },
@@ -1168,7 +1175,7 @@ pub fn get_user_approvals_enriched(user_id: String) -> Result<Vec<EnrichedApprov
                                 .and_then(|images| images.as_array())
                                 .and_then(|arr| arr.get(0))
                                 .and_then(|img| img.as_str())
-                                .unwrap_or("https://solutio.one/solutio-images/logo-01.png")
+                                .unwrap_or(DEFAULT_SEARCH_RESULT_IMAGE)
                                 .to_string(),
                             creation_date: feature_doc.created_at,
                             element_type: "feature".to_string(),
@@ -1177,7 +1184,7 @@ pub fn get_user_approvals_enriched(user_id: String) -> Result<Vec<EnrichedApprov
                     _ => IndexResponseBasicInfo {
                         element_id: feature_id.clone(),
                         title: "Unknown or deleted feature".to_string(),
-                        profile_image: "https://solutio.one/solutio-images/logo-01.png".to_string(),
+                        profile_image: DEFAULT_SEARCH_RESULT_IMAGE.to_string(),
                         creation_date: 0,
                         element_type: "feature".to_string(),
                     },
@@ -1339,7 +1346,7 @@ pub fn get_element_enriched_data(
             .as_array()
             .and_then(|arr| arr.first())
             .and_then(|v| v.as_str())
-            .unwrap_or("https://solutio.one/solutio-images/logo-01.png")
+            .unwrap_or(DEFAULT_SEARCH_RESULT_IMAGE)
             .to_string(),
         creation_date: doc.created_at,
         element_type: element_type.to_string(),

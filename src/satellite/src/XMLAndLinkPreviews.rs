@@ -1,3 +1,6 @@
+use crate::config::images::{
+    DEFAULT_LINK_PREVIEW_IMAGE, DEFAULT_PROFILE_IMAGE, DEFAULT_SEARCH_RESULT_IMAGE,
+};
 use crate::types::interface::{MetaTagsInput, MetaTagsResult};
 use crate::user_information::get_user_username;
 use candid::{CandidType, Principal};
@@ -174,7 +177,7 @@ pub fn create_or_update_html_metatags(content_type: String, id: String) -> Resul
         .and_then(|arr| arr.first())
         .and_then(|v| v.as_str())
         .map(|s| s.to_string())
-        .unwrap_or_else(|| "https://solutio.one/solutio-images/logo-01.png".to_string());
+        .unwrap_or_else(|| DEFAULT_SEARCH_RESULT_IMAGE.to_string());
 
     // Determine the element type for URL construction
     let element_type = match content_type.as_str() {

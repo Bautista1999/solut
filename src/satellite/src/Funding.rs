@@ -1,15 +1,17 @@
+use crate::config::images::{
+    DEFAULT_LINK_PREVIEW_IMAGE, DEFAULT_PROFILE_IMAGE, DEFAULT_SEARCH_RESULT_IMAGE,
+};
 use crate::notifications::send_single_notification;
 use crate::quickqueries::get_doc_owner;
-use crate::reputation::{update_user_reputation};
+use crate::reputation::update_user_reputation;
 use crate::types::interface::{
     Approval, ApprovalStatus, ClaimTransfer, ClaimerInfo, ClaimerInfoEnriched, ClaimerType,
-    CompleteSolutionData, CompletionResult, EnrichedApprovalData,
-    IndexResponseBasicInfo,
-    IndexResponseWithApproval, Notification, OrderedClaimTransfer, PaymentType,
-    PledgeApproval, PledgeBasicInfo, PledgeData, RejectionData,
-    Transaction, UserProfileBasicInfo,
+    CompleteSolutionData, CompletionResult, EnrichedApprovalData, IndexResponseBasicInfo,
+    IndexResponseWithApproval, Notification, OrderedClaimTransfer, PaymentType, PledgeApproval,
+    PledgeBasicInfo, PledgeData, RejectionData, Transaction, UserProfileBasicInfo,
 };
 
+use crate::get_document_version_or_default;
 use crate::user_information::{
     get_user_basic_information, get_user_profile_pic, get_user_username,
 };
@@ -17,7 +19,6 @@ use crate::ApprovalFunctions::{
     approve_pledge, get_feature_id_from_pledge, reverse_approval, validate_pledge_ownership,
     validate_solution_status,
 };
-use crate::{get_document_version_or_default};
 use candid::{CandidType, Principal};
 use ic_cdk::{caller, id, spawn};
 use ic_cdk_macros::{query, update};
@@ -27,8 +28,7 @@ use ic_ledger_types::{
     TransferArgs, DEFAULT_FEE, DEFAULT_SUBACCOUNT, MAINNET_LEDGER_CANISTER_ID,
 };
 use junobuild_satellite::{
-    delete_doc_store, error_with_data,
-    get_doc_store, list_docs_store, log, set_doc_store, DelDoc,
+    delete_doc_store, error_with_data, get_doc_store, list_docs_store, log, set_doc_store, DelDoc,
     Doc, SetDoc,
 };
 use junobuild_shared::types::list::{ListMatcher, ListParams};
@@ -41,9 +41,9 @@ use std::convert::TryFrom;
 use std::iter::{Cycle, Filter};
 
 use futures::future::join_all;
+use ic_cdk::api::{call, time};
 use sha2::{Digest, Sha256};
 use std::sync::LazyLock;
-use ic_cdk::api::{call, time};
 
 // Constants for payment distribution
 pub const TOPIC_OWNER_PERCENTAGE: f64 = 0.05; // 5%
@@ -494,9 +494,7 @@ pub fn get_solution_completion_data(solution_id: String) -> Result<CompleteSolut
                         .and_then(|imgs| imgs.first())
                         .and_then(|img| img.as_str())
                         .map(|s| s.to_string())
-                        .unwrap_or_else(|| {
-                            "https://solutio.one/solutio-images/logo-01.png".to_string()
-                        }),
+                        .unwrap_or_else(|| "DEFAULT_SEARCH_RESULT_IMAGE".to_string()),
                     creation_date: feature_doc.created_at,
                     element_type: "feature".to_string(),
                 },
@@ -601,7 +599,7 @@ pub fn get_solution_completion_data(solution_id: String) -> Result<CompleteSolut
                 .and_then(|imgs| imgs.first())
                 .and_then(|img| img.as_str())
                 .map(|s| s.to_string())
-                .unwrap_or_else(|| "https://solutio.one/solutio-images/logo-01.png".to_string()),
+                .unwrap_or_else(|| "DEFAULT_SEARCH_RESULT_IMAGE".to_string()),
             creation_date: solution_doc.created_at,
             element_type: "solution".to_string(),
         },
@@ -902,7 +900,7 @@ pub fn get_solution_approvals_enriched(
                                 .and_then(|images| images.as_array())
                                 .and_then(|arr| arr.get(0))
                                 .and_then(|img| img.as_str())
-                                .unwrap_or("https://solutio.one/solutio-images/logo-01.png")
+                                .unwrap_or("DEFAULT_SEARCH_RESULT_IMAGE")
                                 .to_string(),
                             creation_date: solution_doc.created_at,
                             element_type: "solution".to_string(),
@@ -933,7 +931,7 @@ pub fn get_solution_approvals_enriched(
                                 .and_then(|images| images.as_array())
                                 .and_then(|arr| arr.get(0))
                                 .and_then(|img| img.as_str())
-                                .unwrap_or("https://solutio.one/solutio-images/logo-01.png")
+                                .unwrap_or("DEFAULT_SEARCH_RESULT_IMAGE")
                                 .to_string(),
                             creation_date: feature_doc.created_at,
                             element_type: "feature".to_string(),

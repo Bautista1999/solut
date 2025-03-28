@@ -20,6 +20,7 @@ use url::Url;
 mod ApprovalFunctions;
 mod Funding;
 mod XMLAndLinkPreviews;
+mod config;
 mod guards;
 mod indexed_queries;
 mod notifications;
@@ -705,7 +706,7 @@ fn cancel_pledge(id: String) -> Result<(), String> {
                             },
                         )?;
                     }
-                    Ok(None) => (), // It's fine if the feature pledge doc is not found (some pledges don’t have features)
+                    Ok(None) => (), // It's fine if the feature pledge doc is not found (some pledges don't have features)
                     Err(err) => {
                         return Err(format!("Error fetching feature pledge document: {}", err))
                     }
@@ -1004,7 +1005,7 @@ fn delete_pledge(id: String) -> Result<(), String> {
                             },
                         )?;
                     }
-                    Ok(None) => (), // It's fine if the feature pledge doc is not found (some pledges don’t have features)
+                    Ok(None) => (), // It's fine if the feature pledge doc is not found (some pledges don't have features)
                     Err(err) => {
                         return Err(format!("Error fetching feature pledge document: {}", err))
                     }
