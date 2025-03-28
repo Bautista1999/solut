@@ -239,6 +239,7 @@
    * @param {{ target: { files: any[]; value: string; }; }} event
    */
   function handleFileInput(event) {
+    debugger;
     const file = event.target.files[0];
     const maxSize = 50 * 1024 * 1024; // 50MB in bytes
 
@@ -439,25 +440,33 @@
   {:else}
     <div class="Field">
       <h1 style="margin: 0px;">Upload an Image</h1>
-      <input type="file" accept="image/*" on:change={() => handleFileInput} />
+      <input
+        type="file"
+        accept="image/*"
+        on:change={(event) => {
+          handleFileInput(event);
+        }}
+      />
       {#if selectedFile != null}
         <p>Ready to upload: {selectedFile.name}</p>
         <img src={imageUrl} alt="Image Preview" width="400" />
         <BasicRoundedButton
           disabledCondition={null}
-          someFunction={() => {
+          someFunction={async () => {
             loading = true;
-            uploadImageToDatabase("solutio-images", selectedFile);
+            console.log(
+              await uploadImageToDatabase("solutio-images", selectedFile),
+            );
             loading = false;
           }}
           msg={"Upload image to database"}
         />
       {/if}
-      <BasicRoundedButton
+      <!-- <BasicRoundedButton
         disabledCondition={null}
         someFunction={uploadAsset}
         msg={"Upload Image"}
-      />
+      /> -->
     </div>
 
     <MetadataSearcher />
