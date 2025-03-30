@@ -19,3 +19,4 @@ output.txt
 
 # Lock files
 Cargo.lock
+/.specstory
