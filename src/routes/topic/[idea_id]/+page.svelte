@@ -402,7 +402,10 @@
                                 if (await CheckIfSignedIn()) {
                                     togglePledgeSection();
                                 } else {
-                                    goto("/signin/");
+                                    const returnPath = encodeURIComponent(
+                                        "/topic/" + key,
+                                    );
+                                    window.location.href = `/signin?returnTo=${returnPath}`;
                                 }
                             }}
                         />

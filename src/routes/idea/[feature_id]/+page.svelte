@@ -400,8 +400,10 @@
                                 if (await CheckIfSignedIn()) {
                                     pledgeModalOpen();
                                 } else {
-                                    path.set("/idea/" + key);
-                                    goto("/signin/");
+                                    const returnPath = encodeURIComponent(
+                                        "/idea/" + key,
+                                    );
+                                    window.location.href = `/signin?returnTo=${returnPath}`;
                                 }
                             }}
                         />

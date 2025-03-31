@@ -60,6 +60,7 @@
                 on:click={async () => {
                     await signOut();
                     CheckIfSignedIn();
+                    location.reload();
                 }}
             >
                 <span class="material-symbols-outlined">{item.icon}</span>

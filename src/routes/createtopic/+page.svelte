@@ -131,8 +131,8 @@
 
     onMount(async () => {
         if (!(await CheckIfSignedIn())) {
-            path.set("/createtopic");
-            goto("/signin/");
+            const returnPath = encodeURIComponent("/createtopic");
+            window.location.href = `/signin?returnTo=${returnPath}`;
         }
         const user = await getUserKey();
     });

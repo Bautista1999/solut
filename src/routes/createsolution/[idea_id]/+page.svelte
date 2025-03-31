@@ -310,7 +310,10 @@
         <SuccessNew
             message={"Solution created successfully"}
             someFunction={() => {
-                goto("/solution/" + solutionKey);
+                const returnPath = encodeURIComponent(
+                    "/solution/" + solutionKey,
+                );
+                window.location.href = `/solution/${solutionKey}`;
             }}
         />
     {:else if error}

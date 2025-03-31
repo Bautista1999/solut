@@ -12,6 +12,8 @@
     import IconButton from "./IconButton.svelte";
     import UserProfilePicture from "./UserProfilePicture.svelte";
     import { validateImageUrl } from "$lib/data_functions/get_functions";
+    import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
+    import { goto } from "$app/navigation";
     // Sample data for the username section
     export let isOwner = false; // Change to false to simulate non-owner view
     export let followers = 0;
@@ -120,20 +122,32 @@
             <BasicButtonDark
                 msg={"Follow"}
                 someFunction={async () => {
-                    await followUser();
-                    follows = true;
-
-                    followers++;
+                    if (await CheckIfSignedIn()) {
+                        await followUser();
+                        follows = true;
+                        followers++;
+                    } else {
+                        const returnPath = encodeURIComponent(
+                            "/profile/" + userPrincipal,
+                        );
+                        window.location.href = `/signin?returnTo=${returnPath}`;
+                    }
                 }}
             />
         {:else}
             <BasicButtonDark
                 msg={"Unfollow"}
                 someFunction={async () => {
-                    await unFollowUser();
-                    follows = false;
-
-                    followers--;
+                    if (await CheckIfSignedIn()) {
+                        await unFollowUser();
+                        follows = false;
+                        followers--;
+                    } else {
+                        const returnPath = encodeURIComponent(
+                            "/profile/" + userPrincipal,
+                        );
+                        window.location.href = `/signin?returnTo=${returnPath}`;
+                    }
                 }}
             />
         {/if}

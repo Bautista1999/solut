@@ -144,8 +144,10 @@
     let parentIdeaKey = "";
     onMount(async () => {
         if (!(await CheckIfSignedIn())) {
-            path.set("/createidea/" + data.params.idea_id);
-            goto("/signin/");
+            const returnPath = encodeURIComponent(
+                "/createidea/" + data.params.idea_id,
+            );
+            window.location.href = `/signin?returnTo=${returnPath}`;
         }
         user = await getUserKey();
         isLoading = true;

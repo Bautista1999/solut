@@ -11,7 +11,8 @@ export function SetPath(newPath){
 }
 
 export function GoToPath(){
+    debugger;
     const currentPath = get(path); // Extract the value from the store
-    goto(currentPath); // Use the extracted value
+    window.location.href = currentPath; // Use the extracted value
     path.set('/');
 }
