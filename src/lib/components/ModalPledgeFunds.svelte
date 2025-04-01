@@ -63,6 +63,7 @@
                 style="color:blue; text-decoration:underline;">profile</a
             >.
         </p>
+        <p>Minimum pledge amount is 1 ICP.</p>
 
         <br />
         {#if !isLoading && !success && !error}

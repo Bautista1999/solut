@@ -18,7 +18,8 @@ pub mod currency {
     pub const DEFAULT_DECIMAL_PLACES: u8 = 8; // For ICP
 
     // Minimum amounts
-    pub const MIN_PLEDGE_AMOUNT: u64 = 1_000_000; // 0.01 ICP in e8s
+    pub const MIN_PLEDGE_AMOUNT: u64 = 100_000_000; // 1 ICP in e8s
+    pub const MIN_PLEDGE_AMOUNT_NAT: u64 = 1;
 }
 
 pub mod limits {

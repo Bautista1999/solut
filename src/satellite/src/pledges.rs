@@ -1,3 +1,4 @@
+use crate::config::currency::MIN_PLEDGE_AMOUNT;
 use crate::indexed_queries::get_element_enriched_data;
 use crate::notifications::send_single_notification;
 use crate::quickqueries::get_doc_owner;
@@ -29,6 +30,9 @@ pub fn pledge_create(
 
     if idea_id.trim().is_empty() {
         return "idea_id is empty".to_string();
+    }
+    if amount < MIN_PLEDGE_AMOUNT {
+        return "Minimum pledge amount is 1 ICP".to_string();
     }
 
     let caller = caller();

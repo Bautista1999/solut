@@ -323,7 +323,7 @@
                 </div>
                 <p>
                     Here you can pledge to multiple ideas at once by selecting
-                    them below.
+                    them below. Minimum pledge amount is 1 per idea.
                     <button class="link-button" on:click={handleViewIdeas}
                         >Click here</button
                     >

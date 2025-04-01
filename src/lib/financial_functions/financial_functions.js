@@ -274,6 +274,10 @@ export async function CreatePledgeNew(idea_id, feature_id, amount, userPrincipal
         alert("The pledge amount cant be 0");
         return;
     }
+    if(amount<1){
+        alert("ERROR: Minimum pledge amount is 1");
+        return;
+    }
 
     // let identity = await unsafeIdentity();
     // const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
