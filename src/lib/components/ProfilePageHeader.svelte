@@ -27,14 +27,14 @@
         follows = await CheckIfFollow(userPrincipal);
     }
     async function followUser() {
-        await followElement(userPrincipal, "user");
-        followers++;
+        followers = followers + 1;
         follows = true;
+        await followElement(userPrincipal, "user");
     }
     async function unFollowUser() {
-        await unFollowElement(userPrincipal, "user");
-        followers--;
+        followers = followers - 1;
         follows = false;
+        await unFollowElement(userPrincipal, "user");
     }
 
     let isShrunk = false; // State to track header shrinkage
@@ -125,7 +125,6 @@
                     if (await CheckIfSignedIn()) {
                         await followUser();
                         follows = true;
-                        followers++;
                     } else {
                         const returnPath = encodeURIComponent(
                             "/profile/" + userPrincipal,
@@ -141,7 +140,6 @@
                     if (await CheckIfSignedIn()) {
                         await unFollowUser();
                         follows = false;
-                        followers--;
                     } else {
                         const returnPath = encodeURIComponent(
                             "/profile/" + userPrincipal,

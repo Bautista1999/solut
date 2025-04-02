@@ -42,7 +42,6 @@
     }
 
     async function getFollowers() {
-        debugger;
         isLoading = true;
         try {
             let result = await getPaginatedFollowersByType(

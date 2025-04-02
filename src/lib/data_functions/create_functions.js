@@ -7,7 +7,7 @@ import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
 import { getUserKey } from "./get_functions";
 import { createAndUploadHTMLStaticFile } from "$lib/SEO and metadata/metadata_functions";
 import { trackEvent } from "@junobuild/analytics";
-import { createIdeas, createOrUpdateIdea, createOrUpdateSolution, createOrUpdateTopic, deleteManyImages, eliminateIdea, eliminateSolution, eliminateTopic, uploadImage } from "../../declarations/satellite/satellite.api";
+import { createIdeas, createOrUpdateIdea, createOrUpdateSolution,followElement as followElementApi, createOrUpdateTopic, deleteManyImages, eliminateIdea, eliminateSolution, eliminateTopic, uploadImage } from "../../declarations/satellite/satellite.api";
 
 
 /**
@@ -464,28 +464,24 @@ export async function followElement(element_id,type){
     if(await CheckIfFollow(element_id)){
         return "Already following"
     }
-    authSubscribe(async(user)=>{
-            let doc =  await setDoc({
-                collection:"follow",
-                doc:{
-                    key:user?.key+"_"+element_id,
-                    description:type,
-                    /**@type {import("$lib/data_objects/data_types").follow} */
-                    data:{
-                        follower:user?.key?user.key:"",
-                        following:element_id,
-                        type:type,
-                    }
-                }
+    // authSubscribe(async(user)=>{
+    //         let doc =  await setDoc({
+    //             collection:"follow",
+    //             doc:{
+    //                 key:user?.key+"_"+element_id,
+    //                 description:type,
+    //                 /**@type {import("$lib/data_objects/data_types").follow} */
+    //                 data:{
+    //                     follower:user?.key?user.key:"",
+    //                     following:element_id,
+    //                     type:type,
+    //                 }
+    //             }
                 
-            })
-            
-            let identity = await unsafeIdentity();
-            const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
-            const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
-            let adminFollowerCounterUpdate = await canister.followerCounter(element_id,true,type);
-            console.log("doc",adminFollowerCounterUpdate)
-    })
+    //         })
+    // })
+    console.log(await followElementApi(element_id,type));
+    
     return "Success";
     
 }
@@ -516,10 +512,7 @@ export async function unFollowElement(element_id,type){
                     data:[]
                 }
             })
-            let identity = await unsafeIdentity();
-            const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
-            const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
-            let adminFollowerCounterUpdate = canister.followerCounter(element_id,false,type);
+         
         }           
     })
     return "Success";

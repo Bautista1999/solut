@@ -41,3 +41,7 @@ pub mod urls {
     pub const API_BASE_URL: &str = "https://api.solutio.one";
     pub const ASSETS_BASE_URL: &str = "https://assets.solutio.one";
 }
+
+pub mod controllers {
+    pub const CONTROLLER_ID: &str = "rfamr-niaaa-aaaam-acmta-cai";
+}

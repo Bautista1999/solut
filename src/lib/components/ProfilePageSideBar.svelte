@@ -19,6 +19,7 @@
     import FollowersModal from "./FollowersModal.svelte";
     import FlatButtonSmall from "./FlatButtonSmall.svelte";
     import FlatButtonDarkSmall from "./FlatButtonDarkSmall.svelte";
+    import LinkFlatButtonDarkSmall from "./LinkFlatButtonDarkSmall.svelte";
 
     export let user_id = "";
     export let followers = 0;
@@ -246,12 +247,10 @@
             </div>
             {#if isOwner}
                 <div class="view-details-button" style="">
-                    <FlatButtonDarkSmall
+                    <LinkFlatButtonDarkSmall
                         icon={"arrow_right_alt"}
                         msg={"Check your pledges "}
-                        someFunction={() => {
-                            window.location.href = "/mypledges";
-                        }}
+                        link={"/mypledges"}
                     />
                 </div>
             {/if}
@@ -259,25 +258,24 @@
     </div>
     <div class="divider"></div>
     {#if isOwner}
-        <div class="" style="">
-            <FlatButtonDarkSmall
+        <div class="pledging-stats" style="">
+            <p><strong>Approvals:</strong></p>
+            <LinkFlatButtonDarkSmall
                 icon={"arrow_right_alt"}
                 msg={"Check your approvals "}
-                someFunction={() => {
-                    window.location.href = "/myapprovals";
-                }}
+                link={"/myapprovals"}
             />
         </div>
     {/if}
     <div class="divider"></div>
     <!-- View Details Button -->
     {#if isOwner}
-        <div class="view-details-button">
-            <BasicButtonDarkSmall
-                msg={"View details"}
-                someFunction={() => {
-                    window.location.href = "/account/" + user_id;
-                }}
+        <div class="pledging-stats" style="">
+            <p><strong>Account details:</strong></p>
+            <LinkFlatButtonDarkSmall
+                icon={"arrow_right_alt"}
+                msg={"View account details"}
+                link={"/account/" + user_id}
             />
         </div>
     {/if}

@@ -24,3 +24,12 @@ pub fn caller_is_admin() -> Result<(), String> {
         Err("Caller is not the admin of the canister.".to_string())
     }
 }
+
+pub fn caller_is_not_anonymous() -> Result<(), String> {
+    let caller = caller();
+    if caller == Principal::anonymous() {
+        Err("Caller is anonymous.".to_string())
+    } else {
+        Ok(())
+    }
+}

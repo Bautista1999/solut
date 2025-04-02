@@ -663,7 +663,7 @@
         justify-content: left;
         text-align: left;
         align-items: center;
-        gap: 30px;
+        gap: 20px;
     }
 
     .Pictures-scroller {
@@ -870,6 +870,9 @@
             grid-area: PledgingSection;
             justify-content: center;
             align-items: center;
+        }
+        .Breadcrumbs {
+            gap: 10px;
         }
         .PledgeSectionMobile {
             visibility: visible;

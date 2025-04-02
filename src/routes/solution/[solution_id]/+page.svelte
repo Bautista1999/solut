@@ -897,7 +897,7 @@
         justify-content: left;
         text-align: left;
         align-items: center;
-        gap: 30px;
+        gap: 20px;
     }
 
     .approval-stats {
@@ -1076,6 +1076,9 @@
             grid-area: FundingSection;
             height: fit-content;
             padding-inline: 0px;
+        }
+        .Breadcrumbs {
+            gap: 10px;
         }
         .PledgingSection {
             display: grid;
