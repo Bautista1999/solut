@@ -1392,7 +1392,6 @@ pub fn get_paginated_followers_by_type(
                 }
             };
 
-            // Try to get follower_id from data, fallback to key if not found
             let follower_id = decoded_data
                 .get("follower")
                 .and_then(|v| v.as_str())
@@ -1401,6 +1400,7 @@ pub fn get_paginated_followers_by_type(
 
             let follow_type = decoded_data
                 .get("type")
+                .or_else(|| decoded_data.get("follow_type"))
                 .and_then(|v| v.as_str())
                 .map(|s| s.to_lowercase())
                 .unwrap_or("user".to_string());
@@ -1409,7 +1409,6 @@ pub fn get_paginated_followers_by_type(
         })
         .collect();
 
-    // Step 3: Process followers and get their information
     let mut valid_followers = Vec::new();
     for (follower_id, follow_type) in followers {
         // Use get_user_basic_information to get user details
