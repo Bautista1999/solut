@@ -20,6 +20,7 @@ use url::Url;
 mod ApprovalFunctions;
 mod Funding;
 mod XMLAndLinkPreviews;
+mod analytics;
 mod config;
 mod guards;
 mod indexed_queries;
