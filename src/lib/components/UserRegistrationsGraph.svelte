@@ -253,6 +253,7 @@
     </div>
 {:else}
     <!-- Chart and Slider (Loaded State) -->
+    <h2>Daily User Registrations</h2>
     <div class="chart-container">
         <Line {data} {options} on:chartReady={handleChartReady}></Line>
     </div>
