@@ -235,6 +235,7 @@ service : {
   eliminate_idea : (text) -> (Result_2);
   eliminate_solution : (text) -> (Result_2);
   eliminate_topic : (text) -> (Result_2);
+  follow_element : (text, text) -> (Result);
   generate_sitemap : () -> (Result);
   get_available_balance : (text) -> (Result_5);
   get_available_balance_without_pledged_amount : (text, nat64) -> (Result_5);
