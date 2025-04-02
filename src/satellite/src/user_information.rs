@@ -1,3 +1,4 @@
+use crate::config::controllers::CONTROLLER_ID;
 use crate::reputation::get_user_reputation;
 use crate::types::interface::{
     Activity, IndexResponseBasicInfo, PledgeData, User, UserBasicInfo, UserProfileBasicInfo,
@@ -688,11 +689,11 @@ pub fn get_paginated_following_elements(
 
             // Extract `following` and `type` fields
             let following_id = decoded_data.get("following")?.as_str()?.to_string();
-            let element_type = decoded_data
-                .get("type")?
-                .as_str()?
-                .to_string()
-                .to_lowercase();
+            let element_type = match decoded_data.get("type").and_then(|v| v.as_str()) {
+                Some(t) => t.to_string(),
+                None => decoded_data.get("follow_type")?.as_str()?.to_string(),
+            }
+            .to_lowercase();
 
             Some((following_id, element_type))
         })
@@ -794,14 +795,17 @@ pub fn get_paginated_followers(
                 Err(_) => return None, // Skip invalid documents
             };
 
-            // Extract the `follower` field if the type is "user"
             let follower_id = decoded_data.get("follower")?.as_str()?.to_string();
-            let element_type = decoded_data.get("type")?.as_str()?.to_lowercase();
+
+            let element_type = match decoded_data.get("type").and_then(|v| v.as_str()) {
+                Some(t) => t.to_string(),
+                None => decoded_data.get("follow_type")?.as_str()?.to_string(),
+            };
 
             if element_type == "user" {
                 Some(follower_id)
             } else {
-                None // Only include followers of type "user"
+                None
             }
         })
         .collect();
@@ -1168,7 +1172,7 @@ pub fn set_user_notification_as_read(notification_id: String) -> Result<(), Stri
     let caller = caller();
     let caller_text = caller.to_text();
     let collection = "notification".to_string();
-
+    let controller = Principal::from_text(CONTROLLER_ID).unwrap();
     // Handle the result of get_doc_store properly
     let notification_doc =
         match get_doc_store(caller.clone(), collection.clone(), notification_id.clone()) {
@@ -1209,7 +1213,7 @@ pub fn set_user_notification_as_read(notification_id: String) -> Result<(), Stri
 
     // Update the document in the store
     match set_doc_store(
-        caller,
+        controller,
         collection.clone(),
         notification_id.clone(),
         update_doc,

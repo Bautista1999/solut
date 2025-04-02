@@ -206,6 +206,13 @@ pub mod interface {
     }
 
     #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct Follow {
+        pub follower: String,
+        pub following: String,
+        pub follow_type: String, // Using follow_type to avoid Rust's reserved keyword 'type'
+    }
+
+    #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
     pub struct IndexResponse {
         pub element_id: String,      // Unique ID for the element
         pub title: String, // Title or username (e.g., "Blockchain for Healthcare" or "juanbautista")
