@@ -7,7 +7,7 @@
         CheckIfSignedIn,
         CheckIfSignedInHeader,
     } from "$lib/signin_functions/user_signin_functions";
-    import { signOut } from "@junobuild/core-peer";
+    import { signOut } from "@junobuild/core";
     import { IsSignedIn, UserKey } from "$lib/stores/other_stores";
     import {
         getUserImages,

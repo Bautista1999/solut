@@ -16,8 +16,7 @@
         {#each users as user, index (user)}
             <div
                 class="image-container_card"
-                style="left: {index * 7}px; z-index: {5 -
-                    index}; background-color:red;"
+                style="left: {index * 7}px; z-index: {5 - index}; "
             >
                 <PledgerProfilePicture image={user.image} {index} />
             </div>
@@ -70,6 +69,7 @@
         width: 45px; /* Width of the images */
         height: 45px; /* Height of the images */
         border: 2px solid var(--secondary-color);
+        background-color: var(--forth-color);
         cursor: pointer;
         transition:
             border-color 0.3s ease,
@@ -113,6 +113,7 @@
         overflow: hidden;
 
         border: 1px solid var(--tertiary-color);
+        background-color: var(--forth-color);
         width: 30px;
         height: 30px;
         transition:

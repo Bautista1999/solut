@@ -2,77 +2,66 @@
     /**
      * @type {string}
      */
-    export let value;
+    export let value = "neutral"; // possible values: "neutral", "loading", "completed", "error"
 
     /**
      * @type {any}
      */
     export let row;
-
-    // Status values and their corresponding classes
-    // Using the same styling approach as TableForApprovals.svelte
-    $: statusClass = getStatusClass(value);
-
-    /**
-     * Get the appropriate CSS class based on the status value
-     * @param {string} status
-     * @returns {string}
-     */
-    function getStatusClass(status) {
-        switch (status?.toLowerCase()) {
-            case "pending":
-                return "pending";
-            case "completed":
-                return "completed";
-            case "approved":
-                return "completed";
-            case "cancelled":
-                return "cancelled";
-            case "rejected":
-                return "rejected";
-            default:
-                return "default";
-        }
-    }
 </script>
 
-<span class="status-tag {statusClass}">
-    {value || "Unknown"}
-</span>
+<div class="status-cell">
+    {#if value === "completed"}
+        <span class="status-icon completed material-symbols-outlined"
+            >check_circle</span
+        >
+    {:else if value === "error"}
+        <span class="status-icon error material-symbols-outlined">error</span>
+    {:else if value === "loading"}
+        <div class="loading-spinner"></div>
+    {:else}
+        <span class="status-icon neutral"></span>
+    {/if}
+</div>
 
 <style>
-    .status-tag {
-        padding: 0.3rem 0.75rem;
-        border-radius: 6px;
-        font-size: 0.9rem;
-        text-transform: capitalize;
-        font-weight: 500;
-        display: inline-block;
+    .status-cell {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
         text-align: center;
     }
 
-    .status-tag.pending {
-        background: rgba(255, 193, 7, 0.15);
-        color: #ffc107;
+    .status-icon {
+        font-size: 20px;
     }
 
-    .status-tag.completed {
-        background: rgba(40, 167, 69, 0.15);
-        color: #28a745;
+    .completed {
+        color: #38a169; /* Success color - typically green */
     }
 
-    .status-tag.cancelled {
-        background: rgba(108, 117, 125, 0.15);
-        color: #6c757d;
+    .error {
+        color: #e53e3e; /* Error color - typically red */
     }
 
-    .status-tag.rejected {
-        background: rgba(220, 53, 69, 0.15);
-        color: #dc3545;
+    .neutral {
+        width: 20px;
+        height: 20px;
     }
 
-    .status-tag.default {
-        background: rgba(13, 110, 253, 0.15);
-        color: #0d6efd;
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(0, 0, 0, 0.1);
+        border-top-color: var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
     }
 </style>

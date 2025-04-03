@@ -166,27 +166,29 @@ export type Result = { 'Ok' : string } |
   { 'Err' : string };
 export type Result_1 = { 'Ok' : Array<string> } |
   { 'Err' : string };
-export type Result_10 = {
+export type Result_10 = { 'Ok' : Array<UserProfileBasicInfo> } |
+  { 'Err' : string };
+export type Result_11 = {
     'Ok' : [Array<IndexResponseBasicInfo>, bigint, bigint, bigint]
   } |
   { 'Err' : string };
-export type Result_11 = {
+export type Result_12 = {
     'Ok' : [Array<IndexResponse>, bigint, bigint, bigint]
   } |
   { 'Err' : string };
-export type Result_12 = { 'Ok' : [Array<Activity>, bigint, bigint, bigint] } |
+export type Result_13 = { 'Ok' : [Array<Activity>, bigint, bigint, bigint] } |
   { 'Err' : string };
-export type Result_13 = { 'Ok' : Array<EnrichedApprovalData> } |
+export type Result_14 = { 'Ok' : Array<EnrichedApprovalData> } |
   { 'Err' : string };
-export type Result_14 = { 'Ok' : CompleteSolutionData } |
+export type Result_15 = { 'Ok' : CompleteSolutionData } |
   { 'Err' : string };
-export type Result_15 = { 'Ok' : [bigint, bigint] } |
+export type Result_16 = { 'Ok' : [bigint, bigint] } |
   { 'Err' : string };
-export type Result_16 = { 'Ok' : Array<PledgeData> } |
+export type Result_17 = { 'Ok' : Array<PledgeData> } |
   { 'Err' : string };
-export type Result_17 = { 'Ok' : UserProfileBasicInfo } |
+export type Result_18 = { 'Ok' : UserProfileBasicInfo } |
   { 'Err' : string };
-export type Result_18 = { 'Ok' : UserBasicInfo } |
+export type Result_19 = { 'Ok' : UserBasicInfo } |
   { 'Err' : string };
 export type Result_2 = { 'Ok' : null } |
   { 'Err' : string };
@@ -196,15 +198,15 @@ export type Result_4 = { 'Ok' : CompletionResult } |
   { 'Err' : string };
 export type Result_5 = { 'Ok' : bigint } |
   { 'Err' : string };
-export type Result_6 = { 'Ok' : IndexResponseBasicInfo } |
+export type Result_6 = { 'Ok' : Array<[bigint, bigint]> } |
   { 'Err' : string };
-export type Result_7 = { 'Ok' : Array<EnrichedPledgeData> } |
+export type Result_7 = { 'Ok' : IndexResponseBasicInfo } |
   { 'Err' : string };
-export type Result_8 = {
+export type Result_8 = { 'Ok' : Array<EnrichedPledgeData> } |
+  { 'Err' : string };
+export type Result_9 = {
     'Ok' : [bigint, bigint, bigint, Array<[string, string]>]
   } |
-  { 'Err' : string };
-export type Result_9 = { 'Ok' : Array<UserProfileBasicInfo> } |
   { 'Err' : string };
 export interface SetIdea { 'key' : string, 'idea' : Idea }
 export interface Solution {
@@ -267,70 +269,77 @@ export interface _SERVICE {
   'eliminate_idea' : ActorMethod<[string], Result_2>,
   'eliminate_solution' : ActorMethod<[string], Result_2>,
   'eliminate_topic' : ActorMethod<[string], Result_2>,
+  'follow_element' : ActorMethod<[string, string], Result>,
+  'generate_sitemap' : ActorMethod<[], Result>,
   'get_available_balance' : ActorMethod<[string], Result_5>,
   'get_available_balance_without_pledged_amount' : ActorMethod<
     [string, bigint],
     Result_5
   >,
-  'get_element_enriched_data' : ActorMethod<[string, string], Result_6>,
-  'get_enriched_element_pledges' : ActorMethod<[string], Result_7>,
+  'get_daily_user_registrations' : ActorMethod<[], Result_6>,
+  'get_element_enriched_data' : ActorMethod<[string, string], Result_7>,
+  'get_enriched_element_pledges' : ActorMethod<[string], Result_8>,
   'get_feature_subaccount_balance' : ActorMethod<[string], Result_5>,
-  'get_funding_details' : ActorMethod<[string, string], Result_8>,
+  'get_funding_details' : ActorMethod<[string, string], Result_9>,
   'get_historical_pledged_balance' : ActorMethod<[string], Result_5>,
   'get_paginated_common_users' : ActorMethod<
     [string, string, [] | [bigint], [] | [bigint]],
-    Result_9
+    Result_10
   >,
   'get_paginated_followers' : ActorMethod<
     [string, [] | [bigint], [] | [bigint]],
-    Result_10
+    Result_11
+  >,
+  'get_paginated_followers_by_type' : ActorMethod<
+    [string, string, [] | [bigint], [] | [bigint]],
+    Result_11
   >,
   'get_paginated_following_elements' : ActorMethod<
     [string, [] | [bigint], [] | [bigint]],
-    Result_10
+    Result_11
   >,
   'get_paginated_ideas' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string], [] | [string]],
-    Result_11
+    Result_12
   >,
   'get_paginated_ideas_by_solution' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string], string],
-    Result_11
+    Result_12
   >,
   'get_paginated_most_recent_activities' : ActorMethod<
     [string, [] | [bigint], [] | [bigint]],
-    Result_12
+    Result_13
   >,
   'get_paginated_topics' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string]],
-    Result_11
+    Result_12
   >,
   'get_paginated_topics_ideas' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string]],
-    Result_11
+    Result_12
   >,
   'get_paginated_users' : ActorMethod<
     [string, [] | [bigint], [] | [bigint], [] | [string]],
-    Result_11
+    Result_12
   >,
   'get_pledged_balance' : ActorMethod<[string], Result_5>,
-  'get_solution_approvals_enriched' : ActorMethod<[string], Result_13>,
-  'get_solution_completion_data' : ActorMethod<[string], Result_14>,
+  'get_solution_approvals_enriched' : ActorMethod<[string], Result_14>,
+  'get_solution_completion_data' : ActorMethod<[string], Result_15>,
   'get_total_followers' : ActorMethod<[string], bigint>,
   'get_total_following' : ActorMethod<[string], bigint>,
   'get_total_pledged' : ActorMethod<[string, string], Result_5>,
-  'get_total_pledged_and_expected' : ActorMethod<[string, string], Result_15>,
+  'get_total_pledged_and_expected' : ActorMethod<[string, string], Result_16>,
   'get_total_pledged_of_solution' : ActorMethod<[string], Result_5>,
-  'get_user_active_pledges' : ActorMethod<[string], Result_16>,
-  'get_user_approvals_enriched' : ActorMethod<[string], Result_13>,
-  'get_user_basic_info' : ActorMethod<[string], Result_17>,
-  'get_user_basic_information' : ActorMethod<[string], Result_18>,
-  'get_user_pledges_enriched' : ActorMethod<[string], Result_7>,
-  'get_user_pledges_for_solution' : ActorMethod<[string, string], Result_7>,
+  'get_user_active_pledges' : ActorMethod<[string], Result_17>,
+  'get_user_approvals_enriched' : ActorMethod<[string], Result_14>,
+  'get_user_basic_info' : ActorMethod<[string], Result_18>,
+  'get_user_basic_information' : ActorMethod<[string], Result_19>,
+  'get_user_pledges_enriched' : ActorMethod<[string], Result_8>,
+  'get_user_pledges_for_solution' : ActorMethod<[string, string], Result_8>,
   'get_user_profile_pic' : ActorMethod<[string], string>,
   'get_user_real_balance' : ActorMethod<[string], Result_5>,
   'get_user_reputation' : ActorMethod<[Principal], Result_5>,
-  'get_user_total_pledges' : ActorMethod<[string], Result_16>,
+  'get_user_total_pledges' : ActorMethod<[string], Result_17>,
   'get_user_username' : ActorMethod<[string], string>,
   'pledge_create' : ActorMethod<
     [string, string, string, bigint, Uint8Array | number[]],
@@ -343,6 +352,8 @@ export interface _SERVICE {
     [string, string, Notification],
     Result_2
   >,
+  'set_all_user_notifications_as_read' : ActorMethod<[], Result_2>,
+  'set_user_notification_as_read' : ActorMethod<[string], Result_2>,
   'start_scheduled_tasks' : ActorMethod<[], string>,
   'stop_scheduled_tasks' : ActorMethod<[], string>,
   'trigger_delete_orphan_ideas' : ActorMethod<[], Result_2>,

@@ -1,4 +1,5 @@
 <script>
+    import { onMount } from "svelte";
     import FlatButtonDarkSmall from "../FlatButtonDarkSmall.svelte";
     /**
      * Main configurable Table component
@@ -36,7 +37,10 @@
     export let showCheckboxes = true;
     export let showColumnToggle = true;
     export let showRowActions = false;
-
+    /**
+     * @type {{columnId: string, direction: "asc" | "desc"} | null} - Initial sort configuration. If null, no sorting is applied by default.
+     */
+    export let defaultSort = null;
     export let maxWidth = "";
 
     /**
@@ -83,25 +87,56 @@
      */
     function sortBy(columnId) {
         const column = columns.find((col) => col.id === columnId);
-        if (!column || !column.sortable) return; // Ensure column is sortable
+        if (!column || !column.sortable) return;
 
         if (sortColumn === columnId) {
             sortDirection = sortDirection === "asc" ? "desc" : "asc";
         } else {
             sortColumn = columnId;
-            sortDirection = "asc";
+            sortDirection = defaultSort?.direction || "asc";
         }
 
         // Sort the rows based on the selected column
         rows = [...rows].sort((a, b) => {
-            const aValue = a[column.accessor];
-            const bValue = b[column.accessor];
+            let aValue = a[column.accessor];
+            let bValue = b[column.accessor];
 
-            if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-            if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-            return 0;
+            // Convert to numbers if the values look like numbers
+            if (!isNaN(aValue)) aValue = Number(aValue);
+            if (!isNaN(bValue)) bValue = Number(bValue);
+
+            // For ascending (asc):
+            // - Numbers: smallest first (1,2,3)
+            // - Dates: oldest first (2021,2022,2023)
+            // For descending (desc): reverse order
+            return sortDirection === "asc"
+                ? aValue < bValue
+                    ? 1
+                    : aValue > bValue
+                      ? -1
+                      : 0
+                : aValue > bValue
+                  ? 1
+                  : aValue < bValue
+                    ? -1
+                    : 0;
         });
     }
+
+    // Watch for changes in rows and apply default sort if needed
+    $: if (rows.length > 0 && defaultSort && !sortColumn) {
+        sortColumn = defaultSort.columnId;
+        sortDirection = defaultSort.direction;
+        sortBy(defaultSort.columnId);
+    }
+
+    onMount(() => {
+        if (defaultSort && rows.length > 0) {
+            sortColumn = defaultSort.columnId;
+            sortDirection = defaultSort.direction;
+            sortBy(defaultSort.columnId);
+        }
+    });
 
     // Filter rows based on input text
     $: filteredRows = filterText

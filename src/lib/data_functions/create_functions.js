@@ -1,4 +1,4 @@
-import { authSubscribe, deleteDoc, getDoc, setDoc, setManyDocs, unsafeIdentity } from "@junobuild/core-peer";
+import { authSubscribe, deleteDoc, getDoc, setDoc, setManyDocs, unsafeIdentity } from "@junobuild/core";
 import { nanoid } from "nanoid";
 import {idlFactory as canisterIdl}  from "$lib/declarations/admin.declarations.did.js";
 import { Actor, HttpAgent } from "@dfinity/agent";
@@ -6,8 +6,8 @@ import { admin_canister_id } from "./canisters";
 import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
 import { getUserKey } from "./get_functions";
 import { createAndUploadHTMLStaticFile } from "$lib/SEO and metadata/metadata_functions";
-// import { trackEvent } from "@junobuild/analytics";
-import { createIdeas, createOrUpdateIdea, createOrUpdateSolution, createOrUpdateTopic, deleteManyImages, eliminateIdea, eliminateSolution, eliminateTopic, uploadImage } from "../../declarations/satellite/satellite.api";
+import { trackEvent } from "@junobuild/analytics";
+import { createIdeas, createOrUpdateIdea, createOrUpdateSolution,followElement as followElementApi, createOrUpdateTopic, deleteManyImages, eliminateIdea, eliminateSolution, eliminateTopic, uploadImage } from "../../declarations/satellite/satellite.api";
 
 
 /**
@@ -58,17 +58,15 @@ export async function setIdea(idea,features, key){
     };
     let idea_id = key;
     
-    createAndUploadHTMLStaticFile(idea.title,idea_id,idea.subtitle,idea.images[0],"topic");
-
 
    
-    // trackEvent({
-    //     name: "Topics created",
-    //     metadata: {
-    //       title: idea.title,
-    //       key: idea_id
-    //     }
-    //   });
+    trackEvent({
+        name: "Topics created",
+        metadata: {
+          title: idea.title,
+          key: idea_id
+        }
+      });
     let featuresDocs = await setFeatures(features,idea_id);
     followElement(idea_id,"idea");
     
@@ -120,8 +118,15 @@ export async function setFeature(feature, parentIdeaId, key) {
 
         if ("Ok" in result) {
             // Return the feature ID if the backend operation was successful
-            createAndUploadHTMLStaticFile(feature.title,featureId,feature.subtitle,feature.images[0],"idea");
+            trackEvent({
+                name: "Ideas created",
+                metadata: {
+                    title: feature.title,
+                    key: featureId
+                }
+            });
             return featureId;
+
         } else if ("Err" in result) {
             // If there's an error from the backend, return it directly
             return   "ERROR: " + result.Err; // Backend error result.Err;
@@ -159,16 +164,14 @@ export async function setFeatures(features, parentIdea_id) {
             let errorDetail = feature.title.length === 0 ? "Title is required." : "Subtitle is required.";
             return `ERROR: ${errorDetail} in feature: ${feature.title}`;
         }
-
-        // Create static HTML and track events on the frontend as before
-        createAndUploadHTMLStaticFile(feature.title, idea_id, feature.subtitle, feature.images[0], "idea");
-        // trackEvent({
-        //     name: "Ideas created",
-        //     metadata: {
-        //         title: feature.title,
-        //         key: idea_id
-        //     }
-        // });
+        trackEvent({
+            name: "Ideas created",
+            metadata: {
+                title: feature.title,
+                key: idea_id
+            }
+        });
+       
 
         // Return each feature structured for the backend function
         return { key: idea_id, idea: feature };
@@ -177,7 +180,7 @@ export async function setFeatures(features, parentIdea_id) {
     // Attempt to create all features on the backend and handle any errors
     try {
         const result = await createIdeas(setIdeas, parentIdea_id);
-
+        
         if ("Ok" in result) {
             return setIdeas.map(idea => (idea)); // Return an array of keys if successful
         } else if ("Err" in result) {
@@ -247,13 +250,13 @@ export async function setSolution(solution, parentIdea_id, key) {
 
         if ("Ok" in result) {
             // Track event and notify user if creation succeeded
-            // trackEvent({
-            //     name: "Solution created",
-            //     metadata: {
-            //         title: solution.title,
-            //         key: sol_id
-            //     }
-            // });
+            trackEvent({
+                name: "Solution created",
+                metadata: {
+                    title: solution.title,
+                    key: sol_id
+                }
+            });
 
             // Send notification about the solution creation
             const newNotification = {
@@ -347,13 +350,13 @@ export async function setUser(user, userKey){
     const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
     const result = await canister.setManyDocs(arrayDocsAdmin);
     let usersCounter = await updateCounter("users_counter",1);
-    // trackEvent({
-    //     name: "Users registered",
-    //     metadata: {
-    //         name: user.username,
-    //         id: userKey
-    //     }
-    //   });
+    trackEvent({
+        name: "Users registered",
+        metadata: {
+            name: user.username,
+            id: userKey
+        }
+      });
     return newDocs;
 };
 
@@ -461,28 +464,24 @@ export async function followElement(element_id,type){
     if(await CheckIfFollow(element_id)){
         return "Already following"
     }
-    authSubscribe(async(user)=>{
-            let doc =  await setDoc({
-                collection:"follow",
-                doc:{
-                    key:user?.key+"_"+element_id,
-                    description:type,
-                    /**@type {import("$lib/data_objects/data_types").follow} */
-                    data:{
-                        follower:user?.key?user.key:"",
-                        following:element_id,
-                        type:type,
-                    }
-                }
+    // authSubscribe(async(user)=>{
+    //         let doc =  await setDoc({
+    //             collection:"follow",
+    //             doc:{
+    //                 key:user?.key+"_"+element_id,
+    //                 description:type,
+    //                 /**@type {import("$lib/data_objects/data_types").follow} */
+    //                 data:{
+    //                     follower:user?.key?user.key:"",
+    //                     following:element_id,
+    //                     type:type,
+    //                 }
+    //             }
                 
-            })
-            
-            let identity = await unsafeIdentity();
-            const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
-            const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
-            let adminFollowerCounterUpdate = await canister.followerCounter(element_id,true,type);
-            console.log("doc",adminFollowerCounterUpdate)
-    })
+    //         })
+    // })
+    console.log(await followElementApi(element_id,type));
+    
     return "Success";
     
 }
@@ -513,10 +512,7 @@ export async function unFollowElement(element_id,type){
                     data:[]
                 }
             })
-            let identity = await unsafeIdentity();
-            const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); 
-            const canister = Actor.createActor(canisterIdl, { agent, canisterId: admin_canister_id });
-            let adminFollowerCounterUpdate = canister.followerCounter(element_id,false,type);
+         
         }           
     })
     return "Success";
@@ -608,14 +604,14 @@ export async function deliverSolution(solution_id, link){
                     let description = solution_id;
                     createNotification(newNotification,description);
                     resolve("Success");
-                    // trackEvent({
-                    //     name: "Solutions delivered",
-                    //     metadata: {
-                    //         title: solDoc.data.title,
-                    //         key: solution_id,
-                    //         link: link
-                    //     }
-                    //   });
+                    trackEvent({
+                        name: "Solutions delivered",
+                        metadata: {
+                            title: solDoc.data.title,
+                            key: solution_id,
+                            link: link
+                        }
+                      });
                 }
             catch(e){
                 return reject( new Error (String(e)));
@@ -657,13 +653,13 @@ export async function setInvitationDocument(inviterKey){
             version:0n,
         }
     });
-    // trackEvent({
-    //     name: "Users invited",
-    //     metadata: {
-    //         inviter_key: inviterKey,
-    //         invited_user_key:userKey,
-    //     }
-    //   });
+    trackEvent({
+        name: "Users invited",
+        metadata: {
+            inviter_key: inviterKey,
+            invited_user_key:userKey,
+        }
+      });
 }
 
 /**

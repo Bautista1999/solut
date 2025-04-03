@@ -4,7 +4,7 @@
   import "./global.styles.css";
   import SideMenu from "$lib/components/SideMenu.svelte";
   import Footer from "$lib/components/Footer.svelte";
-  import { initSatellite } from "@junobuild/core-peer";
+  import { initSatellite } from "@junobuild/core";
   import { onMount, onDestroy } from "svelte";
   import { updateNotificationCount } from "$lib/stores/notifications";
   import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
@@ -13,12 +13,13 @@
 
   const init = async () => {
     await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
-    // await initOrbiter({
-    //   satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
-    //   orbiterId: "vwcao-hiaaa-aaaal-ajlpq-cai",
-    // });
+    await initOrbiter({
+      satelliteId: "svftd-daaaa-aaaal-adr3a-cai",
+      orbiterId: "vwcao-hiaaa-aaaal-ajlpq-cai",
+    });
   };
   import { afterNavigate } from "$app/navigation";
+  import { initOrbiter } from "@junobuild/analytics";
 
   afterNavigate(({ to }) => {
     // @ts-ignore

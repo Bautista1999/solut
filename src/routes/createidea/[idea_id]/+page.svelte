@@ -10,7 +10,7 @@
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import { onMount } from "svelte";
-    import { getDoc } from "@junobuild/core-peer";
+    import { getDoc } from "@junobuild/core";
     import { nanoid } from "nanoid";
     import { path } from "$lib/stores/redirect_store";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
@@ -144,8 +144,10 @@
     let parentIdeaKey = "";
     onMount(async () => {
         if (!(await CheckIfSignedIn())) {
-            path.set("/createidea/" + data.params.idea_id);
-            goto("/signin/");
+            const returnPath = encodeURIComponent(
+                "/createidea/" + data.params.idea_id,
+            );
+            window.location.href = `/signin?returnTo=${returnPath}`;
         }
         user = await getUserKey();
         isLoading = true;

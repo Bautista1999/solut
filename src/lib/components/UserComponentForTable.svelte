@@ -13,6 +13,7 @@
 
     // For hover state
     let isHovered = false;
+    let isImageLoading = true;
 
     // For hover functionality
     let showHover = false;
@@ -35,6 +36,15 @@
               : "";
     $: profilePicture =
         user && typeof user === "object" ? user.profile_picture : "";
+
+    function handleImageLoad() {
+        isImageLoading = false;
+    }
+
+    function handleImageError() {
+        isImageLoading = false;
+        profilePicture = "https://solutio.one/solutio-images/logo-01.png";
+    }
 
     /**
      * @param {MouseEvent} event
@@ -66,11 +76,19 @@
     <a href={`/profile/${username}`} class="user-link">
         <div class="user-container">
             {#if profilePicture}
-                <img
-                    src={profilePicture}
-                    alt={username}
-                    class="userSmallProfilePicture"
-                />
+                <div class="image-container">
+                    {#if isImageLoading}
+                        <div class="spinner"></div>
+                    {/if}
+                    <img
+                        src={profilePicture}
+                        alt={username}
+                        class="userSmallProfilePicture"
+                        class:loading={isImageLoading}
+                        on:load={handleImageLoad}
+                        on:error={handleImageError}
+                    />
+                </div>
             {:else}
                 <div class="userSmallProfilePicture user-placeholder"></div>
             {/if}
@@ -108,6 +126,51 @@
         padding: 2px 0;
     }
 
+    .image-container {
+        position: relative;
+        width: 32px;
+        height: 32px;
+        background-color: var(--forth-color);
+        border-radius: 50%;
+    }
+
+    .userSmallProfilePicture {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        opacity: 1;
+        transition: opacity 0.3s ease;
+    }
+
+    .userSmallProfilePicture.loading {
+        opacity: 0;
+        background-color: var(--forth-color);
+    }
+
+    .spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--primary-color);
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        background-color: var(--forth-color);
+    }
+
+    @keyframes spin {
+        0% {
+            transform: translate(-50%, -50%) rotate(0deg);
+        }
+        100% {
+            transform: translate(-50%, -50%) rotate(360deg);
+        }
+    }
+
     .username {
         color: var(--secondary-color);
         font-size: 14px;
@@ -129,7 +192,6 @@
     .hover-container {
         position: fixed;
         z-index: 9999;
-        /* No top/left as we'll set it dynamically */
         animation: fadeIn 0.2s ease forwards;
     }
 
@@ -144,7 +206,6 @@
         }
     }
 
-    /* Smaller profile picture on mobile */
     @media (max-width: 768px) {
         .user-container {
             gap: 4px;

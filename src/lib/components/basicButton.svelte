@@ -1,6 +1,7 @@
 <script>
     export let msg = "Label";
     export let icon = "paid";
+    export let disabled = false;
     export let someFunction = () => {};
 </script>
 
@@ -8,7 +9,7 @@
     rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
 />
-<button on:click={someFunction}>
+<button on:click={() => (disabled ? {} : someFunction())} {disabled}>
     {msg} <span class="material-symbols-outlined"> {icon} </span></button
 >
 
@@ -37,6 +38,10 @@
         align-items: center; /* Vertically align the items in the middle */
         gap: 5px;
     }
+    button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
     .material-symbols-outlined {
         font-variation-settings:
             "FILL" 0,
@@ -52,9 +57,19 @@
         border-color: var(--primary-color);
         box-shadow: 4px 4px 0px 0px var(--primary-color);
     }
+    button:disabled:hover {
+        background-color: var(--primary-color);
+        box-shadow: 4px 4px 0px 0px var(--seventh-color);
+        color: var(--tertiary-color);
+        border-color: var(--seventh-color);
+    }
     button:active {
         transform: scale(0.98); /* Slightly scale down the button */
         box-shadow: 0px 0px 0px 0px var(--primary-color);
+    }
+    button:disabled:active {
+        transform: scale(1); /* Slightly scale down the button */
+        box-shadow: 4px 4px 0px 0px var(--seventh-color);
     }
     @media (max-width: 700px) {
         button {

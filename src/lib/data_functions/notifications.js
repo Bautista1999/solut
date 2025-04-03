@@ -1,4 +1,4 @@
-import { getDoc, listDocs, setDoc } from "@junobuild/core-peer";
+import { getDoc, listDocs, setDoc } from "@junobuild/core";
 import { createOrRegexInput, getFollowedElements, getUserKey } from "./get_functions";
 import { notificationCount, newNotificationsStore } from "$lib/stores/notifications";
 
@@ -40,7 +40,7 @@ export async function setLastNotificationRead(notificationKey){
 };
 /**
  * 
- * @returns {Promise<import("@junobuild/core-peer").Doc<any> | undefined>}
+ * @returns {Promise<import("@junobuild/core").Doc<any> | undefined>}
  */
 export async function GetLastNotificationReadDocument(){
     let userKey = await getUserKey();
@@ -85,14 +85,12 @@ export async function GetNewNotifications(){
                 desc:false,
                 field:'created_at'
             },
-            paginate:{
-                startAfter:lastNotificationKey==""?undefined:lastNotificationKey ,
-            }
+            
             
         },
         
     });
-    return notifications.items;
+    return notifications.items.filter(notification => notification.data.read === false);
 
 
 }

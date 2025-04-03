@@ -1,41 +1,28 @@
 use crate::notifications::send_single_notification;
 use crate::quickqueries::get_doc_owner;
-use crate::reputation::{get_user_reputation, reverse_user_reputation, update_user_reputation};
+use crate::reputation::{ reverse_user_reputation, update_user_reputation};
 use crate::types::interface::{
-    Approval, ApprovalStatus, ClaimerInfo, Claimers, Discount, EnrichedPledgeData, FollowData,
-    Idea, IndexResponse, IndexResponseBasicInfo, IndexSearch, Notification, PaymentType,
-    PledgeData, PledgeUser, Referral, TotalPledging,
+    Approval, ApprovalStatus, ClaimerInfo, Claimers, Discount, Notification, PaymentType,
+    PledgeData,  Referral,
 };
 use crate::user_information::{
-    get_available_balance, get_historical_pledged_balance, get_paginated_following_elements,
-    get_user_profile_pic, get_user_username,
+    get_user_username,
 };
-use crate::{delete_pledge, get_document_description_or_default, get_document_version_or_default};
-use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
-use bytes::Bytes;
-use candid::{CandidType, Int, Nat, Principal};
-use ic_cdk::api::{self, call, canister_balance128, set_global_timer, time};
-use ic_cdk::spawn;
-use ic_cdk_macros::{query, update};
+use crate::{ get_document_version_or_default};
+use candid::{Principal};
+use ic_cdk::api::{time};
+use ic_cdk_macros::{ update};
 use junobuild_satellite::{
-    count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, get_doc_store,
-    get_many_docs, list_docs_store, log, set_asset_handler, set_doc_store, DelDoc, Doc, Key,
+     delete_doc_store, get_doc_store,
+    list_docs_store,  set_doc_store, DelDoc,
     SetDoc,
 };
-use junobuild_shared::types::list::{ListMatcher, ListParams};
-use junobuild_storage::http::types::HeaderField;
-use junobuild_storage::types::store::AssetKey;
-use junobuild_storage::well_known::update;
+use junobuild_shared::types::list::{ ListParams};
 use junobuild_utils::{decode_doc_data, encode_doc_data};
-use regex::Regex;
-use serde_json::json;
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::convert::TryFrom;
-use std::iter::{Cycle, Filter};
 
 use sha2::{Digest, Sha256};
 use std::sync::LazyLock;
+use ic_cdk::caller;
 
 // Constants for payment distribution
 const TOPIC_OWNER_PERCENTAGE: f64 = 0.05; // 5%
@@ -170,7 +157,7 @@ pub async fn approve_pledge(
     transaction_number: u64,
     payment_type: PaymentType,
 ) -> Result<String, String> {
-    let caller = api::caller();
+    let caller = caller();
 
     // 1. Validate all conditions using ? operator
     validate_solution_status(&solution_id, "delivered")?;

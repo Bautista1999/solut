@@ -1,7 +1,7 @@
 <script>
     import { title } from "$lib/data_objects/testing_objects";
     import { itemExists_General } from "$lib/other_functions/other.functions";
-    import { getDoc } from "@junobuild/core-peer";
+    import { getDoc } from "@junobuild/core";
     import ElementHoveredTable from "./ElementHoveredTable.svelte";
 
     /**

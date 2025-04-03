@@ -1,4 +1,4 @@
-import { authSubscribe, getDoc, getManyDocs, initJuno, listDocs, unsafeIdentity } from "@junobuild/core-peer";
+import { authSubscribe, getDoc, getManyDocs, initJuno, listDocs, unsafeIdentity } from "@junobuild/core";
 import { Actor, HttpAgent } from "@dfinity/agent";
 import { Principal } from "@dfinity/principal";
 
@@ -274,6 +274,10 @@ export async function CreatePledgeNew(idea_id, feature_id, amount, userPrincipal
         alert("The pledge amount cant be 0");
         return;
     }
+    if(amount<1){
+        alert("ERROR: Minimum pledge amount is 1");
+        return;
+    }
 
     // let identity = await unsafeIdentity();
     // const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
@@ -304,6 +308,7 @@ export async function CreatePledgeNew(idea_id, feature_id, amount, userPrincipal
     //   });
     
     console.log("Result: ", result);
+    return result;
 }
 
 /**
@@ -736,7 +741,7 @@ export async function WithDrawTokens(amount, destination){
     try{
         let transactionNumber = await transferTo(roundedAmount,destination);
         console.log("Result:" , transactionNumber)
-        let storeTransaction = await storeTransactionInCanister((transactionNumber),"withdraw",userKey);
+        // let storeTransaction = await storeTransactionInCanister((transactionNumber),"withdraw",userKey);
     }catch(e){
         console.log("Error, ", String(e));
         throw new Error(String(e));

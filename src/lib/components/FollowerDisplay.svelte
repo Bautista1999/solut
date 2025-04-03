@@ -53,7 +53,9 @@
         </div> -->
         <img src={profilePicture} alt="Profile" class="profile-image" />
         <a
-            href="/{type.length > 0 ? type : 'profile'}/{key}"
+            href="/{type.length === 0 || type === 'user'
+                ? 'profile'
+                : type}/{key}"
             style="text-decoration:none; font-family: 'Barlow'">{username}</a
         >
     </div>

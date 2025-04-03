@@ -1,22 +1,8 @@
-use candid::{CandidType, Int, Nat, Principal};
-use ic_cdk::api::{self, set_global_timer, time};
-use ic_cdk_macros::{query, update};
+use ic_cdk::caller;
 use junobuild_satellite::{
-    count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, get_doc_store,
-    get_many_docs, list_docs_store, log, set_asset_handler, set_doc_store, DelDoc, Doc, Key,
-    SetDoc,
+    get_doc_store,
 };
-use junobuild_shared::types::list::ListParams;
-use junobuild_storage::http::types::HeaderField;
-use junobuild_storage::types::store::AssetKey;
-use junobuild_storage::well_known::update;
-use junobuild_utils::{decode_doc_data, encode_doc_data};
-use serde_json::json;
 
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::convert::TryFrom;
-use std::iter::Filter;
 
 /// Retrieves the owner of a document from a specific collection and key.
 ///
@@ -28,7 +14,7 @@ use std::iter::Filter;
 /// - `Ok(String)`: The owner's Principal as a string if found.
 /// - `Err(String)`: An error message if the owner or document is missing.
 pub fn get_doc_owner(collection: String, key: String) -> Result<String, String> {
-    let caller = api::caller();
+    let caller = caller();
     let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
 
     // Fetch the document from the store

@@ -1,5 +1,5 @@
 import { UserKey } from "$lib/stores/other_stores";
-import { authSubscribe, getDoc, getManyDocs, initJuno, listDocs } from "@junobuild/core-peer";
+import { authSubscribe, getDoc, getManyDocs, initJuno, listDocs } from "@junobuild/core";
 import { setLastNotificationRead } from "./notifications";
 import { newNotificationsStore, notificationCount, updateNotificationCount } from "$lib/stores/notifications";
 import { get } from "svelte/store";
@@ -133,7 +133,7 @@ export async function getUserImages(users_ids){
 
 /**
  * @param {string} idea_id
- * @return {Promise<Array<import("@junobuild/core-peer").Doc<any>>>}
+ * @return {Promise<Array<import("@junobuild/core").Doc<any>>>}
  */
 export async function getFeaturesOfIdea(idea_id){
     let docs = await listDocs({
@@ -158,7 +158,7 @@ export async function getFeaturesOfIdea(idea_id){
 /**
  * @param {string} solution_id
  * @param {string} idea_id
- * @return {Promise<Array<import("@junobuild/core-peer").Doc<any>>>}
+ * @return {Promise<Array<import("@junobuild/core").Doc<any>>>}
  */
 export async function getFeaturesOfSolution(idea_id,solution_id){
     let featuresList = await getImplementedFeaturesOfSolution(solution_id);
@@ -721,7 +721,7 @@ export async function CheckInviteExistance(inviterkey){
 }
 
 /**
- * @return {Promise <Array<import("@junobuild/core-peer").Doc<any>>>}
+ * @return {Promise <Array<import("@junobuild/core").Doc<any>>>}
  */
 export async function getUserNotifications(){
     let userKey = await getUserKey();
@@ -753,15 +753,19 @@ export async function getUserNotifications(){
 }
 
 /**
- * @return {Promise <Array<import("@junobuild/core-peer").Doc<any>>>}
+ * @return {Promise <Array<import("@junobuild/core").Doc<any>>>}
  */
 export async function getUserNotificationsWithoutUpdatingLastSeen(){
     let userKey = await getUserKey();
+    if(userKey==""){
+        return [];
+    }
     /**
      * @type {Array<string>}
      */
     let followedElements = await getFollowedElements(userKey);
     let regexInput = createOrRegexInput([userKey,...followedElements])
+  
     let notifications = await listDocs({
         collection:"notification",
         filter:{
@@ -781,7 +785,7 @@ export async function getUserNotificationsWithoutUpdatingLastSeen(){
 
 }
 /**
- * @return {Promise<Array<import("@junobuild/core-peer").Doc<any>>>}
+ * @return {Promise<Array<import("@junobuild/core").Doc<any>>>}
  */
 export async function getUserNewNotifications(){
     let allNotifications = await getUserNotificationsWithoutUpdatingLastSeen();
@@ -1165,7 +1169,7 @@ export async function getListUsersBasicData(listUsersKeys){
 /**
  * @param {string} elementId
  * @param {{start:string,limit:number}} pages
- * @return {Promise<Array<import("@junobuild/core-peer").Doc<any>|undefined>>}
+ * @return {Promise<Array<import("@junobuild/core").Doc<any>|undefined>>}
  */
 export async function getFollowersAndTheirInformation(elementId,pages){
     let listFollowersKeys = await getFollowers(elementId,pages);
@@ -1175,7 +1179,7 @@ export async function getFollowersAndTheirInformation(elementId,pages){
 /**
  * @param {string} elementId
  * @param {{start:string,limit:number}} pages
- * @return {Promise<Array<import("@junobuild/core-peer").Doc<any>|undefined>>}
+ * @return {Promise<Array<import("@junobuild/core").Doc<any>|undefined>>}
  */
 export async function getFollowingsAndTheirInformation(elementId,pages){
     let listFollowersKeys = await getFollowing(elementId,pages);

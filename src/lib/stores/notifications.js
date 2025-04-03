@@ -5,7 +5,7 @@ import { writable } from 'svelte/store';
 export const notificationCount = writable(0);
 
 export const newNotificationsStore = writable(/**
-    * @type {import('@junobuild/core-peer').Doc<any>[]}
+    * @type {import('@junobuild/core').Doc<any>[]}
     */[]);
 
 export async function updateNotificationCount() {

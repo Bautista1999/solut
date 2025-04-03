@@ -1,22 +1,28 @@
 use bytes::Bytes;
 use candid::{CandidType, Int, Nat, Principal};
-
+use guards::{caller_is_admin, caller_is_not_anonymous};
 use ic_cdk_timers::{clear_timer, set_timer_interval, TimerId};
+use junobuild_shared::controllers::is_admin_controller;
 use junobuild_storage::http::types::HeaderField;
 use junobuild_storage::types::store::AssetKey;
 use mime::Mime;
+use quickqueries::get_doc_owner;
 mod quickqueries;
 use serde_json::json;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::iter::Filter;
+use XMLAndLinkPreviews::{create_or_update_html_metatags, generate_sitemap};
 
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use url::Url;
 mod ApprovalFunctions;
 mod Funding;
 mod XMLAndLinkPreviews;
+mod analytics;
+mod config;
+mod guards;
 mod indexed_queries;
 mod notifications;
 mod pledges;
@@ -26,6 +32,7 @@ mod types;
 mod user_information;
 use crate::types::interface::{UserBasicInfo, UserProfileBasicInfo};
 
+use crate::config::controllers::CONTROLLER_ID;
 use crate::types::interface::{
     Activity, ClaimTransfer, EnrichedApprovalData, EnrichedPledgeData, IndexResponse,
     IndexResponseBasicInfo, OrderedClaimTransfer, PledgeApproval, PledgeBasicInfo, RejectionData,
@@ -40,9 +47,9 @@ use junobuild_macros::{
     on_delete_many_docs, on_set_doc, on_set_many_docs, on_upload_asset,
 };
 use junobuild_satellite::{
-    count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, get_doc_store,
-    list_docs_store, log, set_asset_handler, set_doc_store, DelDoc, Key,
-    OnDeleteFilteredAssetsContext, OnDeleteFilteredDocsContext, SetDoc,
+    count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, error_with_data,
+    get_admin_controllers, get_doc_store, list_docs_store, log, set_asset_handler, set_doc_store,
+    DelDoc, OnDeleteFilteredAssetsContext, OnDeleteFilteredDocsContext, SetDoc,
 };
 use junobuild_satellite::{
     include_satellite, AssertDeleteAssetContext, AssertDeleteDocContext, AssertSetDocContext,
@@ -66,15 +73,9 @@ async fn on_delete_filtered_docs(_context: OnDeleteFilteredDocsContext) -> Resul
     Ok(())
 }
 
-#[on_set_doc(collections = ["pledges_active"])]
-async fn on_set_doc(_context: OnSetDocContext) -> Result<(), String> {
-    log("The thing executed.".to_string());
-    return Ok(());
-}
-
-fn create_pledge_validation_test() -> Result<(), String> {
-    log("The thing executed.".to_string());
-    return Err("We encountered an issue".to_string());
+#[on_set_doc]
+async fn on_set_doc(context: OnSetDocContext) -> Result<(), String> {
+    Ok(())
 }
 
 #[on_set_many_docs]
@@ -83,7 +84,7 @@ async fn on_set_many_docs(_context: OnSetManyDocsContext) -> Result<(), String> 
 }
 
 #[on_delete_doc]
-async fn on_delete_doc(_context: OnDeleteDocContext) -> Result<(), String> {
+async fn on_delete_doc(context: OnDeleteDocContext) -> Result<(), String> {
     Ok(())
 }
 
@@ -127,6 +128,14 @@ fn assert_delete_asset(_context: AssertDeleteAssetContext) -> Result<(), String>
     Ok(())
 }
 
+#[derive(Default)]
+pub struct State {
+    pub user: Option<Principal>,
+}
+thread_local! {
+    static STATE: RefCell<State> = RefCell::default();
+}
+
 #[update]
 async fn create_new_product(product: Product, key: String) -> Result<(), String> {
     let caller = api::caller();
@@ -137,6 +146,7 @@ async fn create_new_product(product: Product, key: String) -> Result<(), String>
             return Err(format!("Failed to encode product data: {}", err));
         }
     };
+
     let value = SetDoc {
         data: data_vec,
         description: None,
@@ -156,7 +166,7 @@ async fn create_new_product(product: Product, key: String) -> Result<(), String>
 #[update]
 async fn eliminate_solution(key: String) -> Result<(), String> {
     let caller = api::caller();
-    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+    let controller = candid::Principal::from_text(CONTROLLER_ID).unwrap();
 
     // Step 1: Fetch the main solution document and check ownership
     let solution_doc = match get_doc_store(caller, "solution".to_string(), key.clone()) {
@@ -259,7 +269,7 @@ async fn eliminate_solution(key: String) -> Result<(), String> {
 #[update]
 pub fn eliminate_idea(key: String) -> Result<(), String> {
     let caller = api::caller();
-    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+    let controller = candid::Principal::from_text(CONTROLLER_ID).unwrap();
     // Step 1: Fetch the main solution document and check ownership
     let idea_doc = match get_doc_store(caller, "feature".to_string(), key.clone()) {
         Ok(Some(doc)) => {
@@ -375,7 +385,7 @@ fn extract_idea_id(description: &str) -> Option<String> {
 
 fn get_document_version(collection: String, key: String) -> Result<u64, String> {
     let caller = api::caller();
-    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+    let controller = candid::Principal::from_text(CONTROLLER_ID).unwrap();
 
     match get_doc_store(controller, collection.clone(), key.clone()) {
         Ok(Some(doc)) => match doc.version {
@@ -398,7 +408,7 @@ fn get_document_version(collection: String, key: String) -> Result<u64, String> 
 
 pub fn get_document_version_or_default(collection: String, key: String) -> Result<u64, String> {
     let caller = api::caller();
-    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+    let controller = candid::Principal::from_text(CONTROLLER_ID).unwrap();
 
     match get_doc_store(controller, collection.clone(), key.clone()) {
         Ok(Some(doc)) => match doc.version {
@@ -426,7 +436,7 @@ pub fn get_document_version_or_default(collection: String, key: String) -> Resul
 /// - `String`: The document's description, or an empty string if not found or an error occurs.
 pub fn get_document_description_or_default(collection: String, key: String) -> String {
     let caller = api::caller();
-    let controller = Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+    let controller = Principal::from_text(CONTROLLER_ID).unwrap();
 
     match get_doc_store(controller, collection, key) {
         Ok(Some(doc)) => doc.description.unwrap_or_default(),
@@ -438,7 +448,7 @@ pub fn get_document_description_or_default(collection: String, key: String) -> S
 fn cancel_pledge(id: String) -> Result<(), String> {
     let caller = api::caller();
     let caller_text = caller.to_text();
-    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+    let controller = candid::Principal::from_text(CONTROLLER_ID).unwrap();
 
     // Step 2: Fetch the pledges_active document for the given id
     match get_doc_store(caller, "pledges_active".to_string(), id.clone()) {
@@ -698,7 +708,7 @@ fn cancel_pledge(id: String) -> Result<(), String> {
                             },
                         )?;
                     }
-                    Ok(None) => (), // It's fine if the feature pledge doc is not found (some pledges don’t have features)
+                    Ok(None) => (), // It's fine if the feature pledge doc is not found (some pledges don't have features)
                     Err(err) => {
                         return Err(format!("Error fetching feature pledge document: {}", err))
                     }
@@ -731,7 +741,7 @@ fn delete_pledge(id: String) -> Result<(), String> {
     let caller = api::caller();
     let caller_text = caller.to_text();
     // Prepare the controller for database operations
-    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+    let controller = candid::Principal::from_text(CONTROLLER_ID).unwrap();
 
     // Step 2: Fetch the pledges_active document for the given id
     match get_doc_store(caller, "pledges_active".to_string(), id.clone()) {
@@ -997,7 +1007,7 @@ fn delete_pledge(id: String) -> Result<(), String> {
                             },
                         )?;
                     }
-                    Ok(None) => (), // It's fine if the feature pledge doc is not found (some pledges don’t have features)
+                    Ok(None) => (), // It's fine if the feature pledge doc is not found (some pledges don't have features)
                     Err(err) => {
                         return Err(format!("Error fetching feature pledge document: {}", err))
                     }
@@ -1043,7 +1053,7 @@ fn delete_pledge(id: String) -> Result<(), String> {
 #[update]
 fn eliminate_topic(key: String) -> Result<(), String> {
     let caller = api::caller();
-    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+    let controller = candid::Principal::from_text(CONTROLLER_ID).unwrap();
 
     // Step 1: Fetch the main solution document and check ownership
     let idea_doc = match get_doc_store(caller, "idea".to_string(), key.clone()) {
@@ -1160,7 +1170,7 @@ fn eliminate_topic(key: String) -> Result<(), String> {
 #[update]
 fn create_or_update_topic(key: String, topic: Topic) -> Result<(), String> {
     let caller = api::caller();
-    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+    let controller = candid::Principal::from_text(CONTROLLER_ID).unwrap();
 
     // Step 1: Basic field validation
     match validate_basic_fields(
@@ -1313,14 +1323,15 @@ fn create_or_update_topic(key: String, topic: Topic) -> Result<(), String> {
     for (collection, key, set_doc) in docs_to_create_user {
         set_doc_store(caller, collection, key, set_doc)?;
     }
-
+    create_or_update_html_metatags("topic".to_string(), key.clone());
+    generate_sitemap();
     Ok(())
 }
 
 #[update]
 fn create_or_update_idea(key: String, idea: Idea, parent_idea_id: String) -> Result<(), String> {
     let caller = api::caller();
-    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+    let controller = candid::Principal::from_text(CONTROLLER_ID).unwrap();
 
     // Step 1: Basic field validation
     match validate_basic_fields(&idea.title, &idea.subtitle, &idea.description, &idea.images) {
@@ -1423,6 +1434,7 @@ fn create_or_update_idea(key: String, idea: Idea, parent_idea_id: String) -> Res
         for (collection, key, set_doc) in docs_to_create_admin {
             set_doc_store(controller, collection, key, set_doc)?;
         }
+        create_or_update_html_metatags("idea".to_string(), key.clone());
     }
 
     // Step 6: Insert or update the user-owned documents
@@ -1450,7 +1462,7 @@ fn create_or_update_idea(key: String, idea: Idea, parent_idea_id: String) -> Res
     for (collection, key, set_doc) in docs_to_create_user {
         set_doc_store(caller, collection, key, set_doc)?;
     }
-
+    generate_sitemap();
     Ok(())
 }
 
@@ -1516,8 +1528,7 @@ fn create_or_update_solution(
     parent_idea_id: String,
 ) -> Result<(), String> {
     let caller = api::caller();
-    let controller: Principal =
-        candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+    let controller: Principal = candid::Principal::from_text(CONTROLLER_ID).unwrap();
 
     // Step 1: Basic field validation
     match validate_basic_fields(
@@ -1657,7 +1668,17 @@ fn create_or_update_solution(
             set_doc_store(controller, collection, key, set_doc)?;
         }
     }
-
+    match create_or_update_html_metatags("solution".to_string(), key.clone()) {
+        Ok(_) => return Ok(()),
+        Err(e) => {
+            error_with_data(
+                "Failed to create metatags".to_string(),
+                &format!("Error: {}", e),
+            );
+            return Ok(());
+        }
+    };
+    generate_sitemap();
     return Ok(());
 }
 
@@ -1684,6 +1705,7 @@ fn update_doc_description(
     Ok(())
 }
 
+use junobuild_shared::types::core::Key;
 use std::str;
 
 #[update]
@@ -1737,11 +1759,121 @@ pub fn upload_image(
 }
 
 #[update]
+pub fn follow_element(element_id: String, follow_type: String) -> Result<String, String> {
+    caller_is_not_anonymous()?;
+    let caller = api::caller();
+    let caller_text = caller.to_text();
+    let doc_key = format!("{}_{}", caller_text, element_id);
+
+    // Check if already following
+    match get_doc_store(caller, "follow".to_string(), doc_key.clone()) {
+        Ok(Some(_)) => return Ok("Already following".to_string()),
+        Ok(None) => (), // Continue with follow process
+        Err(e) => return Err(e),
+    }
+
+    // Create follow data
+    let follow_data = types::interface::Follow {
+        follower: caller_text.clone(),
+        following: element_id.clone(),
+        follow_type: follow_type.clone(),
+    };
+
+    // Encode the follow data
+    let encoded_data = match encode_doc_data(&follow_data) {
+        Ok(data) => data,
+        Err(e) => return Err(format!("Failed to encode follow data: {}", e)),
+    };
+
+    // Create the document
+    let set_doc = SetDoc {
+        data: encoded_data,
+        description: Some(follow_type.clone()),
+        version: Some(1), // New document starts with version 1
+    };
+    let mut receiver = element_id.clone();
+    // Store the follow document
+    match set_doc_store(caller, "follow".to_string(), doc_key, set_doc) {
+        Ok(_) => {
+            // Send notification after successful follow
+            let username = user_information::get_user_username(caller_text.clone());
+            let user_image = user_information::get_user_profile_pic(caller_text.clone());
+
+            let notification = if follow_type == "user" {
+                // User follow notification
+                types::interface::Notification {
+                    title: "New follower!".to_string(),
+                    subtitle: format!("{} has followed you", username),
+                    imageURL: user_image,
+                    linkURL: format!("/profile/{}", caller_text),
+                    sender: caller_text.clone(),
+                    description: format!("{} has followed you", username),
+                    typeOf: "Follow".to_string(),
+                    read: false,
+                }
+            } else {
+                // Other type follow notification (topic, idea, etc.)
+                let follow_type_database = match follow_type.as_str() {
+                    "topic" => "idea".to_string(),
+                    "idea" => "feature".to_string(),
+                    "solution" => "solution".to_string(),
+                    _ => follow_type.clone(),
+                };
+
+                match indexed_queries::get_element_enriched_data(
+                    follow_type_database.clone(),
+                    element_id.clone(),
+                ) {
+                    Ok(element_data) => {
+                        receiver =
+                            match get_doc_owner(follow_type_database.clone(), element_id.clone()) {
+                                Ok(owner) => owner,
+                                Err(_) => element_id.clone(),
+                            };
+
+                        types::interface::Notification {
+                            title: "New follower!".to_string(),
+                            subtitle: format!(
+                                "{} has followed your {} {}",
+                                username, follow_type, element_data.title
+                            ),
+                            imageURL: user_image,
+                            linkURL: element_id.clone(),
+                            sender: caller_text.clone(),
+                            description: format!(
+                                "{} has followed your {} {}",
+                                username, follow_type, element_data.title
+                            ),
+                            typeOf: "Follow".to_string(),
+                            read: false,
+                        }
+                    }
+                    Err(_) => return Ok("Success".to_string()), // Still return success even if notification fails
+                }
+            };
+
+            // Send the notification
+            match notifications::send_single_notification(
+                caller_text.clone(),
+                receiver.clone(),
+                notification,
+            ) {
+                Ok(_) => (),
+                Err(_) => (), // Continue even if notification fails
+            }
+
+            Ok("Success".to_string())
+        }
+        Err(e) => Err(format!("Failed to store follow: {}", e)),
+    }
+}
+
+#[update]
 pub fn delete_many_images(collection: String, fullpaths: Vec<String>) -> Result<String, String> {
     // Get the caller's Principal for permission checks
     let caller = api::caller();
     let caller_text = candid::Principal::to_text(&caller);
-    let controller = candid::Principal::from_text("rfamr-niaaa-aaaam-acmta-cai").unwrap();
+    let controller = candid::Principal::from_text(CONTROLLER_ID).unwrap();
 
     // Loop through each image and attempt to delete it
     for name in fullpaths.iter() {
@@ -1767,6 +1899,10 @@ thread_local! {
 
 #[update]
 fn start_scheduled_tasks() -> String {
+    match caller_is_admin() {
+        Ok(_) => {}
+        Err(e) => return format!("Error: {}", e),
+    }
     let global_interval = Duration::from_secs(86_400); // 24 hours for all scheduled tasks
 
     // Schedule delete_unused_images
@@ -1801,6 +1937,10 @@ fn start_scheduled_tasks() -> String {
 
 #[update]
 fn stop_scheduled_tasks() -> String {
+    match caller_is_admin() {
+        Ok(_) => {}
+        Err(e) => return format!("Error: {}", e),
+    }
     SCHEDULED_TASKS.with(|tasks| {
         for (_, timer_id) in tasks.borrow_mut().drain() {
             clear_timer(timer_id);
@@ -1812,6 +1952,10 @@ fn stop_scheduled_tasks() -> String {
 
 #[query]
 fn query_scheduled_tasks_state() -> String {
+    match caller_is_admin() {
+        Ok(_) => {}
+        Err(e) => return format!("Error: {}", e),
+    }
     let task_states = SCHEDULED_TASKS.with(|tasks| {
         tasks
             .borrow()
@@ -1829,16 +1973,19 @@ fn query_scheduled_tasks_state() -> String {
 
 #[update]
 fn trigger_delete_unused_images() -> Result<(), String> {
+    caller_is_admin()?;
     return delete_unused_images();
 }
 
 #[update]
 fn trigger_delete_orphan_ideas() -> Result<(), String> {
+    caller_is_admin()?;
     return delete_orphan_ideas();
 }
 
 #[update]
 fn trigger_delete_orphan_solutions() -> Result<(), String> {
+    caller_is_admin()?;
     return delete_orphan_solutions();
 }
 

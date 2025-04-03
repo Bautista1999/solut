@@ -34,7 +34,7 @@
             pages,
         );
         /**
-         * @type {(import("@junobuild/core-peer").Doc<any>)[]}
+         * @type {(import("@junobuild/core").Doc<any>)[]}
          */
         let usersWithoutUndefinedDocs = [];
         for (const user of usersReturn) {

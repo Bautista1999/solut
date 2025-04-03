@@ -1,5 +1,5 @@
 import { getUserKey, getUsername } from "$lib/data_functions/get_functions";
-import { uploadFile } from "@junobuild/core-peer";
+import { uploadFile } from "@junobuild/core";
 import fs from 'fs';
 import path from "path";
 /**
@@ -207,7 +207,7 @@ export async function uploadImageToDatabase(collection,image){
     return result.downloadUrl;
   }
   catch(e){
-    throw new Error("Something went wrong when uploading image  ...")
+    throw new Error("Something went wrong when uploading image  ..."+String(e))
   }
 }
 

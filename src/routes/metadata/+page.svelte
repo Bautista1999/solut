@@ -12,7 +12,6 @@
   import { uploadFile, initSatellite, listDocs } from "@junobuild/core-peer";
   import { nanoid } from "nanoid";
   import { onMount } from "svelte";
-  import { compile } from "svelte/compiler"; // Import the Svelte compiler
   import {
     approveSolutionPledges,
     createNewProduct,
@@ -51,6 +50,8 @@
     claimTokens,
     completeSolution,
     createOrUpdateHtmlMetatags,
+    generateSitemap,
+    setAllUserNotificationsAsRead,
   } from "../../declarations/satellite/satellite.api";
   import { signIn, NFIDProvider, authSubscribe } from "@junobuild/core";
   import SearchBarLarger from "$lib/components/SearchBarLarger.svelte";
@@ -67,8 +68,6 @@
   import { UserKey } from "$lib/stores/other_stores";
   import { AccountIdentifier } from "@dfinity/ledger-icp";
   import { Principal } from "@dfinity/principal";
-
-  import Graph from "$lib/components/Graph.svelte";
 
   // Example data
   const xData = [1, 2, 3, 4, 5, 6, 7];
@@ -240,6 +239,7 @@
    * @param {{ target: { files: any[]; value: string; }; }} event
    */
   function handleFileInput(event) {
+    debugger;
     const file = event.target.files[0];
     const maxSize = 50 * 1024 * 1024; // 50MB in bytes
 
@@ -440,25 +440,33 @@
   {:else}
     <div class="Field">
       <h1 style="margin: 0px;">Upload an Image</h1>
-      <input type="file" accept="image/*" on:change={() => handleFileInput} />
+      <input
+        type="file"
+        accept="image/*"
+        on:change={(event) => {
+          handleFileInput(event);
+        }}
+      />
       {#if selectedFile != null}
         <p>Ready to upload: {selectedFile.name}</p>
         <img src={imageUrl} alt="Image Preview" width="400" />
         <BasicRoundedButton
           disabledCondition={null}
-          someFunction={() => {
+          someFunction={async () => {
             loading = true;
-            uploadImageToDatabase("solutio-images", selectedFile);
+            console.log(
+              await uploadImageToDatabase("solutio-images", selectedFile),
+            );
             loading = false;
           }}
           msg={"Upload image to database"}
         />
       {/if}
-      <BasicRoundedButton
+      <!-- <BasicRoundedButton
         disabledCondition={null}
         someFunction={uploadAsset}
         msg={"Upload Image"}
-      />
+      /> -->
     </div>
 
     <MetadataSearcher />
@@ -1183,6 +1191,31 @@
           console.log(result);
         }}
         msg={"Update Link Preview"}
+      />
+    </div>
+    <div class="Field">
+      <h1 style="margin:0px;">Update XML Sitemap</h1>
+
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          const result = await generateSitemap();
+          console.log(result);
+        }}
+        msg={"Update XML Sitemap"}
+      />
+    </div>
+
+    <div class="Field">
+      <h1 style="margin:0px;">Set All Notifications as Read</h1>
+
+      <BasicRoundedButton
+        disabledCondition={null}
+        someFunction={async () => {
+          const result = await setAllUserNotificationsAsRead();
+          console.log(result);
+        }}
+        msg={"Set All Notifications as Read"}
       />
     </div>
 

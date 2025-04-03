@@ -7,7 +7,7 @@
         InternetIdentityProvider,
         authSubscribe,
         signIn,
-    } from "@junobuild/core-peer";
+    } from "@junobuild/core";
     import { isRegistered } from "$lib/data_functions/user.functions";
     import { GoToPath } from "$lib/stores/redirect_store";
     import { goto } from "$app/navigation";

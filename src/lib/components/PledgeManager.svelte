@@ -47,6 +47,9 @@
 
     let searchTerm = "";
     let statusFilter = "all";
+    /**
+     * @type {{ id: number; solution: any; status: string; user: any; amount: any; date: any; } | null}
+     */
     let selectedPledge = null;
 
     // Filter pledges based on search term and status filter

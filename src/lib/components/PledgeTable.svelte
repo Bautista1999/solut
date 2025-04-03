@@ -56,11 +56,6 @@
             accessor: "payment_type",
             cellComponent: PaymentTypeCellComponent,
         },
-        // {
-        //     id: "amount_paid",
-        //     header: "Amount Paid",
-        //     accessor: "amount_paid",
-        // },
         {
             id: "amount",
             header: "Amount",
@@ -137,5 +132,9 @@
         showRowActions={false}
         {maxWidth}
         {initialVisibleColumns}
+        defaultSort={{
+            columnId: "created_at",
+            direction: "asc",
+        }}
     />
 </div>

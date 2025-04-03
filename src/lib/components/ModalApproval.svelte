@@ -30,7 +30,7 @@
         getUserBalance,
     } from "$lib/financial_functions/financial_functions";
     import { get } from "svelte/store";
-    import { authSubscribe } from "@junobuild/core-peer";
+    import { authSubscribe } from "@junobuild/core";
     import { goto } from "$app/navigation";
     import {
         getElementTitleGivenKey,

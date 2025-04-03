@@ -22,9 +22,10 @@
         UserKey,
     } from "$lib/stores/other_stores";
     import ModalPledgeFunds from "$lib/components/ModalPledgeFunds.svelte";
+    import ExpandablePledgeSection from "$lib/components/ExpandablePledgeSection.svelte";
     import { onMount } from "svelte";
     import { goto } from "$app/navigation";
-    import { getDoc } from "@junobuild/core-peer";
+    import { getDoc } from "@junobuild/core";
     import NotFound from "$lib/components/NotFound.svelte";
     import {
         getTotalPledges,
@@ -61,6 +62,7 @@
     import FloatingHelpText from "$lib/components/FloatingHelpText.svelte";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import PledgeTable from "$lib/components/PledgeTable.svelte";
+    import { path } from "$lib/stores/redirect_store";
 
     /** @type {import('./$types').PageData} */
     export let data;
@@ -109,9 +111,47 @@
     function setActiveTab(tab) {
         activeTab = tab;
     }
-    function pledgeModalOpen() {
-        pledgeModal.set(true);
+
+    // State for expandable pledge section
+    let isPledgeSectionExpanded = false;
+    /**
+     * @type {HTMLDivElement}
+     */
+    let pledgeSectionRef; // Reference to the pledge section element
+
+    function togglePledgeSection() {
+        isPledgeSectionExpanded = !isPledgeSectionExpanded;
+        // Add scroll behavior after state update with centered positioning
+        if (isPledgeSectionExpanded) {
+            setTimeout(() => {
+                if (pledgeSectionRef) {
+                    const offset = window.innerHeight * 0.2; // 20% from the top of viewport
+                    const elementPosition =
+                        pledgeSectionRef.getBoundingClientRect().top +
+                        window.pageYOffset;
+                    window.scrollTo({
+                        top: elementPosition - offset,
+                        behavior: "smooth",
+                    });
+                }
+            }, 100);
+        }
     }
+
+    // Handle state changes from child component
+    /**
+     * @param {{ detail: boolean }} event - Custom event from ExpandablePledgeSection
+     */
+    function handleExpandedChange(event) {
+        isPledgeSectionExpanded = event.detail;
+    }
+
+    // Original function - kept for compatibility but modified to toggle section instead
+    function pledgeModalOpen() {
+        // pledgeModal.set(true); // Original behavior
+        togglePledgeSection(); // New behavior
+    }
+
     onMount(async () => {
         isLoading = true;
         // await initSatellite({ satelliteId: "svftd-daaaa-aaaal-adr3a-cai" });
@@ -356,25 +396,29 @@
                 </div>
                 <div class="PledgingSection">
                     <div class="PledgeButton">
-                        <!-- <BasicButton
+                        <BasicButton
                             msg={"Pledge"}
                             someFunction={async () => {
                                 if (await CheckIfSignedIn()) {
-                                    pledgeModalOpen();
+                                    togglePledgeSection();
                                 } else {
-                                    goto("/signin/");
+                                    const returnPath = encodeURIComponent(
+                                        "/topic/" + key,
+                                    );
+                                    window.location.href = `/signin?returnTo=${returnPath}`;
                                 }
                             }}
-                        /> -->
+                        />
                     </div>
                     <div class="PledgeInfo">
-                        <!-- <p style="margin:0px; font-size:small;">
+                        <p style="margin:0px; font-size:small;">
                             Fully refundable until second confirmation. <span
                                 style="text-decoration: underline;cursor:pointer;"
                                 >Read more</span
                             >
-                        </p> -->
+                        </p>
                     </div>
+
                     {#await getTotalFollowers(key)}
                         <MagicalDotsAbsoluteSmall />
                     {:then data}
@@ -406,9 +450,44 @@
                         </div>
                     </div>
                 </div>
+                <div class="PledgeSectionMobile">
+                    <div class="">
+                        <BasicButton
+                            msg={"Pledge"}
+                            someFunction={async () => {
+                                if (await CheckIfSignedIn()) {
+                                    togglePledgeSection();
+                                } else {
+                                    path.set("/idea/" + key);
+                                    goto("/signin/");
+                                }
+                            }}
+                        />
+                    </div>
+                    <div class="">
+                        <p style="margin:0px; font-size:small;">
+                            Fully refundable until second confirmation. <a
+                                href="https://forum.solutio.one/-205/terms-and-conditions"
+                                style="color:blue; text-decoration:underline;"
+                                >Read more.</a
+                            >
+                        </p>
+                    </div>
+                </div>
 
                 <div class="FeaturesSection">
                     <div class="FeaturesTitle">
+                        <div
+                            class="ExpandablePledgeSection"
+                            style="margin-bottom: 20px"
+                            bind:this={pledgeSectionRef}
+                        >
+                            <ExpandablePledgeSection
+                                isExpanded={isPledgeSectionExpanded}
+                                on:expandedChange={handleExpandedChange}
+                                topic_id={key}
+                            />
+                        </div>
                         {#if user == $UserKey}
                             <div style="margin-bottom: 20px">
                                 <BasicButtonDark
@@ -445,7 +524,7 @@
                             />
                         {/if}
                     </div>
-                    <div>
+                    <div id="ideas">
                         <IdeaCardContainer idea_id={key} />
                     </div>
 
@@ -508,7 +587,10 @@
                         {/if}
                     </div>
                 </div>
-                <ModalPledgeFunds idea_id={key} feature_id={""} />
+                <!-- Keep this for compatibility but it won't be used directly anymore -->
+                {#if $pledgeModal}
+                    <ModalPledgeFunds idea_id={key} feature_id={""} />
+                {/if}
             </div>
         {:else if $success}
             <SuccessNew message={"Pledge successfully created"} />
@@ -546,7 +628,7 @@
     .container {
         display: grid;
         grid-template-columns: 0.3fr 1.8fr 0.9fr;
-        grid-template-rows: 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr;
+        grid-template-rows: 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr 0fr;
         gap: 13px 0px;
         grid-auto-flow: row;
         grid-template-areas:
@@ -557,6 +639,7 @@
             "EditImages EditImages EditImages"
             "FundingSection FundingSection FundingSection"
             "PledgingSection PledgingSection PledgingSection"
+            "PledgeSectionMobile PledgeSectionMobile PledgeSectionMobile"
             "FeaturesSection FeaturesSection FeaturesSection"
             "ActivitySection ActivitySection ActivitySection";
     }
@@ -593,7 +676,7 @@
         justify-content: left;
         text-align: left;
         align-items: center;
-        gap: 30px;
+        gap: 20px;
     }
 
     .FundingSection {
@@ -637,12 +720,23 @@
         justify-content: center;
         align-items: center;
         flex-direction: row;
-        margin: 0px;
+        margin-bottom: 10px;
     }
 
     .PledgeInfo {
         grid-area: PledgeInfo;
         text-align: center;
+    }
+    .PledgeSectionMobile {
+        grid-area: PledgeSectionMobile;
+        visibility: hidden;
+        width: 0px;
+        height: 0px;
+    }
+
+    .ExpandablePledgeSection {
+        grid-area: ExpandablePledgeSection;
+        width: 100%;
     }
 
     .ShareButton {
@@ -752,7 +846,7 @@
             display: grid;
             grid-template-columns: auto auto auto;
             grid-template-rows: auto auto;
-            gap: 0px 0px;
+            gap: 0px 15px;
             grid-auto-flow: row;
 
             grid-template-areas:
@@ -791,6 +885,30 @@
             grid-area: PledgingSection;
             justify-content: center;
             align-items: center;
+        }
+        .Breadcrumbs {
+            gap: 10px;
+        }
+        .PledgeSectionMobile {
+            visibility: visible;
+            height: fit-content;
+            width: fit-content;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 0px;
+            margin-bottom: 0px;
+        }
+        .PledgeButton {
+            visibility: hidden;
+            height: 0px;
+            width: 0px;
+        }
+        .PledgeInfo {
+            visibility: hidden;
+            height: 0px;
+            width: 0px;
         }
         .Title {
             grid-area: Title;

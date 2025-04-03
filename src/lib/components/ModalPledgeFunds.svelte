@@ -11,14 +11,16 @@
         getUserBalance,
     } from "$lib/financial_functions/financial_functions";
     import { onMount } from "svelte";
-    import { authSubscribe } from "@junobuild/core-peer";
+    import { authSubscribe } from "@junobuild/core";
     import FlatButtonDarkSmall from "./FlatButtonDarkSmall.svelte";
     import SuccessModalNew from "./SuccessModalNew.svelte";
     import LoadingModalNew from "./LoadingModalNew.svelte";
     import ErrorModalNew from "./ErrorModalNew.svelte";
     import MagicalDotsAbsoluteSmall from "./MagicalDotsAbsolut.svelte";
     import { getAvailableBalance } from "../../declarations/satellite/satellite.api";
-    let amount = 0;
+
+    /** @type {string} */
+    let amount = "";
     let max = 0;
     let isLoading = false;
     let success = false;
@@ -61,6 +63,7 @@
                 style="color:blue; text-decoration:underline;">profile</a
             >.
         </p>
+        <p>Minimum pledge amount is 1 ICP.</p>
 
         <br />
         {#if !isLoading && !success && !error}
@@ -70,13 +73,16 @@
             >
                 <input
                     type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
                     class="InputTextSmall"
                     bind:value={amount}
                 />
                 ICP <FlatButtonDarkSmall
                     msg={"MAX"}
                     someFunction={() => {
-                        amount = data;
+                        amount = data.toString();
                     }}
                 />
             </div>
@@ -100,7 +106,9 @@
                     someFunction={async () => {
                         isLoading = true;
                         try {
-                            if (amount > data) {
+                            const numAmount =
+                                amount === "" ? 0 : Number(amount);
+                            if (numAmount > data) {
                                 alert(
                                     "ERROR: Cant pledge more than your available balance.",
                                 );
@@ -111,7 +119,7 @@
                             let pledgeCreation = await CreatePledgeNew(
                                 idea_id,
                                 feature_id,
-                                amount,
+                                numAmount,
                                 userKey,
                             );
                             success = true;

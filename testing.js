@@ -3,7 +3,7 @@ import path from "path";
 import OpenAI from "openai";
 
 //import OPENAI_API_KEY from "key.txt";
-let api = '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';
+let api = '';
 let openai = new OpenAI({apiKey:api});
 
 async function main(someText) {

@@ -1,5 +1,4 @@
 <script>
-    import UnderConstruction from "$lib/components/UnderConstruction.svelte";
     import { UserKey } from "$lib/stores/other_stores";
     import { onMount } from "svelte";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";

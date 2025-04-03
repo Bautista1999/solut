@@ -1,41 +1,26 @@
-use crate::notifications::send_single_notification;
-use crate::quickqueries::get_doc_owner;
+use crate::config::images::{
+    DEFAULT_LINK_PREVIEW_IMAGE, DEFAULT_PROFILE_IMAGE, DEFAULT_SEARCH_RESULT_IMAGE,
+};
 use crate::reputation::get_user_reputation;
 use crate::types::interface::{
-    EnrichedApprovalData, EnrichedPledgeData, FollowData, Idea, IndexResponse,
-    IndexResponseBasicInfo, IndexSearch, Notification, PledgeBasicInfo, PledgeData, PledgeUser,
-    TotalPledging, UserBasicInfo, UserProfileBasicInfo,
+    EnrichedApprovalData, EnrichedPledgeData, Idea, IndexResponse, IndexResponseBasicInfo,
+    PledgeBasicInfo, UserProfileBasicInfo,
 };
 use crate::user_information::{
-    get_available_balance, get_historical_pledged_balance, get_paginated_following_elements,
+    get_historical_pledged_balance, get_paginated_following_elements, get_user_basic_information,
     get_user_profile_pic, get_user_username,
 };
 use crate::Funding::get_solution_implemented_features;
-use crate::{delete_pledge, get_document_description_or_default, get_document_version_or_default};
-use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
-use bytes::Bytes;
-use candid::{CandidType, Int, Nat, Principal};
-use ic_cdk::api::{self, call, canister_balance128, set_global_timer, time};
-use ic_cdk::spawn;
-use ic_cdk_macros::{query, update};
-use junobuild_satellite::{
-    count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, get_doc_store,
-    get_many_docs, list_docs_store, log, set_asset_handler, set_doc_store, DelDoc, Doc, Key,
-    SetDoc,
-};
+use ic_cdk::caller;
+use ic_cdk_macros::query;
+use junobuild_satellite::{get_doc_store, list_docs_store, log, Doc};
 use junobuild_shared::types::list::{ListMatcher, ListParams};
-use junobuild_storage::http::types::HeaderField;
-use junobuild_storage::types::store::AssetKey;
-use junobuild_storage::well_known::update;
-use junobuild_utils::{decode_doc_data, encode_doc_data};
-use regex::Regex;
-use serde_json::json;
-use std::cell::RefCell;
+use junobuild_utils::decode_doc_data;
 use std::collections::HashMap;
-use std::convert::TryFrom;
-use std::iter::{Cycle, Filter};
 
-use std::sync::LazyLock; // For Rust 1.63 and later
+use ic_cdk::api::canister_balance128;
+use std::sync::LazyLock;
+// For Rust 1.63 and later
 
 static PLEDGE_TOTALS_CACHE: LazyLock<HashMap<String, u64>> = LazyLock::new(HashMap::new);
 static FOLLOWER_TOTALS_CACHE: LazyLock<HashMap<String, u64>> = LazyLock::new(HashMap::new);
@@ -44,7 +29,7 @@ const DEFAULT_LIMIT: usize = 12;
 
 #[query]
 pub fn get_total_pledged(element: String, id: String) -> Result<u64, String> {
-    let caller = api::caller();
+    let caller = caller();
     // Filter to find documents where the description contains the given element and id
     let mut description_of_filter = format!("_{}:{}", element, id);
     if element == "user" {
@@ -89,7 +74,7 @@ pub fn get_total_pledged(element: String, id: String) -> Result<u64, String> {
 
 #[query]
 pub fn get_total_pledged_and_expected(element: String, id: String) -> Result<(u64, u64), String> {
-    let caller = api::caller();
+    let caller = caller();
 
     // Determine the description filter based on the element type
     let mut description_of_filter = format!("_{}:{}", element, id);
@@ -146,7 +131,7 @@ pub fn get_total_pledged_and_expected(element: String, id: String) -> Result<(u6
 
 #[query]
 pub fn get_total_followers(element_id: String) -> u64 {
-    let caller = api::caller();
+    let caller = caller();
     // Filter to find documents where the key ends with "_{FOLLOWED_ID}"
     let filter = ListParams {
         matcher: Some(ListMatcher {
@@ -198,7 +183,7 @@ pub fn get_paginated_topics(
         ..Default::default()
     };
     let collection = "idea".to_string(); // Collection name for topics
-    let caller = api::caller(); // Use the caller principal for authorization
+    let caller = caller(); // Use the caller principal for authorization
     let ideas_result = list_docs_store(caller, collection, &filter)?;
 
     // Normalize the search term for case-insensitive matching
@@ -225,7 +210,7 @@ pub fn get_paginated_topics(
                 .and_then(|arr| arr.get(0)) // Get the first element
                 .and_then(|img| img.as_str()) // Ensure it's a string
                 .map(|s| s.to_string()) // Convert to String
-                .unwrap_or_else(|| "https://solutio.one/solutio-images/logo-01.png".to_string()); // Fallback to default image
+                .unwrap_or_else(|| DEFAULT_SEARCH_RESULT_IMAGE.to_string()); // Fallback to default image
             let creation_date = doc.created_at;
 
             // Calculate `total_pledged` and `total_followers`
@@ -292,7 +277,7 @@ pub fn get_paginated_topics(
 
 #[query]
 pub fn get_total_pledged_of_solution(solution_id: String) -> Result<u64, String> {
-    let caller = api::caller();
+    let caller = caller();
     let features = match get_solution_implemented_features(&solution_id.clone()) {
         Ok(features) => features,
         Err(_) => return Ok(0),
@@ -328,7 +313,7 @@ pub fn get_paginated_ideas(
     };
 
     let collection = "feature".to_string(); // Targeting the "feature" collection
-    let caller = api::caller(); // Use the caller principal for authorization
+    let caller = caller(); // Use the caller principal for authorization
     let features_result = list_docs_store(caller, collection, &filter)?;
 
     // Normalize the search term for case-insensitive matching
@@ -355,7 +340,7 @@ pub fn get_paginated_ideas(
                 .and_then(|arr| arr.get(0))
                 .and_then(|img| img.as_str())
                 .map(|s| s.to_string())
-                .unwrap_or_else(|| "https://solutio.one/solutio-images/logo-01.png".to_string());
+                .unwrap_or_else(|| DEFAULT_SEARCH_RESULT_IMAGE.to_string());
             let creation_date = doc.created_at;
 
             // Calculate `total_pledged` and `total_followers`
@@ -430,7 +415,7 @@ pub fn get_paginated_users(
         ..Default::default()
     };
     let collection = "user".to_string(); // Targeting the "user" collection
-    let caller = api::caller(); // Use the caller principal for authorization
+    let caller = caller(); // Use the caller principal for authorization
     let users_result = list_docs_store(caller, collection, &filter)?;
 
     // Normalize the search term for case-insensitive matching
@@ -454,7 +439,7 @@ pub fn get_paginated_users(
                 .get("profile_image")
                 .and_then(|img| img.as_str())
                 .map(|s| s.to_string())
-                .unwrap_or_else(|| "https://solutio.one/solutio-images/logo-01.png".to_string()); // Default image if not present
+                .unwrap_or_else(|| DEFAULT_SEARCH_RESULT_IMAGE.to_string()); // Default image if not present
             let creation_date = doc.created_at; // Use the creation date from the document
             let reputation = get_user_reputation(doc.owner).unwrap_or(0); // Fetch reputation
             let total_pledged = get_historical_pledged_balance(key.clone()).unwrap_or(0); // Fetch total pledged
@@ -583,7 +568,7 @@ pub fn get_paginated_ideas_by_solution(
     let limit = limit.unwrap_or(12);
 
     // Step 1: Retrieve the solution document
-    let caller = api::caller();
+    let caller = caller();
     let collection = "solution".to_string(); // Collection containing solution documents
 
     let solution_doc = match get_doc_store(caller.clone(), collection.clone(), solution_id.clone())
@@ -649,7 +634,7 @@ pub fn get_paginated_ideas_by_solution(
                 .and_then(|arr| arr.get(0))
                 .and_then(|img| img.as_str())
                 .map(|s| s.to_string())
-                .unwrap_or_else(|| "https://solutio.one/solutio-images/logo-01.png".to_string());
+                .unwrap_or_else(|| DEFAULT_SEARCH_RESULT_IMAGE.to_string());
             let creation_date = doc.created_at;
 
             // Calculate `total_pledged` and `total_followers`
@@ -713,7 +698,7 @@ pub fn get_funding_details(
     element_type: String,
     id: String,
 ) -> Result<(u64, u64, usize, Vec<(String, String)>), String> {
-    let caller = api::caller();
+    let caller = caller();
     let mut pledges: Vec<Doc> = vec![];
     let collection = match element_type.as_str() {
         "idea" | "feature" => "pledges_active".to_string(),
@@ -873,7 +858,7 @@ pub fn check_cycles() -> u128 {
 
 #[query]
 pub fn get_user_pledges_enriched(user_id: String) -> Result<Vec<EnrichedPledgeData>, String> {
-    let caller = api::caller();
+    let caller = caller();
 
     // Filter to find pledges for the specific user
     let filter = ListParams {
@@ -935,9 +920,11 @@ pub fn get_user_pledges_enriched(user_id: String) -> Result<Vec<EnrichedPledgeDa
                     IndexResponseBasicInfo {
                         element_id: idea_id.clone(),
                         title: idea_data.title,
-                        profile_image: idea_data.images.first().cloned().unwrap_or_else(|| {
-                            "https://solutio.one/solutio-images/logo-01.png".to_string()
-                        }),
+                        profile_image: idea_data
+                            .images
+                            .first()
+                            .cloned()
+                            .unwrap_or_else(|| DEFAULT_SEARCH_RESULT_IMAGE.to_string()),
                         creation_date: idea_doc.created_at,
                         element_type: "idea".to_string(),
                     }
@@ -945,7 +932,7 @@ pub fn get_user_pledges_enriched(user_id: String) -> Result<Vec<EnrichedPledgeDa
                 _ => IndexResponseBasicInfo {
                     element_id: idea_id.clone(),
                     title: "Unknown or deleted topic".to_string(),
-                    profile_image: "https://solutio.one/solutio-images/logo-01.png".to_string(),
+                    profile_image: DEFAULT_SEARCH_RESULT_IMAGE.to_string(),
                     creation_date: doc.created_at,
                     element_type: "idea".to_string(),
                 },
@@ -959,9 +946,11 @@ pub fn get_user_pledges_enriched(user_id: String) -> Result<Vec<EnrichedPledgeDa
                         Some(IndexResponseBasicInfo {
                             element_id: feature_id,
                             title: feature_data.title,
-                            profile_image: feature_data.images.first().cloned().unwrap_or_else(
-                                || "https://solutio.one/solutio-images/logo-01.png".to_string(),
-                            ),
+                            profile_image: feature_data
+                                .images
+                                .first()
+                                .cloned()
+                                .unwrap_or_else(|| DEFAULT_SEARCH_RESULT_IMAGE.to_string()),
                             creation_date: feature_doc.created_at,
                             element_type: "feature".to_string(),
                         })
@@ -969,7 +958,7 @@ pub fn get_user_pledges_enriched(user_id: String) -> Result<Vec<EnrichedPledgeDa
                     _ => Some(IndexResponseBasicInfo {
                         element_id: feature_id,
                         title: "Unknown or deleted idea".to_string(),
-                        profile_image: "https://solutio.one/solutio-images/logo-01.png".to_string(),
+                        profile_image: DEFAULT_SEARCH_RESULT_IMAGE.to_string(),
                         creation_date: doc.created_at,
                         element_type: "feature".to_string(),
                     }),
@@ -1011,7 +1000,7 @@ pub fn get_total_following(user_id: String) -> u64 {
 
 #[query]
 pub fn get_user_approvals_enriched(user_id: String) -> Result<Vec<EnrichedApprovalData>, String> {
-    let caller = api::caller();
+    let caller = caller();
 
     // Filter to find approvals for the specific user
     let filter = ListParams {
@@ -1113,7 +1102,7 @@ pub fn get_user_approvals_enriched(user_id: String) -> Result<Vec<EnrichedApprov
                                 .and_then(|images| images.as_array())
                                 .and_then(|arr| arr.get(0))
                                 .and_then(|img| img.as_str())
-                                .unwrap_or("https://solutio.one/solutio-images/logo-01.png")
+                                .unwrap_or(DEFAULT_SEARCH_RESULT_IMAGE)
                                 .to_string(),
                             creation_date: solution_doc.created_at,
                             element_type: "solution".to_string(),
@@ -1122,7 +1111,7 @@ pub fn get_user_approvals_enriched(user_id: String) -> Result<Vec<EnrichedApprov
                     _ => IndexResponseBasicInfo {
                         element_id: solution_id.clone(),
                         title: "Unknown or deleted solution".to_string(),
-                        profile_image: "https://solutio.one/solutio-images/logo-01.png".to_string(),
+                        profile_image: DEFAULT_SEARCH_RESULT_IMAGE.to_string(),
                         creation_date: doc.created_at,
                         element_type: "solution".to_string(),
                     },
@@ -1186,7 +1175,7 @@ pub fn get_user_approvals_enriched(user_id: String) -> Result<Vec<EnrichedApprov
                                 .and_then(|images| images.as_array())
                                 .and_then(|arr| arr.get(0))
                                 .and_then(|img| img.as_str())
-                                .unwrap_or("https://solutio.one/solutio-images/logo-01.png")
+                                .unwrap_or(DEFAULT_SEARCH_RESULT_IMAGE)
                                 .to_string(),
                             creation_date: feature_doc.created_at,
                             element_type: "feature".to_string(),
@@ -1195,7 +1184,7 @@ pub fn get_user_approvals_enriched(user_id: String) -> Result<Vec<EnrichedApprov
                     _ => IndexResponseBasicInfo {
                         element_id: feature_id.clone(),
                         title: "Unknown or deleted feature".to_string(),
-                        profile_image: "https://solutio.one/solutio-images/logo-01.png".to_string(),
+                        profile_image: DEFAULT_SEARCH_RESULT_IMAGE.to_string(),
                         creation_date: 0,
                         element_type: "feature".to_string(),
                     },
@@ -1273,7 +1262,7 @@ pub fn get_user_pledges_for_solution(
 #[query]
 /// Retrieves enriched pledge data for a given element ID
 pub fn get_enriched_element_pledges(element_id: String) -> Result<Vec<EnrichedPledgeData>, String> {
-    let caller = api::caller();
+    let caller = caller();
     let filter = ListParams {
         matcher: Some(ListMatcher {
             description: Some(format!("{}", element_id)),
@@ -1340,11 +1329,11 @@ fn get_user_basic_info(user_id: String) -> Result<UserProfileBasicInfo, String> 
 
 #[query]
 /// Helper function to get enriched data for an element
-fn get_element_enriched_data(
+pub fn get_element_enriched_data(
     element_type: String,
     element_id: String,
 ) -> Result<IndexResponseBasicInfo, String> {
-    let caller = api::caller();
+    let caller = caller();
     let doc = get_doc_store(caller, element_type.to_string(), element_id.clone())?
         .ok_or_else(|| format!("{} Unknown or deleted", element_type))?;
     let data: serde_json::Value = serde_json::from_slice(&doc.data)
@@ -1357,9 +1346,96 @@ fn get_element_enriched_data(
             .as_array()
             .and_then(|arr| arr.first())
             .and_then(|v| v.as_str())
-            .unwrap_or("https://solutio.one/solutio-images/logo-01.png")
+            .unwrap_or(DEFAULT_SEARCH_RESULT_IMAGE)
             .to_string(),
         creation_date: doc.created_at,
         element_type: element_type.to_string(),
     })
+}
+
+#[query]
+pub fn get_paginated_followers_by_type(
+    element_id: String,
+    element_type: String,
+    offset: Option<usize>,
+    limit: Option<usize>,
+) -> Result<(Vec<IndexResponseBasicInfo>, usize, usize, usize), String> {
+    let caller = caller();
+    let offset = offset.unwrap_or(0);
+    let limit = limit.unwrap_or(20);
+
+    // Step 1: Filter for keys ending with `_{element_id}`
+    let filter = ListParams {
+        matcher: Some(ListMatcher {
+            key: Some(format!("_{}", element_id)),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let follow_result = list_docs_store(caller.clone(), "follow".to_string(), &filter)?;
+
+    // Step 2: Extract followers from the documents
+    let mut followers: Vec<(String, String)> = follow_result
+        .items
+        .iter()
+        .filter_map(|(key, doc)| {
+            // Extract follower ID from key first as fallback
+            let follower_id_from_key = key.split('_').next()?.to_string();
+
+            // Decode the document data
+            let decoded_data: serde_json::Value = match decode_doc_data(&doc.data) {
+                Ok(data) => data,
+                Err(_) => {
+                    // On decode error, use follower_id_from_key
+                    let follow_type = "user".to_string();
+                    return Some((follower_id_from_key, follow_type));
+                }
+            };
+
+            let follower_id = decoded_data
+                .get("follower")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+                .unwrap_or(follower_id_from_key);
+
+            let follow_type = decoded_data
+                .get("type")
+                .or_else(|| decoded_data.get("follow_type"))
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_lowercase())
+                .unwrap_or("user".to_string());
+
+            Some((follower_id, follow_type))
+        })
+        .collect();
+
+    let mut valid_followers = Vec::new();
+    for (follower_id, follow_type) in followers {
+        // Use get_user_basic_information to get user details
+        if let Ok(user_info) = get_user_basic_information(follower_id.clone()) {
+            valid_followers.push(IndexResponseBasicInfo {
+                element_id: follower_id,
+                title: user_info.username,
+                profile_image: user_info.profile_picture,
+                creation_date: 0, // Note: get_user_basic_information doesn't provide creation_date
+                element_type: "user".to_string(),
+            });
+        }
+    }
+
+    // Step 5: Apply pagination
+    let total_items = valid_followers.len();
+    let paginated_followers = valid_followers
+        .into_iter()
+        .skip(offset)
+        .take(limit)
+        .collect::<Vec<_>>();
+    let total_pages = (total_items + limit - 1) / limit;
+
+    Ok((
+        paginated_followers,
+        total_items,
+        total_pages,
+        offset / limit + 1,
+    ))
 }

@@ -1,5 +1,4 @@
 <script>
-    import UnderConstruction from "$lib/components/UnderConstruction.svelte";
     import TableForPledges from "$lib/components/TableForPledges.svelte";
     import { UserKey } from "$lib/stores/other_stores";
     import { onMount } from "svelte";
