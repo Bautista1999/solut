@@ -1,17 +1,16 @@
 <script>
-    import { Line } from "svelte-chartjs";
-
-    import zoomPlugin from "chartjs-plugin-zoom";
     import "chartjs-adapter-date-fns";
-    import RangeSlider from "svelte-range-slider-pips";
-    import { onMount, onDestroy } from "svelte"; // Import lifecycle functions if needed
-    import { getDailyUserRegistrations } from "../../declarations/satellite/satellite.api";
+
     import UserRegistrationsGraph from "$lib/components/UserRegistrationsGraph.svelte";
+    import AdminMetrics from "$lib/components/AdminMetrics.svelte"; // Import the new component
 </script>
 
 <div class="container">
     <div class="admin-dashboard">
         <h1>Admin Dashboard</h1>
+
+        <AdminMetrics />
+        <!-- Use the new component -->
 
         <UserRegistrationsGraph />
     </div>
@@ -34,5 +33,8 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         margin: 20px;
         width: 800px;
+        gap: 30px; /* Add gap between sections */
     }
+
+    /* Remove styles that were moved to AdminMetrics.svelte */
 </style>
