@@ -43,14 +43,14 @@
     <div class="bar" style="width: 95%;">
         <div
             class="progress"
-            style="width: {getBarPercentage()}%; height:20px; font-size:small; color:var(--tertiary-color); font-weight:400;"
+            style="width: {getBarPercentage()}%; height:20px;  color:var(--tertiary-color); font-weight:400;"
         >
             {exp} ICP
         </div>
         {#if window.innerWidth < 500}
             <div class="progress2"></div>
         {:else}
-            <div class="progress2" style="font-size:small;">
+            <div class="progress2" style=";">
                 {tot}
             </div>
         {/if}
@@ -59,12 +59,12 @@
     <div class="bar">
         <div
             class="progress"
-            style="width: {getBarPercentage()}%; color:var(--tertiary-color); text-align:center; font-size:small "
+            style="width: {getBarPercentage()}%; color:var(--tertiary-color); text-align:center;  "
         >
             Approved: {exp} ICP
         </div>
         {#if window.innerWidth < 500 && getBarPercentage() < 100}
-            <div class="progress2" style="text-align:center; font-size:small ">
+            <div class="progress2" style="text-align:center;  ">
                 Total: {tot} ICP
             </div>
         {:else if getBarPercentage() == 100}
@@ -89,7 +89,7 @@
         border-radius: 4px;
         overflow: visible;
         border: 1px solid var(--seventh-color);
-        font-size: small;
+        font-size: larger;
         height: 35px;
     }
     .progress {
@@ -98,7 +98,7 @@
         display: flex;
         align-items: center; /* Vertical alignment */
         justify-content: center; /* Horizontal alignment */
-        font-size: larger;
+        font-size: large;
         font-weight: 450;
         border-radius: 2px;
     }
@@ -111,6 +111,6 @@
         color: var(--seventh-color);
         border-color: #e0e0e0;
         border-width: 10px;
-        font-size: larger;
+        font-size: large;
     }
 </style>
