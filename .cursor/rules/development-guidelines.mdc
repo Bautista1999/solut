@@ -1,0 +1,30 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Development Guidelines
+
+## Framework Usage
+- This is a SvelteKit application with Tailwind CSS
+- Use TypeScript for type safety
+- Smart contracts are written in Rust for the Internet Computer
+
+## Code Style
+- Use TypeScript for all new JavaScript files
+- Follow Svelte's component structure guidelines
+- Keep components small and focused
+- Use async/await for asynchronous operations
+- Implement proper error handling
+
+## State Management
+- Use Svelte stores for global state
+- Keep component state local when possible
+- Use props for parent-child communication
+- Follow unidirectional data flow
+
+## Testing
+- Write unit tests for utility functions
+- Test components in isolation
+- Ensure smart contract tests are comprehensive
+- Follow test-driven development when possible

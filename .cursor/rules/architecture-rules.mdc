@@ -1,0 +1,7 @@
+---
+description: 
+globs: *.svelte
+alwaysApply: false
+---
+
+Follow clean architecture principles to create new backend code

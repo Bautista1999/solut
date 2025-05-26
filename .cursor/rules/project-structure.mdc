@@ -1,0 +1,25 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Project Structure Guide
+
+## Main Directories
+- `src/routes/`: Contains all Svelte routes and pages
+- `src/lib/`: Shared components and utilities
+- `src/satellite/`: Backend/smart contract related code
+- `src/utils/`: Helper functions and utilities
+- `static/`: Static assets and files
+
+## Key Files
+- @app.html: Main HTML template
+- @routes/+layout.svelte: Root layout component
+- @routes/global.styles.css: Global styles
+- @satellite/satellite.did: Main canister interface
+
+## Component Organization
+- Components should be placed in `src/lib/components/`
+- Route-specific components should be co-located with their routes
+- Shared utilities should go in `src/utils/`
+- Smart contract code belongs in `src/satellite/`

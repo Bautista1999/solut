@@ -38,6 +38,5 @@
         5173
     ],
     "postCreateCommand": "rustup update && rustup component add rust-src rust-analysis rust-analyzer clippy && cargo metadata && npm install",
-    "remoteUser": "vscode",
-    "workspaceFolder": "/workspaces/solutio"
+    "remoteUser": "vscode"
 }

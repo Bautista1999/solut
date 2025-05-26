@@ -1,0 +1,66 @@
+---
+description: Rules for solutio
+globs: 
+alwaysApply: false
+---
+
+Solutio is a web3 crowdfunding platform built on top of the ICP blockchain.
+# Crypto Rules for Solutio
+
+## General Principles
+1. All transactions must be conducted on the Internet Computer Protocol (ICP) blockchain
+2. Smart contracts must be audited before deployment
+3. All crypto-related operations must be transparent and verifiable on-chain
+
+## Token Standards
+1. Use the ICRC-1 standard for fungible tokens
+2. Use the ICRC-7 standard for NFTs
+3. All token contracts must implement the required interfaces from the ICP standards
+
+## Security Guidelines
+1. Private keys must never be stored in plain text
+2. Use hardware wallets for high-value transactions
+3. Implement multi-signature requirements for treasury operations
+4. Regular security audits must be conducted
+
+## Crowdfunding Rules
+1. All crowdfunding campaigns must be fully escrowed
+2. Funds are only released upon successful completion of milestones
+3. Users can withdraw their contributions at any time before milestone completion
+4. A minimum threshold must be met before any development work begins
+
+## Smart Contract Development
+1. All smart contracts must be written in Motoko or Rust
+2. Unit tests must cover at least 90% of the codebase
+3. Integration tests must be performed before deployment
+4. Gas optimization must be considered in all contract development
+
+## Wallet Integration
+1. Support for Internet Identity (II) is mandatory
+2. Support for plug wallet is recommended
+3. All wallet interactions must be clearly documented
+4. Wallet connection must be persistent across sessions
+
+## Transaction Handling
+1. All transactions must include proper error handling
+2. Transaction status must be clearly displayed to users
+3. Failed transactions must be properly handled and reported
+4. Transaction fees must be clearly communicated
+
+## Compliance
+1. KYC/AML procedures must be followed where required
+2. All regulatory requirements must be met
+3. User data must be handled according to privacy laws
+4. Regular compliance audits must be conducted
+
+## Documentation
+1. All crypto-related features must be documented
+2. API endpoints must be clearly documented
+3. Smart contract interfaces must be documented
+4. Security measures must be documented
+
+## Testing
+1. All crypto-related features must be tested in a testnet environment first
+2. Load testing must be performed before mainnet deployment
+3. Security testing must be performed regularly
+4. Integration testing with wallets must be performed
