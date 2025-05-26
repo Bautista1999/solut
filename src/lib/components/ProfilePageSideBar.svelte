@@ -19,6 +19,7 @@
     import FollowersModal from "./FollowersModal.svelte";
     import FlatButtonSmall from "./FlatButtonSmall.svelte";
     import FlatButtonDarkSmall from "./FlatButtonDarkSmall.svelte";
+    import LinkFlatButtonDarkSmall from "./LinkFlatButtonDarkSmall.svelte";
 
     export let user_id = "";
     export let followers = 0;
@@ -61,11 +62,40 @@
      */
     $: followingElements = [];
     let offset = 0;
+    let isLoadingFollowing = false;
+
     async function getFollowingElements() {
-        let result = await getPaginatedFollowingElements(user_id, [offset], []);
-        if ("Ok" in result) {
-            followingElements = result.Ok[0];
-            following = Number(result.Ok[1]);
+        isLoadingFollowing = true;
+        try {
+            let result = await getPaginatedFollowingElements(
+                user_id,
+                [offset],
+                [],
+            );
+            if ("Ok" in result) {
+                followingElements = result.Ok[0];
+                following = Number(result.Ok[1]);
+            }
+        } finally {
+            isLoadingFollowing = false;
+        }
+    }
+
+    async function getMoreFollowingElements() {
+        offset += 10;
+        isLoadingFollowing = true;
+        try {
+            let result = await getPaginatedFollowingElements(
+                user_id,
+                [offset],
+                [],
+            );
+            if ("Ok" in result) {
+                followingElements = [...followingElements, ...result.Ok[0]];
+                following = Number(result.Ok[1]);
+            }
+        } finally {
+            isLoadingFollowing = false;
         }
     }
 
@@ -74,17 +104,43 @@
      */
     $: followerList = [];
     let offsetFollowers = 0;
+    let isLoading = false;
+
     async function getFollowers() {
-        let result = await getPaginatedFollowers(
-            user_id,
-            [offsetFollowers],
-            [],
-        );
-        if ("Ok" in result) {
-            followerList = result.Ok[0];
-            followers = Number(result.Ok[1]);
+        isLoading = true;
+        try {
+            let result = await getPaginatedFollowers(
+                user_id,
+                [offsetFollowers],
+                [],
+            );
+            if ("Ok" in result) {
+                followerList = result.Ok[0];
+                followers = Number(result.Ok[1]);
+            }
+        } finally {
+            isLoading = false;
         }
     }
+
+    async function getMoreFollowers() {
+        offsetFollowers += 10;
+        isLoading = true;
+        try {
+            let result = await getPaginatedFollowers(
+                user_id,
+                [offsetFollowers],
+                [],
+            );
+            if ("Ok" in result) {
+                followerList = [...followerList, ...result.Ok[0]];
+                followers = Number(result.Ok[1]);
+            }
+        } finally {
+            isLoading = false;
+        }
+    }
+
     let isOwner = false;
     onMount(async () => {
         let callerPrincipal = get(UserKey);
@@ -190,33 +246,52 @@
                 {activePledges} ICP
             </div>
             {#if isOwner}
-                <div class="view-details-button" style="margin-left: 10px;">
-                    <FlatButtonDarkSmall
+                <div class="view-details-button" style="">
+                    <LinkFlatButtonDarkSmall
                         icon={"arrow_right_alt"}
                         msg={"Check your pledges "}
-                        someFunction={() => {
-                            window.location.href = "/mypledges";
-                        }}
+                        link={"/mypledges"}
                     />
                 </div>
             {/if}
         </div>
     </div>
     <div class="divider"></div>
+    {#if isOwner}
+        <div class="pledging-stats" style="">
+            <p><strong>Approvals:</strong></p>
+            <LinkFlatButtonDarkSmall
+                icon={"arrow_right_alt"}
+                msg={"Check your approvals "}
+                link={"/myapprovals"}
+            />
+        </div>
+    {/if}
+    <div class="divider"></div>
     <!-- View Details Button -->
     {#if isOwner}
-        <div class="view-details-button">
-            <BasicButtonDarkSmall
-                msg={"View details"}
-                someFunction={() => {
-                    window.location.href = "/account/" + user_id;
-                }}
+        <div class="pledging-stats" style="">
+            <p><strong>Account details:</strong></p>
+            <LinkFlatButtonDarkSmall
+                icon={"arrow_right_alt"}
+                msg={"View account details"}
+                link={"/account/" + user_id}
             />
         </div>
     {/if}
 </div>
-<FollowingsModal users={followingElements} amount={following} />
-<FollowersModal users={followerList} amount={followers} />
+<FollowingsModal
+    users={followingElements}
+    amount={following}
+    isLoading={isLoadingFollowing}
+    getMoreUsersFunction={getMoreFollowingElements}
+/>
+<FollowersModal
+    users={followerList}
+    amount={followers}
+    {isLoading}
+    getMoreUsersFunction={getMoreFollowers}
+/>
 
 <style>
     .material-symbols-outlined {

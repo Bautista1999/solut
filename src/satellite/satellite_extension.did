@@ -13,12 +13,51 @@ type Activity = record {
   element_type : text;
   activity_image : opt text;
 };
+type ClaimerInfo = record { "principal" : principal; amount : nat64 };
+type ClaimerInfoEnriched = record {
+  user : UserBasicInfo;
+  amount : nat64;
+  type_of_claimer : text;
+};
+type CompleteSolutionData = record {
+  approved_pledges : nat64;
+  features : vec IndexResponseWithApproval;
+  delivery_date : nat64;
+  total_amount : nat64;
+  feature_creators : vec ClaimerInfoEnriched;
+  total_pledges : nat64;
+  solution_provider : ClaimerInfoEnriched;
+  feature_approval_counts : vec record { text; nat64 };
+  solution : IndexResponseBasicInfo;
+  is_ready_for_completion : bool;
+  topic_owner : ClaimerInfoEnriched;
+  approval_rate : float64;
+  platform_fee : ClaimerInfo;
+};
+type CompletionResult = record {
+  completion_timestamp : nat64;
+  transaction_blocks : vec nat64;
+  approval_rate : float64;
+};
+type EnrichedApprovalData = record {
+  status : text;
+  approval_id : text;
+  feature : IndexResponseBasicInfo;
+  payment_type : text;
+  pledge : opt PledgeBasicInfo;
+  user : UserProfileBasicInfo;
+  created_at : nat64;
+  solution : IndexResponseBasicInfo;
+  transaction_number : nat64;
+  amount : nat64;
+};
 type EnrichedPledgeData = record {
   status : text;
   feature : opt IndexResponseBasicInfo;
   payment_type : text;
   idea : IndexResponseBasicInfo;
   expected_amount : nat64;
+  user : UserProfileBasicInfo;
   pledge_id : text;
   created_at : nat64;
   amount_paid : nat64;
@@ -51,6 +90,19 @@ type IndexResponseBasicInfo = record {
   element_type : text;
   creation_date : nat64;
 };
+type IndexResponseWithApproval = record {
+  approved_amount : nat64;
+  basic_info : IndexResponseBasicInfo;
+};
+type MetaTagsInput = record {
+  url : text;
+  title : text;
+  user : text;
+  content_type : text;
+  description : text;
+  image : text;
+};
+type MetaTagsResult = record { html : text; error : opt text; success : bool };
 type Milestone = record {
   id : nat64;
   title : text;
@@ -66,6 +118,19 @@ type Notification = record {
   sender : text;
   imageURL : text;
   subtitle : text;
+};
+type PaymentType = variant { Fiat; Crypto };
+type PledgeApproval = record {
+  pledge_id : text;
+  transaction_number : nat64;
+  amount : nat64;
+};
+type PledgeBasicInfo = record {
+  status : text;
+  feature_id : opt text;
+  pledge_id : text;
+  idea_id : text;
+  amount : nat64;
 };
 type PledgeData = record {
   status : text;
@@ -88,30 +153,38 @@ type Product = record {
   company : opt text;
   image : opt text;
 };
-type Result = variant { Ok; Err : text };
-type Result_1 = variant { Ok : text; Err : text };
-type Result_10 = variant { Ok : UserBasicInfo; Err : text };
-type Result_11 = variant { Ok : vec EnrichedPledgeData; Err : text };
-type Result_2 = variant { Ok : nat64; Err : text };
-type Result_3 = variant {
-  Ok : record { nat64; nat64; nat64; vec record { text; text } };
-  Err : text;
-};
-type Result_4 = variant { Ok : vec UserProfileBasicInfo; Err : text };
-type Result_5 = variant {
+type Result = variant { Ok : text; Err : text };
+type Result_1 = variant { Ok : vec text; Err : text };
+type Result_10 = variant { Ok : vec UserProfileBasicInfo; Err : text };
+type Result_11 = variant {
   Ok : record { vec IndexResponseBasicInfo; nat64; nat64; nat64 };
   Err : text;
 };
-type Result_6 = variant {
+type Result_12 = variant {
   Ok : record { vec IndexResponse; nat64; nat64; nat64 };
   Err : text;
 };
-type Result_7 = variant {
+type Result_13 = variant {
   Ok : record { vec Activity; nat64; nat64; nat64 };
   Err : text;
 };
-type Result_8 = variant { Ok : record { nat64; nat64 }; Err : text };
-type Result_9 = variant { Ok : vec PledgeData; Err : text };
+type Result_14 = variant { Ok : vec EnrichedApprovalData; Err : text };
+type Result_15 = variant { Ok : CompleteSolutionData; Err : text };
+type Result_16 = variant { Ok : record { nat64; nat64 }; Err : text };
+type Result_17 = variant { Ok : vec PledgeData; Err : text };
+type Result_18 = variant { Ok : UserProfileBasicInfo; Err : text };
+type Result_19 = variant { Ok : UserBasicInfo; Err : text };
+type Result_2 = variant { Ok; Err : text };
+type Result_3 = variant { Ok : vec nat64; Err : text };
+type Result_4 = variant { Ok : CompletionResult; Err : text };
+type Result_5 = variant { Ok : nat64; Err : text };
+type Result_6 = variant { Ok : vec record { nat64; nat64 }; Err : text };
+type Result_7 = variant { Ok : IndexResponseBasicInfo; Err : text };
+type Result_8 = variant { Ok : vec EnrichedPledgeData; Err : text };
+type Result_9 = variant {
+  Ok : record { nat64; nat64; nat64; vec record { text; text } };
+  Err : text;
+};
 type SetIdea = record { key : text; idea : Idea };
 type Solution = record {
   categories : vec text;
@@ -141,31 +214,50 @@ type UserProfileBasicInfo = record {
   user_id : text;
 };
 service : {
+  approve_pledge : (text, text, nat64, nat64, PaymentType) -> (Result);
+  approve_solution_pledges : (text, PaymentType, vec PledgeApproval) -> (
+      Result_1,
+    );
   build_version : () -> (text) query;
-  cancel_pledge : (text) -> (Result);
+  cancel_pledge : (text) -> (Result_2);
   check_cycles : () -> (nat) query;
-  create_ideas : (vec SetIdea, text) -> (Result);
-  create_new_product : (Product, text) -> (Result);
-  create_or_update_idea : (text, Idea, text) -> (Result);
-  create_or_update_solution : (text, Solution, text) -> (Result);
-  create_or_update_topic : (text, Idea) -> (Result);
-  delete_many_images : (text, vec text) -> (Result_1);
-  delete_pledge : (text) -> (Result);
-  eliminate_idea : (text) -> (Result);
-  eliminate_solution : (text) -> (Result);
-  eliminate_topic : (text) -> (Result);
-  get_available_balance : (text) -> (Result_2);
-  get_funding_details : (text, text) -> (Result_3) query;
-  get_historical_pledged_balance : (text) -> (Result_2) query;
+  claim_tokens : (text) -> (Result_3);
+  complete_solution : (text) -> (Result_4);
+  create_and_upload_html : (MetaTagsInput, text, text) -> (Result);
+  create_ideas : (vec SetIdea, text) -> (Result_2);
+  create_metatags : (MetaTagsInput) -> (MetaTagsResult);
+  create_new_product : (Product, text) -> (Result_2);
+  create_or_update_html_metatags : (text, text) -> (Result_2);
+  create_or_update_idea : (text, Idea, text) -> (Result_2);
+  create_or_update_solution : (text, Solution, text) -> (Result_2);
+  create_or_update_topic : (text, Idea) -> (Result_2);
+  delete_many_images : (text, vec text) -> (Result);
+  delete_pledge : (text) -> (Result_2);
+  eliminate_idea : (text) -> (Result_2);
+  eliminate_solution : (text) -> (Result_2);
+  eliminate_topic : (text) -> (Result_2);
+  follow_element : (text, text) -> (Result);
+  generate_sitemap : () -> (Result);
+  get_available_balance : (text) -> (Result_5);
+  get_available_balance_without_pledged_amount : (text, nat64) -> (Result_5);
+  get_daily_user_registrations : () -> (Result_6) query;
+  get_element_enriched_data : (text, text) -> (Result_7) query;
+  get_enriched_element_pledges : (text) -> (Result_8) query;
+  get_feature_subaccount_balance : (text) -> (Result_5);
+  get_funding_details : (text, text) -> (Result_9) query;
+  get_historical_pledged_balance : (text) -> (Result_5) query;
   get_paginated_common_users : (text, text, opt nat64, opt nat64) -> (
-      Result_4,
+      Result_10,
     ) query;
-  get_paginated_followers : (text, opt nat64, opt nat64) -> (Result_5) query;
+  get_paginated_followers : (text, opt nat64, opt nat64) -> (Result_11) query;
+  get_paginated_followers_by_type : (text, text, opt nat64, opt nat64) -> (
+      Result_11,
+    ) query;
   get_paginated_following_elements : (text, opt nat64, opt nat64) -> (
-      Result_5,
+      Result_11,
     ) query;
   get_paginated_ideas : (text, opt nat64, opt nat64, opt text, opt text) -> (
-      Result_6,
+      Result_12,
     ) query;
   get_paginated_ideas_by_solution : (
       text,
@@ -173,40 +265,54 @@ service : {
       opt nat64,
       opt text,
       text,
-    ) -> (Result_6) query;
+    ) -> (Result_12) query;
   get_paginated_most_recent_activities : (text, opt nat64, opt nat64) -> (
-      Result_7,
+      Result_13,
     ) query;
   get_paginated_topics : (text, opt nat64, opt nat64, opt text) -> (
-      Result_6,
+      Result_12,
     ) query;
   get_paginated_topics_ideas : (text, opt nat64, opt nat64, opt text) -> (
-      Result_6,
+      Result_12,
     ) query;
   get_paginated_users : (text, opt nat64, opt nat64, opt text) -> (
-      Result_6,
+      Result_12,
     ) query;
-  get_pledged_balance : (text) -> (Result_2) query;
+  get_pledged_balance : (text) -> (Result_5) query;
+  get_solution_approvals_enriched : (text) -> (Result_14) query;
+  get_solution_completion_data : (text) -> (Result_15) query;
   get_total_followers : (text) -> (nat64) query;
   get_total_following : (text) -> (nat64) query;
-  get_total_pledged : (text, text) -> (Result_2) query;
-  get_total_pledged_and_expected : (text, text) -> (Result_8) query;
-  get_user_active_pledges : (text) -> (Result_9) query;
-  get_user_basic_information : (text) -> (Result_10) query;
-  get_user_pledges_enriched : (text) -> (Result_11) query;
+  get_total_pledged : (text, text) -> (Result_5) query;
+  get_total_pledged_and_expected : (text, text) -> (Result_16) query;
+  get_total_pledged_of_solution : (text) -> (Result_5) query;
+  get_user_active_pledges : (text) -> (Result_17) query;
+  get_user_approvals_enriched : (text) -> (Result_14) query;
+  get_user_basic_info : (text) -> (Result_18) query;
+  get_user_basic_information : (text) -> (Result_19) query;
+  get_user_pledges_enriched : (text) -> (Result_8) query;
+  get_user_pledges_for_solution : (text, text) -> (Result_8) query;
   get_user_profile_pic : (text) -> (text) query;
-  get_user_real_balance : (text) -> (Result_2);
-  get_user_reputation : (principal) -> (Result_2) query;
-  get_user_total_pledges : (text) -> (Result_9) query;
+  get_user_real_balance : (text) -> (Result_5);
+  get_user_reputation : (principal) -> (Result_5) query;
+  get_user_total_pledges : (text) -> (Result_17) query;
   get_user_username : (text) -> (text) query;
   pledge_create : (text, text, text, nat64, blob) -> (text);
   query_scheduled_tasks_state : () -> (text) query;
-  send_single_notification : (text, text, Notification) -> (Result);
+  reject_approval : (text, text, opt text) -> (Result_2);
+  reverse_approval : (text) -> (Result_2);
+  send_single_notification : (text, text, Notification) -> (Result_2);
+  set_all_user_notifications_as_read : () -> (Result_2);
+  set_user_notification_as_read : (text) -> (Result_2);
   start_scheduled_tasks : () -> (text);
   stop_scheduled_tasks : () -> (text);
-  trigger_delete_orphan_ideas : () -> (Result);
-  trigger_delete_orphan_solutions : () -> (Result);
-  trigger_delete_unused_images : () -> (Result);
-  upload_image : (text, text, blob, text, text, text) -> (Result_1);
-  validate_user_balance_or_delete_pledge : (text, nat64, text) -> (Result);
+  trigger_delete_orphan_ideas : () -> (Result_2);
+  trigger_delete_orphan_solutions : () -> (Result_2);
+  trigger_delete_unused_images : () -> (Result_2);
+  upload_html_to_storage : (text, text, text) -> (Result);
+  upload_image : (text, text, blob, text, text, text) -> (Result);
+  validate_user_balance_or_delete_pledge : (text, nat64, text) -> (Result_2);
+  withdraw_approval : (text) -> (Result_5);
+  withdraw_from_feature_subaccount : (nat64, text, principal) -> (Result_5);
+  withdraw_rejection : (text, text) -> (Result_2);
 }

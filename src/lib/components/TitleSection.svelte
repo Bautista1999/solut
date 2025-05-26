@@ -105,4 +105,12 @@
         display: block;
         text-align: right;
     }
+    .Title h1 {
+        margin: 10px;
+    }
+    @media (max-width: 768px) {
+        .Title h1 {
+            margin: 5px;
+        }
+    }
 </style>

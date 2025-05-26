@@ -27,7 +27,7 @@
     margin-block: 20px;
     background-color: var(--tertiary-color);
     color: var(--seventh-color);
-    border-radius: 0px;
+    border-radius: 8px;
     border: 1px solid var(--seventh-color);
     display: flex;
     flex-direction: column;

@@ -1,11 +1,8 @@
 <!-- <UnderConstruction /> -->
 <script>
-    import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
-    import BasicButtonDarkSmall from "$lib/components/BasicButton_Dark_Small.svelte";
     import ProfileActivitySection from "$lib/components/ProfileActivitySection.svelte";
     import ProfilePageHeader from "$lib/components/ProfilePageHeader.svelte";
     import ProfilePageSideBar from "$lib/components/ProfilePageSideBar.svelte";
-    import UnderConstruction from "$lib/components/UnderConstruction.svelte";
     import { onDestroy, onMount } from "svelte";
     import {
         getPaginatedMostRecentActivities,
@@ -13,11 +10,8 @@
     } from "../../../declarations/satellite/satellite.api";
     import { get } from "svelte/store";
     import { UserKey } from "$lib/stores/other_stores";
-    import MagicalDotsAbsolut from "$lib/components/MagicalDotsAbsolut.svelte";
-    import MagicalDots from "$lib/components/magicalDots.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import NotFound from "$lib/components/NotFound.svelte";
-    import TableForPledges from "$lib/components/TableForPledges.svelte";
 
     /** @type {import('./$types').PageData} */
     // @ts-ignore

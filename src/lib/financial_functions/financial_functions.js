@@ -1,4 +1,4 @@
-import { authSubscribe, getDoc, getManyDocs, initJuno, listDocs, unsafeIdentity } from "@junobuild/core-peer";
+import { authSubscribe, getDoc, getManyDocs, initJuno, listDocs, unsafeIdentity } from "@junobuild/core";
 import { Actor, HttpAgent } from "@dfinity/agent";
 import { Principal } from "@dfinity/principal";
 
@@ -7,13 +7,13 @@ import { idlFactory as Admin } from "$lib/declarations/admin.declarations.did";
 import { nanoid } from "nanoid";
 
 import { IcrcLedgerCanister } from "@dfinity/ledger-icrc";
-import { AccountIdentifier, LedgerCanister } from "@dfinity/ledger-icp";
+import { AccountIdentifier, LedgerCanister, SubAccount } from "@dfinity/ledger-icp";
 import { admin_canister_id, escrow_canister_id } from "../data_functions/canisters";
 import  {idlFactory as Escrow} from "$lib/declarations/escrow.declarations.did";
 import { getIdeaIdBySolution, getImplementedFeaturesOfSolution, getUserKey } from "$lib/data_functions/get_functions";
 import { createNotification, followElement, updateSolutionStatus } from "$lib/data_functions/create_functions";
 // import { trackEvent } from "@junobuild/analytics";
-import { cancelPledge, checkCycles, deletePledge, getFundingDetails, getPledgedBalance, getUserActivePledges, pledgeCreate } from "../../declarations/satellite/satellite.api";
+import { cancelPledge, checkCycles, deletePledge, getFundingDetails, getPledgedBalance, getTotalPledged, getUserActivePledges, pledgeCreate } from "../../declarations/satellite/satellite.api";
 import { UserKey } from "$lib/stores/other_stores";
 
 // import("../declarations/juno.declarations.did.js")._SERVICE.set_doc;
@@ -155,6 +155,8 @@ export async function getTotalPledges(idea_id,type) {
  * @return {Promise<import("$lib/data_objects/data_types").TotalPledge>}
  */
 export async function getTotalPledgesOfSolution(solution_id) {
+    
+    
     let featureList = await getImplementedFeaturesOfSolution(solution_id);
     if(featureList.length==0){
         return {
@@ -272,6 +274,10 @@ export async function CreatePledgeNew(idea_id, feature_id, amount, userPrincipal
         alert("The pledge amount cant be 0");
         return;
     }
+    if(amount<1){
+        alert("ERROR: Minimum pledge amount is 1");
+        return;
+    }
 
     // let identity = await unsafeIdentity();
     // const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" }); // Use the correct network host
@@ -302,6 +308,7 @@ export async function CreatePledgeNew(idea_id, feature_id, amount, userPrincipal
     //   });
     
     console.log("Result: ", result);
+    return result;
 }
 
 /**
@@ -734,7 +741,7 @@ export async function WithDrawTokens(amount, destination){
     try{
         let transactionNumber = await transferTo(roundedAmount,destination);
         console.log("Result:" , transactionNumber)
-        let storeTransaction = await storeTransactionInCanister((transactionNumber),"withdraw",userKey);
+        // let storeTransaction = await storeTransactionInCanister((transactionNumber),"withdraw",userKey);
     }catch(e){
         console.log("Error, ", String(e));
         throw new Error(String(e));
@@ -771,7 +778,7 @@ export async function storeTransactionInCanister(transaction_number,type, destin
 passed as a parameter.
 
 * PRE-CONDITIONS: User needs to be signed in to do this, and have enough balance. 
-Receives a destination and an amount.
+Receives a destination (in hex format) and an amount.
 
 * POST-CONDITIONS: Returns dfinity's transfer response. 
 
@@ -908,8 +915,9 @@ export async function deletePledgeFromProject(id){
 export async function getTotalPledgedBalance(){
     let key = await getUserKey(); // Extract the value of the store using $
     let result = await getPledgedBalance(key);
+    console.log("Result pledged balance:", result);
     if('Ok' in result){
-        return (Number(result.Ok)/1e8)
+        return (Number(result.Ok)/100000000)
     }else{
         alert(result.Err);
         return 0;
@@ -980,6 +988,71 @@ export async function getFundingInformation(type, element_id) {
      users: [],
    };
  }
+}
+
+/**
+ * @param {any} pledgeId
+ */
+export async function getPledgeFeatureId(pledgeId) {
+    const pledgeDoc = await getDoc({
+        collection: "pledges_active",
+        key: pledgeId,
+    });
+    if (!pledgeDoc) throw new Error("Pledge not found");
+    return pledgeDoc.data.feature_id;
+}
+
+// Helper function to calculate SHA256 hash for subaccount
+/**
+ * @param {string} message
+ */
+async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    return new Uint8Array(hashBuffer);
+}
+
+/**
+ * Transfer tokens to a specific principal's subaccount
+ * @param {bigint} amount - Amount to transfer in e8s
+ * @param {string} destinationPrincipal - Principal ID of the destination
+ * @param {string} subaccountId - String to generate subaccount from
+ * @returns {Promise<bigint>} Transaction number
+ */
+export async function transferToSubaccount(amount, destinationPrincipal, subaccountId) {
+    let identity = await unsafeIdentity();
+    const agent = new HttpAgent({ identity: identity, host: "https://ic0.app" });
+    const canister = await LedgerCanister.create({
+        agent: agent,
+        canisterId: Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai"),
+    });
+    
+    try {
+        // Convert subaccountId to bytes for subaccount
+        const subaccountBytes = await sha256(subaccountId);
+        const subaccount = new Uint8Array(subaccountBytes);
+        const subaccountResult = SubAccount.fromBytes(subaccount);
+        if (subaccountResult instanceof Error) {
+            throw new Error("Invalid subaccount");
+        }
+        
+        // Create account identifier with principal and subaccount
+        const account = AccountIdentifier.fromPrincipal({
+            principal: Principal.fromText(destinationPrincipal),
+            subAccount: subaccountResult
+        });
+        
+        const response = await canister.transfer({
+            to: account,
+            amount: amount,
+        });
+        
+        console.log("Transfer response:", response);
+        return response;
+    } catch(e) {
+        console.error("Transfer error:", e);
+        throw new Error(String(e));
+    }
 }
 
 

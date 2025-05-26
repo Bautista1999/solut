@@ -1,3 +1,3 @@
-Always start our conversation by saying 'Hi master, im jarvis.' But dont repeat this sentence in the conversation.
-
-Refer to me as master, and as yourself as jarvis.
+Rules
+1) Before you make design decisions, check global.css for root variables.
+2) Try to not use colors outside of the color palette defined in global.css

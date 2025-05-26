@@ -52,11 +52,7 @@
 </script>
 
 <div class="editor-holder">
-    <div
-        id="editor-container"
-        class="custom-editor"
-        style="height: 200px;"
-    ></div>
+    <div id="editor-container" style="height: 200px;  "></div>
 </div>
 {#if showError}
     <div class="error-message">
@@ -87,21 +83,47 @@
         min-height: 180px;
         border: 1px solid var(--seventh-color);
         background-color: white;
+        border-radius: 8px;
+        cursor: text; /* Ensure text cursor is shown */
     }
+
+    /* Fix list styling */
+    :global(.ql-editor ul),
+    :global(.ql-editor ol) {
+        padding-left: 0px;
+    }
+
+    :global(.ql-editor li) {
+        font-size: medium;
+        font-family: "Barlow";
+        line-height: inherit;
+    }
+
+    /* Ensure bullet points and numbers are properly sized */
+    :global(.ql-editor li::before) {
+        font-size: inherit !important;
+        /* width: 1.5em !important; Give more space for list markers */
+    }
+
     :global(.ql-editor:focus) {
         border: 2px solid var(--primary-color);
     }
 
     /* Style for the toolbar */
     :global(.ql-toolbar) {
-        border: 1px solid var(--seventh-color);
-        background-color: var(--tertiary-color);
+    }
+    :global(.ql-container.ql-snow) {
+        border: none;
     }
 
     /* Default and hover icon color */
+    :global(.ql-toolbar button) {
+        cursor: pointer; /* Add pointer cursor for toolbar buttons */
+    }
+
     :global(.ql-toolbar button .ql-stroke),
     :global(.ql-toolbar button .ql-fill) {
-        stroke: var(--seventh-color);
+        /* stroke: var(--seventh-color); */
         fill: transparent;
     }
     :global(.ql-toolbar button:hover .ql-stroke),

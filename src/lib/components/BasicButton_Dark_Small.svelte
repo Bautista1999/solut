@@ -3,13 +3,14 @@
     export let icon = "";
 
     export let someFunction = () => {}; // A function passed from the parent
+    export let disabled = false;
 </script>
 
 <link
     rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
 />
-<button on:click={someFunction}>
+<button on:click={someFunction} {disabled}>
     {msg} <span class="material-symbols-outlined"> {icon} </span></button
 >
 
@@ -56,5 +57,14 @@
     button:active {
         transform: scale(0.98); /* Slightly scale down the button */
         box-shadow: 0px 0px 0px 0px var(--primary-color);
+    }
+    button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background-color: var(--tertiary-color);
+        box-shadow: 4px 4px 0px 0px var(--primary-color);
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+        transform: scale(1);
     }
 </style>

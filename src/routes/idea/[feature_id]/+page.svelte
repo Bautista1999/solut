@@ -5,8 +5,6 @@
     import PledgersSection from "$lib/components/pledgersSection.svelte";
     import ProfilePicture from "$lib/components/profilePicture.svelte";
     import ShareButton from "$lib/components/shareButton.svelte";
-
-    import TransactionDisplay from "$lib/components/TransactionDisplay.svelte";
     import BasicButtonDark from "$lib/components/basicButton_Dark.svelte";
     import Breadcrumbs from "$lib/components/breadcrumbs.svelte";
     import PageTabs from "$lib/components/PageTabs.svelte";
@@ -24,7 +22,6 @@
     import { goto } from "$app/navigation";
     import MagicalDotsAbsoluteSmall from "$lib/components/MagicalDotsAbsolut.svelte";
     import EditImagesSection from "$lib/components/EditImagesSection.svelte";
-    import MagicalDots from "$lib/components/magicalDots.svelte";
 
     import {
         CheckIfFeatureIsImplemented,
@@ -41,13 +38,11 @@
         getTransactionsAndPledges,
         getFundingInformation,
     } from "$lib/financial_functions/financial_functions";
-    import { getDoc } from "@junobuild/core-peer";
+    import { getDoc } from "@junobuild/core";
     import NotFound from "$lib/components/NotFound.svelte";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { path } from "$lib/stores/redirect_store";
-    import FundingBarNew from "$lib/components/FundingBarNew.svelte";
-    import BasicButtonBlackWhite from "$lib/components/BasicButtonBlackWhite.svelte";
     import ModalConfirmation from "$lib/components/ModalConfirmation.svelte";
     import {
         deleteIdea,
@@ -57,6 +52,7 @@
     import TitleSection from "$lib/components/TitleSection.svelte";
     import MagicalDotsSmall from "$lib/components/MagicalDotsSmall.svelte";
     import FloatingHelpText from "$lib/components/FloatingHelpText.svelte";
+    import PledgeTable from "$lib/components/PledgeTable.svelte";
 
     /** @type {import('./$types').PageData} */
     // @ts-ignore
@@ -404,8 +400,10 @@
                                 if (await CheckIfSignedIn()) {
                                     pledgeModalOpen();
                                 } else {
-                                    path.set("/idea/" + key);
-                                    goto("/signin/");
+                                    const returnPath = encodeURIComponent(
+                                        "/idea/" + key,
+                                    );
+                                    window.location.href = `/signin?returnTo=${returnPath}`;
                                 }
                             }}
                         />
@@ -565,13 +563,7 @@
 
                     <div class="ActivityContent">
                         {#if activeTab === tabs[0]}
-                            {#await getTransactionsAndPledges(key)}
-                                <MagicalDotsAbsoluteSmall />
-                            {:then data}
-                                <TransactionDisplay
-                                    transactions={data ? data : []}
-                                />
-                            {/await}
+                            <PledgeTable id={key} />
                         {:else if activeTab === tabs[1]}
                             <CommentSection project_id={key} />
                         {:else if activeTab === tabs[2]}
@@ -671,7 +663,7 @@
         justify-content: left;
         text-align: left;
         align-items: center;
-        gap: 30px;
+        gap: 20px;
     }
 
     .Pictures-scroller {
@@ -733,7 +725,7 @@
         justify-content: center;
         align-items: center;
         flex-direction: row;
-        margin: 0px;
+        margin-bottom: 10px;
     }
 
     .PledgeInfo {
@@ -837,7 +829,7 @@
             justify-content: center;
             align-items: center;
         }
-        .PledgeSectionMobile {
+        /* .PledgeSectionMobile {
             visibility: visible;
             height: fit-content;
             width: fit-content;
@@ -847,7 +839,7 @@
             gap: 20px;
             margin-top: 25px;
             margin-bottom: 15px;
-        }
+        } */
     }
 
     @media (max-width: 480px) {
@@ -878,6 +870,20 @@
             grid-area: PledgingSection;
             justify-content: center;
             align-items: center;
+        }
+        .Breadcrumbs {
+            gap: 10px;
+        }
+        .PledgeSectionMobile {
+            visibility: visible;
+            height: fit-content;
+            width: fit-content;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 0px;
+            margin-bottom: 0px;
         }
         .PledgeButton {
             visibility: hidden;

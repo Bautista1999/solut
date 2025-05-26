@@ -1,6 +1,6 @@
 <script>
     import { goto } from "$app/navigation";
-    import { authSubscribe, getDoc, initJuno } from "@junobuild/core-peer";
+    import { authSubscribe, getDoc, initJuno } from "@junobuild/core";
     import { onMount } from "svelte";
 
     export let reputation = 50;

@@ -1,0 +1,21 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Styling Guidelines
+
+## Color Palette
+All colors should be taken from the root variables defined in [routes/global.styles.css](mdc:src/routes/global.styles.css). Do not use hardcoded colors or colors outside of this palette.
+
+## CSS Structure
+- Global styles are maintained in [routes/global.styles.css](mdc:src/routes/global.styles.css)
+- Component-specific styles should use Svelte's scoped styling
+- Use Tailwind utility classes where appropriate
+- Custom CSS variables should be added to global.styles.css
+
+## Best Practices
+- Check global.styles.css before making design decisions
+- Maintain consistent spacing using predefined variables
+- Use semantic class names
+- Follow mobile-first responsive design principles

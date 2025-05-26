@@ -31,7 +31,7 @@
     import ModalReject from "$lib/components/ModalReject.svelte";
     import SuccessNew from "$lib/components/Success_New.svelte";
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
-    import { getDoc, initSatellite } from "@junobuild/core-peer";
+    import { getDoc, initSatellite } from "@junobuild/core";
     import NotFound from "$lib/components/NotFound.svelte";
     import EditImagesSection from "$lib/components/EditImagesSection.svelte";
 
@@ -80,6 +80,10 @@
     import MagicalDotsSmall from "$lib/components/MagicalDotsSmall.svelte";
     import FloatingHelpText from "$lib/components/FloatingHelpText.svelte";
     import FuindingDetails from "$lib/components/FundingDetails.svelte";
+    import {
+        getSolutionApprovalsEnriched,
+        getTotalPledgedOfSolution,
+    } from "../../../declarations/satellite/satellite.api";
 
     let userKey = "";
     let ownerKey = "";
@@ -136,8 +140,9 @@
     let solutionNonExistent = false;
     let errorMsg = "Something went wrong!";
 
-    let tabs = ["Pledge Timeline", "Comments", "About the project"];
-    let activeTab = tabs[2]; // default active tab
+    // let tabs = ["Pledge Timeline", "Comments", "About the project"];
+    let tabs = ["About the project"];
+    let activeTab = tabs[0]; // default active tab
     /**
      * @type {never[]}
      */
@@ -188,19 +193,37 @@
     });
 
     async function getApprovalsNumbers() {
-        let total = await getTotalAmountApprovedByProject(key);
-        let approvals = await getAmountOfUsersThatApproved(key);
+        let approvalsResult = await getSolutionApprovalsEnriched(key);
+        let total = 0;
+        let approved = 0;
+        if ("Err" in approvalsResult) {
+            return {
+                approved: 0,
+                amountApprovals: 0,
+            };
+        }
+        for (let approval of approvalsResult.Ok) {
+            total += Number(approval.amount);
+            approved += Number(approval.amount);
+        }
+
         return {
             approved: roundUpToThreeDecimalPlaces(ICPtoDecimal(BigInt(total))),
-            amountApprovals: approvals,
+            amountApprovals: approvalsResult.Ok.length,
         };
     }
     async function getApprovalsAndPledgingNumbers() {
-        let total = await getTotalAmountApprovedByProject(key);
-        let totalPossible = await getTotalPledgesOfSolution(key);
+        let total = (await getApprovalsNumbers()).approved;
+        let totalPossible = await getTotalPledgedOfSolution(key);
+        if ("Err" in totalPossible) {
+            return {
+                approved: total,
+                totalPossible: 0,
+            };
+        }
         return {
-            approved: roundUpToThreeDecimalPlaces(ICPtoDecimal(BigInt(total))),
-            totalPossible: totalPossible.pledges,
+            approved: total,
+            totalPossible: Number(totalPossible.Ok) / 10 ** 8 + total,
         };
     }
 
@@ -550,8 +573,8 @@
                                 loading={modalLoading}
                                 success={modalSuccess}
                             />
+                            <br />
                         {/if}
-                        <h3>Implemented ideas on this solution</h3>
                     </div>
                     <div>
                         <IdeaCardContainer
@@ -606,6 +629,17 @@
                                             >
                                         </div>
                                     {/await}
+                                    <BasicButton
+                                        msg={"Check approved pledges"}
+                                        icon={""}
+                                        someFunction={() => {
+                                            window.open(
+                                                "/solution/" +
+                                                    key +
+                                                    "/approvals",
+                                            );
+                                        }}
+                                    />
                                 </div>
                             {/if}
                         {/await}
@@ -614,27 +648,15 @@
                     </div>
 
                     <div class="ActivityContent">
-                        {#if activeTab === tabs[0]}
-                            {#await getTransactionsAndPledges(idea_id)}
-                                <MagicalDotsAbsoluteSmall />
-                            {:then data}
-                                <TransactionDisplay
-                                    transactions={data ? data : []}
-                                />
-                            {/await}
-                        {:else if activeTab === tabs[1]}
-                            <CommentSection project_id={key} />
-                        {:else if activeTab === tabs[2]}
-                            <AboutProject
-                                {description}
-                                owner={ownerKey}
-                                saveDescriptionFunction={saveDescription}
-                                bind:newDescription
-                            />
-                        {/if}
+                        <AboutProject
+                            {description}
+                            owner={ownerKey}
+                            saveDescriptionFunction={saveDescription}
+                            bind:newDescription
+                        />
                     </div>
                     <br />
-                    <h3>Roadmap and deadlines</h3>
+                    <h2>Roadmap and deadlines</h2>
 
                     <Timeline {milestones} />
                     <br />
@@ -675,6 +697,21 @@
                                         icon={"payments"}
                                         someFunction={() => {
                                             PaymentModal.set(true);
+                                        }}
+                                    />
+                                {:else if status == "completed"}
+                                    <h1 style="color: var(--tertiary-color);">
+                                        Solution completed!
+                                    </h1>
+
+                                    <BasicButtonDark
+                                        msg={"Check the transactions"}
+                                        icon={"payments"}
+                                        someFunction={() => {
+                                            window.open(
+                                                "/solutiontransfers/" + key,
+                                                "_blank",
+                                            );
                                         }}
                                     />
                                 {/if}
@@ -721,36 +758,14 @@
                                                     </p>
                                                 {:else}
                                                     <BasicButtonDark
-                                                        msg={"Approve"}
-                                                        icon={"verified_user"}
+                                                        msg={"Approve or reject your pledges"}
                                                         someFunction={async () => {
                                                             if (
                                                                 await CheckIfSignedIn()
                                                             ) {
-                                                                ApprovalModal.set(
-                                                                    true,
-                                                                );
-                                                            } else {
-                                                                path.set(
-                                                                    "/solution/" +
+                                                                window.open(
+                                                                    "/approvesolution/" +
                                                                         key,
-                                                                );
-                                                                goto(
-                                                                    "/signin/",
-                                                                );
-                                                                return;
-                                                            }
-                                                        }}
-                                                    />
-                                                    <BasicButtonDark
-                                                        msg={"Reject"}
-                                                        icon={"cancel"}
-                                                        someFunction={async () => {
-                                                            if (
-                                                                await CheckIfSignedIn()
-                                                            ) {
-                                                                RejectModal.set(
-                                                                    true,
                                                                 );
                                                             } else {
                                                                 path.set(
@@ -882,22 +897,25 @@
         justify-content: left;
         text-align: left;
         align-items: center;
-        gap: 30px;
+        gap: 20px;
     }
 
     .approval-stats {
         display: flex;
         justify-content: space-evenly;
+        align-items: center;
         padding: 10px;
         margin-block: 10px;
         background-color: #f4f4f4; /* Light grey background */
         border: 1px solid var(--primary-color);
+        border-radius: 10px;
     }
 
     .stat {
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
 
         padding: 5px;
     }
@@ -906,11 +924,13 @@
         font-size: 1.5em;
         color: #333;
         font-weight: bold;
+        text-align: center;
     }
 
     .stat-label {
         font-size: 1em;
         color: #666;
+        text-align: center;
     }
 
     .FundingSection {
@@ -1056,6 +1076,9 @@
             grid-area: FundingSection;
             height: fit-content;
             padding-inline: 0px;
+        }
+        .Breadcrumbs {
+            gap: 10px;
         }
         .PledgingSection {
             display: grid;

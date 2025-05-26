@@ -29,12 +29,7 @@
     } from "$lib/financial_functions/financial_functions";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { Principal } from "@dfinity/principal";
-    import {
-        authSubscribe,
-        getDoc,
-        initJuno,
-        listDocs,
-    } from "@junobuild/core-peer";
+    import { authSubscribe, getDoc, initJuno, listDocs } from "@junobuild/core";
     import { onMount } from "svelte";
     import { writable } from "svelte/store";
 
@@ -76,9 +71,7 @@
             copied.set(false);
         }, 3000);
     };
-    /**
-     * @type {import("@junobuild/core-peer").Doc.<any>}
-     */
+
     let userData = {
         key: "",
         data: {},
@@ -320,7 +313,7 @@
                 />
             {/if}
 
-            <FollowersAndFollowingSection element_key={userKey} />
+            <!-- <FollowersAndFollowingSection element_key={userKey} /> -->
             <div class="Reputation">
                 <Reputation {reputation} />
             </div>

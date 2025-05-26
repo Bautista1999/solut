@@ -1,116 +1,189 @@
 <script>
-    import { onMount } from "svelte";
+    // No need for onMount unless doing specific mount actions
+    // import { onMount } from "svelte";
 
+    // Input props
     export let approved = 100000;
-    export let card = false;
-    let exp = formatNumber(approved);
+    export let card = false; // Keep the card prop
     export let total = 1200000;
-    let tot = formatNumber(total);
-    onMount(() => {});
+    approved = 0.5;
+    // $: automatically recalculates when approved or total changes
+    // Clamp percentage between 0 and 100
+    $: percentage =
+        total > 0 ? Math.min(100, Math.max(0, (approved / total) * 100)) : 0;
+    $: exp = formatNumber(approved);
+    $: tot = formatNumber(total);
+
     /**
      * @param {number} num
+     * Formats numbers into K/M format.
      */
     function formatNumber(num) {
         if (num < 1000) {
             return num.toString();
         } else if (num < 1000000) {
-            return (num / 1000).toFixed(num % 1000 !== 0 ? 1 : 0) + "K";
+            const thousands = num / 1000;
+            // Format with 0 or 1 decimal place
+            return (
+                thousands.toLocaleString(undefined, {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: thousands % 1 === 0 ? 0 : 1,
+                }) + "K"
+            );
         } else {
-            return (num / 1000000).toFixed(num % 1000000 !== 0 ? 1 : 0) + "M";
-        }
-    }
-    let percentage = 75;
-    let defaultMin = card === true ? 40 : 40;
-    let defaultMax = 80;
-    function getBarPercentage() {
-        if (total == 0) {
-            return 50;
-        }
-        let perc = (approved / total) * 100;
-        if (perc < 20) {
-            return defaultMin;
-        } else if (perc == 100) {
-            return 100;
-        } else if (perc > 80) {
-            return defaultMax;
-        } else {
-            return perc;
+            const millions = num / 1000000;
+            // Format with 0 or 1 decimal place
+            return (
+                millions.toLocaleString(undefined, {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: millions % 1 === 0 ? 0 : 1,
+                }) + "M"
+            );
         }
     }
 </script>
 
 {#if card}
-    <div class="bar" style="width: 95%;">
-        <div
-            class="progress"
-            style="width: {getBarPercentage()}%; height:20px; font-size:small; color:var(--tertiary-color); font-weight:400;"
-        >
-            {exp} ICP
+    <!-- Card Variant: Simpler, smaller bar -->
+    <div
+        class="funding-bar card-bar"
+        title={`Approved: ${exp} ICP / Total: ${tot} ICP`}
+    >
+        <div class="progress" style="width: {percentage}%;">
+            <!-- No text in card variant for cleaner look -->
         </div>
-        {#if window.innerWidth < 500}
-            <div class="progress2"></div>
-        {:else}
-            <div class="progress2" style="font-size:small;">
-                {tot}
-            </div>
-        {/if}
     </div>
 {:else}
-    <div class="bar">
-        <div
-            class="progress"
-            style="width: {getBarPercentage()}%; color:var(--tertiary-color); text-align:center; font-size:small "
-        >
-            Approved: {exp} ICP
+    <!-- Default Variant: More detailed -->
+    <div class="funding-bar default-bar">
+        <div class="progress" style="width: {percentage}%;">
+            {#if percentage > 5}
+                <span class="progress-text-inside">Approved: {exp} ICP</span>
+            {/if}
         </div>
-        {#if window.innerWidth < 500 && getBarPercentage() < 100}
-            <div class="progress2" style="text-align:center; font-size:small ">
-                Total: {tot} ICP
-            </div>
-        {:else if getBarPercentage() == 100}
-            <div class="progress2"></div>
-        {:else}
-            <div class="progress2">
-                {tot} ICP
-            </div>
+        {#if percentage < 100}
+            <span class="total-text-outside">Total: {tot} ICP</span>
         {/if}
     </div>
 {/if}
 
 <style>
-    .bar {
+    @keyframes shimmer {
+        0% {
+            background-position: -400px 0;
+        }
+        100% {
+            background-position: 400px 0;
+        }
+    }
+
+    .funding-bar {
+        display: flex;
+        align-items: center;
+        position: relative;
         width: 100%;
-        height: fit-content;
-        padding: 0px;
-        display: flex; /* Convertimos la barra en un contenedor flex */
-        align-items: center; /* Alineación vertical en el centro */
-        justify-content: center;
         background-color: var(--tertiary-color);
-        border-radius: 4px;
-        overflow: visible;
-        border: 1px solid var(--seventh-color);
-        font-size: small;
-        height: 35px;
+        border-radius: 8px; /* Pill shape */
+        border: 1px solid var(--ninth-color, #b9b9b9);
+        overflow: hidden;
+        box-sizing: border-box;
     }
+
+    .default-bar {
+        height: 50px;
+    }
+
+    .card-bar {
+        height: 10px; /* Make card bar much thinner */
+        border-radius: 8px;
+    }
+
     .progress {
-        height: 35px;
-        background: linear-gradient(to right, orange, orangered);
+        height: 100%;
+        /* Gradient Fill */
+        background: var(--primary-color);
+        /* Shimmer Animation */
+        background-size: 800px 100%; /* Make size larger than element for movement */
+
+        border: 2px solid var(--tenth-color);
+        border-radius: 8px; /* Match parent for pill shape */
         display: flex;
-        align-items: center; /* Vertical alignment */
-        justify-content: center; /* Horizontal alignment */
-        font-size: larger;
-        font-weight: 450;
-        border-radius: 2px;
+        align-items: center;
+        justify-content: flex-start;
+        padding-left: 5px; /* More padding */
+        box-sizing: border-box;
+        transition: width 0.5s ease-out;
+        min-width: 1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-    .progress2 {
-        flex: 1; /* Ocupará todo el espacio restante después del div progreso */
-        display: flex;
-        align-items: center; /* Alineación vertical en el centro */
-        justify-content: center; /* Alineación horizontal al centro */
-        text-align: center; /* Centra el texto dentro de cada elemento hijo si es necesario */
-        color: var(--seventh-color);
-        border-color: #e0e0e0;
-        border-width: 10px;
-        font-size: larger;
+
+    /* Ensure progress radius is flat on right when full */
+    .progress[style*="width: 100%"] {
+        border-radius: 8px;
+    }
+    /* Ensure progress radius is flat on left when empty (optional, depends on look) */
+    .progress[style*="width: 0%"] {
+        /* border-radius: 0 15px 15px 0; */ /* might look odd */
+    }
+
+    .card-bar .progress {
+        animation: none; /* Disable animation on simple card bar */
+        background: var(
+            --primary-color,
+            #ff812c
+        ); /* Solid color for card bar */
+        border-radius: 8px; /* Match card bar radius */
+    }
+
+    .progress-text-inside {
+        color: var(--tertiary-color, white);
+        background-color: var(--tenth-color);
+        padding: 4px 8px;
+        border-radius: 8px;
+        position: absolute;
+        font-size: 16px;
+        font-weight: 500; /* Slightly bolder */
+    }
+
+    .total-text-outside {
+        position: absolute;
+        right: 12px; /* More padding */
+        margin-right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--tertiary-color, #2d2d2d);
+        background-color: var(--tenth-color);
+        padding: 4px 8px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 480px) {
+        .default-bar {
+            height: 50px;
+            border-radius: 8px;
+        }
+        .progress {
+            border-radius: 8px;
+        }
+        .progress-text-inside,
+        .total-text-outside {
+            font-size: 16px;
+        }
+        .total-text-outside {
+            right: 0px;
+        }
+        .card-bar {
+            height: 8px;
+            border-radius: 8px;
+        }
+        .card-bar .progress {
+            border-radius: 8px;
+        }
     }
 </style>

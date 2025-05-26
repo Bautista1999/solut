@@ -58,47 +58,67 @@ p {
 
 h1 {
     font-family: 'Barlow';
-    font-size: x-large;
+    font-size: 30px;
     font-style: normal;
     font-weight: 600;
+
 }
 
 h2 {
     font-family: 'Barlow';
-    font-weight: 500;
+    font-size: 20px;
+    font-weight: 400;
+
 
 }
 
 h3 {
     font-family: 'Barlow';
     font-weight: 400;
-    margin-bottom: 30px;
-
 }
 
 h4 {
     font-family: 'Barlow';
     font-weight: 300;
+}
 
+@media (max-width: 768px) {
+    h1 {
+        font-size: 22px;
+    }
 
+    h2 {
+        font-size: 16px;
+    }
+
+    h3 {
+        font-size: 14px;
+    }
+
+    h4 {
+        font-size: 12px;
+    }
 }
 
 
 
 :root {
-    --primary-color: #ff6000;
+    --primary-color: #ff812c;
     /*orange*/
-    --secondary-color: #222831;
+    --secondary-color: #2d2d2d;
     /*black-ish*/
     --tertiary-color: white;
     --forth-color: #EEEEEE;
     /*white_v2 (?)*/
-    --forth-color-v2: #c7c7c7;
+    --forth-color-v2: #e8e8e8;
     --fifth-color: #FFE6C7;
     /*white-orange*/
     --sixth-color: #FFA559;
     /*white-orange*/
     --seventh-color: black;
+    --eigth-color: #454545;
+    --ninth-color: #b9b9b9;
+    --tenth-color: #df5a00;
     /*black*/
     --red-wine: #D42160;
     --sky-blue: #6bc9e1;
@@ -164,6 +184,7 @@ a:hover {
     font-family: 'Barlow';
     font-size: medium;
     height: fit-content;
+    border-radius: 8px;
 }
 
 .InputTextSmall {
@@ -172,6 +193,7 @@ a:hover {
     font-family: 'Barlow';
     font-size: medium;
     height: fit-content;
+    border-radius: 8px;
 }
 
 .userSmallProfilePicture {

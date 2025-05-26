@@ -1,8 +1,11 @@
 pub mod interface {
     use bytes::Bytes;
     use candid::CandidType; // Renaming the Candid `Deserialize`
-    use candid::{Int, Principal}; // Candid for Internet Computer serialization
+    use candid::{Int, Principal};
+    use ic_ledger_types::AccountIdentifier;
+    // Candid for Internet Computer serialization
     use serde::{Deserialize, Serialize}; // Renaming the Serde `Deserialize`
+    use std::collections::HashMap;
     #[derive(Default, CandidType, Serialize, Deserialize, Clone)]
     pub struct Product {
         pub name: String,
@@ -203,6 +206,13 @@ pub mod interface {
     }
 
     #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct Follow {
+        pub follower: String,
+        pub following: String,
+        pub follow_type: String, // Using follow_type to avoid Rust's reserved keyword 'type'
+    }
+
+    #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
     pub struct IndexResponse {
         pub element_id: String,      // Unique ID for the element
         pub title: String, // Title or username (e.g., "Blockchain for Healthcare" or "juanbautista")
@@ -225,7 +235,7 @@ pub mod interface {
         pub element_type: String, // Type of element (e.g., "topic", "idea", "user")
     }
 
-    #[derive(Default, CandidType, Serialize, Deserialize, Clone)]
+    #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
     pub struct UserProfileBasicInfo {
         pub username: String,
         pub profile_picture: String,
@@ -270,5 +280,214 @@ pub mod interface {
         pub status: String,
         pub amount_paid: u64,
         pub payment_type: String,
+        pub user: UserProfileBasicInfo,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct ClaimerInfo {
+        pub principal: Principal,
+        pub amount: u64,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct Claimers {
+        pub solution_provider: ClaimerInfo,
+        pub topic_owner: ClaimerInfo,
+        pub feature_creator: ClaimerInfo,
+        pub platform_fee: ClaimerInfo,
+        pub referral_reward: Option<ClaimerInfo>, // Optional referral reward
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct Approval {
+        pub approval_id: String,
+        pub solution_id: String,
+        pub pledge_id: String,
+        pub user_principal: Principal,
+        pub amount: u64,
+        pub transaction_number: u64,
+        pub payment_type: PaymentType,
+        pub timestamp: u64,
+        pub status: ApprovalStatus,
+        pub claimers: Claimers,
+        pub subaccount: Option<[u8; 32]>,
+        pub feature_id: String,
+    }
+
+    #[derive(CandidType, Deserialize)]
+    pub struct PledgeApproval {
+        pub pledge_id: String,
+        pub amount: u64,
+        pub transaction_number: u64,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct CompletionResult {
+        pub transaction_blocks: Vec<u64>,
+        pub approval_rate: f64,
+        pub completion_timestamp: u64,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug, PartialEq)]
+    pub enum PaymentType {
+        Crypto,
+        Fiat,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub enum ApprovalStatus {
+        Pending,
+        Completed,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct Discount {
+        pub beneficiary: Principal,
+        pub percentage: f64,
+        pub context_id: String,   // Topic/Feature/Solution ID
+        pub context_type: String, // "topic", "feature", or "solution"
+        pub active: bool,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct Referral {
+        pub inviter: Principal,
+        pub invitee: Principal,
+        pub percentage: f64,
+        pub start_date: u64,
+        pub expiration_date: u64,
+        pub active: bool,
+    }
+
+    #[derive(CandidType, Deserialize, Clone, Debug)]
+    pub struct PledgeBasicInfo {
+        pub pledge_id: String,
+        pub amount: u64,
+        pub feature_id: Option<String>,
+        pub idea_id: String,
+        pub status: String,
+    }
+
+    #[derive(CandidType, Deserialize, Clone, Debug)]
+    pub struct EnrichedApprovalData {
+        pub approval_id: String,
+        pub amount: u64,
+        pub solution: IndexResponseBasicInfo,
+        pub feature: IndexResponseBasicInfo,
+        pub pledge: Option<PledgeBasicInfo>,
+        pub created_at: u64,
+        pub status: String,
+        pub payment_type: String,
+        pub transaction_number: u64,
+        pub user: UserProfileBasicInfo,
+    }
+
+    #[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
+    pub struct RejectionData {
+        pub amount: u64,
+        pub message: Option<String>,
+        pub user_principal: Principal,
+        pub solution_id: String,
+        pub feature_id: String,
+        pub pledge_id: String,
+        pub timestamp: u64,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+    pub struct ClaimTransfer {
+        pub principal: Principal,
+        pub amount: u64,
+        pub feature_id: String,
+        pub subaccount: [u8; 32],
+        pub claimer_type: ClaimerType,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct Transaction {
+        pub sender: AccountIdentifier,
+        pub target: AccountIdentifier,
+        pub feature_id: String,
+        pub claimer_id: Principal,
+        pub claimer_type: ClaimerType,
+        pub amount: u64,
+        pub transaction_number: Option<u64>,
+        pub status: String,
+        pub message: String,
+        pub solution_id: String,
+        pub created_at: u64,
+    }
+
+    #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, CandidType, Serialize, Deserialize, Clone)]
+    pub enum ClaimerType {
+        Developer = 1,
+        Ideator = 2,
+        TopicOwner = 3,
+        Referral = 4,
+        Solutio = 5,
+    }
+
+    #[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
+    pub struct OrderedClaimTransfer {
+        pub claimer_type: ClaimerType,
+        pub transfer: ClaimTransfer,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct ClaimerInfoEnriched {
+        pub amount: u64,
+        pub user: UserBasicInfo,
+        pub type_of_claimer: String,
+    }
+
+    #[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct CompleteSolutionData {
+        // Basic Solution Info
+        pub solution: IndexResponseBasicInfo,
+
+        // Approval Metrics
+        pub approval_rate: f64,
+        pub total_pledges: u64,
+        pub approved_pledges: u64,
+        pub delivery_date: u64,
+
+        // Features
+        pub features: Vec<IndexResponseWithApproval>,
+
+        // Distribution Info
+        pub total_amount: u64,
+        pub solution_provider: ClaimerInfoEnriched,
+        pub feature_creators: Vec<ClaimerInfoEnriched>,
+        pub topic_owner: ClaimerInfoEnriched,
+        pub platform_fee: ClaimerInfo,
+
+        // Status
+        pub is_ready_for_completion: bool,
+
+        // Feature Approval Counts
+        pub feature_approval_counts: HashMap<String, u64>,
+    }
+
+    #[derive(Default, CandidType, Serialize, Deserialize, Clone, Debug)]
+    pub struct IndexResponseWithApproval {
+        pub basic_info: IndexResponseBasicInfo, // Reuse existing struct
+        pub approved_amount: u64,               // Additional field for approved amount
+    }
+
+    // Types for XMLAndLinkPreviews functionality
+    #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+    pub struct MetaTagsInput {
+        pub title: String,
+        pub description: String,
+        pub image: String,
+        pub content_type: String, // equivalent to "type" in JS (type is a reserved keyword in Rust)
+        pub url: String,
+        pub user: String, // Added user field for Twitter creator and author meta tags
+    }
+
+    #[derive(Clone, Debug, CandidType, Deserialize, Serialize)]
+    pub struct MetaTagsResult {
+        pub html: String,
+        pub success: bool,
+        pub error: Option<String>,
     }
 }

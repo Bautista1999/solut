@@ -6,12 +6,24 @@
      */
     export let notifications = [];
     export let show = false; // Controls visibility
+    export let isLoading = false; // Add loading prop
     const defaultImage =
         "https://svftd-daaaa-aaaal-adr3a-cai.icp0.io/solutio-images/logo-01.png";
 </script>
 
 <div class="popup-container {show ? 'show' : ''}">
-    {#if notifications.length > 0 || $notificationCount > 0}
+    {#if isLoading}
+        <!-- Loading skeletons -->
+        {#each Array(3) as _, i}
+            <div class="notification-item skeleton">
+                <div class="skeleton-image"></div>
+                <div class="notification-content">
+                    <div class="skeleton-title"></div>
+                    <div class="skeleton-subtitle"></div>
+                </div>
+            </div>
+        {/each}
+    {:else if notifications.length > 0 || $notificationCount > 0}
         {#each notifications as notification}
             <div class="notification-item">
                 <img
@@ -34,7 +46,6 @@
                         }
                     }}
                 />
-
                 <div class="notification-content">
                     <p class="notification-title">{notification.data.title}</p>
                     <p class="notification-subtitle">
@@ -122,5 +133,63 @@
         text-align: center;
         color: var(--secondary-color);
         font-style: italic;
+    }
+
+    /* Add skeleton loading styles */
+    .skeleton {
+        animation: pulse 1.5s infinite;
+    }
+
+    .skeleton-image {
+        width: 54px;
+        height: 54px;
+        border-radius: 4px;
+        margin-right: 10px;
+        background: linear-gradient(
+            90deg,
+            var(--forth-color-v2) 0%,
+            var(--ninth-color) 50%,
+            var(--forth-color-v2) 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+
+    .skeleton-title {
+        height: 16px;
+        width: 80%;
+        margin-bottom: 8px;
+        background: linear-gradient(
+            90deg,
+            var(--forth-color-v2) 0%,
+            var(--ninth-color) 50%,
+            var(--forth-color-v2) 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 4px;
+    }
+
+    .skeleton-subtitle {
+        height: 14px;
+        width: 60%;
+        background: linear-gradient(
+            90deg,
+            var(--forth-color-v2) 0%,
+            var(--ninth-color) 50%,
+            var(--forth-color-v2) 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 4px;
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: 200% 0;
+        }
+        100% {
+            background-position: -200% 0;
+        }
     }
 </style>

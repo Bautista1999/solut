@@ -25,7 +25,7 @@
 
 <div class="Subtitle">
     {#if !editSubtitle}
-        <div>{subtitle}</div>
+        <h2 style="margin: 0px;">{subtitle}</h2>
         {#if owner == $UserKey}
             <div class="actions">
                 <IconButton someFunction={onEditSubtitle} icon={"edit"} />

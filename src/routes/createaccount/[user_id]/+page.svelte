@@ -3,12 +3,13 @@
     import BasicButtonDarkLarger from "$lib/components/BasicButtonDarkLarger.svelte";
     import BasicButtonLarger from "$lib/components/BasicButtonLarger.svelte";
     import BasicButtonDarkSmall from "$lib/components/BasicButton_Dark_Small.svelte";
-    import { authSubscribe } from "@junobuild/core-peer";
+    import { authSubscribe } from "@junobuild/core";
     import { onMount } from "svelte";
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
     import { setUser } from "$lib/data_functions/create_functions";
     import LoadingNew from "$lib/components/LoadingNew.svelte";
     import SuccessNew from "$lib/components/Success_New.svelte";
+    // @ts-ignore
     import { getNames } from "country-list";
     import { usernameExists } from "$lib/data_functions/get_functions";
     import SingleImageUploader from "$lib/components/SingleImageUploader.svelte";
@@ -16,6 +17,7 @@
     const countries = getNames();
 
     /** @type {import('./$types').PageData} */
+    // @ts-ignore
     export let data;
 
     let username = "";

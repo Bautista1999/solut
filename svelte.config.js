@@ -19,6 +19,10 @@ const config = {
         '/profile/[user_id]',
         '/signin/[inviter_key]',
         '/solution/[solution_id]',
+        '/solution/[solution_id]/approvals',
+        '/completesolution/[solution_id]',
+        '/approvesolution/[solution_id]',
+
       ],
     },
   }

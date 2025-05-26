@@ -1,31 +1,19 @@
+use crate::config::currency::MIN_PLEDGE_AMOUNT;
+use crate::indexed_queries::get_element_enriched_data;
 use crate::notifications::send_single_notification;
 use crate::quickqueries::get_doc_owner;
 use crate::reputation::get_user_reputation;
-use crate::types::interface::{IndexSearch, Notification, PledgeData, PledgeUser, TotalPledging};
-use crate::user_information::{get_available_balance, get_user_profile_pic, get_user_username};
-use crate::{delete_pledge, get_document_description_or_default, get_document_version_or_default};
-use base64::encode; // make sure to add `base64` to dependencies in Cargo.toml
-use bytes::Bytes;
-use candid::{CandidType, Int, Nat, Principal};
-use ic_cdk::api::{self, call, set_global_timer, time};
-use ic_cdk::spawn;
-use ic_cdk_macros::{query, update};
-use junobuild_satellite::{
-    count_docs_store, delete_asset_store, delete_assets_store, delete_doc_store, get_doc_store,
-    get_many_docs, list_docs_store, log, set_asset_handler, set_doc_store, DelDoc, Doc, Key,
-    SetDoc,
+use crate::types::interface::{Notification, PledgeData, PledgeUser, TotalPledging};
+use crate::user_information::{
+    get_available_balance_without_pledged_amount, get_user_profile_pic, get_user_username,
 };
-use junobuild_shared::types::list::ListParams;
-use junobuild_storage::http::types::HeaderField;
-use junobuild_storage::types::store::AssetKey;
-use junobuild_storage::well_known::update;
+use crate::{delete_pledge, get_document_description_or_default, get_document_version_or_default};
+use candid::Principal;
+use ic_cdk::{caller, spawn};
+use ic_cdk_macros::update;
+use junobuild_satellite::{get_many_docs, log, set_doc_store, Doc, SetDoc};
+use junobuild_shared::types::core::Key;
 use junobuild_utils::{decode_doc_data, encode_doc_data};
-use regex::Regex;
-use serde_json::json;
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::convert::TryFrom;
-use std::iter::Filter;
 
 // Main pledge creation function
 #[update]
@@ -43,8 +31,11 @@ pub fn pledge_create(
     if idea_id.trim().is_empty() {
         return "idea_id is empty".to_string();
     }
+    if amount < MIN_PLEDGE_AMOUNT {
+        return "Minimum pledge amount is 1 ICP".to_string();
+    }
 
-    let caller = api::caller();
+    let caller = caller();
     if caller == Principal::anonymous() {
         return "Anonymous users cannot create pledges.".to_string();
     }
@@ -145,7 +136,9 @@ pub fn pledge_create(
     let user_id = Principal::to_text(&caller);
     spawn(async move {
         match validate_user_balance_or_delete_pledge(user_id, amount, doc_key.clone()).await {
-            Ok(_) => (),
+            Ok(_) => {
+                send_pledge_notifications(&caller.clone(), &idea_id, Some(&feature_id), amount);
+            }
             Err(e) => {
                 log(format!(
                     "Error in validate_user_balance_or_delete_pledge: {}",
@@ -155,7 +148,6 @@ pub fn pledge_create(
         }
     });
 
-    send_pledge_notifications(&caller.clone(), &idea_id, Some(&feature_id), amount);
     "Pledge created successfully!".to_string()
 }
 
@@ -464,18 +456,19 @@ pub async fn validate_user_balance_or_delete_pledge(
     amount: u64,
     pledge_id: String,
 ) -> Result<(), String> {
-    let balance = match get_available_balance(user_id.clone()).await {
+    let balance = match get_available_balance_without_pledged_amount(user_id.clone(), amount).await
+    {
         Ok(balance) => balance,
         Err(err) => {
             return Err(format!("Failed to fetch balance: {}", err));
         }
     };
+    let username = get_user_username(user_id.clone());
     if balance < amount {
-        log("User has not sufficient funds!".to_string());
+        log(format!("User {} has not sufficient funds!", username));
         delete_pledge(pledge_id.to_string());
         return Err("User has insufficient funds.".to_string());
     }
-    log("User has funds!".to_string());
     Ok(())
 }
 
@@ -583,19 +576,25 @@ fn send_pledge_notifications(
     amount: u64,
 ) -> Result<(), String> {
     let user_id = Principal::to_text(caller);
+    let topic_title = match get_element_enriched_data("idea".to_string(), idea_id.to_string()) {
+        Ok(topic) => topic.title,
+        Err(err) => "Unknown topic".to_string(),
+    };
     let username = get_user_username(user_id.clone());
     let image = get_user_profile_pic(user_id.clone());
     let amount_string = format!("{:.1}", amount as f64 / 100_000_000.0);
     let title = "New pledge!".to_string();
     let subtitle_idea = format!(
-        "{} has pledged {} ICP into your topic.",
+        "{} has pledged {} ICP into the topic: {}",
         username.clone(),
-        amount_string.clone()
+        amount_string.clone(),
+        topic_title.clone()
     );
     let description = format!(
-        "{} has pledged {} ICP into your topic.",
+        "{} has pledged {} ICP into the topic: {}",
         username.clone(),
-        amount_string.clone()
+        amount_string.clone(),
+        topic_title.clone()
     );
     let type_of = "Pledge".to_string();
     let link_url_feature = match feature_id {
@@ -623,15 +622,23 @@ fn send_pledge_notifications(
     match feature_id {
         None => {}
         Some(feature) => {
+            let feature_title =
+                match get_element_enriched_data("feature".to_string(), feature.to_string()) {
+                    Ok(feature) => feature.title,
+                    Err(err) => "Unknown idea".to_string(),
+                };
+
             let subtitle_feature = format!(
-                "{} has pledged {} ICP into your idea.",
+                "{} has pledged {} ICP into the idea: {}",
                 username.clone(),
-                amount_string.clone()
+                amount_string.clone(),
+                feature_title.clone()
             );
             let description_feature = format!(
-                "{} has pledged {} ICP into your idea.",
+                "{} has pledged {} ICP into the idea: {}",
                 username.clone(),
-                amount_string.clone()
+                amount_string.clone(),
+                feature_title.clone()
             );
             let feature_owner_notification: Notification = Notification {
                 title: title.clone(),

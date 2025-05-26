@@ -1,16 +1,17 @@
-use crate::{delete_many_images, eliminate_idea, get_document_version_or_default};
+use crate::{delete_many_images, get_document_version_or_default};
 use candid::Principal;
 use ic_cdk::api::{self, time};
 use junobuild_satellite::delete_doc_store;
 use junobuild_satellite::{
-    get_doc_store, list_assets_store, list_docs_store, log, DelDoc, Doc, Key,
+    get_doc_store, list_assets_store, list_docs_store, log, DelDoc, Doc,
 };
 use junobuild_shared::types::list::{
-    ListMatcher, ListOrder, ListOrderField, ListParams, ListResults, TimestampMatcher,
+    ListOrder, ListOrderField, ListParams, ListResults,
 };
-use junobuild_storage::{http::types::HeaderField, types::interface::AssetNoContent};
+use junobuild_storage::{ types::interface::AssetNoContent};
 use regex::Regex;
-use std::{cell::RefCell, fmt::format};
+use std::{cell::RefCell};
+use junobuild_shared::types::core::Key;
 
 thread_local! {
     static LAST_TIME: RefCell<u64> = RefCell::new(0); // Stores the last execution timestamp

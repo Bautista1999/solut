@@ -11,21 +11,51 @@
         signIn,
         InternetIdentityProvider,
         NFIDProvider,
-    } from "@junobuild/core-peer";
+    } from "@junobuild/core";
     import { isRegistered } from "$lib/data_functions/user.functions";
     import ErrorMessage from "$lib/components/ErrorMessage.svelte";
-    import { GoToPath } from "$lib/stores/redirect_store";
     import { DAYS } from "$lib/signin_functions/user_signin_functions";
 
-    // Accessing the parameter
+    // Accessing the parameters
+    /** @type {string | null} */
     let inviteCode;
     $: inviteCode = $page.url.searchParams.get("invite");
+
+    // Add returnTo URL parameter handling
+    /** @type {string | null} */
+    let returnTo;
+    $: returnTo = $page.url.searchParams.get("returnTo");
+
     /** @type {import('./$types').PageData} */
     // @ts-ignore
     export let data;
     let code = "";
     let error = false;
     let errorMsg = "Error: Sign in failed. Refresh to try again.";
+
+    /**
+     * @param {import('@junobuild/core').User | null} user
+     */
+    async function handleSuccessfulAuth(user) {
+        if (user == null) {
+            error = true;
+        } else {
+            let isReg = await isRegistered(user.key);
+            if (isReg) {
+                console.log("User key: ", user.key);
+                // Use returnTo URL if available, otherwise go to home
+                if (returnTo) {
+                    window.location.href = decodeURIComponent(returnTo);
+                } else {
+                    window.location.href = "/";
+                }
+            } else {
+                console.log("User key: ", user.key);
+                goto("/createaccount/" + user.key);
+            }
+        }
+    }
+
     async function logIn() {
         try {
             await signIn({
@@ -34,30 +64,13 @@
                 }),
                 maxTimeToLive: BigInt(DAYS * 24 * 60 * 60 * 1000 * 1000 * 1000),
             });
-            await authSubscribe(async (user) => {
-                if (user == null) {
-                    error = true;
-                } else {
-                    let isReg = await isRegistered(user.key);
-                    switch (isReg) {
-                        case true:
-                            console.log("User key: ", user.key);
-                            GoToPath();
-                            // location.reload();
-                            break;
-                        case false:
-                            console.log("User key: ", user.key);
-                            goto("/createaccount/" + user.key);
-                            // location.reload();
-                            break;
-                    }
-                }
-            });
+            await authSubscribe(handleSuccessfulAuth);
         } catch (e) {
             error = true;
             errorMsg = String(e);
         }
     }
+
     async function logInNFID() {
         try {
             await signIn({
@@ -67,25 +80,7 @@
                 }),
                 maxTimeToLive: BigInt(DAYS * 24 * 60 * 60 * 1000 * 1000 * 1000),
             });
-            await authSubscribe(async (user) => {
-                if (user == null) {
-                    error = true;
-                } else {
-                    let isReg = await isRegistered(user.key);
-                    switch (isReg) {
-                        case true:
-                            console.log("User key: ", user.key);
-                            GoToPath();
-                            // location.reload();
-                            break;
-                        case false:
-                            console.log("User key: ", user.key);
-                            goto("/createaccount/" + user.key);
-                            // location.reload();
-                            break;
-                    }
-                }
-            });
+            await authSubscribe(handleSuccessfulAuth);
         } catch (e) {
             error = true;
             errorMsg = String(e);
@@ -120,7 +115,7 @@
 {:else if error}
     <ErrorMessage
         message={"Sign in failed"}
-        error={errorMsg}
+        error={"Error: Sign in failed. Refresh to try again."}
         someFunction={() => {
             error = false;
         }}

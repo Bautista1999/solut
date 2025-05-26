@@ -37,6 +37,21 @@
             </ul>
         </div>
 
+        <!-- Add the image here -->
+        <div class="footer-section logo">
+            <a
+                href="https://internetcomputer.org"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <img
+                    src="/poweredbyinternetcomputer.png"
+                    alt="Powered by Internet Computer"
+                    class="powered-by-logo"
+                />
+            </a>
+        </div>
+
         <!-- <div class="footer-section subscribe">
             <h3>SUBSCRIBE</h3>
             <p class="TextContrast">
@@ -60,8 +75,9 @@
             --secondary-color
         ); /* Adapt to match your color theme */
         color: #fff;
-        padding: 2rem;
-        padding-block: 0.5rem;
+        padding: 10px;
+        padding-block: 20px;
+        padding-inline: 20px;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -70,19 +86,24 @@
     .footer-content {
         display: flex;
         width: 100%;
-        justify-content: space-between;
+        justify-content: space-between; /* Ensures space between about section and logo */
+        align-items: center; /* Vertically align items */
     }
 
-    /* .footer-section {
-        display: flex;
-        flex-direction: column;
-        color: var(--tertiary-color);
-    } */
     .footer-section {
         display: flex;
         flex-direction: row;
+        align-items: center; /* Align items vertically within sections */
         color: var(--tertiary-color);
-        gap: 15%;
+    }
+
+    .footer-section.about {
+        gap: 15%; /* Keep gap for the about section */
+    }
+
+    .footer-section.logo {
+        justify-content: flex-end; /* Align logo content to the right */
+        flex-grow: 1; /* Allow logo section to take remaining space */
     }
 
     .about ul {
@@ -98,28 +119,40 @@
         color: var(--primary-color);
     }
 
-    @media (max-width: 480px) {
-        .footer-section {
-            display: flex;
-            flex-direction: row;
-            color: var(--tertiary-color);
-            gap: 0%;
-        }
+    .powered-by-logo {
+        height: 60px; /* Adjust size as needed */
+        width: auto;
+        margin-left: 1rem; /* Add some space to the left */
+    }
+
+    @media (max-width: 768px) {
+        /* Adjust breakpoint if needed */
         .footer-content {
-            display: flex;
+            flex-direction: column; /* Stack sections vertically */
+            align-items: center; /* Center items */
+            gap: 1rem; /* Add gap between stacked sections */
+        }
+        .footer-section.about {
+            gap: 1rem; /* Adjust gap for smaller screens */
             justify-content: center;
-            align-items: center;
+        }
+        .footer-section.logo {
+            justify-content: center; /* Center logo */
             width: 100%;
         }
-        .site-footer {
-            background-color: var(
-                --secondary-color
-            ); /* Adapt to match your color theme */
-            color: #fff;
-            padding: 0rem;
-            display: flex;
-            justify-content: center;
+        .powered-by-logo {
+            margin-left: 0; /* Remove left margin when stacked */
+        }
+    }
+
+    @media (max-width: 480px) {
+        .footer-section.about {
+            flex-direction: column; /* Stack title and list vertically */
             align-items: center;
+            gap: 0.5rem;
+        }
+        .site-footer {
+            padding: 1rem;
         }
     }
 </style>

@@ -1,34 +1,26 @@
+use crate::config::controllers::CONTROLLER_ID;
 use crate::reputation::get_user_reputation;
 use crate::types::interface::{
     Activity, IndexResponseBasicInfo, PledgeData, User, UserBasicInfo, UserProfileBasicInfo,
 };
-use crate::{delete_many_images, eliminate_idea, get_document_version_or_default};
+use crate::{get_document_description_or_default, get_document_version_or_default};
 use candid::Principal;
-use ic_cdk::api::{self, time};
+use ic_cdk::caller;
 use ic_cdk_macros::{query, update};
-use ic_ledger_types::{
-    AccountBalanceArgs, AccountIdentifier, Subaccount, Tokens, DEFAULT_SUBACCOUNT,
-};
-use junobuild_satellite::delete_doc_store;
+use ic_ledger_types::{AccountIdentifier, Tokens, DEFAULT_SUBACCOUNT};
 use junobuild_satellite::{
-    get_doc_store, list_assets_store, list_docs_store, log, DelDoc, Doc, Key,
+    error_with_data, get_doc_store, list_docs_store, set_doc_store, Doc, SetDoc,
 };
-use junobuild_shared::types::list::{
-    ListMatcher, ListOrder, ListOrderField, ListParams, ListResults, TimestampMatcher,
-};
-use junobuild_storage::{http::types::HeaderField, types::interface::AssetNoContent};
-use junobuild_utils::decode_doc_data;
-use regex::Regex;
-use serde_bytes::ByteBuf;
+use junobuild_shared::types::list::{ListMatcher, ListParams, ListResults};
+use junobuild_utils::{decode_doc_data, encode_doc_data};
 use std::collections::HashSet;
-use std::{cell::RefCell, fmt::format};
 
 //TODO: Take into account that these pledges are inactive even if the solution hasnt implemented the IDEA targeted in the pledge.
 // ---> For example. A user targeted "idea a" on his pledge, but the developer only implemented "idea b".
 //      In this case, that pledge is counted as inactive.
 #[query]
 pub fn get_user_active_pledges(user_id: String) -> Result<Vec<PledgeData>, String> {
-    let caller = api::caller();
+    let caller = caller();
     let caller_text = Principal::to_text(&caller);
     // if (caller_text != user_id) {
     //     return Err(format!("Permission denied!"));
@@ -62,6 +54,11 @@ pub fn get_user_active_pledges(user_id: String) -> Result<Vec<PledgeData>, Strin
         let pledge_data: PledgeData = {
             let json: serde_json::Value =
                 decode_doc_data(&pledge_doc.data).unwrap_or(serde_json::json!({}));
+            let is_active = json
+                .get("status")
+                .and_then(|v| v.as_str())
+                .unwrap_or("active")
+                == "active";
 
             PledgeData {
                 amount: json.get("amount").and_then(|v| v.as_u64()).unwrap_or(0),
@@ -178,15 +175,15 @@ pub fn get_user_active_pledges(user_id: String) -> Result<Vec<PledgeData>, Strin
             };
 
             // Check the description for the status: if it contains "completed" or "delivered", skip this pledge
-            if let Some(status_doc) = solution_status_doc {
-                let status_description = status_doc.description.unwrap_or_default().to_lowercase();
+            // if let Some(status_doc) = solution_status_doc {
+            //     let status_description = status_doc.description.unwrap_or_default().to_lowercase();
 
-                if status_description.contains("completed")
-                    || status_description.contains("delivered")
-                {
-                    continue; // Skip pledge if target solution is inactive
-                }
-            }
+            //     if status_description.contains("completed")
+            //         || status_description.contains("delivered")
+            //     {
+            //         continue; // Skip pledge if target solution is inactive
+            //     }
+            // }
 
             // If solution is active, add pledge to active pledges
             active_pledges.push(pledge_data);
@@ -201,7 +198,7 @@ pub fn get_user_active_pledges(user_id: String) -> Result<Vec<PledgeData>, Strin
 
 #[query]
 pub fn get_user_total_pledges(user_id: String) -> Result<Vec<PledgeData>, String> {
-    let caller = api::caller();
+    let caller = caller();
     let caller_text = Principal::to_text(&caller);
     // if (caller_text != user_id) {
     //     return Err(format!("Permission denied!"));
@@ -303,7 +300,7 @@ fn extract_parent_topic_id(description: &str) -> Option<String> {
 
 #[query]
 pub fn get_pledged_balance(user_id: String) -> Result<u64, String> {
-    let caller = api::caller();
+    let caller = caller();
     let caller_text = Principal::to_text(&caller);
     // if (caller_text != user_id) {
     //     return Err(format!("Permission denied!"));
@@ -323,7 +320,7 @@ pub fn get_pledged_balance(user_id: String) -> Result<u64, String> {
 
 #[query]
 pub fn get_historical_pledged_balance(user_id: String) -> Result<u64, String> {
-    let caller = api::caller();
+    let caller = caller();
     let caller_text = Principal::to_text(&caller);
     // if (caller_text != user_id) {
     //     return Err(format!("Permission denied!"));
@@ -334,18 +331,56 @@ pub fn get_historical_pledged_balance(user_id: String) -> Result<u64, String> {
         Err(e) => return Err(format!("Error retrieving active pledges: {}", e)),
     };
 
-    // Step 2: Calculate the total pledged amount
+    // Step 2: Calculate the total pledged
     let total_balance: u64 = active_pledges.iter().map(|pledge| pledge.amount).sum();
 
     // Step 3: Return the total pledged balance
     Ok(total_balance)
 }
 
+#[update]
+pub async fn get_available_balance_without_pledged_amount(
+    user_id: String,
+    pledged_amount: u64,
+) -> Result<u64, String> {
+    use ic_cdk::api; // Ensure you have the correct import for `caller`
+
+    let caller = caller(); // Get the caller principal
+    let caller_text = Principal::to_text(&caller);
+
+    // Check if the caller is authorized
+    if caller_text != user_id {
+        return Err(format!("Permission denied!"));
+    }
+
+    // Call the asynchronous function to fetch the real balance
+    let balance = get_user_real_balance(user_id.clone())
+        .await
+        .map_err(|e| format!("Failed to retrieve user balance: {}", e))?;
+    let pledged_balance: u64 = match get_pledged_balance(user_id.clone()) {
+        Ok(b) => {
+            if b >= pledged_amount {
+                b - pledged_amount
+            } else {
+                0
+            }
+        }
+        Err(err) => 0,
+    };
+
+    if balance > pledged_balance {
+        return Ok(balance - pledged_balance);
+    } else {
+        return Ok(0);
+    }
+    Ok(balance)
+}
+
 #[update] // Use #[update] for async functions
 pub async fn get_available_balance(user_id: String) -> Result<u64, String> {
-    use ic_cdk::api; // Ensure you have the correct import for `api::caller`
+    use ic_cdk::api; // Ensure you have the correct import for `caller`
 
-    let caller = api::caller(); // Get the caller principal
+    let caller = caller(); // Get the caller principal
     let caller_text = Principal::to_text(&caller);
 
     // Check if the caller is authorized
@@ -394,7 +429,7 @@ pub async fn get_user_real_balance(user_id: String) -> Result<u64, String> {
 
 #[query]
 pub fn get_user_username(user_id: String) -> String {
-    let caller = api::caller();
+    let caller = caller();
     let doc = match get_doc_store(caller, "user".to_string(), user_id.clone()) {
         Ok(None) => return user_id.clone(),
         Ok(Some(doc)) => {
@@ -411,7 +446,7 @@ pub fn get_user_username(user_id: String) -> String {
 
 #[query]
 pub fn get_user_profile_pic(user_id: String) -> String {
-    let caller = api::caller();
+    let caller = caller();
     let doc = match get_doc_store(caller, "user".to_string(), user_id.clone()) {
         Ok(None) => return "https://cdn-icons-png.freepik.com/512/8792/8792047.png".to_string(),
         Ok(Some(doc)) => {
@@ -430,7 +465,7 @@ pub fn get_user_following(
     user_id: String,
     follow_type: Option<String>,
 ) -> Result<Vec<String>, String> {
-    let caller = api::caller();
+    let caller = caller();
 
     // Filter to find documents where the key starts with "{user_id}_"
     let filter = ListParams {
@@ -511,7 +546,7 @@ pub fn get_user_following(
 }
 
 fn get_user_followers(user_id: String) -> Result<Vec<String>, String> {
-    let caller = api::caller();
+    let caller = caller();
 
     // Filter to find documents where the key ends with "_{user_id}"
     let filter = ListParams {
@@ -627,7 +662,7 @@ pub fn get_paginated_following_elements(
     offset: Option<usize>,
     limit: Option<usize>,
 ) -> Result<(Vec<IndexResponseBasicInfo>, usize, usize, usize), String> {
-    let caller = api::caller();
+    let caller = caller();
     let offset = offset.unwrap_or(0);
     let limit = limit.unwrap_or(20);
 
@@ -654,11 +689,11 @@ pub fn get_paginated_following_elements(
 
             // Extract `following` and `type` fields
             let following_id = decoded_data.get("following")?.as_str()?.to_string();
-            let element_type = decoded_data
-                .get("type")?
-                .as_str()?
-                .to_string()
-                .to_lowercase();
+            let element_type = match decoded_data.get("type").and_then(|v| v.as_str()) {
+                Some(t) => t.to_string(),
+                None => decoded_data.get("follow_type")?.as_str()?.to_string(),
+            }
+            .to_lowercase();
 
             Some((following_id, element_type))
         })
@@ -735,7 +770,7 @@ pub fn get_paginated_followers(
     offset: Option<usize>,
     limit: Option<usize>,
 ) -> Result<(Vec<IndexResponseBasicInfo>, usize, usize, usize), String> {
-    let caller = api::caller();
+    let caller = caller();
     let offset = offset.unwrap_or(0);
     let limit = limit.unwrap_or(20);
 
@@ -760,14 +795,17 @@ pub fn get_paginated_followers(
                 Err(_) => return None, // Skip invalid documents
             };
 
-            // Extract the `follower` field if the type is "user"
             let follower_id = decoded_data.get("follower")?.as_str()?.to_string();
-            let element_type = decoded_data.get("type")?.as_str()?.to_lowercase();
+
+            let element_type = match decoded_data.get("type").and_then(|v| v.as_str()) {
+                Some(t) => t.to_string(),
+                None => decoded_data.get("follow_type")?.as_str()?.to_string(),
+            };
 
             if element_type == "user" {
                 Some(follower_id)
             } else {
-                None // Only include followers of type "user"
+                None
             }
         })
         .collect();
@@ -826,8 +864,8 @@ pub fn get_paginated_followers(
 
 #[query]
 pub fn get_user_basic_information(user_id: String) -> Result<UserBasicInfo, String> {
-    use ic_cdk::api::caller;
-    let caller = api::caller();
+    use ic_cdk::caller;
+    let caller = caller();
 
     // Initialize default UserBasicInfo
 
@@ -894,9 +932,9 @@ pub fn get_user_basic_information(user_id: String) -> Result<UserBasicInfo, Stri
         Ok(amount) => amount,
         Err(err) => return Err(err), // Default to 0 if an error occurs
     };
-
+    let user_principal = Principal::from_text(user_key.clone()).unwrap();
     // Step 6: Fetch user reputation
-    user_info.reputation = match get_user_reputation(caller) {
+    user_info.reputation = match get_user_reputation(user_principal) {
         Ok(reputation) => reputation,
         Err(_) => 0, // Default to 0 if an error occurs
     };
@@ -910,7 +948,7 @@ pub fn get_paginated_most_recent_activities(
     offset: Option<usize>,
     limit: Option<usize>,
 ) -> Result<(Vec<Activity>, usize, usize, usize), String> {
-    let caller = api::caller();
+    let caller = caller();
     let offset = offset.unwrap_or(0);
     let limit = limit.unwrap_or(12);
     let username = get_user_username(user_id.clone());
@@ -962,7 +1000,7 @@ pub fn get_paginated_most_recent_activities(
                     creator_username: username.clone(),
                     creator_id: user_id.clone(),
                     profile_image: profile_image.clone(),
-                    activity_image: None, // Pledges don’t have images
+                    activity_image: None, // Pledges don't have images
                     activity_title: activity_title.clone(),
                     created_at: doc.created_at,
                     description: format!(
@@ -1101,7 +1139,7 @@ pub fn get_paginated_most_recent_activities(
 }
 
 pub fn get_userid_by_id_or_username(user_prop: String) -> String {
-    let caller = api::caller();
+    let caller = caller();
     let collection = "user".to_string();
 
     // Step 1: Attempt to find the user document directly by key
@@ -1127,4 +1165,107 @@ pub fn get_userid_by_id_or_username(user_prop: String) -> String {
 
     // Step 3: If no matches found, return the input `user_prop` as fallback
     user_prop
+}
+
+#[update]
+pub fn set_user_notification_as_read(notification_id: String) -> Result<(), String> {
+    let caller = caller();
+    let caller_text = caller.to_text();
+    let collection = "notification".to_string();
+    let controller = Principal::from_text(CONTROLLER_ID).unwrap();
+    // Handle the result of get_doc_store properly
+    let notification_doc =
+        match get_doc_store(caller.clone(), collection.clone(), notification_id.clone()) {
+            Ok(Some(doc)) => doc,
+            Ok(None) => return Err(format!("Notification {} not found", notification_id)),
+            Err(e) => return Err(format!("Error retrieving notification: {}", e)),
+        };
+
+    // Verify that the notification belongs to the caller
+    let notification_owner = notification_doc.description.unwrap_or_default();
+    if !notification_owner.contains(&caller_text) {
+        return Err("You don't have permission to update this notification".to_string());
+    }
+
+    // Decode the document data
+    let mut data: serde_json::Value = match decode_doc_data(&notification_doc.data) {
+        Ok(data) => data,
+        Err(e) => return Err(format!("Error decoding notification data: {}", e)),
+    };
+
+    // Update the 'read' field
+    data["read"] = serde_json::json!(true);
+
+    // Encode the updated data
+    let encoded_data = match encode_doc_data(&data) {
+        Ok(encoded) => encoded,
+        Err(e) => return Err(format!("Error encoding notification data: {}", e)),
+    };
+    let version = get_document_version_or_default(collection.clone(), notification_id.clone())?;
+    let description =
+        get_document_description_or_default(collection.clone(), notification_id.clone());
+    // Create the update document
+    let update_doc = SetDoc {
+        data: encoded_data,
+        description: Some(description),
+        version: Some(version),
+    };
+
+    // Update the document in the store
+    match set_doc_store(
+        controller,
+        collection.clone(),
+        notification_id.clone(),
+        update_doc,
+    ) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(format!("Error updating notification: {}", e)),
+    }
+}
+
+#[update]
+pub fn set_all_user_notifications_as_read() -> Result<(), String> {
+    let caller = caller();
+    let caller_text = caller.to_text();
+    let collection = "notification".to_string();
+
+    // Filter notifications for this user
+    let filter = ListParams {
+        matcher: Some(ListMatcher {
+            description: Some(caller_text),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    // Get the user's notifications and handle the Result
+    let notifications = match list_docs_store(caller.clone(), collection.clone(), &filter) {
+        Ok(results) => results,
+        Err(e) => return Err(format!("Failed to list notifications: {}", e)),
+    };
+
+    // Iterate through notification items correctly
+    for (notification_id, _) in notifications.items {
+        match set_user_notification_as_read(notification_id.clone()) {
+            Ok(_) => {}
+            Err(e) => {
+                // Log the error but continue with other notifications
+                let error_data = serde_json::json!({
+                    "notification_id": notification_id,
+                    "error": e
+                });
+
+                // Log the error using error_with_data
+                if let Err(log_err) = error_with_data(
+                    "Failed to set notification as read".to_string(),
+                    &error_data,
+                ) {
+                    // If logging fails, we still continue but print to debug output
+                    ic_cdk::println!("Error logging failure: {}", log_err);
+                }
+            }
+        }
+    }
+
+    Ok(())
 }

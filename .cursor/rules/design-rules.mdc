@@ -1,0 +1,9 @@
+---
+description: Design rules for UI
+globs: *.svelte
+alwaysApply: true
+---
+
+# Your rule content
+
+For every UI update, make sure to check [global.styles.css](mdc:src/routes/global.styles.css) and match our styling. You can also check the [BasicButtonDarkLarger.svelte](mdc:src/lib/components/BasicButtonDarkLarger.svelte) or [CardPreview.svelte](mdc:src/lib/components/CardPreview.svelte), to get the idea of the styling.

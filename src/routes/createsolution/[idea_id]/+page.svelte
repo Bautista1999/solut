@@ -11,7 +11,7 @@
     import TagsDisplay from "$lib/components/TagsDisplay.svelte";
     import TimelineEdit from "$lib/components/TimelineEdit.svelte";
     import { onMount } from "svelte";
-    import { getDoc } from "@junobuild/core-peer";
+    import { getDoc } from "@junobuild/core";
     import { setSolution } from "$lib/data_functions/create_functions";
     import { CheckIfSignedIn } from "$lib/signin_functions/user_signin_functions";
     import { path } from "$lib/stores/redirect_store";
@@ -138,6 +138,7 @@
     let id = nanoid();
     async function onPost() {
         document.body.scrollIntoView({ behavior: "smooth" });
+        loadingMsg = "Uploading data...";
         isLoading = true;
         // Check if the fields are empty and set the flags accordingly
         if (title == "") {
@@ -269,7 +270,8 @@
             <div slot="additional-fields">
                 <div class="form-section">
                     <label for="ideasSelected"
-                        >Which ideas are you going to be solving?</label
+                        >Which ideas are you going to be solving? Select at
+                        least one.</label
                     >
                     <SearchBarLarger
                         bind:ideas
@@ -308,7 +310,10 @@
         <SuccessNew
             message={"Solution created successfully"}
             someFunction={() => {
-                goto("/solution/" + solutionKey);
+                const returnPath = encodeURIComponent(
+                    "/solution/" + solutionKey,
+                );
+                window.location.href = `/solution/${solutionKey}`;
             }}
         />
     {:else if error}
