@@ -331,7 +331,7 @@ pub fn get_historical_pledged_balance(user_id: String) -> Result<u64, String> {
         Err(e) => return Err(format!("Error retrieving active pledges: {}", e)),
     };
 
-    // Step 2: Calculate the total pledged amount
+    // Step 2: Calculate the total pledged
     let total_balance: u64 = active_pledges.iter().map(|pledge| pledge.amount).sum();
 
     // Step 3: Return the total pledged balance
