@@ -325,7 +325,7 @@ pub fn get_historical_pledged_balance(user_id: String) -> Result<u64, String> {
     // if (caller_text != user_id) {
     //     return Err(format!("Permission denied!"));
     // }
-    // Step 1: Get all active pledges for the user
+    // Step 1: Get all active pledges
     let active_pledges = match get_user_total_pledges(user_id) {
         Ok(pledges) => pledges,
         Err(e) => return Err(format!("Error retrieving active pledges: {}", e)),
