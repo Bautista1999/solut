@@ -1219,3 +1219,68 @@ export async function getElementType(element_id){
     }
     
 }
+
+/**
+ * Get paginated community activities (all users)
+ * @param {number} page - Page number (0-based)
+ * @param {number} itemsPerPage - Number of items per page
+ * @return {Promise<{activities: import("../../declarations/satellite/satellite.did").Activity[], hasMore: boolean, totalCount: number}>}
+ */
+export async function getCommunityActivities(page = 0, itemsPerPage = 10) {
+    const { getPaginatedMostRecentActivities } = await import("../../declarations/satellite/satellite.api");
+    
+    try {
+        const result = await getPaginatedMostRecentActivities(
+            "", // Empty string for community-wide activities
+            page === 0 ? [] : [BigInt(page * itemsPerPage)],
+            page === 0 ? [] : [BigInt(itemsPerPage)]
+        );
+
+        if ("Ok" in result) {
+            const [activities, currentCount, totalCount, maxId] = result.Ok;
+            return {
+                activities,
+                hasMore: activities.length === itemsPerPage && (page + 1) * itemsPerPage < Number(totalCount),
+                totalCount: Number(totalCount)
+            };
+        } else {
+            throw new Error(result.Err);
+        }
+    } catch (error) {
+        console.error("Error fetching community activities:", error);
+        throw error;
+    }
+}
+
+/**
+ * Get paginated user activities (specific user)
+ * @param {string} userId - User ID to get activities for
+ * @param {number} page - Page number (0-based)
+ * @param {number} itemsPerPage - Number of items per page
+ * @return {Promise<{activities: import("../../declarations/satellite/satellite.did").Activity[], hasMore: boolean, totalCount: number}>}
+ */
+export async function getUserActivities(userId, page = 0, itemsPerPage = 10) {
+    const { getPaginatedMostRecentActivities } = await import("../../declarations/satellite/satellite.api");
+    
+    try {
+        const result = await getPaginatedMostRecentActivities(
+            userId,
+            page === 0 ? [] : [BigInt(page * itemsPerPage)],
+            page === 0 ? [] : [BigInt(itemsPerPage)]
+        );
+
+        if ("Ok" in result) {
+            const [activities, currentCount, totalCount, maxId] = result.Ok;
+            return {
+                activities,
+                hasMore: activities.length === itemsPerPage && (page + 1) * itemsPerPage < Number(totalCount),
+                totalCount: Number(totalCount)
+            };
+        } else {
+            throw new Error(result.Err);
+        }
+    } catch (error) {
+        console.error("Error fetching user activities:", error);
+        throw error;
+    }
+}

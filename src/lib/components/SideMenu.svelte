@@ -257,7 +257,7 @@
                         display: block; 
                         max-width: 100%; position:absolute;
                         overflow: hidden; "
-                                href={"/feed"}>Followed ideas</a
+                                href={"/feed"}>Community Feed</a
                             >{/if}
                     </div>
 
