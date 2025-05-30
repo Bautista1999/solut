@@ -224,7 +224,8 @@
         display: flex;
         flex-direction: column;
         gap: 15px;
-        margin: 0 10px; /* mimic ProfileActivitySection horizontal spacing */
+        margin: 0 10px;
+        align-items: center;
     }
 
     .loading-wrapper,
