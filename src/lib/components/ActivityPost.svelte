@@ -59,90 +59,80 @@
     }
 </script>
 
-<a class="activity-card" href={link}>
-    <!-- Top Section: Profile Image, Username, Time Ago -->
-    <div class="activity-header">
-        <a href={"/profile/" + username}
-            ><img src={displaySrc} alt="Profile" class="profile-image" /></a
-        >
+<!-- Restructured card layout -->
+<div class="activity-card">
+    <!-- Profile picture column -->
+    <a href={"/profile/" + username} class="avatar-wrapper">
+        <img src={displaySrc} alt="Profile" class="profile-image" />
+    </a>
+
+    <!-- Main content column -->
+    <div class="content-wrapper">
+        <!-- User header (username & timestamp) -->
         <div class="user-info">
             <a href={"/profile/" + username} class="username">@{username}</a>
-            <span class="created-at"> - {formattedTimeAgo}</span>
+            <span class="created-at"> · {formattedTimeAgo}</span>
         </div>
+
+        <!-- Activity description -->
+        <p class="activity-description">{description}</p>
+
+        <!-- Optional linked content -->
+        {#if activityTitle}
+            <a href={link} class="activity-link">
+                {#if activityImage}
+                    <img src={activityImage} alt="Activity" class="activity-image" />
+                {/if}
+                <p class="activity-title">{activityTitle}</p>
+            </a>
+        {/if}
     </div>
-
-    <!-- Description -->
-    <p class="activity-description">{description}</p>
-
-    <!-- Activity Content -->
-    {#if activityTitle}
-        <a href={link} class="activity-link">
-            <img
-                src={activityImage}
-                alt="Activity Image"
-                class="activity-image"
-            />
-            <p class="activity-title">{activityTitle}</p>
-        </a>
-    {/if}
-</a>
+</div>
 
 <style>
+    /* Grid layout with avatar column */
     .activity-card {
-        display: flex;
-        flex-direction: column;
-        justify-content: start;
-        align-items: start;
+        display: grid;
+        grid-template-columns: 48px 1fr;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--forth-color);
         text-decoration: none;
-        width: 100%;
-        gap: 10px;
-        padding: 15px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        background-color: #fff;
-        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        color: inherit;
     }
 
-    .activity-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
+    /* Avatar */
+    .avatar-wrapper {
+        display: block;
+        width: 48px;
+        height: 48px;
+        flex-shrink: 0;
     }
-
     .profile-image {
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
         object-fit: cover;
-        transition:
-            transform 0.2s ease,
-            box-shadow 0.2s ease;
     }
-    .profile-image:hover {
-        transform: translateY(-2px) translateX(-2px);
-        /* border: 2px solid var(--primary-color); */
-        box-shadow: 2px 2px 0px 0px var(--seventh-color);
-    }
-    .profile-image:active {
-        transform: translateY(-0px) translateX(-0px);
-        /* border: 2px solid var(--primary-color); */
-        box-shadow: 0px 0px 0px 0px var(--seventh-color);
+
+    /* Body */
+    .content-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
     }
 
     .user-info {
         display: flex;
-        flex-direction: row;
-        align-items: end;
-        justify-content: center;
-
-        gap: 5px;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px;
+        font-size: 0.9rem;
     }
-
     .username {
-        font-weight: bold;
-        color: var(--primary-color, #333);
+        font-weight: 600;
+        color: var(--secondary-color);
         text-decoration: none;
-        font-family: "Barlow";
     }
     .username:hover {
         text-decoration: underline;
@@ -150,47 +140,63 @@
 
     .created-at {
         font-size: 0.8rem;
-        color: #777;
-        font-family: "Barlow";
+        color: var(--eigth-color);
     }
 
     .activity-description {
         margin: 0;
-        color: #555;
-        font-size: 0.9rem;
-        font-style: italic;
+        color: var(--secondary-color);
+        font-size: 0.95rem;
+        line-height: 1.35;
     }
 
+    /* Link preview */
     .activity-link {
+        border: 1px solid var(--forth-color);
+        border-radius: 8px;
+        padding: 8px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
         text-decoration: none;
         color: inherit;
-        width: 97%;
-        padding: 10px;
-        border-radius: 8px;
-        /* border: 0.2px solid #ccc; */
+        max-width: 100%;
     }
-    .activity-card:hover {
-        background-color: var(--forth-color);
+    .activity-link:hover {
+        background: var(--forth-color);
     }
 
     .activity-image {
         width: 60px;
         height: 60px;
-        border-radius: 8px;
+        border-radius: 6px;
         object-fit: cover;
+        flex-shrink: 0;
     }
 
     .activity-title {
-        font-weight: bold;
-        color: var(--primary-color, #333);
+        font-weight: 600;
+        font-size: 0.9rem;
         margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
-    @media (max-width: 768px) {
-        .activity-link {
-            width: 94%;
+
+    /* Mobile tweaks */
+    @media (max-width: 480px) {
+        .activity-card {
+            grid-template-columns: 40px 1fr;
+            gap: 10px;
+        }
+        .avatar-wrapper,
+        .profile-image {
+            width: 40px;
+            height: 40px;
+        }
+        .activity-image {
+            width: 50px;
+            height: 50px;
         }
     }
 </style>
