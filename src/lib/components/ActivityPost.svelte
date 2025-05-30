@@ -68,6 +68,7 @@
 
     <!-- Main content column -->
     <div class="content-wrapper">
+        <div class="card-body">
         <!-- User header (username & timestamp) -->
         <div class="user-info">
             <a href={"/profile/" + username} class="username">@{username}</a>
@@ -86,6 +87,7 @@
                 <p class="activity-title">{activityTitle}</p>
             </a>
         {/if}
+        </div>
     </div>
 </div>
 
@@ -99,6 +101,8 @@
         border-bottom: 1px solid var(--forth-color);
         text-decoration: none;
         color: inherit;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     /* Avatar */
@@ -119,7 +123,20 @@
     .content-wrapper {
         display: flex;
         flex-direction: column;
+        width: 100%;
+    }
+
+    /* Card-like body */
+    .card-body {
+        border: 1px solid var(--forth-color);
+        border-radius: 8px;
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
         gap: 6px;
+        background: var(--tertiary-color);
+        box-sizing: border-box;
+        width: 100%;
     }
 
     .user-info {

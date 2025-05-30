@@ -224,8 +224,8 @@
         display: flex;
         flex-direction: column;
         gap: 12px;
-        margin-left: 14px; /* space for avatar */
-        margin-right: 0; /* minimal right padding */
+        margin-left: 12px; /* slight left gutter */
+        margin-right: 8px; /* slight right gutter */
         align-items: stretch;
     }
 
@@ -258,8 +258,8 @@
 
     @media (max-width: 768px) {
         .activities-list {
-            margin-left: 12px;
-            margin-right: 0;
+            margin-left: 10px;
+            margin-right: 6px;
         }
     }
 </style>
