@@ -223,9 +223,9 @@
     .activities-list {
         display: flex;
         flex-direction: column;
-        gap: 15px;
-        margin-left: 14px;
-        margin-right: 4px;
+        gap: 12px;
+        margin-left: 14px; /* space for avatar */
+        margin-right: 0; /* minimal right padding */
         align-items: stretch;
     }
 
@@ -259,7 +259,7 @@
     @media (max-width: 768px) {
         .activities-list {
             margin-left: 12px;
-            margin-right: 2px;
+            margin-right: 0;
         }
     }
 </style>
