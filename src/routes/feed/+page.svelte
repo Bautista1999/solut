@@ -245,7 +245,7 @@
     /* Responsive tweaks --------------------------- */
     @media (max-width: 480px) {
         .activity-feed-container {
-            padding: 10px;
+            padding: 10px 16px; /* extra horizontal breathing room */
         }
 
         .feed-title {
