@@ -224,8 +224,9 @@
         display: flex;
         flex-direction: column;
         gap: 15px;
-        margin: 0 10px;
-        align-items: center;
+        margin-left: 14px;
+        margin-right: 4px;
+        align-items: stretch;
     }
 
     .loading-wrapper,
@@ -257,7 +258,8 @@
 
     @media (max-width: 768px) {
         .activities-list {
-            margin: 0 20px; /* slightly larger margin on small screens */
+            margin-left: 12px;
+            margin-right: 2px;
         }
     }
 </style>
