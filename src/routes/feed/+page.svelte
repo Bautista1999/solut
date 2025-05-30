@@ -224,6 +224,7 @@
         display: flex;
         flex-direction: column;
         gap: 15px;
+        margin: 0 10px; /* mimic ProfileActivitySection horizontal spacing */
     }
 
     .loading-wrapper,
@@ -250,6 +251,12 @@
 
         .feed-title {
             font-size: 1.5rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .activities-list {
+            margin: 0 20px; /* slightly larger margin on small screens */
         }
     }
 </style>

@@ -192,10 +192,5 @@
         .activity-link {
             width: 94%;
         }
-
-        /* Extra spacing on small screens */
-        .activity-card {
-            margin-inline: 6px;
-        }
     }
 </style>
