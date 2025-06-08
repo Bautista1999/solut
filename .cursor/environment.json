@@ -1,1 +1,12 @@
-{}
+{
+    
+        "snapshot": "POPULATED_FROM_SETTINGS",
+        "install": "npm install",
+        "terminals": [
+          {
+            "name": "Run project locally",
+            "command": "npm run dev"
+          }
+        ]
+      
+}
