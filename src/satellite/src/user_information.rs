@@ -322,9 +322,7 @@ pub fn get_pledged_balance(user_id: String) -> Result<u64, String> {
 pub fn get_historical_pledged_balance(user_id: String) -> Result<u64, String> {
     let caller = caller();
     let caller_text = Principal::to_text(&caller);
-    // if (caller_text != user_id) {
-    //     return Err(format!("Permission denied!"));
-    // }
+
     // Step 1: Get all active pledges
     let active_pledges = match get_user_total_pledges(user_id) {
         Ok(pledges) => pledges,
