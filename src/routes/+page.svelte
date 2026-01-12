@@ -24,6 +24,7 @@
     $: page = 0;
     $: totalPages = 0;
     let searchComponentOpen = false;
+    let isSearching = false;
     $: disableLeftButton = true;
     // Sorting options for the user to choose
     let sortingOptions = [
@@ -181,6 +182,9 @@
     }
 
     onMount(async () => {
+        if (!isSearching) {
+            throw new Error("Searching is false, but we are trying to mount the page");
+        }
         window.addEventListener("popstate", () => {
             // Logic to handle page state when navigating back or forward
             location.reload(); // Basic approach to reload the current state
